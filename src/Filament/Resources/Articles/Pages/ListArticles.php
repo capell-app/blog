@@ -39,7 +39,7 @@ class ListArticles extends ListPages
             ->disabled($choices->isEmpty())
             ->tooltip($choices->isEmpty() ? (string) __('capell-blog::generic.article_blueprint_unavailable') : null)
             ->url($choices->count() === 1
-                ? $resource::getUrl('create', ['type' => $resolver->handle($choices->keys()->first())->key])
+                ? $resource::getUrl('create', ['type' => ResolveEligibleArticleBlueprintAction::run($choices->keys()->first())->key])
                 : null)
             ->schema([
                 Select::make('blueprint_id')
@@ -47,9 +47,9 @@ class ListArticles extends ListPages
                     ->options($choices)
                     ->required(),
             ])
-            ->action(function (array $data) use ($resolver, $resource): void {
+            ->action(function (array $data) use ($resource): void {
                 abort_unless($resource::canCreate(), 403);
-                $blueprint = $resolver->handle($data['blueprint_id'] ?? null);
+                $blueprint = ResolveEligibleArticleBlueprintAction::run($data['blueprint_id'] ?? null);
                 $this->redirect($resource::getUrl('create', ['type' => $blueprint->key]));
             });
     }

@@ -46,7 +46,7 @@ class ArticleForm implements FormConfigurator
             ? Blueprint::query()->pageType()->where('group', BlogTypeGroupEnum::Article)
                 ->where('key', $context->typeKey)->first()
             : null;
-        $defaultType ??= resolve(ResolveEligibleArticleBlueprintAction::class)->handle(key: $context?->typeKey);
+        $defaultType ??= ResolveEligibleArticleBlueprintAction::run(key: $context?->typeKey);
 
         $adminType = $resolver->resolveForType($defaultType, ConfiguratorTypeEnum::Page, ArticlePageConfigurator::getKey());
         $operation = $configurator->getOperation();

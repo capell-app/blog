@@ -31,7 +31,7 @@ class CreateArticle extends CreatePage
         $this->authorizeAccess();
 
         try {
-            $this->type = resolve(ResolveEligibleArticleBlueprintAction::class)->handle(key: $this->type)->key;
+            $this->type = ResolveEligibleArticleBlueprintAction::run(key: $this->type)->key;
         } catch (ValidationException) {
             abort(404);
         }
@@ -47,7 +47,7 @@ class CreateArticle extends CreatePage
         $articleLayout = GetArticleLayoutAction::run();
         $this->data['layout_id'] = $articleLayout instanceof Layout ? $articleLayout->getKey() : null;
 
-        $blueprint = resolve(ResolveEligibleArticleBlueprintAction::class)->handle(key: $this->type);
+        $blueprint = ResolveEligibleArticleBlueprintAction::run(key: $this->type);
         $this->type = $blueprint->key;
         $this->data['blueprint_id'] = $blueprint->getKey();
     }

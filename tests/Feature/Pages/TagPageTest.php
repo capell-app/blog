@@ -64,7 +64,9 @@ test('tag page list articles by tag', function (): void {
 
     $response = get($tag->getUrl($tagPage, $language))
         ->assertOk()
-        ->assertDontSeeText(':Tag_name Articles')
+        ->assertDontSeeText(':Tag_name Articles');
+
+    $response
         ->assertElementExists(
             'title',
             fn (AssertElement $elm): BaseAssert => $elm->containsText($title . ' | ' . $site->title),
@@ -97,7 +99,7 @@ test('tag page list articles by tag', function (): void {
         );
 
     $html = $response->getContent();
-    if ($html === '') {
+    if ($html === false || $html === '') {
         throw new RuntimeException('Expected the tag page response to contain HTML.');
     }
 

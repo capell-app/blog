@@ -168,8 +168,7 @@ class ArticleResource extends PageResource
         $articleLayout = GetArticleLayoutAction::run();
         $data['layout_id'] = $articleLayout instanceof Layout ? $articleLayout->getKey() : null;
 
-        $data['blueprint_id'] = resolve(ResolveEligibleArticleBlueprintAction::class)
-            ->handle($data['blueprint_id'] ?? $formData['blueprint_id'] ?? null)->getKey();
+        $data['blueprint_id'] = ResolveEligibleArticleBlueprintAction::run($data['blueprint_id'] ?? $formData['blueprint_id'] ?? null)->getKey();
 
         $site = ResolveArticleCreateSiteAction::run($data['site_id'] ?? null);
         $data['site_id'] = $site->getKey();

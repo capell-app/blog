@@ -25,6 +25,9 @@ beforeEach(function (): void {
 });
 
 /**
+ * @template TResponse of \Symfony\Component\HttpFoundation\Response
+ *
+ * @param  TestResponse<TResponse>  $response
  * @return list<array{rel: string, href: string, tag: string}>
  */
 function blogRelPaginationLinks(TestResponse $response): array

@@ -9,6 +9,7 @@ use Capell\Blog\Console\Commands\DemoCommand;
 use Capell\Blog\Console\Commands\FakerCommand;
 use Capell\Blog\Console\Commands\HeroDemoCommand;
 use Capell\Blog\Console\Commands\InstallCommand;
+use Capell\Blog\Console\Commands\SeedBlogScreenshotFixtureCommand;
 use Capell\Blog\Console\Commands\SetupCommand;
 use Illuminate\Support\ServiceProvider;
 use Override;
@@ -24,6 +25,7 @@ final class ConsoleServiceProvider extends ServiceProvider
             FakerCommand::class,
             HeroDemoCommand::class,
             InstallCommand::class,
+            SeedBlogScreenshotFixtureCommand::class,
             SetupCommand::class,
         ]);
     }

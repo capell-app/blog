@@ -4,6 +4,7 @@
     "generatedFor": "deployment-screenshot-runner",
     "requiresInstalledPackage": true,
     "outputDirectory": "packages/blog/docs/screenshots",
+    "fixtureCommands": ["capell:blog-screenshot-fixture"],
     "entries": [
         {
             "id": "articles-admin-index",
@@ -17,7 +18,8 @@
             "notes": "Requires Blog plus its required Capell extensions installed, package migrations, and seeded draft/published articles with sites, layouts, URLs, translations, and tags.",
             "useCase": "An editor reviews the article queue, publish windows, language coverage, and article status before editing content.",
             "screenshotPath": "packages/blog/docs/screenshots/articles-admin-index.png",
-            "darkScreenshotPath": "packages/blog/docs/screenshots/articles-admin-index-dark.png"
+            "darkScreenshotPath": "packages/blog/docs/screenshots/articles-admin-index-dark.png",
+            "waitFor": ".fi-ta-row:has-text(\"Planning a content calendar\")"
         },
         {
             "id": "create-edit-article-form",
@@ -31,7 +33,8 @@
             "notes": "Requires seeded sites, article type, layouts, and tags so relationship fields are populated. The batch harness could not complete extension install until required dependency extensions were marked installed.",
             "useCase": "An editor creates or updates an article with publishing windows, metadata, layout selection, media, and taxonomy.",
             "screenshotPath": "packages/blog/docs/screenshots/create-edit-article-form.png",
-            "darkScreenshotPath": "packages/blog/docs/screenshots/create-edit-article-form-dark.png"
+            "darkScreenshotPath": "packages/blog/docs/screenshots/create-edit-article-form-dark.png",
+            "waitFor": "form:has([id$=\"name\"]) [id$=\"tags\"]"
         },
         {
             "id": "blog-page-frontend-output",
@@ -42,9 +45,10 @@
             "target": null,
             "url": "/blog",
             "required": true,
-            "notes": "Captured from the seeded Blog landing route after capell:blog-demo on the isolated Packages workbench.",
+            "notes": "Fixture command repairs publication windows and creates real published articles for the public Blog listing.",
             "useCase": "A visitor browses the public blog landing page and sees published article listings.",
-            "screenshotPath": "packages/blog/docs/screenshots/blog-page-frontend-output.png"
+            "screenshotPath": "packages/blog/docs/screenshots/blog-page-frontend-output.png",
+            "waitFor": "a:has-text(\"Planning a content calendar\")"
         },
         {
             "id": "archive-page-frontend-output",
@@ -82,13 +86,13 @@
             "targetType": "admin-surface",
             "target": "ArticleResource",
             "url": "/blog/article",
-            "waitFor": "table",
+            "waitFor": "body:has(.fi-sidebar-open) .fi-ta-row:has-text(\"Planning a content calendar\")",
             "required": false,
             "notes": "Requires Blog plus its required Capell extensions installed, package migrations, and seeded draft/published articles with sites, layouts, URLs, translations, and tags. Capture this same admin surface with the fully collapsible sidebar opened.",
             "useCase": "An editor reviews the article queue, publish windows, language coverage, and article status before editing content.",
             "screenshotPath": "packages/blog/docs/screenshots/blog-admin-sidebar-menu-open.png",
             "darkScreenshotPath": "packages/blog/docs/screenshots/blog-admin-sidebar-menu-open-dark.png",
-            "interactions": [
+            "beforeWait": [
                 {
                     "type": "click",
                     "selector": ".fi-topbar-open-collapse-sidebar-btn"

@@ -8,10 +8,12 @@ use Capell\Blog\Enums\BlogTypeGroupEnum;
 use Capell\Core\Models\Blueprint;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\ValidationException;
+use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 final class ResolveEligibleArticleBlueprintAction
 {
+    use AsFake;
     use AsObject;
 
     /** @return Builder<Blueprint> */
