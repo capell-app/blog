@@ -136,6 +136,7 @@ Screenshot contract: `docs/screenshots.json`.
 - `ResolveEligibleArticleBlueprintAction`
 - `SanitizeBlogHtmlAction`
 - `SeedBlogPublishingSurfaceAction`
+- `SeedBlogScreenshotFixtureAction`
 
 ### Data objects
 
@@ -180,6 +181,7 @@ Screenshot contract: `docs/screenshots.json`.
 - `FakerCommand`
 - `HeroDemoCommand`
 - `InstallCommand`
+- `SeedBlogScreenshotFixtureCommand`
 - `SetupCommand`
 
 ### Manifest contributions
@@ -239,7 +241,7 @@ Screenshot contract: `docs/screenshots.json`.
 - Required packages: `capell-app/admin`, `capell-app/content-sections`, `capell-app/core`, `capell-app/discovery-foundation`, `capell-app/frontend`, `capell-app/html-cache`, `capell-app/layout-builder`, `capell-app/tags`.
 - Admin navigation: declares `admin-resource: BlogAdminResourcesContribution`; each Filament page or resource controls its own navigation visibility.
 - Admin/editor extensions: `configurator: BlogConfiguratorsContribution`.
-- Permissions: `article.view`, `article.create`, `article.update`, `article.delete`, `article.restore`, `article.force_delete`, `tag.view`, `tag.create`, `tag.update`, `tag.delete`, `tag.restore`, `tag.force_delete`; Shield-generated widget permissions for `Capell\Blog\Filament\Widgets\ListArticlesFilamentWidget` (names and grants depend on host Shield configuration); access also governed by package policies: `ArticlePolicy`.
+- Permissions: the manifest projects the default Shield permission keys for install-impact reporting; `Capell\Blog\Manifest\BlogPermissionsContribution` resolves the same subject and ability descriptors against the host Shield case and separator at runtime. Shield-generated widget permission names and grants also depend on host configuration; access is governed by `ArticlePolicy` and `TagPolicy`.
 - Public routes: registers `BlogRoutesContribution`.
 - Database changes: package migrations are declared.
 - Config: no package config files.

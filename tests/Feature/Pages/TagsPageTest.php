@@ -74,8 +74,14 @@ test('tags page list tags', function (): void {
         ->translation->language->id->toBe($language->id)
         ->pageUrl->language->id->toBe($language->id);
 
-    get($tagsPageUrl->full_url)
+    $response = get($tagsPageUrl->full_url);
+
+    $response
         ->assertOk()
+        ->assertSee('Visible Blog Topic Two')
+        ->assertDontSeeText('Hidden Blog Topic Three');
+
+    $response
         ->assertElementExists(
             'title',
             fn (AssertElement $elm): BaseAssert => $elm->containsText($tagsPageTranslation->title . ' | ' . $site->title),
@@ -86,9 +92,7 @@ test('tags page list tags', function (): void {
                 ->containsText('Visible Blog Topic One'),
         )
         ->assertElementExists('a[href="' . $visibleTagOne->getUrl($tagPage, $language) . '"]')
-        ->assertSee('Visible Blog Topic Two')
-        ->assertElementExists('a[href="' . $visibleTagTwo->getUrl($tagPage, $language) . '"]')
-        ->assertDontSeeText('Hidden Blog Topic Three');
+        ->assertElementExists('a[href="' . $visibleTagTwo->getUrl($tagPage, $language) . '"]');
 });
 
 test('tags sitemap formats tag urls from the generated tag results page', function (): void {

@@ -83,8 +83,13 @@ test('author archive lists only that authors published articles', function (): v
     $future = blogAuthorArticle($site, $author, ['title' => 'Scheduled Draft', 'visible_from' => '2023-04-01']);
     $future->forceFill(['visible_from' => now()->addYear()])->saveQuietly();
 
-    get(blogAuthorArchiveUrl($authorPage, 'ada-lovelace'))
+    $response = get(blogAuthorArchiveUrl($authorPage, 'ada-lovelace'));
+
+    $response
         ->assertOk()
+        ->assertDontSee(':Author_name');
+
+    $response
         ->assertElementExists(
             'h1',
             fn (AssertElement $elm): BaseAssert => $elm->containsText('Articles by Ada Lovelace'),
@@ -97,8 +102,7 @@ test('author archive lists only that authors published articles', function (): v
                 ->containsText('Bernoulli Numbers')
                 ->doesntContainText('Compiler Origins')
                 ->doesntContainText('Scheduled Draft'),
-        )
-        ->assertDontSee(':Author_name');
+        );
 });
 
 test('author archive never exposes author pii or userstamp internals', function (): void {

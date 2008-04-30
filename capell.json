@@ -69,20 +69,38 @@
         {
             "type": "permission",
             "class": "Capell\\Blog\\Manifest\\BlogPermissionsContribution",
-            "permissions": [
-                "article.view",
-                "article.create",
-                "article.update",
-                "article.delete",
-                "article.restore",
-                "article.force_delete",
-                "tag.view",
-                "tag.create",
-                "tag.update",
-                "tag.delete",
-                "tag.restore",
-                "tag.force_delete"
-            ]
+            "permissions": [],
+            "resolver": "permissions",
+            "subjects": {
+                "Article": [
+                    "view_any",
+                    "view",
+                    "create",
+                    "update",
+                    "delete",
+                    "delete_any",
+                    "restore",
+                    "restore_any",
+                    "force_delete",
+                    "force_delete_any",
+                    "replicate",
+                    "reorder"
+                ],
+                "Tag": [
+                    "view_any",
+                    "view",
+                    "create",
+                    "update",
+                    "delete",
+                    "delete_any",
+                    "restore",
+                    "restore_any",
+                    "force_delete",
+                    "force_delete_any",
+                    "replicate",
+                    "reorder"
+                ]
+            }
         },
         {
             "type": "page-type",
@@ -139,9 +157,12 @@
             "type": "route",
             "class": "Capell\\Blog\\Manifest\\BlogRoutesContribution",
             "routes": [
-                "capell.blog.feed.xml",
+                "capell.blog.feed.atom",
                 "capell.blog.feed.rss",
-                "capell.blog.feed.atom"
+                "capell.blog.feed.xml",
+                "capell.blog.tag.feed.atom",
+                "capell.blog.tag.feed.rss",
+                "capell.blog.tag.feed.xml"
             ],
             "prefix": "blog",
             "middleware": ["web"]
@@ -198,18 +219,30 @@
     },
     "settings": [],
     "permissions": [
-        "article.view",
-        "article.create",
-        "article.update",
-        "article.delete",
-        "article.restore",
-        "article.force_delete",
-        "tag.view",
-        "tag.create",
-        "tag.update",
-        "tag.delete",
-        "tag.restore",
-        "tag.force_delete"
+        "ViewAny:Article",
+        "View:Article",
+        "Create:Article",
+        "Update:Article",
+        "Delete:Article",
+        "DeleteAny:Article",
+        "Restore:Article",
+        "RestoreAny:Article",
+        "ForceDelete:Article",
+        "ForceDeleteAny:Article",
+        "Replicate:Article",
+        "Reorder:Article",
+        "ViewAny:Tag",
+        "View:Tag",
+        "Create:Tag",
+        "Update:Tag",
+        "Delete:Tag",
+        "DeleteAny:Tag",
+        "Restore:Tag",
+        "RestoreAny:Tag",
+        "ForceDelete:Tag",
+        "ForceDeleteAny:Tag",
+        "Replicate:Tag",
+        "Reorder:Tag"
     ],
     "capabilities": [
         "blog",
@@ -263,21 +296,8 @@
             "clients": []
         },
         "adminSurface": {
-            "authorization": "permissions",
-            "permissions": [
-                "article.view",
-                "article.create",
-                "article.update",
-                "article.delete",
-                "article.restore",
-                "article.force_delete",
-                "tag.view",
-                "tag.create",
-                "tag.update",
-                "tag.delete",
-                "tag.restore",
-                "tag.force_delete"
-            ]
+            "authorization": "policies",
+            "permissions": []
         }
     },
     "performance": {

@@ -139,8 +139,10 @@ describe('blog capell.json manifest', function (): void {
     it('declares blog capabilities permissions and cache invalidation sources', function () use ($blogManifest): void {
         $manifest = $blogManifest();
         $invalidationSourceData = $manifest['performance']['cacheSafety']['invalidationSources'] ?? [];
+        $contributions = $manifest['contributes'] ?? null;
 
         throw_unless(is_array($invalidationSourceData), RuntimeException::class, 'Blog invalidation sources must be an array.');
+        throw_unless(is_array($contributions), RuntimeException::class, 'Blog contributions must be an array.');
 
         $invalidationSources = collect($invalidationSourceData);
 
@@ -148,8 +150,12 @@ describe('blog capell.json manifest', function (): void {
             ->toContain('blog-articles')
             ->toContain('blog-cache-invalidation')
             ->and($manifest['permissions'])
-            ->toContain('article.view')
-            ->toContain('tag.view')
+            ->toContain('View:Article')
+            ->toContain('View:Tag')
+            ->and(collect($contributions)->firstWhere('type', 'permission'))
+            ->toMatchArray(['resolver' => 'permissions'])
+            ->toHaveKey('subjects.Article')
+            ->toHaveKey('subjects.Tag')
             ->and($invalidationSources->pluck('model')->all())
             ->toContain(Article::class)
             ->toContain(Tag::class);
@@ -272,7 +278,8 @@ describe('blog capell.json manifest', function (): void {
                 'console-command',
                 'health-check',
             ])
-            ->and(data_get(collect($contributions)->firstWhere('type', 'permission'), 'permissions'))->toBe($manifest['permissions'])
+            ->and(data_get(collect($contributions)->firstWhere('type', 'permission'), 'permissions'))->toBe([])
+            ->and(data_get(collect($contributions)->firstWhere('type', 'permission'), 'resolver'))->toBe('permissions')
             ->and(data_get(collect($contributions)->firstWhere('type', 'migration'), 'tables'))->toBe($manifest['database']['requiredTables'])
             ->and($manifest['contributionTraceability']['deferredContributions'])->toBe([])
             ->and(class_implements(BlogAdminResourcesContribution::class))->toContain(RegistersExtensionAdminResource::class)

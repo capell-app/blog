@@ -167,15 +167,19 @@ test('archive page list articles by month/year', function (): void {
 
     $archiveUrl = GenerateArchiveUrlAction::run($archivePageUrl, ArchiveMonthData::fromDate($publishDate));
 
-    get($archiveUrl)
+    $response = get($archiveUrl);
+
+    $response
         ->assertOk()
+        ->assertDontSeeText('no-results');
+
+    $response
         ->assertElementExists(
             'title',
             fn (AssertElement $elm): BaseAssert => $elm->containsText(
                 __($archivePage->title, ['archive_month' => $publishDate->format('F'), 'archive_year' => $publishDate->year]),
             ),
-        )
-        ->assertDontSeeText('no-results');
+        );
 });
 
 test('archive page returns not found when selected month has no articles', function (): void {
