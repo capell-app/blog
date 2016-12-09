@@ -1,6 +1,6 @@
 {
     "name": "capell-app/blog",
-    "description": "Premium editorial publishing for Capell: articles, archive and tag pages, related article widgets, multilingual output, and optional growth bridges.",
+    "description": "Editorial publishing for Capell: articles, archives, optional tag pages, related article widgets, multilingual output, and growth bridges.",
     "keywords": [
         "capell",
         "blog",

@@ -77,10 +77,21 @@ describe('blog capell.json manifest', function (): void {
             ->and($manifest['product']['bundle'])->toBe('publishing')
             ->and($manifest['commercial']['proposedLicense'])->toBe('free')
             ->and($manifest['commercial']['supportPolicy'])->toBe('priority')
+            ->and($manifest['commercial']['privateDocsRequested'])->toBeTrue()
             ->and($composerManifest['license'])->toBe('proprietary');
     });
 
-    it('does not require premium packages', function () use ($blogManifest, $blogComposerManifest): void {
+    it('requires Tags for article tagging', function () use ($blogManifest, $blogComposerManifest): void {
+        $manifest = $blogManifest();
+        $composerManifest = $blogComposerManifest();
+
+        expect($manifest['dependencies']['requires'])
+            ->toContain('capell-app/tags')
+            ->and($composerManifest['require'])
+            ->toHaveKey('capell-app/tags');
+    });
+
+    it('requires no premium package', function () use ($blogManifest, $blogComposerManifest): void {
         $manifest = $blogManifest();
         $composerManifest = $blogComposerManifest();
 
