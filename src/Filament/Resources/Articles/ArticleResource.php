@@ -11,6 +11,7 @@ use Capell\Admin\Filament\Resources\Pages\RelationManagers\ChildrenRelationManag
 use Capell\Admin\Filament\Resources\Pages\RelationManagers\SiblingsRelationManager;
 use Capell\Blog\Actions\GetArticleLayoutAction;
 use Capell\Blog\Actions\ResolveArticleCreateSiteAction;
+use Capell\Blog\Actions\ResolveEligibleArticleBlueprintAction;
 use Capell\Blog\Enums\BlogTypeGroupEnum;
 use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Filament\Resources\Articles\Pages\CreateArticle;
@@ -23,7 +24,6 @@ use Capell\Blog\Providers\BlogServiceProvider;
 use Capell\Blog\Support\Loader\BlogLoader;
 use Capell\Core\Actions\GetNameFromTranslationsAction;
 use Capell\Core\Facades\CapellCore;
-use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\Site;
@@ -163,20 +163,13 @@ class ArticleResource extends PageResource
     #[Override]
     public static function mutateFormDataBeforeCreate(array &$data, array $formData = []): void
     {
-        if (! isset($data['order'])) {
-            $data['order'] = 0;
-        }
+        $data['order'] ??= 0;
 
         $articleLayout = GetArticleLayoutAction::run();
         $data['layout_id'] = $articleLayout instanceof Layout ? $articleLayout->getKey() : null;
 
-        /* @var class-string<\Capell\Core\Models\Blueprint> $model */
-        $model = Blueprint::class;
-
-        $data['blueprint_id'] = $model::query()
-            ->pageType()
-            ->where('group', BlogTypeGroupEnum::Article)
-            ->value('id');
+        $data['blueprint_id'] = resolve(ResolveEligibleArticleBlueprintAction::class)
+            ->handle($data['blueprint_id'] ?? $formData['blueprint_id'] ?? null)->getKey();
 
         $site = ResolveArticleCreateSiteAction::run($data['site_id'] ?? null);
         $data['site_id'] = $site->getKey();

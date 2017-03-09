@@ -98,7 +98,7 @@ test('archives page list articles archives by month/year', function (): void {
     expect($archivesPage)->toBeInstanceOf(Page::class);
     expect($archivesPage->blueprint?->key)->toBe('system');
     expect($archivesPage->layout?->name)->toBe('Archives');
-    expect($archivesPage->parent->name)->toBe('Blog');
+    expect($archivesPage->parent?->name)->toBe('Blog');
 
     get($archivesPageUrl->full_url)
         ->assertOk()
@@ -160,7 +160,7 @@ test('archive page list articles by month/year', function (): void {
     expect($archivePage)->toBeInstanceOf(Page::class);
     expect($archivePage->blueprint?->name)->toBe('Archive Page');
     expect($archivePage->layout?->name)->toBe('Results');
-    expect($archivePage->parent->name)->toBe('Archives');
+    expect($archivePage->parent?->name)->toBe('Archives');
     expect($archivePage->pageUrl?->url)->toBe('/blog/archives/*');
     expect($archivePage->getAncestors(['name'])->pluck('name')->sort()->values()->toArray())
         ->toEqual(['Archives', 'Blog']);

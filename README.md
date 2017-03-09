@@ -55,22 +55,175 @@ Screenshot contract: `docs/screenshots.json`.
 
 ## Technical Shape
 
-- Service providers: `Capell\Blog\Providers\ConsoleServiceProvider`, `Capell\Blog\Providers\BlogServiceProvider`, `Capell\Blog\Providers\AdminServiceProvider`, `Capell\Blog\Providers\FrontendServiceProvider`.
-- Migrations: `packages/blog/database/migrations/2026_05_10_190842_01_create_articles_table.php`, `packages/blog/database/migrations/2026_08_28_000003_change_article_visibility_to_datetime.php`.
-- Models: `Article`.
-- Filament classes: `ArticleSelect`, `SettingsTab`, `TagsInput`, `ArticlePageConfigurator`, `ArticleWidgetConfigurator`, `RelatedWidgetConfigurator`, `ArticleResource`, `CreateArticle`, `EditArticle`, `ListArticles`, `ArticleForm`, `ArticlePagesTable`, `and 4 more`.
-- Livewire components: `Archive`, `Author`, `Blog`, `Tag`.
-- Policies: `ArticlePolicy`.
-- Listeners: `AddBlogPagesToNavigation`, `ArticleTranslationSavedListener`.
-- Actions: `ApplyArchiveDateFilterAction`, `ApplyPreferredLanguageOrderAction`, `AssignExampleArticleImageAction`, `AttachBlogPublishingSurfaceToNavigationAction`, `BuildArticleMetaDataAction`, `BuildBlogFeedXmlAction`, `BuildBlogResultsViewDataAction`, `BuildTagListingDataAction`, `ClearBlogContentCacheAction`, `ClearBlogTagCacheAction`, `CreateBlogHeroDemoContentAction`, `CreateBlogPagesAction`, `and 15 more`.
-- Data objects: `ArchiveLinkData`, `ArchiveMonthData`, `ArticleMetaData`, `ArticleNeighborLinkData`, `ArticleWidgetRenderData`, `BlogAuthorData`, `BlogPublishingSurfaceData`, `BlogPublishingSurfaceRequestData`, `BlogPublishingSurfaceResultData`, `BlogResultItemData`, `BlogResultsViewData`, `BlogTagLinkData`, `and 9 more`.
-- Command signatures: `capell:blog-demo`, `capell:blog-install`, `capell:blog-setup`.
-- Manifest action API: `install: Capell\Blog\Actions\InstallBlogPackageAction`, `sanitizeBlogHtml: Capell\Blog\Actions\SanitizeBlogHtmlAction`.
-- Console command classes: `CreateBlogPagesCommand`, `DemoCommand`, `FakerCommand`, `HeroDemoCommand`, `InstallCommand`, `SetupCommand`.
-- Manifest contributions: `admin-resource: Capell\Blog\Manifest\BlogAdminResourcesContribution`, `configurator: Capell\Blog\Manifest\BlogConfiguratorsContribution`, `console-command: Capell\Blog\Manifest\BlogConsoleCommandsContribution`, `frontend-component: Capell\Blog\Manifest\BlogFrontendComponentsContribution`, `health-check: Capell\Blog\Health\BlogHealthCheck`, `migration: Capell\Blog\Manifest\BlogMigrationsContribution`, `model: Capell\Blog\Manifest\BlogModelsContribution`, `page-type: Capell\Blog\Manifest\BlogPageTypesContribution`, `page-variation: Capell\Blog\Manifest\BlogPageTypesContribution`, `permission: Capell\Blog\Manifest\BlogPermissionsContribution`, `render-hook: Capell\Blog\Manifest\BlogRenderHooksContribution`, `route: Capell\Blog\Manifest\BlogRoutesContribution`.
-- Health checks: `Capell\Blog\Health\BlogHealthCheck`.
-- Blade views: `packages/blog/resources/views/components/article-meta.blade.php`, `packages/blog/resources/views/components/asset-after-title.blade.php`, `packages/blog/resources/views/components/footer/pages.blade.php`, `packages/blog/resources/views/components/footer/tags.blade.php`, `packages/blog/resources/views/components/page/author.blade.php`, `packages/blog/resources/views/components/page/published-date.blade.php`, `packages/blog/resources/views/components/page/tags.blade.php`, `packages/blog/resources/views/components/tag.blade.php`, `packages/blog/resources/views/components/widget/page/archives.blade.php`, `packages/blog/resources/views/components/widget/page/article.blade.php`, `packages/blog/resources/views/components/widget/tag/tags.blade.php`, `packages/blog/resources/views/filament/widgets/article-health.blade.php`, `and 4 more`.
-- Cache tags: `blog`.
+### Service providers
+
+- `Capell\Blog\Providers\ConsoleServiceProvider`
+- `Capell\Blog\Providers\BlogServiceProvider`
+- `Capell\Blog\Providers\AdminServiceProvider`
+- `Capell\Blog\Providers\FrontendServiceProvider`
+
+### Migrations
+
+- `packages/blog/database/migrations/2026_05_10_190842_01_create_articles_table.php`
+- `packages/blog/database/migrations/2026_08_28_000003_change_article_visibility_to_datetime.php`
+
+### Models
+
+- `Article`
+
+### Filament classes
+
+- `ArticleSelect`
+- `SettingsTab`
+- `TagsInput`
+- `ArticlePageConfigurator`
+- `ArticleWidgetConfigurator`
+- `RelatedWidgetConfigurator`
+- `ArticleResource`
+- `CreateArticle`
+- `EditArticle`
+- `ListArticles`
+- `ArticleForm`
+- `ArticlePagesTable`
+- `ArticleHealthFilamentWidget`
+- `ListArticlesFilamentWidget`
+- `TopPagesFilamentWidget`
+- `TrafficChartFilamentWidget`
+
+### Livewire components
+
+- `Archive`
+- `Author`
+- `Blog`
+- `Tag`
+
+### Policies
+
+- `ArticlePolicy`
+
+### Listeners
+
+- `AddBlogPagesToNavigation`
+- `ArticleTranslationSavedListener`
+
+### Actions
+
+- `ApplyArchiveDateFilterAction`
+- `ApplyPreferredLanguageOrderAction`
+- `AssignExampleArticleImageAction`
+- `AttachBlogPublishingSurfaceToNavigationAction`
+- `BuildArticleMetaDataAction`
+- `BuildBlogFeedXmlAction`
+- `BuildBlogResultsViewDataAction`
+- `BuildTagListingDataAction`
+- `ClearBlogContentCacheAction`
+- `ClearBlogTagCacheAction`
+- `CreateBlogHeroDemoContentAction`
+- `CreateBlogPagesAction`
+- `EnsureArticlePublishingDefaultsAction`
+- `EnsureBlogPublishingSurfaceAction`
+- `GenerateArchiveUrlAction`
+- `GenerateBlogAuthorUrlAction`
+- `GetArticleLayoutAction`
+- `InstallBlogPackageAction`
+- `PrepareBlogFooterRenderDataAction`
+- `ProvisionBlogPublishingPagesAction`
+- `ProvisionBlogPublishingWidgetsAction`
+- `RedirectMergedTagSlugAction`
+- `ResolveArticleCreateSiteAction`
+- `ResolveArticleExcerptAction`
+- `ResolveBlogAuthorBySlugAction`
+- `ResolveEligibleArticleBlueprintAction`
+- `SanitizeBlogHtmlAction`
+- `SeedBlogPublishingSurfaceAction`
+
+### Data objects
+
+- `ArchiveLinkData`
+- `ArchiveMonthData`
+- `ArticleMetaData`
+- `ArticleNeighborLinkData`
+- `ArticleTranslationCoverageData`
+- `ArticleWidgetRenderData`
+- `BlogAuthorData`
+- `BlogPublishingSurfaceData`
+- `BlogPublishingSurfaceRequestData`
+- `BlogPublishingSurfaceResultData`
+- `BlogResultItemData`
+- `BlogResultsViewData`
+- `BlogTagLinkData`
+- `BlogWidgetContentData`
+- `ArticleHealthData`
+- `LanguageCoverageData`
+- `TagCountData`
+- `TopPageData`
+- `TopPagesData`
+- `TrafficChartData`
+- `TrafficPointData`
+- `TagListingData`
+
+### Command signatures
+
+- `capell:blog-demo`
+- `capell:blog-install`
+- `capell:blog-setup`
+
+### Manifest action API
+
+- `install: Capell\Blog\Actions\InstallBlogPackageAction`
+- `sanitizeBlogHtml: Capell\Blog\Actions\SanitizeBlogHtmlAction`
+
+### Console command classes
+
+- `CreateBlogPagesCommand`
+- `DemoCommand`
+- `FakerCommand`
+- `HeroDemoCommand`
+- `InstallCommand`
+- `SetupCommand`
+
+### Manifest contributions
+
+- `admin-resource: Capell\Blog\Manifest\BlogAdminResourcesContribution`
+- `configurator: Capell\Blog\Manifest\BlogConfiguratorsContribution`
+- `console-command: Capell\Blog\Manifest\BlogConsoleCommandsContribution`
+- `frontend-component: Capell\Blog\Manifest\BlogFrontendComponentsContribution`
+- `health-check: Capell\Blog\Health\BlogHealthCheck`
+- `migration: Capell\Blog\Manifest\BlogMigrationsContribution`
+- `model: Capell\Blog\Manifest\BlogModelsContribution`
+- `page-type: Capell\Blog\Manifest\BlogPageTypesContribution`
+- `page-variation: Capell\Blog\Manifest\BlogPageTypesContribution`
+- `permission: Capell\Blog\Manifest\BlogPermissionsContribution`
+- `render-hook: Capell\Blog\Manifest\BlogRenderHooksContribution`
+- `route: Capell\Blog\Manifest\BlogRoutesContribution`
+
+### Health checks
+
+- `Capell\Blog\Health\BlogHealthCheck`
+
+### Blade views
+
+- `packages/blog/resources/views/components/article-meta.blade.php`
+- `packages/blog/resources/views/components/asset-after-title.blade.php`
+- `packages/blog/resources/views/components/footer/pages.blade.php`
+- `packages/blog/resources/views/components/footer/tags.blade.php`
+- `packages/blog/resources/views/components/page/author.blade.php`
+- `packages/blog/resources/views/components/page/published-date.blade.php`
+- `packages/blog/resources/views/components/page/tags.blade.php`
+- `packages/blog/resources/views/components/tag.blade.php`
+- `packages/blog/resources/views/components/widget/page/archives.blade.php`
+- `packages/blog/resources/views/components/widget/page/article.blade.php`
+- `packages/blog/resources/views/components/widget/tag/tags.blade.php`
+- `packages/blog/resources/views/filament/widgets/article-health.blade.php`
+- `packages/blog/resources/views/filament/widgets/top-pages.blade.php`
+- `packages/blog/resources/views/filament/widgets/traffic-chart.blade.php`
+- `packages/blog/resources/views/livewire/page/results-slot.blade.php`
+- `packages/blog/resources/views/livewire/page/results.blade.php`
+
+### Cache tags
+
+- `blog`
+
 
 ## Data Model
 
@@ -86,7 +239,7 @@ Screenshot contract: `docs/screenshots.json`.
 - Required packages: `capell-app/admin`, `capell-app/content-sections`, `capell-app/core`, `capell-app/discovery-foundation`, `capell-app/frontend`, `capell-app/html-cache`, `capell-app/layout-builder`, `capell-app/tags`.
 - Admin navigation: declares `admin-resource: BlogAdminResourcesContribution`; each Filament page or resource controls its own navigation visibility.
 - Admin/editor extensions: `configurator: BlogConfiguratorsContribution`.
-- Permissions: `article.view`, `article.create`, `article.update`, `article.delete`, `article.restore`, `article.force_delete`, `tag.view`, `tag.create`, `tag.update`, `tag.delete`, `tag.restore`, `tag.force_delete`.
+- Permissions: `article.view`, `article.create`, `article.update`, `article.delete`, `article.restore`, `article.force_delete`, `tag.view`, `tag.create`, `tag.update`, `tag.delete`, `tag.restore`, `tag.force_delete`; Shield-generated widget permissions for `Capell\Blog\Filament\Widgets\ListArticlesFilamentWidget` (names and grants depend on host Shield configuration); access also governed by package policies: `ArticlePolicy`.
 - Public routes: registers `BlogRoutesContribution`.
 - Database changes: package migrations are declared.
 - Config: no package config files.
@@ -113,8 +266,9 @@ Screenshot contract: `docs/screenshots.json`.
 ## Quick Start
 
 1. Install the package: `composer require capell-app/blog`.
-2. Run the required setup: `php artisan capell:blog-setup`.
-3. Open the package admin surface at `/blog/article` and confirm Blog is available.
+2. Run the package setup: `php artisan capell:blog-install`.
+3. See it working: run `php artisan capell:blog-demo`.
+4. Open the package admin surface at `/blog/article` and confirm Blog is available.
 
 ## Next Steps
 

@@ -131,10 +131,12 @@ final class FrontendServiceProvider extends ServiceProvider
                 return;
             }
 
+            $pageGroup = $page->blueprint->meta['page_group'] ?? null;
+
             $archives = BlogLoader::getArchives(
                 site: $site,
                 language: $language,
-                group: $page->blueprint->meta['page_group'] ?? BlogTypeGroupEnum::Article->value,
+                group: is_string($pageGroup) ? $pageGroup : BlogTypeGroupEnum::Article->value,
                 pagination: false,
             );
 

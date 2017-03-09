@@ -7,12 +7,18 @@ use Capell\Blog\Actions\GenerateArchiveUrlAction;
 use Capell\Blog\Data\ArchiveMonthData;
 use Capell\Blog\Data\BlogPublishingSurfaceRequestData;
 use Capell\Blog\Models\Article;
+use Capell\Blog\Support\BlogFrontendRuntimeManifestContributor;
 use Capell\Blog\Support\Creator\BlogCreator;
 use Capell\Core\Enums\MediaCollectionEnum;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\SiteDomain;
+use Capell\Frontend\Data\FrontendContext;
+use Capell\Frontend\Data\FrontendRuntimeManifestData;
 use Capell\Frontend\Enums\CacheEnum;
+use Capell\Frontend\Enums\RenderingStrategyEnum;
+use Capell\Frontend\Events\FrontendContextResolved;
+use Capell\Frontend\Support\State\FrontendState;
 use Capell\Tags\Enums\TagTypeEnum;
 use Capell\Tags\Models\Tag;
 use Capell\Tests\Fixtures\Models\User;
@@ -21,8 +27,11 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\get;
+use function PHPUnit\Framework\assertInstanceOf;
+use function PHPUnit\Framework\assertIsArray;
 
 uses(TestingFrontend::class);
 
@@ -54,6 +63,66 @@ test('rich blog archive and tag routes stay inside the public query budget', fun
     'archive month' => ['archive_url', 134],
     'tag result' => ['tag_url', 148],
 ]);
+
+test('Foundation hands prepared values to the Blog request before runtime hydration', function (): void {
+    $fixture = blogRichRouteQueryBudgetFixture(articleCount: 3);
+    $checked = false;
+    Event::listen(FrontendContextResolved::class, function (FrontendContextResolved $event) use (&$checked): void {
+        $state = resolve(FrontendState::class);
+        $prepared = $event->context->getFrontendData();
+        assertIsArray($prepared);
+        expect($state->page())->toBe($event->context->page());
+        expect($state->site())->toBe($event->context->site());
+        expect($state->language())->toBe($event->context->language());
+        expect($state->getFrontendData())
+            ->toHaveKey('foundation.footer.contact_page', $prepared['foundation.footer.contact_page'])
+            ->toHaveKey('foundation.page.ancestors', $prepared['foundation.page.ancestors'])
+            ->not->toHaveKey('foundation.page.home');
+        $checked = true;
+    });
+
+    blogMeasurePublicRouteQueries($fixture['blog_url']);
+
+    expect($checked)->toBeTrue();
+})->group('blog-prepared-handoff');
+
+test('Blog preserves prepared null and empty values and hydrates absent values', function (string $mode): void {
+    $fixture = blogRichRouteQueryBudgetFixture(articleCount: 3);
+    blogMeasurePublicRouteQueries($fixture['blog_url']);
+    $state = resolve(FrontendState::class);
+    $context = new FrontendContext(
+        site: $state->site(),
+        language: $state->language(),
+        page: $state->page(),
+        layout: $state->layout(),
+        theme: $state->theme(),
+        params: [],
+        slug: null,
+    );
+    $ancestors = $mode === 'empty' ? new EloquentCollection : null;
+    if ($mode !== 'absent') {
+        $context->setFrontendData('foundation.footer.contact_page', null);
+        $context->setFrontendData('foundation.page.ancestors', $ancestors);
+    }
+
+    DB::flushQueryLog();
+    DB::enableQueryLog();
+
+    try {
+        resolve(BlogFrontendRuntimeManifestContributor::class)->contribute(
+            $context,
+            FrontendRuntimeManifestData::forRenderingStrategy(RenderingStrategyEnum::BladeOnly),
+        );
+        $queries = collect(DB::getQueryLog());
+    } finally {
+        DB::disableQueryLog();
+    }
+
+    expect($context->getFrontendData())->toHaveKey('foundation.footer.contact_page', null)
+        ->toHaveKey('foundation.page.ancestors', $ancestors);
+    expect($queries->filter(fn (array $query): bool => in_array('contact', $query['bindings'], true)))->toHaveCount($mode === 'absent' ? 1 : 0);
+    expect($queries->filter(fn (array $query): bool => str_contains($query['query'], 'between') && str_contains($query['query'], '_lft')))->toHaveCount($mode === 'absent' ? 1 : 0);
+})->with(['null', 'empty', 'absent'])->group('blog-prepared-handoff');
 
 /**
  * @return array{
@@ -120,7 +189,9 @@ function blogRichRouteQueryBudgetFixture(int $articleCount): array
     $article = $articles->sortByDesc('visible_from')->values()->get(2);
     /** @var Tag $tag */
     $tag = $tags->firstOrFail();
-    $publishedAt = CarbonImmutable::instance($article->visible_from ?? $article->created_at);
+    $publishedAt = $article->visible_from ?? $article->created_at;
+    assertInstanceOf(DateTimeInterface::class, $publishedAt);
+    $publishedAt = CarbonImmutable::instance($publishedAt);
     $archiveDate = ArchiveMonthData::fromDate($publishedAt);
 
     return [

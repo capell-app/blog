@@ -374,7 +374,10 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
             theme: $context->theme(),
             site: $site,
         ));
-        $context->setFrontendData('foundation.footer.contact_page', Page::getFirstPageByTypeForSite('contact', $site, $language));
+        $prepared = $context->getFrontendData();
+        if (! is_array($prepared) || ! array_key_exists('foundation.footer.contact_page', $prepared)) {
+            $context->setFrontendData('foundation.footer.contact_page', Page::getFirstPageByTypeForSite('contact', $site, $language));
+        }
         $context->setFrontendData('foundation.footer.site_languages', SiteLoader::pageLanguages($site, $language, $page));
         $context->setFrontendData('foundation.footer.latest_pages', PageLoader::list(new PageListingRequestData(
             language: $language,
@@ -398,7 +401,9 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
             })
             ->filter(fn (array $relatedSite): bool => is_string($relatedSite['url']) && $relatedSite['url'] !== '')
             ->values());
-        $context->setFrontendData('foundation.page.ancestors', PageLoader::getPageAncestors($page, $language, $site));
+        if (! is_array($prepared) || ! array_key_exists('foundation.page.ancestors', $prepared)) {
+            $context->setFrontendData('foundation.page.ancestors', PageLoader::getPageAncestors($page, $language, $site));
+        }
         $context->setFrontendData('foundation.page.home', $site->getHomePage($language));
     }
 

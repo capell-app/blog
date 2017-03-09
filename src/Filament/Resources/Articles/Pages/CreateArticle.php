@@ -8,11 +8,12 @@ use Capell\Admin\Enums\ResourceEnum as AdminResourceEnum;
 use Capell\Admin\Filament\Resources\Pages\Pages\CreatePage;
 use Capell\Admin\Support\AdminSurfaceLookup;
 use Capell\Blog\Actions\GetArticleLayoutAction;
-use Capell\Blog\Enums\BlogPageTypeEnum;
+use Capell\Blog\Actions\ResolveEligibleArticleBlueprintAction;
 use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Filament\Resources\Articles\ArticleResource;
-use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Layout;
+use Capell\Core\Models\Page;
+use Illuminate\Validation\ValidationException;
 use Override;
 
 class CreateArticle extends CreatePage
@@ -25,6 +26,20 @@ class CreateArticle extends CreatePage
     }
 
     #[Override]
+    public function mount(?Page $record = null): void
+    {
+        $this->authorizeAccess();
+
+        try {
+            $this->type = resolve(ResolveEligibleArticleBlueprintAction::class)->handle(key: $this->type)->key;
+        } catch (ValidationException) {
+            abort(404);
+        }
+
+        parent::mount($record);
+    }
+
+    #[Override]
     protected function beforeFill(): void
     {
         parent::beforeFill();
@@ -32,12 +47,16 @@ class CreateArticle extends CreatePage
         $articleLayout = GetArticleLayoutAction::run();
         $this->data['layout_id'] = $articleLayout instanceof Layout ? $articleLayout->getKey() : null;
 
-        /** @var class-string<Blueprint> $model */
-        $model = Blueprint::class;
+        $blueprint = resolve(ResolveEligibleArticleBlueprintAction::class)->handle(key: $this->type);
+        $this->type = $blueprint->key;
+        $this->data['blueprint_id'] = $blueprint->getKey();
+    }
 
-        $this->data['blueprint_id'] = $model::query()
-            ->pageType()
-            ->where('key', BlogPageTypeEnum::Article->value)
-            ->value('id');
+    #[Override]
+    protected function fillForm(): void
+    {
+        $this->callHook('beforeFill');
+        $this->form->fill($this->data);
+        $this->callHook('afterFill');
     }
 }

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Filament\Resources\Articles\Tables;
 
+use Capell\Admin\Contracts\Pages\PageTableStatusResolver;
 use Capell\Admin\Enums\FilamentColorEnum;
+use Capell\Admin\Filament\Actions\ImportHeaderAction;
 use Capell\Admin\Filament\Actions\Table\ReplicatePageAction;
 use Capell\Admin\Filament\Components\Tables\Actions\EditAction;
 use Capell\Admin\Filament\Components\Tables\Columns\BlueprintColumn;
@@ -13,12 +15,15 @@ use Capell\Admin\Filament\Components\Tables\Columns\IdentifierColumn;
 use Capell\Admin\Filament\Components\Tables\Columns\LanguagesColumn;
 use Capell\Admin\Filament\Components\Tables\Columns\MediaLibraryImageColumn;
 use Capell\Admin\Filament\Components\Tables\Columns\Page\PageNameColumn;
+use Capell\Admin\Filament\Components\Tables\Columns\Page\PagePublishStatusColumn;
 use Capell\Admin\Filament\Components\Tables\Columns\SiteColumn;
 use Capell\Admin\Filament\Components\Tables\Filters\DateFilter;
 use Capell\Admin\Filament\Contracts\HasPageResource;
 use Capell\Admin\Filament\Contracts\TableConfigurator;
 use Capell\Admin\Filament\Contracts\ValidatesDelete;
 use Capell\Admin\Support\Loader\SiteLoader;
+use Capell\Blog\Data\ArticleTranslationCoverageData;
+use Capell\Blog\Filament\Resources\Articles\Pages\ListArticles;
 use Capell\Blog\Models\Article;
 use Capell\Core\Actions\GetEditPageResourceUrlAction;
 use Capell\Core\Actions\PageDeletedAction;
@@ -48,15 +53,23 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\LazyCollection;
+use LogicException;
 
 class ArticlePagesTable implements TableConfigurator
 {
     public static function configure(Table $table): Table
     {
+        $livewire = $table->getLivewire();
+
         return $table
             ->modifyQueryUsing(self::getTableQuery(...))
             ->defaultSort('updated_at', 'desc')
             ->columns(static::getTableColumns())
+            ->emptyStateHeading(__('capell-blog::generic.empty_articles'))
+            ->emptyStateDescription(__('capell-blog::generic.empty_articles_description'))
+            ->emptyStateActions($livewire instanceof ListArticles
+                ? [$livewire->newArticleAction(), ImportHeaderAction::make($livewire::class)]
+                : [])
             ->filters(static::getTableFilters())
             ->filtersFormWidth('4xl')
             ->filtersFormColumns([
@@ -86,8 +99,8 @@ class ArticlePagesTable implements TableConfigurator
     }
 
     /**
-     * @param  Builder<Model>  $query
-     * @return Builder<Model>
+     * @param  Builder<Article>  $query
+     * @return Builder<Article>
      */
     protected static function getTableQuery(Builder $query, HasTable $livewire): Builder
     {
@@ -105,17 +118,22 @@ class ArticlePagesTable implements TableConfigurator
                 'image',
                 'site' => self::includeTrashedSite(...),
                 'site.siteDomains',
+                'site.languages',
+                'layout',
                 'translation' => fn (BuilderContract $query): BuilderContract => $query->with('language')
                     ->select(['translatable_id', 'translatable_type', 'language_id', 'title'])
-                    ->when($languageId, self::applyTranslationLanguageFilter(...)),
+                    ->when($languageId, static fn (BuilderContract $query, mixed $languageId): BuilderContract => is_numeric($languageId)
+                            ? self::applyTranslationLanguageFilter($query, (int) $languageId)
+                            : $query),
                 'translations.language',
                 'type',
                 'pageUrls' => self::includeOrderedPageUrls(...),
                 'pageUrl.siteDomain',
-            ]);
+            ])
+            ->tap(resolve(PageTableStatusResolver::class)->modifyQuery(...));
     }
 
-    protected static function recordClasses(Pageable $record): ?string
+    protected static function recordClasses(Article $record): ?string
     {
         return $record->deleted_at !== null ? 'table-row-warning' : null;
     }
@@ -171,21 +189,32 @@ class ArticlePagesTable implements TableConfigurator
     protected static function getTableColumns(): array
     {
         return [
-            IdentifierColumn::make('id'),
             PageNameColumn::make('name')
+                ->label(__('capell-admin::table.title'))
+                ->getStateUsing(fn (Article $record): string => $record->translation?->title ?: $record->name)
                 ->wrap()
                 ->sortable()
                 ->children(false)
                 ->ancestors(false)
                 ->searchable(query: self::applyNameSearch(...))
                 ->toggleable(),
+            PagePublishStatusColumn::make('publication_state'),
+            SiteColumn::make('site.name')
+                ->color(FilamentColorEnum::LightGray->value)
+                ->hidden(self::shouldHideSiteColumn(...)),
+            TextColumn::make('translation_coverage')
+                ->label(__('capell-blog::table.language_coverage'))
+                ->getStateUsing(fn (Article $record, HasTable $livewire): string => self::translationCoverage($record, $livewire)->languages)
+                ->description(fn (Article $record, HasTable $livewire): ?string => self::translationCoverage($record, $livewire)->missingLanguages !== []
+                    ? (string) __('capell-blog::table.incomplete_translation', ['languages' => implode(', ', self::translationCoverage($record, $livewire)->missingLanguages)])
+                    : null)
+                ->wrap(),
+            DateColumn::make('updated_at'),
+            IdentifierColumn::make('id'),
             TextColumn::make('translation.title')
                 ->label(__('capell-admin::table.title'))
                 ->html()
                 ->toggleable(isToggledHiddenByDefault: true),
-            SiteColumn::make('site.name')
-                ->color(FilamentColorEnum::LightGray->value)
-                ->hidden(self::shouldHideSiteColumn(...)),
             TextColumn::make('url')
                 ->label(__('capell-admin::table.url'))
                 ->color('primary')
@@ -196,7 +225,7 @@ class ArticlePagesTable implements TableConfigurator
                 ->toggleable(isToggledHiddenByDefault: true),
             MediaLibraryImageColumn::make('image')
                 ->collection('image')
-                ->toggleable()
+                ->toggleable(isToggledHiddenByDefault: true)
                 ->alignCenter()
                 ->width(0),
             LanguagesColumn::make('translations.language'),
@@ -206,7 +235,7 @@ class ArticlePagesTable implements TableConfigurator
                 ->limit(30)
                 ->size('sm')
                 ->color(FilamentColorEnum::LightGray->value)
-                ->toggleable()
+                ->toggleable(isToggledHiddenByDefault: true)
                 ->width(0),
             BlueprintColumn::make('type.name')
                 ->toggleable(isToggledHiddenByDefault: true),
@@ -214,9 +243,18 @@ class ArticlePagesTable implements TableConfigurator
                 ->label(__('capell-admin::table.created_by'))
                 ->toggleable(isToggledHiddenByDefault: true),
             DateColumn::make('created_at'),
-            DateColumn::make('updated_at'),
             DateColumn::make('deleted_at'),
         ];
+    }
+
+    protected static function translationCoverage(Article $record, HasTable $livewire): ArticleTranslationCoverageData
+    {
+        $languageId = $livewire->getTableFilterState('filter')['language_id'] ?? null;
+
+        return ArticleTranslationCoverageData::fromArticle(
+            $record,
+            is_numeric($languageId) ? (int) $languageId : null,
+        );
     }
 
     protected static function shouldHideSiteColumn(HasTable $livewire): bool
@@ -226,17 +264,20 @@ class ArticlePagesTable implements TableConfigurator
             || SiteLoader::getTotalSites() <= 1;
     }
 
-    protected static function getUrlColumnState(Pageable $record, HasTable $livewire): ?HtmlString
+    protected static function getUrlColumnState(Article $record, HasTable $livewire): ?HtmlString
     {
+        $pageUrls = $record->getRelation('pageUrls');
+        if (! $pageUrls instanceof EloquentCollection) {
+            throw new LogicException('Article table URLs must be eager loaded.');
+        }
+
         $pageUrl = null;
         $languageId = $livewire->getTableFilterState('filter')['language_id'] ?? null;
         if ($languageId !== null && $languageId !== '') {
-            $pageUrl = $record->pageUrls->firstWhere('language_id', $languageId);
+            $pageUrl = $pageUrls->firstWhere('language_id', $languageId);
         }
 
-        if ($pageUrl === null) {
-            $pageUrl = $record->pageUrls->first();
-        }
+        $pageUrl ??= $pageUrls->first();
 
         if ($pageUrl === null) {
             return null;
@@ -303,10 +344,10 @@ class ArticlePagesTable implements TableConfigurator
             SqlFragment::raw('COALESCE(' . $grammar->wrap('site_domains.path') . ", '')"),
             SqlFragment::raw($grammar->wrap('page_urls.url')),
         );
-        (new SqlFragment(
+        new SqlFragment(
             $url->sql . ' like ?',
             [...$url->bindings, sprintf('%%%s%%', $search)],
-        ))->applyWhere($query->getQuery());
+        )->applyWhere($query->getQuery());
 
         return $query;
     }
@@ -456,9 +497,11 @@ class ArticlePagesTable implements TableConfigurator
             /** @var class-string<Article> $model */
             $model = Article::class;
 
+            $canonicalPageName = $model::query()->where('id', $data['canonical_page_id'])->value('name');
+
             $indicators['canonical_page_id'] = __(
                 'capell-admin::filter.canonical_page',
-                ['search' => $model::query()->where('id', $data['canonical_page_id'])->value('name')],
+                ['search' => is_scalar($canonicalPageName) ? (string) $canonicalPageName : null],
             );
         }
 
@@ -541,10 +584,10 @@ class ArticlePagesTable implements TableConfigurator
             $translation = CapellDatabase::for($query->getModel())
                 ->queryDialect()
                 ->jsonExtract($name, '$.' . $code);
-            (new SqlFragment(
+            new SqlFragment(
                 $translation->sql . ' IS NOT NULL',
                 $translation->bindings,
-            ))->applyWhere($query->getQuery());
+            )->applyWhere($query->getQuery());
         }
     }
 
@@ -579,7 +622,7 @@ class ArticlePagesTable implements TableConfigurator
         if (is_scalar($value) && $value !== '') {
             $indicators['tags'] = __(
                 'capell-layout-builder::filter.tag',
-                ['search' => Tag::query()->find((int) $value)?->getTranslation('name', app()->getLocale())],
+                ['search' => is_scalar($value = Tag::query()->find((int) $value)?->getTranslation('name', app()->getLocale())) ? (string) $value : null],
             );
         }
 

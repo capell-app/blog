@@ -162,17 +162,6 @@ class Article extends Model implements Blueprintable, DraftableContract, HasMedi
         return ! (bool) ($this->blueprint?->meta['disable_visit_logs'] ?? false);
     }
 
-    /**
-     * Mirror Page's content_structure accessor so shared admin page forms
-     * (inherited via EditPage) can read the active authoring mode off an
-     * Article record. Articles have no per-record override, so this resolves
-     * to the Blueprint default.
-     */
-    public function getContentStructureAttribute(): ?ContentStructure
-    {
-        return $this->blueprint?->content_structure;
-    }
-
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
@@ -368,16 +357,16 @@ class Article extends Model implements Blueprintable, DraftableContract, HasMedi
             ->whereKeyNot($this->getKey())
             ->where('site_id', $this->site_id)
             ->where(function (Builder $query) use ($effectivePublishDateExpression, $currentPublishDate): void {
-                (new SqlFragment(
+                new SqlFragment(
                     $effectivePublishDateExpression->sql . ' > ?',
                     [...$effectivePublishDateExpression->bindings, $currentPublishDate],
-                ))->applyWhere($query->getQuery());
+                )->applyWhere($query->getQuery());
 
                 $query->orWhere(function (Builder $query) use ($effectivePublishDateExpression, $currentPublishDate): void {
-                    (new SqlFragment(
+                    new SqlFragment(
                         $effectivePublishDateExpression->sql . ' = ?',
                         [...$effectivePublishDateExpression->bindings, $currentPublishDate],
-                    ))->applyWhere($query->getQuery());
+                    )->applyWhere($query->getQuery());
 
                     $query->where('id', '>', $this->getKey());
                 });
@@ -403,16 +392,16 @@ class Article extends Model implements Blueprintable, DraftableContract, HasMedi
             ->whereKeyNot($this->getKey())
             ->where('site_id', $this->site_id)
             ->where(function (Builder $query) use ($effectivePublishDateExpression, $currentPublishDate): void {
-                (new SqlFragment(
+                new SqlFragment(
                     $effectivePublishDateExpression->sql . ' < ?',
                     [...$effectivePublishDateExpression->bindings, $currentPublishDate],
-                ))->applyWhere($query->getQuery());
+                )->applyWhere($query->getQuery());
 
                 $query->orWhere(function (Builder $query) use ($effectivePublishDateExpression, $currentPublishDate): void {
-                    (new SqlFragment(
+                    new SqlFragment(
                         $effectivePublishDateExpression->sql . ' = ?',
                         [...$effectivePublishDateExpression->bindings, $currentPublishDate],
-                    ))->applyWhere($query->getQuery());
+                    )->applyWhere($query->getQuery());
 
                     $query->where('id', '<', $this->getKey());
                 });
@@ -438,10 +427,27 @@ class Article extends Model implements Blueprintable, DraftableContract, HasMedi
         });
     }
 
+    /**
+     * Mirror Page's content_structure accessor so shared admin page forms
+     * (inherited via EditPage) can read the active authoring mode off an
+     * Article record. Articles have no per-record override, so this resolves
+     * to the Blueprint default.
+     */
+    protected function getContentStructureAttribute(): ?ContentStructure
+    {
+        return $this->blueprint?->content_structure;
+    }
+
     /** @return array<array-key, mixed>|null */
     protected function getUrlParamsAttribute(): ?array
     {
-        return $this->blueprint->meta['url_params'] ?? null;
+        $meta = $this->blueprint?->getAttribute('meta');
+
+        if (! is_array($meta)) {
+            return null;
+        }
+
+        return is_array($meta['url_params'] ?? null) ? $meta['url_params'] : null;
     }
 
     #[Override]

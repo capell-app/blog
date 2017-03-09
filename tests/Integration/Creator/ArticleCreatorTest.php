@@ -63,11 +63,13 @@ it('creates and updates multilingual articles with portable translation metadata
         ],
     ], $site, new Collection([$english, $welsh]));
 
-    expect($article)->toBeInstanceOf(Article::class)
-        ->and($article->site_id)->toBe($site->getKey())
-        ->and($article->layout_id)->toBe($layout->getKey())
-        ->and($article->blueprint_id)->toBe($type->getKey())
-        ->and($article->meta['image_id'] ?? null)->toBe(123);
+    expect($article)->toBeInstanceOf(Article::class);
+    expect($article->site_id)->toBe($site->getKey());
+
+    $articleLayoutId = $article->getAttribute('layout_id');
+    expect(is_numeric($articleLayoutId) ? (int) $articleLayoutId : null)->toBe($layout->getKey());
+    expect($article->blueprint_id)->toBe($type->getKey());
+    expect($article->meta['image_id'] ?? null)->toBe(123);
 
     $englishTranslation = blogTestTranslation($article->translations()->where('language_id', $english->getKey())->first());
     $welshTranslation = blogTestTranslation($article->translations()->where('language_id', $welsh->getKey())->first());
