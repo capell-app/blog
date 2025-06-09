@@ -1,0 +1,41 @@
+{
+    "name": "capell-app/blog",
+    "description": "Blog for Capell",
+    "keywords": [
+        "capell",
+        "blog",
+        "laravel",
+        "filamentphp",
+        "cms"
+    ],
+    "homepage": "https://github.com/capell-app/blog",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Howdu",
+            "email": "cms.multi2@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.0|^8.1|^8.2",
+        "capell-app/admin": "*",
+        "capell-app/frontend": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Capell\\Blog\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Capell\\Blog\\BlogServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "prefer-stable": true
+}
