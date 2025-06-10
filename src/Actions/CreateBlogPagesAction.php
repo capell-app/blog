@@ -8,6 +8,8 @@ use Capell\Blog\Services\BlogCreator;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\Type;
+use Illuminate\Console\Command;
+use Lorisleiva\Actions\Concerns\AsCommand;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 /**
@@ -15,7 +17,10 @@ use Lorisleiva\Actions\Concerns\AsObject;
  */
 class CreateBlogPagesAction
 {
+    use AsCommand;
     use AsObject;
+
+    public string $commandSignature = 'capell-blog:create-pages {site : The ID of the site to create blog pages for}';
 
     public function handle(Site $site): void
     {
@@ -38,5 +43,28 @@ class CreateBlogPagesAction
             pages: [$blogPage],
             languages: $site->languages
         );
+    }
+
+    public function asCommand(Command $command): void
+    {
+        $siteId = $command->argument('site');
+
+        if (empty($siteId)) {
+            $command->error('Site argument is required.');
+
+            return;
+        }
+
+        $site = Site::find($siteId);
+
+        if (! $site) {
+            $command->error('Site not found with ID: '.$siteId);
+
+            return;
+        }
+
+        $this->handle($site);
+
+        $command->info('Blog pages created successfully for site: '.$site->name);
     }
 }

@@ -6,6 +6,7 @@ namespace Capell\Blog;
 
 use Capell\Admin\Enums\SchemaEnum;
 use Capell\Admin\Facades\CapellAdmin;
+use Capell\Blog\Actions\CreateBlogPagesAction;
 use Capell\Blog\Actions\InstallBlogAction;
 use Capell\Blog\Commands\BlogDemoCommand;
 use Capell\Blog\Filament\Resources;
@@ -69,6 +70,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
             ->hasTranslations()
             ->hasCommands([
                 BlogDemoCommand::class,
+                CreateBlogPagesAction::class,
             ])
             ->hasInstallCommand(function (InstallCommand $command): void {
                 $command->startWith(function (): void {

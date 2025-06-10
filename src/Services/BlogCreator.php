@@ -312,7 +312,6 @@ class BlogCreator
             'name' => __('capell-blog::generic.article'),
             'type_id' => $type->id,
             'meta' => [
-                'size' => 'lg',
                 'with_published' => true,
                 'with_author' => false,
                 'with_tags' => true,
