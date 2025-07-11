@@ -18,7 +18,7 @@ class ArchivePage extends AbstractPage
 
     public ?int $year = null;
 
-    protected string $defaultView = 'capell::livewire.page.results';
+    protected static string $defaultView = 'capell::livewire.page.results';
 
     public function getPaginationPage($pageName = 'page')
     {
@@ -93,7 +93,7 @@ class ArchivePage extends AbstractPage
             withImage: $pageRecord->type->meta['with_image'] ?? false,
             withPagination: $pageRecord->type->meta['pagination'] ?? true,
             withParent: $pageRecord->type->meta['with_parent'] ?? false,
-            withPublished: $pageRecord->type->meta['with_published'] ?? false,
+            withDate: $pageRecord->type->meta['with_date'] ?? false,
             withTags: $pageRecord->type->meta['with_tags'] ?? false,
             paginationKey: $paginationKey,
             cacheKeyPrepend: sprintf('year-%s-month-%s', $this->year, $this->month),

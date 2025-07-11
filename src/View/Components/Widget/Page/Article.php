@@ -8,7 +8,7 @@ use Capell\Core\Models\Page;
 use Capell\Frontend\Facades\Frontend;
 use Capell\Frontend\Services\Loader\PageLoader;
 use Capell\Frontend\Services\Loader\TagLoader;
-use Capell\Frontend\View\Components\Widget\AbstractWidget;
+use Capell\Layout\View\Components\Widget\AbstractWidget;
 
 class Article extends AbstractWidget
 {
@@ -23,7 +23,7 @@ class Article extends AbstractWidget
 
     public $tags = [];
 
-    protected string $defaultView = 'capell-blog::components.widget.page.article';
+    protected static string $defaultView = 'capell-blog::components.widget.page.article';
 
     public function render(array $data = [])
     {

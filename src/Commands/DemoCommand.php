@@ -5,19 +5,24 @@ declare(strict_types=1);
 namespace Capell\Blog\Commands;
 
 use Capell\Admin\Services\Creator\DemoCreator;
+use Capell\Blog\Actions\CreateBlogPagesAction;
+use Capell\Blog\Enums\BlogResourceEnum;
 use Capell\Blog\Services\Loader\BlogLoader;
+use Capell\Core\Enums\ModelEnum;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 use function Laravel\Prompts\multisearch;
 
-class BlogDemoCommand extends Command
+class DemoCommand extends Command
 {
     /**
      * The console command description.
@@ -31,7 +36,7 @@ class BlogDemoCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'capell-blog:demo {--site= : The ID of the site to insert demo pages into}';
+    protected $signature = 'capell-blog:demo {--author} {--sites=}';
 
     private DemoCreator $demoCreator;
 
@@ -40,14 +45,14 @@ class BlogDemoCommand extends Command
      */
     public function handle(): int
     {
-        $this->demoCreator = app(DemoCreator::class);
-
-        if ($this->option('site')) {
-            $siteIds = explode(',', (string) $this->option('site'));
+        if ($this->option('sites')) {
+            $siteIds = is_string($this->option('sites'))
+                ? [$this->option('sites')]
+                : $this->option('sites');
         } else {
             $siteIds = multisearch(
                 'Select a site to insert demo pages',
-                options: fn (string $search) => CapellCore::getModel('site')::query()
+                options: fn (string $search) => CapellCore::getModel(ModelEnum::Site)::query()
                     ->when(
                         mb_strlen($search) > 0,
                         fn (Builder $query) => $query->where('name', 'like', sprintf('%%%s%%', $search))
@@ -65,12 +70,22 @@ class BlogDemoCommand extends Command
             );
         }
 
-        $sites = Site::whereIn('id', $siteIds)->get();
+        $user = $this->option('author') ? CapellCore::getModel('User')::find($this->option('author')) : null;
+
+        $this->demoCreator = new DemoCreator(author: $user);
+
+        $sites = Site::query()->with('languages')->whereIn('id', $siteIds)->get();
+
+        if ($sites->isEmpty()) {
+            throw new Exception('Unable to find any sites');
+        }
 
         foreach ($sites as $site) {
             $this->info(sprintf('Selected site: %s', $site->name));
 
-            if (! $this->createDemoPages($site)) {
+            CreateBlogPagesAction::run($site);
+
+            if (! $this->createDemoPages($site, $user)) {
                 $this->error('Failed to create demo pages for the selected site.');
 
                 return Command::FAILURE;
@@ -89,7 +104,8 @@ class BlogDemoCommand extends Command
         Language $defaultLanguage,
         null|bool|Page $parent = null,
         ?string $parent_name = '',
-        string $type = ''
+        string $type = '',
+        ?Model $author = null
     ): void {
         $name = Str::title($data['name'][$defaultLanguage->code]);
 
@@ -113,12 +129,13 @@ class BlogDemoCommand extends Command
                 defaultLanguage: $defaultLanguage,
                 parent: $parent === false ? false : $page,
                 parent_name: $full_name,
-                type: $type
+                type: $type,
+                author: $author
             );
         }
     }
 
-    private function createDemoPages(Site $site): bool
+    private function createDemoPages(Site $site, ?Model $user): bool
     {
         $blogPage = BlogLoader::getBlogPage($site);
 
@@ -139,7 +156,8 @@ class BlogDemoCommand extends Command
                 $site->languages,
                 $site->language,
                 parent: $blogPage,
-                type: 'article'
+                type: BlogResourceEnum::Article->name,
+                author: $user
             );
         }
 

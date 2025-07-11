@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Capell\Blog\Actions;
 
 use Capell\Blog\Services\BlogCreator;
+use Capell\Core\Enums\DefaultNavigationEnum;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\Type;
@@ -38,7 +39,7 @@ class CreateBlogPagesAction
         BlogCreator::createArchivePage($site, $archivesPage, $archivePageType, $resultsLayout, $site->languages);
 
         BlogCreator::addPagesToNavigations(
-            ['main', 'footer'],
+            [DefaultNavigationEnum::Main->value, DefaultNavigationEnum::Footer->value],
             site: $site,
             pages: [$blogPage],
             languages: $site->languages

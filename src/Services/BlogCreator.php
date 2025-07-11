@@ -5,21 +5,29 @@ declare(strict_types=1);
 namespace Capell\Blog\Services;
 
 use Capell\Admin\Actions\AddPageToNavigationAction;
-use Capell\Admin\Enums\WidgetTypeEnum;
+use Capell\Admin\Enums\ContentEditorEnum;
 use Capell\Admin\Filament\Schemas\Page\ResultsPageSchema;
+use Capell\Admin\Filament\Schemas\Type\PageTypeSchema;
 use Capell\Admin\Services\Creator\LayoutCreator;
 use Capell\Admin\Services\Creator\PageTypeCreator;
-use Capell\Blog\Filament\Schemas\Page\ArticleDefaultPageSchema;
+use Capell\Blog\Enums\BlogResourceEnum;
+use Capell\Blog\Enums\BlogTypeGroupEnum;
+use Capell\Blog\Enums\WidgetComponentEnum as BlogWidgetComponentEnum;
+use Capell\Blog\Filament\Schemas\Page\ArticlePageSchema;
 use Capell\Blog\Filament\Schemas\Widget\ArticleWidgetSchema;
+use Capell\Core\Enums\LayoutGroupEnum;
 use Capell\Core\Enums\TypeEnum;
-use Capell\Core\Enums\WidgetComponentEnum;
+use Capell\Core\Enums\TypeGroupEnum;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\Navigation;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\Type;
-use Capell\Core\Models\Widget;
+use Capell\Layout\Enums\LayoutTypeEnum;
+use Capell\Layout\Enums\WidgetComponentEnum;
+use Capell\Layout\Enums\WidgetTypeEnum;
+use Capell\Layout\Models\Widget;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -107,19 +115,21 @@ class BlogCreator
             'type' => TypeEnum::Page,
         ], [
             'name' => __('capell-blog::generic.blog_archive_page'),
-            'group' => 'system',
+            'group' => TypeGroupEnum::System->value,
             'admin' => [
+                'type_schema' => PageTypeSchema::getKey(),
                 'schema' => ResultsPageSchema::getKey(),
                 'icon' => 'heroicon-o-archive-box',
             ],
             'meta' => [
-                'hidden' => true,
                 'accessible' => false,
+                'listable' => false,
+                'hidden_from_selection' => true,
                 'component' => 'capell-blog::livewire.page.archive',
                 'limit' => 10,
                 'pagination' => true,
                 'with_image' => true,
-                'with_published' => true,
+                'with_date' => true,
                 'with_summary' => true,
                 'with_tags' => true,
             ],
@@ -130,7 +140,7 @@ class BlogCreator
     {
         return Layout::firstOrCreate(['key' => 'archives'], [
             'name' => __('capell-blog::generic.archives_page'),
-            'group' => 'system',
+            'group' => LayoutGroupEnum::System->value,
             'containers' => [
                 'main' => [
                     'meta' => [
@@ -148,6 +158,7 @@ class BlogCreator
                         'override_columns' => 1,
                         'container' => 'full',
                         'padding' => ['md'],
+                        'html_class' => 'sidebar-sticky space-y-10 pt-10 pb-20',
                     ],
                     'widgets' => [
                         ['widget_key' => 'latest-articles'],
@@ -168,20 +179,17 @@ class BlogCreator
             'key' => 'archives',
         ], [
             'name' => __('capell-blog::generic.archive'),
-            'type_id' => Type::firstWhere(['key' => WidgetTypeEnum::System, 'type' => TypeEnum::Widget])?->id,
+            'type_id' => Type::firstWhere(['key' => WidgetTypeEnum::System, 'type' => LayoutTypeEnum::Widget])?->id,
             'meta' => [
                 'component' => 'capell-blog::widget.page.archives',
                 'page_group' => 'article',
                 'pagination' => true,
                 'with_image' => true,
-                'with_published' => true,
+                'with_date' => true,
                 'with_link_text' => true,
                 'with_summary' => true,
                 'with_tags' => true,
                 'margin' => ['b-lg'],
-            ],
-            'admin' => [
-                'notes' => 'Displays a list of archived pages grouped by year and month',
             ],
         ]);
 
@@ -255,7 +263,7 @@ class BlogCreator
         return Layout::firstOrCreate(['key' => 'article'], [
             'key' => 'article',
             'name' => __('capell-blog::generic.article'),
-            'group' => 'default',
+            'group' => LayoutGroupEnum::Default->value,
             'containers' => [
                 'main' => [
                     'meta' => [
@@ -273,6 +281,7 @@ class BlogCreator
                         'override_columns' => 1,
                         'container' => 'full',
                         'padding' => ['md'],
+                        'html_class' => 'sidebar-sticky space-y-10 pt-10 pb-20',
                     ],
                     'widgets' => [
                         ['widget_key' => 'related-pages'],
@@ -291,15 +300,14 @@ class BlogCreator
             'type' => TypeEnum::Page,
         ], [
             'name' => __('capell-blog::generic.article'),
-            'group' => 'article',
+            'group' => BlogTypeGroupEnum::Article->value,
             'admin' => [
-                'accessible' => false,
-                'content_editor' => 'ContentEditor',
+                'content_editor' => ContentEditorEnum::RichEditor->value,
                 'icon' => 'heroicon-o-newspaper',
-                'schema' => ArticleDefaultPageSchema::getKey(),
-                'resource' => 'article',
+                'type_schema' => PageTypeSchema::getKey(),
+                'schema' => ArticlePageSchema::getKey(),
+                'resource' => BlogResourceEnum::Article->name,
                 'with_tags' => true,
-                'exclude' => true,
             ],
         ]);
     }
@@ -312,13 +320,10 @@ class BlogCreator
             'name' => __('capell-blog::generic.article'),
             'type_id' => $type->id,
             'meta' => [
-                'with_published' => true,
+                'with_date' => true,
                 'with_author' => false,
                 'with_tags' => true,
                 'with_next_prev' => true,
-            ],
-            'admin' => [
-                'notes' => 'Article content, including title, author, and tags, with navigation to next and previous articles',
             ],
         ]);
     }
@@ -327,11 +332,12 @@ class BlogCreator
     {
         return Type::firstOrCreate([
             'key' => 'article',
-            'type' => TypeEnum::Widget,
+            'type' => LayoutTypeEnum::Widget,
         ], [
             'name' => __('capell-blog::generic.article'),
-            'group' => 'system',
+            'group' => TypeGroupEnum::System->value,
             'admin' => [
+                'type_schema' => PageTypeSchema::getKey(),
                 'schema' => ArticleWidgetSchema::getKey(),
                 'icon' => 'heroicon-o-newspaper',
             ],
@@ -401,19 +407,23 @@ class BlogCreator
             'type' => TypeEnum::Page,
         ], [
             'name' => __('capell-blog::generic.blog'),
-            'group' => 'system',
+            'group' => TypeGroupEnum::System->value,
             'admin' => [
+                'type_schema' => PageTypeSchema::getKey(),
                 'schema' => ResultsPageSchema::getKey(),
                 'icon' => 'heroicon-o-newspaper',
+                'exclude_parent',
             ],
             'meta' => [
-                'component' => 'capell-blog::livewire.page.blog',
+                'component' => BlogWidgetComponentEnum::BlogPage,
                 'page_group' => 'article',
                 'limit' => 10,
                 'pagination' => true,
-                'exclude_parent_page' => true,
+                'accessible' => false,
+                'listable' => false,
+                'exclude_parent' => true,
                 'with_image' => true,
-                'with_published' => true,
+                'with_date' => true,
                 'with_summary' => true,
                 'with_tags' => true,
             ],
@@ -429,21 +439,20 @@ class BlogCreator
         $widget = Widget::firstOrCreate([
             'key' => 'latest-articles',
         ], [
-            'name' => __('capell-blog::generic.blog'),
-            'type_id' => Type::firstWhere(['key' => WidgetTypeEnum::PageResults, 'type' => TypeEnum::Widget])?->id,
+            'name' => __('capell-blog::generic.latest_articles'),
+            'type_id' => Type::firstWhere(['key' => WidgetTypeEnum::PageResults, 'type' => LayoutTypeEnum::Widget])?->id,
             'meta' => [
                 'component' => WidgetComponentEnum::LivewirePages,
                 'limit' => 5,
                 'page_group' => 'article',
                 'pagination' => false,
-                'with_published' => true,
-                'with_summary' => true,
+                'with_date' => true,
+                'with_image' => true,
                 'with_link_text' => true,
                 'margin' => ['b-lg'],
             ],
             'admin' => [
                 'icon' => 'heroicon-o-newspaper',
-                'notes' => 'Displays a list of the latest articles',
             ],
         ]);
 

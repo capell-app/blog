@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Filament\Schemas\Widget;
 
-use Capell\Admin\Filament\Components\Forms\Widget\Tab\WidgetSettingsTab;
-use Capell\Admin\Filament\Components\Forms\Widget\WidgetAdminSchema;
-use Capell\Admin\Filament\Components\Forms\Widget\WidgetSettingsSchema;
-use Capell\Admin\Filament\Schemas\AbstractSchema;
+use Capell\Layout\Filament\Components\Forms\Widget\Tab\WidgetDisplayTab;
+use Capell\Layout\Filament\Components\Forms\Widget\WidgetAdminSchema;
+use Capell\Layout\Filament\Components\Forms\Widget\WidgetSettingsSchema;
+use Capell\Layout\Filament\Schemas\AbstractWidgetSchema;
 use Filament\Forms;
 
-class ArticleWidgetSchema extends AbstractSchema
+class ArticleWidgetSchema extends AbstractWidgetSchema
 {
     public static function make(Forms\Form $form): array
     {
@@ -35,13 +35,14 @@ class ArticleWidgetSchema extends AbstractSchema
                     ->visibleOn(['edit', 'editOption'])
                     ->columnSpanFull()
                     ->tabs([
-                        WidgetSettingsTab::make([
+                        WidgetDisplayTab::make([
                             ...WidgetSettingsSchema::make($form),
                             self::getArticleSettingsSchema(),
                         ]),
                         Forms\Components\Tabs\Tab::make(__('capell-admin::generic.admin'))
                             ->statePath('admin')
-                            ->icon('heroicon-o-cog')
+                            ->icon('heroicon-o-cog-6-tooth')
+                            ->columns(['md' => 2])
                             ->schema([
                                 WidgetAdminSchema::make(),
                             ]),
@@ -57,7 +58,7 @@ class ArticleWidgetSchema extends AbstractSchema
             ->columns(['default' => 1, 'md' => 2, 'lg' => 4])
             ->columnSpanFull()
             ->schema([
-                Forms\Components\Checkbox::make('with_published')
+                Forms\Components\Checkbox::make('with_date')
                     ->label(__('capell-admin::form.published_date')),
                 Forms\Components\Checkbox::make('with_next_prev')
                     ->label(__('capell-admin::form.next_prev')),

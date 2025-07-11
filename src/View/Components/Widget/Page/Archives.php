@@ -7,7 +7,7 @@ namespace Capell\Blog\View\Components\Widget\Page;
 use Capell\Blog\Services\Loader\BlogLoader;
 use Capell\Core\Models\Page;
 use Capell\Frontend\Facades\Frontend;
-use Capell\Frontend\View\Components\Widget\AbstractWidget;
+use Capell\Layout\View\Components\Widget\AbstractWidget;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
@@ -17,7 +17,7 @@ class Archives extends AbstractWidget
 
     protected Collection|LengthAwarePaginator $archives;
 
-    protected string $defaultView = 'capell::components.widget.page.archives';
+    protected static string $defaultView = 'capell-layout::components.widget.page.archives';
 
     public function render(array $data = [])
     {

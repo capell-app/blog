@@ -4,36 +4,40 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Filament\Resources;
 
-use Capell\Admin\Enums\SchemaEnum;
 use Capell\Admin\Filament\Resources\PageResource;
+use Capell\Blog\Actions\GetArticleLayoutAction;
+use Capell\Blog\Enums\BlogModelEnum;
+use Capell\Blog\Enums\BlogResourceEnum;
+use Capell\Blog\Enums\BlogTypeGroupEnum;
 use Capell\Blog\Filament\Resources\ArticleResource\Pages;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Services\Loader\BlogLoader;
+use Capell\Core\Actions\GetNameFromTranslationsAction;
+use Capell\Core\Enums\ModelEnum;
 use Capell\Core\Facades\CapellCore;
+use Filament\Forms\Form;
 use Illuminate\Contracts\Database\Eloquent\Builder as BuilderContract;
 use Override;
 
 class ArticleResource extends PageResource
 {
-    protected static string $adminResourceName = 'article';
+    protected static string $adminResourceName = BlogResourceEnum::Article->name;
 
     protected static ?int $navigationSort = 2;
 
     protected static ?string $slug = 'article';
-
-    protected static bool $withParent = false;
-
-    public static function getResourceType(): SchemaEnum
-    {
-        return SchemaEnum::Page;
-    }
 
     /**
      * @return class-string<Article>
      */
     public static function getModel(): string
     {
-        return CapellCore::getModel('article');
+        return CapellCore::getModel(BlogModelEnum::Article->name);
+    }
+
+    public static function getResourceType(): string
+    {
+        return 'Page';
     }
 
     public static function getLabel(): string
@@ -66,26 +70,51 @@ class ArticleResource extends PageResource
     }
 
     #[Override]
+    public static function getFormSchema(Form $form): array
+    {
+        return static::getFormTypeSchema($form);
+    }
+
+    #[Override]
     public static function mutateFormDataBeforeCreate(array &$data = [], array $formData = []): void
     {
-        /* @var \Capell\Core\Models\Layout $model */
-        $model = CapellCore::getModel('layout');
+        $data['layout_id'] = GetArticleLayoutAction::run()?->id;
 
-        $data['layout_id'] = $model::query()->where('key', 'article')->value('id');
+        /* @var class-string<\Capell\Core\Models\Type> $model */
+        $model = CapellCore::getModel(ModelEnum::Type);
 
-        /* @var \Capell\Core\Models\Type $model */
-        $model = CapellCore::getModel('type');
+        $data['type_id'] = $model::query()
+            ->pageType()
+            ->where('group', BlogTypeGroupEnum::Article)
+            ->value('id');
 
-        $data['type_id'] = $model::query()->pageType()->where('group', 'article')->value('id');
+        $siteId = $data['site_id'] ?? $formData['site_id'] ?? null;
+
+        /* @var class-string<\Capell\Core\Models\Site> $model */
+        $model = CapellCore::getModel(ModelEnum::Site);
+
+        $site = $model::find($siteId) ?: $model::default()->first();
+
+        if (! $site) {
+            return;
+        }
+
+        if (empty($data['site_id'])) {
+            $data['site_id'] = $site->id;
+        }
 
         if (empty($data['parent_uuid'])) {
-            $data['parent_uuid'] = BlogLoader::getBlogPage(CapellCore::getModel('site')::find($data['site_id']))?->uuid;
+            $data['parent_uuid'] = BlogLoader::getBlogPage($site)?->uuid;
+        }
+
+        if (empty($data['name']) && ! empty($data['translations'])) {
+            $data['name'] = GetNameFromTranslationsAction::run(collect($data['translations']), $site);
         }
     }
 
     #[Override]
     protected static function applyTypeAdminResourceConstraint(BuilderContract $query, bool $showSystem = false): void
     {
-        $query->where('group', 'article');
+        $query->where('group', BlogTypeGroupEnum::Article);
     }
 }

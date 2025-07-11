@@ -10,7 +10,7 @@ use Capell\Frontend\Services\Loader\PageLoader;
 
 class BlogPage extends AbstractPage
 {
-    protected string $defaultView = 'capell::livewire.page.results';
+    protected static string $defaultView = 'capell::livewire.page.results';
 
     protected function loadPage(): void
     {
@@ -28,7 +28,7 @@ class BlogPage extends AbstractPage
             withImage: $pageRecord->type->meta['with_image'] ?? false,
             withPagination: $pageRecord->type->meta['pagination'] ?? true,
             withParent: $pageRecord->type->meta['with_parent'] ?? false,
-            withPublished: $pageRecord->type->meta['with_published'] ?? false,
+            withDate: $pageRecord->type->meta['with_date'] ?? false,
             withTags: $pageRecord->type->meta['with_tags'] ?? false,
             paginationKey: $paginationKey,
         );

@@ -13,7 +13,7 @@ use Lorisleiva\Actions\Concerns\AsObject;
 /**
  * @method static void run()
  */
-class InstallBlogAction
+class InstallBlogPackageAction
 {
     use AsObject;
 
