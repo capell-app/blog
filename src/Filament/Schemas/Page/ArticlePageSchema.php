@@ -7,7 +7,7 @@ namespace Capell\Blog\Filament\Schemas\Page;
 use BezhanSalleh\FilamentShield\Support\Utils;
 use Capell\Admin\Actions\FixCuratorMetaDataAction;
 use Capell\Admin\Filament\Components\Forms\FixedWidthSidebar;
-use Capell\Admin\Filament\Components\Forms\ImageMediaPicker;
+use Capell\Admin\Filament\Components\Forms\Media\ImageMediaPicker;
 use Capell\Admin\Filament\Components\Forms\Page\LayoutSelect;
 use Capell\Admin\Filament\Components\Forms\Page\PagePublishSection;
 use Capell\Admin\Filament\Components\Forms\Page\PageSettingsSchema;
