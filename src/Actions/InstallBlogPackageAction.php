@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Actions;
 
+use Capell\Admin\Enums\LayoutEnum;
 use Capell\Blog\Services\BlogCreator;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\Site;
+use Capell\Core\Models\Type;
+use Capell\Layout\Enums\LayoutTypeEnum;
+use Capell\Layout\Enums\WidgetTypeEnum;
 use Exception;
 use Lorisleiva\Actions\Concerns\AsObject;
 
@@ -19,28 +23,36 @@ class InstallBlogPackageAction
 
     public function handle(): void
     {
+        $blogCreator = app(BlogCreator::class);
+
         // Widgets
-        BlogCreator::createArticleWidget(BlogCreator::createArticleWidgetType());
-        $latestArticlesWidget = BlogCreator::createLatestArticlesWidget();
-        $archivesWidget = BlogCreator::createArchivesListWidget();
+        $blogCreator->createArticleWidget($blogCreator->createArticleWidgetType());
+
+        $latestArticlesWidget = $blogCreator->createLatestArticlesWidget();
+        $archivesWidget = $blogCreator->createArchivesListWidget();
 
         // Layouts
-        BlogCreator::createArticleLayout();
-        BlogCreator::createArchivesLayout();
+        $blogCreator->createArticleLayout();
+        $blogCreator->createArchivesLayout();
+        $blogCreator->createBlogPageLayout();
+        $blogCreator->createTagsLayout();
 
-        foreach (['results', 'tags', 'default'] as $layoutKey) {
-            $layout = Layout::firstWhere('key', $layoutKey);
+        $layouts = [
+            LayoutEnum::Results,
+            LayoutEnum::Default,
+        ];
 
-            if (! $layout) {
-                throw new Exception(sprintf('Layout with key %s not found.', $layoutKey));
-            }
+        foreach ($layouts as $layoutKey) {
+            $layout = Layout::query()->firstWhere('key', $layoutKey);
+
+            throw_unless($layout, Exception::class, sprintf('Layout with key %s not found.', $layoutKey->value));
 
             $containers = $layout->containers;
 
             if (! in_array($latestArticlesWidget->key, array_column($containers['sidebar']['widgets'], 'widget_key'), true)) {
                 $containers['sidebar']['widgets'] = array_filter(
                     $containers['sidebar']['widgets'],
-                    fn (array $widget): bool => $widget['widget_key'] !== 'latest-pages'
+                    fn (array $widget): bool => $widget['widget_key'] !== 'latest-pages',
                 );
 
                 $containers['sidebar']['widgets'][] = [
@@ -58,10 +70,19 @@ class InstallBlogPackageAction
         }
 
         // Page Types
-        BlogCreator::createArticlePageType();
-        BlogCreator::createArchivePageType();
-        BlogCreator::createBlogPageType();
+        $blogCreator->createArticlePageType();
+        $blogCreator->createArchivePageType();
+        $blogCreator->createBlogPageType();
+        $blogCreator->createTagPageType();
 
-        Site::with('languages')->each(fn (Site $site) => CreateBlogPagesAction::run($site));
+        $resultsWidgetType = Type::query()->firstWhere(['key' => WidgetTypeEnum::PageResults, 'type' => LayoutTypeEnum::Widget])?->id;
+
+        Site::with('languages')->each(function (Site $site) use ($blogCreator, $resultsWidgetType): void {
+            $blogCreator->createTagsWidget($site->languages);
+
+            $blogCreator->relatedPagesWidget(type: $resultsWidgetType, languages: $site->languages);
+
+            CreateBlogPagesAction::run($site);
+        });
     }
 }

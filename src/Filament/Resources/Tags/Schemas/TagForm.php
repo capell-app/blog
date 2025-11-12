@@ -1,0 +1,62 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Capell\Blog\Filament\Resources\Tags\Schemas;
+
+use Capell\Admin\Filament\Components\Forms\NameInput;
+use Capell\Admin\Filament\Components\Forms\Site\SiteSelect;
+use Capell\Admin\Filament\Components\Forms\StatusToggle;
+use Capell\Admin\Filament\Contracts\FormConfigurator;
+use Capell\Admin\Services\SlugGenerator;
+use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+
+class TagForm implements FormConfigurator
+{
+    public static function configure(Schema $schema): Schema
+    {
+        return $schema->components(self::getFormSchema($schema))->columns();
+    }
+
+    protected static function getFormSchema(Schema $schema): array
+    {
+        return [
+            Section::make()
+                ->columns()
+                ->columnSpanFull()
+                ->contained(in_array($schema->getOperation(), ['create', 'edit']))
+                ->schema([
+                    NameInput::make('name')
+                        ->afterStateUpdatedJs(
+                            fn (NameInput $component): string => SlugGenerator::slugifyState("\$state ?? ''", 'slug'),
+                        ),
+
+                    TextInput::make('slug')
+                        ->label(__('capell-admin::form.slug'))
+                        ->alphaDash()
+                        ->required()
+                        ->maxLength(128)
+                        ->required(),
+
+                    TextInput::make('type')
+                        ->label(__('capell-admin::form.type'))
+                        ->default('page'),
+
+                    SiteSelect::make('site_id'),
+
+                    Grid::make()
+                        ->schema([
+                            Checkbox::make('featured')
+                                ->label(__('capell-admin::form.featured'))
+                                ->helperText(__('capell-admin::generic.featured_hint')),
+
+                            StatusToggle::make('status'),
+                        ]),
+                ]),
+        ];
+    }
+}

@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Livewire\Page;
 
-use Capell\Frontend\Facades\Frontend;
-use Capell\Frontend\Facades\FrontendManager;
+use Capell\Blog\Enums\BlogResourceEnum;
+use Capell\Frontend\CapellFrontendManager;
+use Capell\Frontend\Facades\FrontendLoader;
 use Capell\Frontend\Livewire\Page\AbstractPage;
 use Capell\Frontend\Services\Loader\PageLoader;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 
 class ArchivePage extends AbstractPage
@@ -30,13 +31,13 @@ class ArchivePage extends AbstractPage
      */
     protected function getArchiveDateFromUrl(): array
     {
-        $current = Frontend::getPageSlug();
+        $current = FrontendLoader::getPageSlug();
 
         $month = null;
         $year = null;
 
         if ($current === '' || $current === '0') {
-            FrontendManager::throwErrorPage();
+            CapellFrontendManager::throwErrorPage();
         }
 
         $parts = explode('/', $current);
@@ -53,7 +54,7 @@ class ArchivePage extends AbstractPage
         }
 
         if (! is_numeric($current) && ($year === 0 || $year === null)) {
-            FrontendManager::throwErrorPage();
+            CapellFrontendManager::throwErrorPage();
         }
 
         return [$year, $month];
@@ -61,7 +62,7 @@ class ArchivePage extends AbstractPage
 
     protected function getViewData(): array
     {
-        $date = Carbon::create()->day(1)->month($this->month)->year($this->year);
+        $date = Date::create()->day(1)->month($this->month)->year($this->year);
 
         return [
             'archive_date' => $date,
@@ -76,50 +77,49 @@ class ArchivePage extends AbstractPage
             [$this->year, $this->month] = $this->getArchiveDateFromUrl();
         }
 
-        if (($this->year === null || $this->year === 0) && ($this->month === null || $this->month === 0)) {
-            abort(404);
-        }
+        abort_if(($this->year === null || $this->year === 0) && ($this->month === null || $this->month === 0), 404);
 
-        $pageRecord = Frontend::getPage();
+        $page = FrontendLoader::getPage();
 
         $paginationKey = config('capell-admin.page_query', 'pageQuery');
 
         $this->results = PageLoader::getPages(
-            site: Frontend::getSite(),
-            language: Frontend::getLanguage(),
-            limit: $pageRecord->type->meta['limit'] ?? config('capell-frontend.pagination_limit', 12),
+            site: FrontendLoader::getSite(),
+            language: FrontendLoader::getLanguage(),
+            limit: $page->type->meta['limit'] ?? config('capell-frontend.pagination_limit', 12),
             paginationPage: $this->getPage($paginationKey),
-            typeKey: $pageRecord->type->meta['page_group'] ?? 'article',
-            withImage: $pageRecord->type->meta['with_image'] ?? false,
-            withPagination: $pageRecord->type->meta['pagination'] ?? true,
-            withParent: $pageRecord->type->meta['with_parent'] ?? false,
-            withDate: $pageRecord->type->meta['with_date'] ?? false,
-            withTags: $pageRecord->type->meta['with_tags'] ?? false,
+            typeKey: $page->type->meta['page_group'] ?? BlogResourceEnum::Article->value,
+            withImage: $page->type->meta['with_image'] ?? false,
+            withPagination: $page->type->meta['pagination'] ?? true,
+            withParent: $page->type->meta['with_parent'] ?? false,
+            withDate: $page->type->meta['with_date'] ?? false,
             paginationKey: $paginationKey,
             cacheKeyPrepend: sprintf('year-%s-month-%s', $this->year, $this->month),
             modifyQuery: function (Builder $query) {
                 if (DB::getDriverName() === 'sqlite') {
                     return $query->when(
                         $this->year,
-                        fn (Builder $query) => $query->whereRaw("strftime('%Y', COALESCE(`publish_from`, `created_at`)) = ".(int) $this->year)
+                        fn (Builder $query) => $query->whereRaw("strftime('%Y', COALESCE(`publish_from`, `created_at`)) = " . (int) $this->year),
                     )
                         ->when(
-                            $this->month, fn (Builder $query) => $query->whereRaw("strftime('%m', COALESCE(`publish_from`, `created_at`)) = ".(int) $this->month)
+                            $this->month,
+                            fn (Builder $query) => $query->whereRaw("strftime('%m', COALESCE(`publish_from`, `created_at`)) = " . (int) $this->month),
                         );
                 }
 
                 return $query->when(
                     $this->year,
-                    fn (Builder $query) => $query->whereRaw('YEAR(COALESCE(`publish_from`, `created_at`)) = '.(int) $this->year)
+                    fn (Builder $query) => $query->whereRaw('YEAR(COALESCE(`publish_from`, `created_at`)) = ' . (int) $this->year),
                 )
                     ->when(
-                        $this->month, fn (Builder $query) => $query->whereRaw('MONTH(COALESCE(`publish_from`, `created_at`)) = '.(int) $this->month)
+                        $this->month,
+                        fn (Builder $query) => $query->whereRaw('MONTH(COALESCE(`publish_from`, `created_at`)) = ' . (int) $this->month),
                     );
-            }
+            },
         );
 
         $this->pageParams = $this->getViewData();
 
-        Frontend::setPageParams($this->pageParams);
+        FrontendLoader::setPageParams($this->pageParams);
     }
 }

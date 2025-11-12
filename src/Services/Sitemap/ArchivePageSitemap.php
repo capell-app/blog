@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Capell\Blog\Services\Sitemap;
 
 use Capell\Blog\Services\Loader\BlogLoader;
-use Capell\Core\Actions\EditPageUrlAction;
+use Capell\Core\Actions\GetEditPageResourceUrlAction;
 use Capell\Core\Data\ArchiveMonthData;
 use Capell\Core\Data\SitemapPageData;
 use Capell\Core\Enums\ModelEnum;
@@ -36,7 +36,7 @@ class ArchivePageSitemap extends AbstractSitemapPages
                     'label' => $archivesPage->translation->title,
                     'url' => $archivePage->pageUrl->full_url,
                     'children' => $this->getArchivePages($archivePage),
-                    'editUrl' => $this->withEditUrl ? EditPageUrlAction::run($archivePage) : null,
+                    'editUrl' => $this->withEditUrl ? GetEditPageResourceUrlAction::run($archivePage) : null,
                 ])
                     ->toArray(),
             ]);
@@ -46,9 +46,9 @@ class ArchivePageSitemap extends AbstractSitemapPages
     public function format(ArchiveMonthData $monthData, Page $archivePage): SitemapPageData
     {
         return SitemapPageData::from([
-            'label' => $monthData->getDate()->format('F Y').' ('.$monthData->total.')',
-            'url' => $archivePage->pageUrl->full_url.sprintf('/%d-%d', $monthData->year, $monthData->month),
-            'editUrl' => $this->withEditUrl ? EditPageUrlAction::run($archivePage) : null,
+            'label' => $monthData->getDate()->format('F Y') . ' (' . $monthData->total . ')',
+            'url' => $archivePage->pageUrl->full_url . sprintf('/%d-%d', $monthData->year, $monthData->month),
+            'editUrl' => $this->withEditUrl ? GetEditPageResourceUrlAction::run($archivePage) : null,
         ]);
     }
 
@@ -58,7 +58,7 @@ class ArchivePageSitemap extends AbstractSitemapPages
             /** @var class-string<Page> $model */
             $model = CapellCore::getModel(ModelEnum::Page);
 
-            return $model::getPageByType('archive', $site, $language);
+            return $model::getFirstPageByTypeForSite('archive', $site, $language);
         });
     }
 

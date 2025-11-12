@@ -5,7 +5,7 @@ declare(strict_types=1);
 ?>
 
 @php
-    use Capell\Frontend\Facades\Frontend;
+    use Capell\Frontend\Facades\FrontendLoader;
 @endphp
 
 @props([
@@ -14,11 +14,10 @@ declare(strict_types=1);
     'containerWidth' => null,
     'loop',
     'widget',
-    'pageRecord' => Frontend::getPage(),
+    'page' => FrontendLoader::getPage(),
     'headingSize' => $widget->meta['heading_size'] ?? 'h1',
     'withAuthor' => $widget->meta['with_author'] ?? false,
     'withDate' => $widget->meta['with_date'] ?? false,
-    'withTags' => $widget->meta['with_tags'] ?? false,
     'withNextPrev' => $widget->meta['with_next_prev'] ?? false,
 ])
 <x-capell-layout::widget.wrapper
@@ -33,36 +32,36 @@ declare(strict_types=1);
     <div class="grid">
         <x-capell::content
             :$containerKey
-            :image="$pageRecord->image"
+            :image="$page->image"
             :heading-size="$headingSize"
-            :content="$pageRecord->translation->content"
-            :contents="$pageRecord->translation->content ? null : $pageRecord->translation->contents"
+            :content="$page->translation->content"
+            :presenter="$widget->type->meta['content_presenter'] ?? null"
             :text-align="$widget->meta['align'] ?? $widget->type->meta['align'] ?? null"
         >
             <div>
                 <x-capell::page.title
                     :$containerKey
                     :heading-size="$headingSize"
-                    :title="$pageRecord->translation->title"
+                    :title="$page->translation->title"
                 />
 
                 @if ($withDate)
                     <x-capell::page.published_date
                         class="mt-4 whitespace-nowrap"
-                        :date="$pageRecord->publish_from ?: $pageRecord->created_at"
+                        :date="$page->publish_from ?: $page->created_at"
                     />
                 @endif
             </div>
         </x-capell::content>
     </div>
 
-    @if (($withAuthor && $author) || ($withTags && $tags->isNotEmpty()))
+    @if (($withAuthor && $author) || $tags->isNotEmpty())
         <div class="mb-4 flex items-end justify-between">
             @if ($withAuthor && $author)
                 <x-capell::page.author :$author />
             @endif
 
-            @if ($withTags && $tags->isNotEmpty())
+            @if ($tags->isNotEmpty())
                 <div
                     class="flex flex-col items-center gap-x-10 gap-y-6 md:flex-row md:justify-between lg:flex-row-reverse"
                 >

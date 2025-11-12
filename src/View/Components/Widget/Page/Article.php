@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace Capell\Blog\View\Components\Widget\Page;
 
+use App\Models\User;
+use Capell\Blog\Services\Loader\TagLoader;
 use Capell\Core\Models\Page;
-use Capell\Frontend\Facades\Frontend;
+use Capell\Frontend\Facades\FrontendLoader;
 use Capell\Frontend\Services\Loader\PageLoader;
-use Capell\Frontend\Services\Loader\TagLoader;
 use Capell\Layout\View\Components\Widget\AbstractWidget;
 
 class Article extends AbstractWidget
 {
     // @phpstan-ignore-next-line
-    public ?\App\Models\User $author = null;
+    public ?User $author = null;
 
     public ?Page $nextPage = null;
 
@@ -39,21 +40,23 @@ class Article extends AbstractWidget
 
     protected function mountWidget(): void
     {
-        if (empty(Frontend::getPage()->type->meta['hidden']) && ! empty($this->widget->meta['with_next_prev'])) {
-            $this->previousPage = PageLoader::getPreviousPage(Frontend::getPage(), Frontend::getSite(), Frontend::getLanguage());
-            $this->nextPage = PageLoader::getNextPage(Frontend::getPage(), Frontend::getSite(), Frontend::getLanguage());
+        $page = FrontendLoader::getPage();
+        $language = FrontendLoader::getLanguage();
+        $site = FrontendLoader::getSite();
+
+        if (empty($page->type->meta['hidden']) && ! empty($this->widget->meta['with_next_prev'])) {
+            $this->previousPage = PageLoader::getPreviousPage($page, $site, $language);
+            $this->nextPage = PageLoader::getNextPage($page, $site, $language);
         }
 
-        if (! empty($this->widget->meta['with_author']) && ! empty(Frontend::getPage()->meta['author_id'])) {
-            $this->author = PageLoader::getPageAuthor(Frontend::getPage());
+        if (! empty($this->widget->meta['with_author']) && ! empty($page->meta['author_id'])) {
+            $this->author = PageLoader::getPageAuthor($page);
         }
 
-        if (! empty($this->widget->meta['with_tags'])) {
-            $this->tags = TagLoader::getPageTags(Frontend::getPage());
+        $this->tags = TagLoader::getPageTags($page);
 
-            if ($this->tags->isNotEmpty()) {
-                $this->tagPage = TagLoader::getTagResultsPage(Frontend::getSite(), Frontend::getLanguage());
-            }
+        if ($this->tags->isNotEmpty()) {
+            $this->tagPage = TagLoader::getTagResultsPage($site, $language);
         }
     }
 }

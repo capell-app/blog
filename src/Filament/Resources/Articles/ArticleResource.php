@@ -2,30 +2,39 @@
 
 declare(strict_types=1);
 
-namespace Capell\Blog\Filament\Resources;
+namespace Capell\Blog\Filament\Resources\Articles;
 
-use Capell\Admin\Filament\Resources\PageResource;
+use BackedEnum;
+use Capell\Admin\Enums\ResourceEnum;
+use Capell\Admin\Filament\Contracts\TableConfigurator;
+use Capell\Admin\Filament\Resources\Pages\PageResource;
 use Capell\Blog\Actions\GetArticleLayoutAction;
 use Capell\Blog\Enums\BlogModelEnum;
 use Capell\Blog\Enums\BlogResourceEnum;
 use Capell\Blog\Enums\BlogTypeGroupEnum;
-use Capell\Blog\Filament\Resources\ArticleResource\Pages;
+use Capell\Blog\Filament\Resources\Articles\Pages\CreateArticle;
+use Capell\Blog\Filament\Resources\Articles\Pages\EditArticle;
+use Capell\Blog\Filament\Resources\Articles\Pages\ListArticles;
+use Capell\Blog\Filament\Resources\Articles\Tables\ArticlePagesTable;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Services\Loader\BlogLoader;
 use Capell\Core\Actions\GetNameFromTranslationsAction;
 use Capell\Core\Enums\ModelEnum;
 use Capell\Core\Facades\CapellCore;
-use Filament\Forms\Form;
 use Illuminate\Contracts\Database\Eloquent\Builder as BuilderContract;
+use Illuminate\Contracts\Support\Htmlable;
 use Override;
 
 class ArticleResource extends PageResource
 {
-    protected static string $adminResourceName = BlogResourceEnum::Article->name;
+    protected static string $adminResourceName = BlogResourceEnum::Article->value;
 
     protected static ?int $navigationSort = 2;
 
     protected static ?string $slug = 'article';
+
+    /** @var class-string<TableConfigurator> */
+    protected static string $tableConfigurator = ArticlePagesTable::class;
 
     /**
      * @return class-string<Article>
@@ -37,7 +46,7 @@ class ArticleResource extends PageResource
 
     public static function getResourceType(): string
     {
-        return 'Page';
+        return ResourceEnum::Page->name;
     }
 
     public static function getLabel(): string
@@ -45,7 +54,7 @@ class ArticleResource extends PageResource
         return __('capell-blog::generic.article');
     }
 
-    public static function getNavigationIcon(): ?string
+    public static function getNavigationIcon(): string|BackedEnum|Htmlable|null
     {
         return 'heroicon-o-newspaper';
     }
@@ -58,9 +67,9 @@ class ArticleResource extends PageResource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListArticles::route('/'),
-            'create' => Pages\CreateArticle::route('/create'),
-            'edit' => Pages\EditArticle::route('/{record}/edit'),
+            'index' => ListArticles::route('/'),
+            'create' => CreateArticle::route('/create'),
+            'edit' => EditArticle::route('/{record}/edit'),
         ];
     }
 
@@ -70,13 +79,7 @@ class ArticleResource extends PageResource
     }
 
     #[Override]
-    public static function getFormSchema(Form $form): array
-    {
-        return static::getFormTypeSchema($form);
-    }
-
-    #[Override]
-    public static function mutateFormDataBeforeCreate(array &$data = [], array $formData = []): void
+    public static function mutateFormDataBeforeCreate(array &$data, array $formData = []): void
     {
         $data['layout_id'] = GetArticleLayoutAction::run()?->id;
 
@@ -88,7 +91,7 @@ class ArticleResource extends PageResource
             ->where('group', BlogTypeGroupEnum::Article)
             ->value('id');
 
-        $siteId = $data['site_id'] ?? $formData['site_id'] ?? null;
+        $siteId = $data['site_id'] ?? null;
 
         /* @var class-string<\Capell\Core\Models\Site> $model */
         $model = CapellCore::getModel(ModelEnum::Site);
@@ -103,17 +106,17 @@ class ArticleResource extends PageResource
             $data['site_id'] = $site->id;
         }
 
-        if (empty($data['parent_uuid'])) {
-            $data['parent_uuid'] = BlogLoader::getBlogPage($site)?->uuid;
+        if (empty($data['parent_id'])) {
+            $data['parent_id'] = BlogLoader::getBlogPage($site)?->id;
         }
 
-        if (empty($data['name']) && ! empty($data['translations'])) {
-            $data['name'] = GetNameFromTranslationsAction::run(collect($data['translations']), $site);
+        if (empty($data['name']) && ! empty($formData['translations'])) {
+            $data['name'] = GetNameFromTranslationsAction::run(collect($formData['translations']), $site);
         }
     }
 
     #[Override]
-    protected static function applyTypeAdminResourceConstraint(BuilderContract $query, bool $showSystem = false): void
+    public static function applyTypeAdminResourceConstraint(BuilderContract $query, ?bool $hideSystemPages = false): void
     {
         $query->where('group', BlogTypeGroupEnum::Article);
     }

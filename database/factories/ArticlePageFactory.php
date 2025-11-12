@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Capell\Blog\Database\Factories;
 
 use Capell\Admin\Enums\ContentEditorEnum;
-use Capell\Admin\Filament\Schemas\Type\PageTypeSchema;
+use Capell\Admin\Filament\Resources\Types\Schemas\Types\PageTypeSchema;
 use Capell\Blog\Enums\BlogResourceEnum;
 use Capell\Blog\Enums\BlogTypeGroupEnum;
-use Capell\Blog\Filament\Schemas\Page\ArticlePageSchema;
+use Capell\Blog\Filament\Resources\Articles\Schemas\Types\ArticlePageSchema;
+use Capell\Blog\Models\Tag;
 use Capell\Core\Database\Factories\PageFactory;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Type;
@@ -32,19 +33,31 @@ class ArticlePageFactory extends PageFactory
                         'icon' => 'heroicon-o-newspaper',
                         'type_schema' => PageTypeSchema::getKey(),
                         'schema' => ArticlePageSchema::getKey(),
-                        'resource' => BlogResourceEnum::Article->name,
-                        'with_tags' => true,
+                        'resource' => BlogResourceEnum::Article->value,
                         'exclude' => true,
                     ],
                 ]),
-            'parent_uuid' => null,
+            'parent_id' => null,
         ];
     }
 
     public function article(?Page $parent = null): self
     {
         return $this->state(fn (): array => [
-            'parent_uuid' => $parent?->getUuid(),
+            'parent_id' => $parent?->getKey(),
         ]);
+    }
+
+    public function withTags(): self
+    {
+        return $this->afterCreating(function (Page $page): void {
+            if (Tag::query()->count() < 10) {
+                Tag::factory()->count(3)->create();
+            }
+
+            $tags = Tag::query()->inRandomOrder()->limit(fake()->numberBetween(1, 3))->get();
+
+            $page->tags()->attach($tags);
+        });
     }
 }
