@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Filament\Components\Forms;
 
-use Capell\Blog\Enums\BlogModelEnum;
+use Capell\Blog\Enums\ModelEnum;
 use Capell\Blog\Models\Tag;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Language;
@@ -21,10 +21,10 @@ abstract class TagsInput extends SpatieTagsInput
     {
         parent::setUp();
 
-        $this->label(__('capell-admin::form.tags'))
+        $this->label(__('capell-blog::form.tags'))
             ->suggestions(function (self $component, Get $get): array {
                 /** @var class-string<Tag> $model */
-                $model = CapellCore::getModel(BlogModelEnum::Tag);
+                $model = CapellCore::getModel(ModelEnum::Tag);
 
                 return $model::where('type', $component->type)
                     ->where(

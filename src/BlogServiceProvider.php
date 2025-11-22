@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Capell\Blog;
 
-use Capell\Admin\Enums\ResourceEnum;
+use Capell\Admin\AdminServiceProvider;
+use Capell\Admin\Enums\ResourceEnum as AdminResourceEnum;
 use Capell\Admin\Enums\SchemaTypeEnum;
 use Capell\Admin\Facades\CapellAdmin;
-use Capell\Blog\Actions\InstallBlogPackageAction;
-use Capell\Blog\Enums\BlogModelEnum;
-use Capell\Blog\Enums\BlogResourceEnum;
+use Capell\Blog\Commands\CreateBlogPagesCommand;
+use Capell\Blog\Commands\DemoCommand; // new dedicated command
+use Capell\Blog\Commands\InstallCommand; // retained
+use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Enums\WidgetComponentEnum;
 use Capell\Blog\Enums\WidgetSchemaEnum;
 use Capell\Blog\Filament\Resources\Articles\Schemas\Types\ArticlePageSchema;
@@ -19,74 +21,48 @@ use Capell\Blog\Services\BlogCreator;
 use Capell\Blog\Services\Loader\BlogLoader;
 use Capell\Blog\Services\Sitemap\ArchivePageSitemap;
 use Capell\Blog\Services\Sitemap\TagPageSitemap;
-use Capell\Core\Enums\ModelEnum;
+use Capell\Core\Enums\ModelEnum as CoreModelEnum;
 use Capell\Core\Events\NavigationCreating;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\Type;
 use Capell\Core\Packages\AbstractPackageServiceProvider;
+use Capell\Frontend\FrontendServiceProvider;
 use Capell\Layout\Enums\ComponentTypeEnum;
-use Capell\Layout\Enums\LayoutModelEnum;
+use Capell\Layout\Enums\ModelEnum;
+use Capell\Layout\Enums\SchemaTypeEnum as LayoutSchemaEnum;
 use Capell\Layout\Models\Content;
 use Composer\InstalledVersions;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
-use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\View;
-use Illuminate\Support\Str;
 use Livewire\Livewire;
-use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 
 class BlogServiceProvider extends AbstractPackageServiceProvider
 {
     public static string $name = 'capell-blog';
 
+    public static string $packageName = 'capell-app/blog';
+
     public static string $description = 'Article page type with blog archives.';
 
     public function bootingPackage(): void
     {
-        Blade::componentNamespace('Capell\\Blog\\View\\Components', 'capell-blog');
-        Blade::anonymousComponentNamespace('Capell\\Blog\\View\\Components');
-
-        foreach (config('capell-blog.livewire_components', []) as $name => $class) {
-            Livewire::component($name, $class);
+        if (! $this->isPackageInstalled()) {
+            return;
         }
 
-        View::composer('capell::components.footer.index', function (\Illuminate\View\View $view): void {
-            $view->getFactory()->startPush('footer.components', view('capell-blog::components.footer.tags')->render());
-        });
-
-        if ($this->app->runningInConsole() && (class_exists(AboutCommand::class) && class_exists(InstalledVersions::class))) {
-            AboutCommand::add('Capell', [
-                self::$name => fn () => InstalledVersions::getPrettyVersion('capell-app/blog'),
-            ]);
+        // Skip boot-time registration chain when running unit tests.
+        if (! $this->app->runningUnitTests()) {
+            $this->registerAll();
         }
-
-        Event::listen(
-            NavigationCreating::class,
-            AddBlogPagesToNavigation::class,
-        );
 
         $this->registerPublishCommands();
-
-        CapellAdmin::serving(function (): void {
-            CapellCore::addDefaultPage('blog', 'Blog', function (Site $site, ?Type $languages): void {
-                (new BlogCreator)->createBlogPage($site, languages: $languages);
-            });
-
-            CapellCore::addDefaultPage('archives', 'Blog Archives', function (Site $site, ?Type $languages): void {
-                $blogPage = BlogLoader::getBlogPage($site);
-
-                $archivesPage = (new BlogCreator)->createArchivesPage($site, $blogPage, languages: $languages);
-
-                (new BlogCreator)->createArchivePage($site, $archivesPage, languages: $languages);
-            });
-        });
     }
 
     public function configurePackage(Package $package): void
@@ -96,72 +72,82 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
             ->hasConfigFile()
             ->hasViews(self::$name)
             ->hasTranslations()
-            ->hasInstallCommand(function (InstallCommand $command): void {
-                $command->startWith(function (InstallCommand $command): void {
-                    $command->info('Installing Capell Blog Package...');
-
-                    InstallBlogPackageAction::run();
-
-                    $command->call(
-                        'capell:publish-migrations',
-                        [
-                            '--items' => [
-                                'alter_tags_table',
-                            ],
-                            '--path' => __DIR__ . '/../database/migrations',
-                        ],
-                    );
-
-                    $command->info('Publishing Capell Blog...');
-                    $command->call('vendor:publish', ['--tag' => 'capell-blog-config']);
-                });
-            });
+            ->hasCommands([
+                CreateBlogPagesCommand::class,
+                DemoCommand::class,
+                InstallCommand::class,
+            ]);
     }
 
     public function registeringPackage(): void
     {
         parent::registeringPackage();
 
-        $this->registerRelationships();
+        $this->registerPackageMetadata();
 
+        // During unit tests we need the registration chain earlier.
+        if ($this->app->runningUnitTests()) {
+            $this->registerAll();
+        }
+    }
+
+    private function isPackageInstalled(): bool
+    {
+        return CapellCore::getPackage(static::$packageName)->isInstalled();
+    }
+
+    private function registerAll(): self
+    {
+        return $this
+            ->registerModels()
+            ->registerModelRelations()
+            ->registerBladeComponents()
+            ->registerLivewireComponents()
+            ->registerViewComposers()
+            ->registerAboutCommand()
+            ->registerNavigationListener()
+            ->registerRelationships()
+            ->registerAdminResources()
+            ->registerWidgetComponents()
+            ->registerSchemas()
+            ->registerSitemapPages()
+            ->registerDefaultPages();
+    }
+
+    private function registerPackageMetadata(): self
+    {
         CapellCore::registerPackage(
-            self::$name,
-            class: self::class,
+            static::$packageName,
+            type: static::getType(),
             path: __DIR__,
             sort: 9,
+            description: static::getDescription(),
             permissions: $this->getPackagePermissions(),
-            installCommand: true,
-            demoCommand: true,
+            installCommand: 'capell-blog:install',
+            demoCommand: 'capell-blog:demo', // unchanged signature now handled by DemoCommand
             demoParams: ['author', 'sites'],
+            requirements: [
+                AdminServiceProvider::$packageName,
+                FrontendServiceProvider::$packageName,
+            ],
+            version: $this->getVersion(),
+            url: 'https://capell.app',
         );
 
-        Relation::morphMap(
-            collect(BlogModelEnum::cases())
-                ->mapWithKeys(fn (BlogModelEnum $model): array => [Str::snake($model->name) => $model->value])
-                ->all(),
-        );
+        return $this;
+    }
 
-        CapellAdmin::registerResource(
-            ResourceEnum::Page,
-            class: BlogResourceEnum::Article->getResource(),
-            name: BlogResourceEnum::Article->value,
-        );
+    private function getVersion(): string
+    {
+        if (! class_exists(InstalledVersions::class)) {
+            return 'dev';
+        }
 
-        CapellAdmin::registerResource(BlogResourceEnum::Tag->name, class: BlogResourceEnum::Tag->getResource());
+        if (! InstalledVersions::isInstalled(static::$packageName)) {
+            return 'dev';
+        }
 
-        CapellCore::registerComponents(ComponentTypeEnum::Widget->value, WidgetComponentEnum::cases());
-
-        CapellAdmin::registerSchema(SchemaTypeEnum::Page, ArticlePageSchema::class);
-
-        CapellAdmin::registerSchemas(\Capell\Layout\Enums\SchemaTypeEnum::Widget->value, WidgetSchemaEnum::cases());
-
-        CapellCore::registerModels(BlogModelEnum::cases());
-
-        CapellCore::registerModelRelations(ModelEnum::Page, 'tags');
-        CapellCore::registerModelRelations(LayoutModelEnum::Content, 'tags');
-
-        CapellCore::addSitemapPages('archives', ArchivePageSitemap::class);
-        CapellCore::addSitemapPages('tags', TagPageSitemap::class);
+        return InstalledVersions::getPrettyVersion(static::$packageName) ?? 'dev';
     }
 
     private function getPackagePermissions(): array
@@ -178,6 +164,65 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
         ];
     }
 
+    private function registerModels(): self
+    {
+        BlogModelRegistrar::register();
+
+        return $this;
+    }
+
+    private function registerModelRelations(): self
+    {
+        CapellCore::registerModelRelations(CoreModelEnum::Page, 'tags');
+        CapellCore::registerModelRelations(ModelEnum::Content, 'tags');
+
+        return $this;
+    }
+
+    private function registerBladeComponents(): self
+    {
+        Blade::componentNamespace('Capell\\Blog\\View\\Components', 'capell-blog');
+        Blade::anonymousComponentNamespace('Capell\\Blog\\View\\Components');
+
+        return $this;
+    }
+
+    private function registerLivewireComponents(): self
+    {
+        foreach (config('capell-blog.livewire_components', []) as $name => $class) {
+            Livewire::component($name, $class);
+        }
+
+        return $this;
+    }
+
+    private function registerViewComposers(): self
+    {
+        View::composer('capell::components.footer.index', function (\Illuminate\View\View $view): void {
+            $view->getFactory()->startPush('footer.components', view('capell-blog::components.footer.tags')->render());
+        });
+
+        return $this;
+    }
+
+    private function registerAboutCommand(): self
+    {
+        if ($this->app->runningInConsole() && (class_exists(AboutCommand::class) && class_exists(InstalledVersions::class))) {
+            AboutCommand::add('Capell', [
+                self::$name => fn () => InstalledVersions::getPrettyVersion('capell-app/blog'),
+            ]);
+        }
+
+        return $this;
+    }
+
+    private function registerNavigationListener(): self
+    {
+        Event::listen(NavigationCreating::class, AddBlogPagesToNavigation::class);
+
+        return $this;
+    }
+
     private function registerPublishCommands(): self
     {
         $this->publishes([
@@ -191,7 +236,12 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
     {
         Page::resolveRelationUsing(
             'tags',
-            fn (Page $model): MorphToMany => $model->morphToMany(Tag::class, 'taggable', 'taggables'),
+            fn (Page $model): MorphToMany => $model->morphToMany(
+                Tag::class,
+                'taggable',
+                'taggables'
+            )
+                ->ordered()
         );
 
         Site::resolveRelationUsing(
@@ -210,6 +260,62 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
                 fn (Tag $model): MorphToMany => $model->morphedByMany(Content::class, 'taggable', 'taggables'),
             );
         }
+
+        return $this;
+    }
+
+    private function registerAdminResources(): self
+    {
+        CapellAdmin::registerResource(
+            AdminResourceEnum::Page,
+            class: ResourceEnum::Article->value,
+            name: strtolower(ResourceEnum::Article->name),
+        );
+
+        CapellAdmin::registerResource(ResourceEnum::Tag->name, class: ResourceEnum::Tag->value);
+
+        return $this;
+    }
+
+    private function registerWidgetComponents(): self
+    {
+        CapellCore::registerComponents(ComponentTypeEnum::Widget->value, WidgetComponentEnum::cases());
+
+        return $this;
+    }
+
+    private function registerSchemas(): self
+    {
+        CapellAdmin::registerSchema(SchemaTypeEnum::Page, ArticlePageSchema::class);
+
+        foreach (WidgetSchemaEnum::cases() as $schemas) {
+            CapellAdmin::registerSchema(LayoutSchemaEnum::Widget, $schemas->value);
+        }
+
+        return $this;
+    }
+
+    private function registerSitemapPages(): self
+    {
+        CapellCore::addSitemapPages('archives', ArchivePageSitemap::class);
+        CapellCore::addSitemapPages('tags', TagPageSitemap::class);
+
+        return $this;
+    }
+
+    private function registerDefaultPages(): self
+    {
+        CapellAdmin::serving(function (): void {
+            CapellCore::addDefaultPage('blog', 'Blog', function (Site $site, ?Type $languages): void {
+                (new BlogCreator)->createBlogPage($site, languages: $languages);
+            });
+
+            CapellCore::addDefaultPage('archives', 'Blog Archives', function (Site $site, ?Type $languages): void {
+                $blogPage = BlogLoader::getBlogPage($site);
+                $archivesPage = (new BlogCreator)->createArchivesPage($site, $blogPage, languages: $languages);
+                (new BlogCreator)->createArchivePage($site, $archivesPage, languages: $languages);
+            });
+        });
 
         return $this;
     }

@@ -10,7 +10,7 @@ use Capell\Admin\Filament\Concerns\HasNavigationBadge;
 use Capell\Admin\Filament\Concerns\HasTableConfigurator;
 use Capell\Admin\Filament\Contracts\FormConfigurator;
 use Capell\Admin\Filament\Contracts\TableConfigurator;
-use Capell\Blog\Enums\BlogModelEnum;
+use Capell\Blog\Enums\ModelEnum;
 use Capell\Blog\Filament\Resources\Tags\Pages\CreateTag;
 use Capell\Blog\Filament\Resources\Tags\Pages\EditTag;
 use Capell\Blog\Filament\Resources\Tags\Pages\ListTags;
@@ -62,17 +62,17 @@ class TagResource extends Resource
     #[Override]
     public static function getModel(): string
     {
-        return CapellCore::getModel(BlogModelEnum::Tag);
+        return CapellCore::getModel(ModelEnum::Tag);
     }
 
     public static function getNavigationGroup(): ?string
     {
-        return (string) (__('capell-admin::navigation.group_resources'));
+        return (string) (__('capell-admin::navigation.group_assets'));
     }
 
     public static function getNavigationLabel(): string
     {
-        return (string) (__('capell-admin::navigation.tags'));
+        return (string) (__('capell-layout::navigation.tags'));
     }
 
     public static function getPages(): array
@@ -99,6 +99,12 @@ class TagResource extends Resource
 
     public static function getTranslatableLocales(): array
     {
-        return Language::getLanguageLocales();
+        $locales = Language::getLanguageLocales();
+
+        if ($locales) {
+            return $locales;
+        }
+
+        throw new \RuntimeException('At least one language must be defined to use translatable features.');
     }
 }

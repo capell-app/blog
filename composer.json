@@ -20,7 +20,8 @@
     "require": {
         "php": "^8.2",
         "capell-app/admin": "*",
-        "capell-app/frontend": "*"
+        "capell-app/frontend": "*",
+        "filament/spatie-laravel-tags-plugin": "^4.0"
     },
     "autoload": {
         "psr-4": {

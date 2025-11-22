@@ -8,11 +8,9 @@ use Capell\Blog\Services\Loader\BlogLoader;
 use Capell\Core\Actions\GetEditPageResourceUrlAction;
 use Capell\Core\Data\ArchiveMonthData;
 use Capell\Core\Data\SitemapPageData;
-use Capell\Core\Enums\ModelEnum;
+use Capell\Core\Enums\ModelEnum as CoreModelEnum;
 use Capell\Core\Facades\CapellCore;
-use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
-use Capell\Core\Models\Site;
 use Capell\Core\Services\Sitemap\AbstractSitemapPages;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -24,7 +22,10 @@ class ArchivePageSitemap extends AbstractSitemapPages
         $cacheKey = sprintf('sitemap.archive_pages.%d.%d', $this->site->id, $this->language->id);
 
         return Cache::remember($cacheKey, 3600, function (): Collection {
-            $archivePage = $this->getArchivePage($this->site, $this->language);
+            /** @var class-string<Page> $model */
+            $model = CapellCore::getModel(CoreModelEnum::Page);
+
+            $archivePage = $model::getFirstPageByTypeForSite('archive', $this->site, $this->language);
             if (! $archivePage instanceof Page) {
                 return collect([]);
             }
@@ -50,16 +51,6 @@ class ArchivePageSitemap extends AbstractSitemapPages
             'url' => $archivePage->pageUrl->full_url . sprintf('/%d-%d', $monthData->year, $monthData->month),
             'editUrl' => $this->withEditUrl ? GetEditPageResourceUrlAction::run($archivePage) : null,
         ]);
-    }
-
-    private function getArchivePage(Site $site, Language $language): ?Page
-    {
-        return once(function () use ($site, $language): ?Page {
-            /** @var class-string<Page> $model */
-            $model = CapellCore::getModel(ModelEnum::Page);
-
-            return $model::getFirstPageByTypeForSite('archive', $site, $language);
-        });
     }
 
     private function getArchivePages(Page $archivePage): Collection

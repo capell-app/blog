@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Services\Sitemap;
 
+use Capell\Blog\Enums\BlogCacheEnum;
 use Capell\Blog\Models\Tag;
 use Capell\Core\Actions\GetEditPageResourceUrlAction;
 use Capell\Core\Data\SitemapPageData;
-use Capell\Core\Enums\CacheEnum;
-use Capell\Core\Enums\ModelEnum;
+use Capell\Core\Enums\ModelEnum as CoreModelEnum;
 use Capell\Core\Facades\CapellCore;
-use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
-use Capell\Core\Models\Site;
 use Capell\Core\Services\Sitemap\AbstractSitemapPages;
 use Illuminate\Contracts\Database\Eloquent\Builder as BuilderContract;
 use Illuminate\Support\Collection;
@@ -22,10 +20,24 @@ class TagPageSitemap extends AbstractSitemapPages
 {
     public function fetch(): Collection
     {
-        $cacheKey = CacheEnum::sitemapTagPages($this->site->id, $this->language->id);
+        $cacheKey = BlogCacheEnum::sitemapTagPages($this->site->id, $this->language->id);
 
         return Cache::remember($cacheKey, 3600, function (): Collection {
-            $tagPage = $this->getTagPage($this->site, $this->language);
+            /** @var class-string<Page> $model */
+            $model = CapellCore::getModel(CoreModelEnum::Page);
+
+            $tagPage = $model::getFirstPageByTypeForSite(
+                'tag',
+                $this->site,
+                $this->language,
+                fn ($query) => $query->withWhereHas(
+                    'parent',
+                    fn (BuilderContract $query) => $query->with([
+                        'pageUrl' => fn ($query) => $query->with('siteDomain')->where('language_id', $this->language->id),
+                        'translation' => fn ($query) => $query->where('language_id', $this->language->id),
+                    ]),
+                ),
+            );
 
             if (! $tagPage instanceof Page) {
                 return collect([]);
@@ -62,31 +74,10 @@ class TagPageSitemap extends AbstractSitemapPages
         ]);
     }
 
-    private function getTagPage(Site $site, Language $language): ?Page
-    {
-        return once(function () use ($site, $language): ?Page {
-            /** @var class-string<Page> $model */
-            $model = CapellCore::getModel(ModelEnum::Page);
-
-            return $model::getFirstPageByTypeForSite(
-                'tag',
-                $site,
-                $language,
-                modifyQueryUsing: fn ($query) => $query->withWhereHas(
-                    'parent',
-                    fn (BuilderContract $query) => $query->with([
-                        'pageUrl' => fn ($query) => $query->with('siteDomain')->where('language_id', $language->id),
-                        'translation' => fn ($query) => $query->where('language_id', $language->id),
-                    ]),
-                ),
-            );
-        });
-    }
-
     private function getTagPages(Page $tagPage): Collection
     {
         /** @var class-string<Page> $model */
-        $model = CapellCore::getModel(ModelEnum::Page);
+        $model = CapellCore::getModel(CoreModelEnum::Page);
 
         return $model::getTags(site: $this->site, language: $this->language, with_page_count: true)
             ->limit(100)

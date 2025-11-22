@@ -8,7 +8,7 @@ use Capell\Admin\Contracts\PageCacheNotifiable;
 use Capell\Admin\Facades\CapellAdmin;
 use Capell\Admin\Filament\Actions\DeleteAction;
 use Capell\Admin\Filament\Concerns\HasPageCacheNotification;
-use Capell\Blog\Enums\BlogResourceEnum;
+use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Filament\Resources\Tags\TagResource;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\CreateAction;
@@ -29,7 +29,7 @@ class EditTag extends EditRecord implements PageCacheNotifiable
     #[Override]
     public static function getResource(): string
     {
-        return CapellAdmin::getResource(BlogResourceEnum::Tag);
+        return CapellAdmin::getResource(ResourceEnum::Tag);
     }
 
     #[Override]
@@ -39,7 +39,7 @@ class EditTag extends EditRecord implements PageCacheNotifiable
             return static::$title;
         }
 
-        return new HtmlString(__('capell-admin::heading.edit_tag_record', [
+        return new HtmlString(__('capell-layout::heading.edit_tag_record', [
             'name' => Str::limit($this->getRecordTitle(), 40),
         ]));
     }
