@@ -16,6 +16,7 @@ use Capell\Blog\Filament\Resources\Articles\Pages\EditArticle;
 use Capell\Blog\Filament\Resources\Articles\Pages\ListArticles;
 use Capell\Blog\Filament\Resources\Articles\Tables\ArticlePagesTable;
 use Capell\Blog\Models\Article;
+use Capell\Blog\Providers\BlogServiceProvider;
 use Capell\Blog\Services\Loader\BlogLoader;
 use Capell\Core\Actions\GetNameFromTranslationsAction;
 use Capell\Core\Enums\ModelEnum as CoreModelEnum;
@@ -61,6 +62,11 @@ class ArticleResource extends PageResource
     public static function getNavigationLabel(): string
     {
         return (string) (__('capell-blog::generic.articles'));
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return CapellCore::getPackage(BlogServiceProvider::$packageName)->isInstalled();
     }
 
     public static function getPages(): array

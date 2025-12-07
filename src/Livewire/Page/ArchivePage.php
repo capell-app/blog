@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Capell\Blog\Livewire\Page;
 
 use Capell\Blog\Enums\ResourceEnum;
-use Capell\Frontend\CapellFrontendManager;
-use Capell\Frontend\Facades\FrontendLoader;
+use Capell\Frontend\Facades\Frontend;
 use Capell\Frontend\Livewire\Page\AbstractPage;
 use Capell\Frontend\Services\Loader\PageLoader;
+use Capell\Frontend\Services\State\FrontendState;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -31,16 +31,15 @@ class ArchivePage extends AbstractPage
      */
     protected function getArchiveDateFromUrl(): array
     {
-        $current = FrontendLoader::getPageSlug();
+        $params = Frontend::params();
+        $current = is_array($params) ? ($params['slug'] ?? '') : '';
 
         $month = null;
         $year = null;
 
-        if ($current === '' || $current === '0') {
-            CapellFrontendManager::throwErrorPage();
-        }
+        abort_if($current === '' || $current === '0', 404);
 
-        $parts = explode('/', $current);
+        $parts = explode('/', (string) $current);
         $dates = explode('-', $parts[0]);
 
         $current = isset($parts[1]) ? (int) $parts[1] : 1;
@@ -53,9 +52,7 @@ class ArchivePage extends AbstractPage
             $month = (int) $dates[1];
         }
 
-        if (! is_numeric($current) && ($year === 0 || $year === null)) {
-            CapellFrontendManager::throwErrorPage();
-        }
+        abort_if(! is_numeric($current) && ($year === 0 || $year === null), 404);
 
         return [$year, $month];
     }
@@ -79,13 +76,13 @@ class ArchivePage extends AbstractPage
 
         abort_if(($this->year === null || $this->year === 0) && ($this->month === null || $this->month === 0), 404);
 
-        $page = FrontendLoader::getPage();
+        $page = Frontend::page();
 
         $paginationKey = config('capell-admin.page_query', 'pageQuery');
 
         $this->results = PageLoader::getPages(
-            site: FrontendLoader::getSite(),
-            language: FrontendLoader::getLanguage(),
+            site: Frontend::site(),
+            language: Frontend::language(),
             limit: $page->type->meta['limit'] ?? config('capell-frontend.pagination_limit', 12),
             paginationPage: $this->getPage($paginationKey),
             typeKey: $page->type->meta['page_group'] ?? strtolower(ResourceEnum::Article->name),
@@ -118,8 +115,8 @@ class ArchivePage extends AbstractPage
             },
         );
 
-        $this->pageParams = $this->getViewData();
+        $this->params = $this->getViewData();
 
-        FrontendLoader::setPageParams($this->pageParams);
+        resolve(FrontendState::class)->withParams($this->params);
     }
 }

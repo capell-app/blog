@@ -6,7 +6,7 @@ namespace Capell\Blog\View\Components\Widget\Page;
 
 use Capell\Blog\Services\Loader\TagLoader;
 use Capell\Core\Models\Page;
-use Capell\Frontend\Facades\FrontendLoader;
+use Capell\Frontend\Facades\Frontend;
 use Capell\Frontend\Services\Loader\PageLoader;
 use Capell\Layout\View\Components\Widget\Pages\AbstractPagesWidget;
 use Illuminate\Contracts\Database\Eloquent\Builder as BuilderContract;
@@ -19,15 +19,15 @@ class RelatedWidget extends AbstractPagesWidget
     {
         $limit = $this->widget->meta['limit'] ?? config('capell-frontend.pagination_limit', 12);
 
-        $page = FrontendLoader::getPage();
+        $page = Frontend::page();
 
         $tags = TagLoader::getPageTags($page);
 
         $tagIds = $tags->pluck('id')->toArray();
 
         $this->pages = PageLoader::getPages(
-            site: FrontendLoader::getSite(),
-            language: FrontendLoader::getLanguage(),
+            site: Frontend::site(),
+            language: Frontend::language(),
             limit: $limit,
             withChildrenCount: $page->type->meta['with_children_count'] ?? true,
             withImage: $this->widget->meta['with_image'] ?? false,
@@ -41,7 +41,7 @@ class RelatedWidget extends AbstractPagesWidget
                 ->where('pages.id', '!=', $page->id)
                 ->when(
                     $this->widget->meta['exclude_parent'] ?? false && $page->parent_id,
-                    fn (BuilderContract $query) => $query->where('pages.id', '!=', $page->parent_id),
+                    fn (BuilderContract $query): BuilderContract => $query->where('pages.id', '!=', $page->parent_id),
                 )
                 ->whereHas(
                     'type',
@@ -50,7 +50,7 @@ class RelatedWidget extends AbstractPagesWidget
                         ->accessible()
                         ->when(
                             $this->widget->meta['exclude_types'] ?? false,
-                            fn (BuilderContract $query) => $query->whereNotIn(
+                            fn (BuilderContract $query): BuilderContract => $query->whereNotIn(
                                 'types.key',
                                 $this->widget->meta['exclude_types'] ?? [],
                             ),
@@ -58,9 +58,9 @@ class RelatedWidget extends AbstractPagesWidget
                 )
                 ->when(
                     $tags instanceof Collection && $tags->isNotEmpty(),
-                    fn (Builder $query) => $query->whereHas(
+                    fn (Builder $query): Builder => $query->whereHas(
                         'tags',
-                        fn (BuilderContract $query) => $query->whereIn('taggables.tag_id', $tagIds),
+                        fn (BuilderContract $query): BuilderContract => $query->whereIn('taggables.tag_id', $tagIds),
                     ),
                 ),
         );

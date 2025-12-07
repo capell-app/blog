@@ -18,6 +18,7 @@ use Capell\Blog\Filament\Resources\Tags\RelationManagers\PagesRelationManager;
 use Capell\Blog\Filament\Resources\Tags\Schemas\TagForm;
 use Capell\Blog\Filament\Resources\Tags\Tables\TagsTable;
 use Capell\Blog\Models\Tag;
+use Capell\Blog\Providers\BlogServiceProvider;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Language;
 use Filament\Resources\Resource;
@@ -74,6 +75,11 @@ class TagResource extends Resource
     public static function getNavigationLabel(): string
     {
         return (string) (__('capell-blog::navigation.tags'));
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return CapellCore::getPackage(BlogServiceProvider::$packageName)->isInstalled();
     }
 
     public static function getPages(): array
