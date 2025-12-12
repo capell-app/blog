@@ -19,8 +19,8 @@ class BlogPage extends AbstractPage
         $paginationKey = config('capell-admin.page_query', 'pageQuery');
 
         $this->results = PageLoader::getPages(
-            site: Frontend::site(),
             language: Frontend::language(),
+            site: Frontend::site(),
             limit: $page->type->meta['limit'] ?? config('capell-frontend.pagination_limit', 12),
             paginationPage: $this->getPage($paginationKey),
             pageGroup: $page->type->meta['page_group'] ?? null,

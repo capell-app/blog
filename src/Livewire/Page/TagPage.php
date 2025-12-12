@@ -69,8 +69,8 @@ class TagPage extends AbstractPage
         $paginationKey = config('capell-admin.page_query', 'pageQuery');
 
         $this->results = PageLoader::getPages(
-            site: $site,
             language: $language,
+            site: $site,
             limit: $this->widget->meta['limit'] ?? config('capell-frontend.pagination_limit', 12),
             paginationPage: $this->getPage($paginationKey),
             withChildrenCount: $page->type->meta['with_children_count'] ?? true,

@@ -26,8 +26,8 @@ class RelatedWidget extends AbstractPagesWidget
         $tagIds = $tags->pluck('id')->toArray();
 
         $this->pages = PageLoader::getPages(
-            site: Frontend::site(),
             language: Frontend::language(),
+            site: Frontend::site(),
             limit: $limit,
             withChildrenCount: $page->type->meta['with_children_count'] ?? true,
             withImage: $this->widget->meta['with_image'] ?? false,

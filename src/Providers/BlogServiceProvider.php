@@ -195,7 +195,11 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
     private function registerViewComposers(): self
     {
         View::composer('capell::components.footer.index', function (\Illuminate\View\View $view): void {
-            $view->getFactory()->startPush('footer.components', view('capell-blog::components.footer.tags')->render());
+            $view->getFactory()->startPush(
+                'footer.components',
+                // @phpstan-ignore-next-line
+                view('capell-blog::components.footer.tags')->render(),
+            );
         });
 
         return $this;

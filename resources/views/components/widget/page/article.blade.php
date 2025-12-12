@@ -5,20 +5,20 @@ declare(strict_types=1);
 ?>
 
 @php
-    use Capell\Frontend\Facades\FrontendLoader;
+    use Capell\Frontend\Facades\Frontend;
 @endphp
 
 @props([
-    'container',
-    'containerKey',
-    'containerWidth' => null,
-    'loop',
-    'widget',
-    'page' => FrontendLoader::getPage(),
-    'headingSize' => $widget->meta['heading_size'] ?? 'h1',
-    'withAuthor' => $widget->meta['with_author'] ?? false,
-    'withDate' => $widget->meta['with_date'] ?? false,
-    'withNextPrev' => $widget->meta['with_next_prev'] ?? false,
+'container',
+'containerKey',
+'containerWidth' => null,
+'loop',
+'widget',
+'page' => Frontend::page(),
+'headingSize' => $widget->meta['heading_size'] ?? 'h1',
+'withAuthor' => $widget->meta['with_author'] ?? false,
+'withDate' => $widget->meta['with_date'] ?? false,
+'withNextPrev' => $widget->meta['with_next_prev'] ?? false,
 ])
 <x-capell-layout::widget.wrapper
     :$container
