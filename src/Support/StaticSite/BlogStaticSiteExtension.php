@@ -1,0 +1,72 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Capell\Blog\Support\StaticSite;
+
+use Capell\Blog\Data\ArchiveMonthData;
+use Capell\Blog\Enums\BlogTypeGroupEnum;
+use Capell\Blog\Support\Loader\BlogLoader;
+use Capell\Blog\Support\Loader\TagLoader;
+use Capell\Core\Enums\ModelEnum as CoreModelEnum;
+use Capell\Core\Facades\CapellCore;
+use Capell\Core\Models\Page;
+use Capell\Core\Models\Site;
+use Capell\Core\Models\SiteDomain;
+
+class BlogStaticSiteExtension
+{
+    public function __invoke(Site $site, SiteDomain $domain, callable $visit): void
+    {
+        /** @var class-string<Page> $pageModel */
+        $pageModel = CapellCore::getModel(CoreModelEnum::Page);
+
+        $this->visitTaggedPages($pageModel, $site, $domain, $visit);
+        $this->visitArchivePages($pageModel, $site, $domain, $visit);
+    }
+
+    private function visitTaggedPages(string $pageModel, Site $site, SiteDomain $domain, callable $visit): void
+    {
+        $tagsQuery = TagLoader::getTagsQuery($site, $domain->language);
+        $tagsQuery->chunk(100, function ($tags) use ($pageModel, $site, $domain, $visit): void {
+            foreach ($tags as $tag) {
+                $tagPage = $pageModel::getFirstPageByTypeForSite('tag', $site, $domain->language);
+                if (! $tagPage) {
+                    continue;
+                }
+
+                if (! $tagPage->pageUrl) {
+                    continue;
+                }
+
+                $base = rtrim((string) $tagPage->pageUrl->url, '/*');
+                $slug = $tag->getTranslation('slug', $domain->language->code);
+                $url = $base . '/' . $slug;
+                $visit($url);
+            }
+        });
+    }
+
+    /**
+     * @param  class-string<Page>  $pageModel
+     */
+    private function visitArchivePages(string $pageModel, Site $site, SiteDomain $domain, callable $visit): void
+    {
+        $archives = BlogLoader::getArchives(
+            $site,
+            $domain->language,
+            BlogTypeGroupEnum::Article->value,
+        );
+
+        $archives->each(function (ArchiveMonthData $archive) use ($pageModel, $site, $domain, $visit): void {
+            $archivePage = $pageModel::getFirstPageByTypeForSite('archive', $site, $domain->language);
+            if (! $archivePage || ! $archivePage->pageUrl) {
+                return;
+            }
+
+            $base = rtrim((string) $archivePage->pageUrl->url, '/*');
+            $url = $base . '/' . $archive->year . '/' . str_pad((string) $archive->month, 2, '0', STR_PAD_LEFT);
+            $visit($url);
+        });
+    }
+}

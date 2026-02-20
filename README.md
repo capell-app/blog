@@ -26,7 +26,6 @@ Article pages with archives, tags, and widgets for Capell. Ships Filament resour
     - Listens to navigation creation to add entries
 - Commands
     - `capell-blog:install` — publish config/migration and migrate
-    - `capell-blog:create-pages {site}` — create Blog/Archive pages for a site
     - `capell-blog:demo` — optional demo
 
 ## Installation

@@ -93,7 +93,7 @@ class TagResource extends Resource
 
     public static function getPluralModelLabel(): string
     {
-        return __('capell-admin::generic.tags');
+        return __('capell-blog::generic.tags');
     }
 
     #[Override]

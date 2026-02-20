@@ -14,11 +14,15 @@ use Capell\Admin\Filament\Components\Forms\Page\ParentPageSelect;
 use Capell\Admin\Filament\Components\Forms\PublishSchema;
 use Capell\Admin\Filament\Resources\Pages\Schemas\Types\DefaultPageSchema;
 use Capell\Blog\Filament\Components\Forms\Page\PageTagsInput;
-use Capell\Blog\Services\Loader\BlogLoader;
+use Capell\Blog\Support\Loader\BlogLoader;
+use Capell\Core\Enums\ModelEnum;
+use Capell\Core\Facades\CapellCore;
+use Capell\Core\Models\Site;
 use Closure;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Builder;
 use Override;
 
@@ -29,7 +33,10 @@ class ArticlePageSchema extends DefaultPageSchema
     protected static function modifyParentQueryUsing(Schema $schema): Closure
     {
         return function (Builder $query) use ($schema) {
-            $site = $schema->getLivewire()->getSite($schema);
+            /** @var class-string<Site> $model */
+            $model = CapellCore::getModel(ModelEnum::Site);
+
+            $site = $model::query()->find($schema->getRawState()['site_id']);
 
             $blogPage = $site ? BlogLoader::getBlogPage($site) : null;
 
@@ -76,6 +83,7 @@ class ArticlePageSchema extends DefaultPageSchema
             $this->getTranslationFormSchema($schema),
             Section::make(__('capell-admin::generic.settings'))
                 ->compact()
+                ->icon(Heroicon::OutlinedCog6Tooth)
                 ->schema([
                     ...PageSettingsSchema::make(
                         $schema,
@@ -100,6 +108,7 @@ class ArticlePageSchema extends DefaultPageSchema
             $this->getParentPageSelect($schema),
             LayoutSelect::make('layout_id')
                 ->reactive(),
+            PageTagsInput::make('tags'),
             PublishSchema::make($schema),
         ];
     }

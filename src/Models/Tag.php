@@ -6,7 +6,6 @@ namespace Capell\Blog\Models;
 
 use Capell\Blog\Database\Factories\TagFactory;
 use Capell\Core\Contracts\PageCacheable;
-use Capell\Core\Models\Concerns\HasPageCache;
 use Capell\Core\Models\Concerns\HasStatus;
 use Capell\Core\Models\Contracts\Statusable;
 use Capell\Core\Models\Language;
@@ -59,7 +58,6 @@ use Override;
  */
 class Tag extends \Spatie\Tags\Tag implements PageCacheable, Statusable
 {
-    use HasPageCache;
     use HasStatus;
 
     /**
@@ -76,17 +74,6 @@ class Tag extends \Spatie\Tags\Tag implements PageCacheable, Statusable
         'slug',
         'status',
         'type',
-    ];
-
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'meta' => 'json',
-        'featured' => 'boolean',
-        'status' => 'boolean',
     ];
 
     protected static string $factory = TagFactory::class;
@@ -119,6 +106,11 @@ class Tag extends \Spatie\Tags\Tag implements PageCacheable, Statusable
     public function getTranslatedLocales(string $key): array
     {
         return Language::getLanguageLocales();
+    }
+
+    public function getPageUrl(Page $tagPage, Language $language): string
+    {
+        return $tagPage->pageUrl->full_url . '/' . $this->translate('slug', $language->code);
     }
 
     public function site(): BelongsTo
@@ -186,5 +178,19 @@ class Tag extends \Spatie\Tags\Tag implements PageCacheable, Statusable
                     : 'JSON_KEYS(' . $this->getQuery()->getGrammar()->wrap($key) . ') as translated_locales',
             ),
         );
+    }
+
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'meta' => 'json',
+            'featured' => 'boolean',
+            'status' => 'boolean',
+        ];
     }
 }

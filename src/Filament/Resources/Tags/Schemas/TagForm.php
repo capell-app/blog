@@ -8,7 +8,7 @@ use Capell\Admin\Filament\Components\Forms\NameInput;
 use Capell\Admin\Filament\Components\Forms\Site\SiteSelect;
 use Capell\Admin\Filament\Components\Forms\StatusToggle;
 use Capell\Admin\Filament\Contracts\FormConfigurator;
-use Capell\Admin\Services\SlugGenerator;
+use Capell\Admin\Support\SlugGenerator;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Grid;
@@ -28,7 +28,6 @@ class TagForm implements FormConfigurator
             Section::make()
                 ->columns()
                 ->columnSpanFull()
-                ->contained(in_array($schema->getOperation(), ['create', 'edit']))
                 ->schema([
                     NameInput::make('name')
                         ->afterStateUpdatedJs(function (string $operation): string {
@@ -60,7 +59,8 @@ class TagForm implements FormConfigurator
 
                             StatusToggle::make('status'),
                         ]),
-                ]),
+                ])
+                ->contained(in_array($schema->getOperation(), ['create', 'edit'])),
         ];
     }
 }

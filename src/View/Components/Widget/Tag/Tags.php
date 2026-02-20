@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Capell\Blog\View\Components\Widget\Tag;
 
-use Capell\Blog\Services\Loader\TagLoader;
+use Capell\Blog\Support\Loader\TagLoader;
 use Capell\Core\Models\Page;
 use Capell\Frontend\Facades\Frontend;
 use Capell\Layout\View\Components\Widget\AbstractWidget;
+use RuntimeException;
 
 class Tags extends AbstractWidget
 {
@@ -30,18 +31,26 @@ class Tags extends AbstractWidget
     {
         $limit = $this->widget->meta['limit'] ?? null;
 
+        $site = Frontend::site();
+        $language = Frontend::language();
+
         $this->tags = TagLoader::getTags(
-            site: Frontend::site(),
-            language: Frontend::language(),
+            site: $site,
+            language: $language,
             limit: $limit,
+            hasArticles: true,
         );
 
-        if ($this->tags->isEmpty() && config('capell-layout.widget.hide_empty')) {
-            $this->skipRender = true;
+        $this->tagPage = TagLoader::getTagResultsPage($site, $language);
 
+        if (! $this->tagPage instanceof Page) {
+            throw new RuntimeException('Tag results page not found for site ID ' . $site->id . ' and language ID ' . $language->id);
+        }
+
+        if ($this->tags->isNotEmpty()) {
             return;
         }
 
-        $this->tagPage = TagLoader::getTagResultsPage(Frontend::site(), Frontend::language());
+        $this->skipRender = ! empty($this->widgetData['meta']['hide_no_results']) || config('capell-layout.widget.skip_render_empty') === true;
     }
 }

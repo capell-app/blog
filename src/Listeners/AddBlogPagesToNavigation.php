@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Listeners;
 
-use Capell\Admin\Actions\AddPageToNavigationAction;
-use Capell\Blog\Services\Loader\BlogLoader;
+use Capell\Blog\Support\Loader\BlogLoader;
+use Capell\Core\Actions\AddPageToNavigationAction;
 use Capell\Core\Enums\NavigationHandle;
 use Capell\Core\Events\NavigationCreating;
 use Capell\Core\Models\Page;

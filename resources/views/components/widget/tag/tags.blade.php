@@ -7,19 +7,20 @@ declare(strict_types=1);
 @php
     use Capell\Frontend\Facades\Frontend;
 
-        $language = Frontend::language();
-        $site = Frontend::site();
-        $page = Frontend::page();
+    $language = Frontend::language();
+    $site = Frontend::site();
+    $theme = Frontend::theme();
+    $page = Frontend::page();
 @endphp
 
 @props([
-'container',
-'containerKey',
-'containerWidth' => null,
-'showPageContent' => $widgetData['meta']['show_page_content'] ?? false,
-'showPageTitle' => $widgetData['meta']['show_page_title'] ?? false,
-'loop',
-'widget',
+    'container',
+    'containerKey',
+    'containerWidth' => null,
+    'loop',
+    'showPageContent' => $widgetData['meta']['show_page_content'] ?? false,
+    'showPageTitle' => $widgetData['meta']['show_page_title'] ?? false,
+    'widget',
 ])
 <x-capell-layout::widget.wrapper
     class="widget-tags"
@@ -30,33 +31,43 @@ declare(strict_types=1);
     :index="$loop->index"
     :$widget
 >
-    @if (($widget->translation && ($widget->translation->title || $widget->translation->content))
-         || ($showPageContent && $page->translation->title)
-         || ($showPageTitle && $page->translation->content))
+    @php
+        $showTitle = empty($widget->meta['container_options'][$containerKey]['hide_title'])
+            && ($widget->translation?->title || ($showPageTitle && $page->translation->title));
+        $showContent = empty($widget->meta['container_options'][$containerKey]['hide_content'])
+            && ($widget->translation?->content || ($showPageContent && $page->translation->content));
+    @endphp
+
+    @if ($showTitle || $showContent)
         <x-capell::content
-            class="mb-4"
+            class="mb-6 mt-10"
             :compact="true"
-            :content="$widget->translation->content ?? ($showPageContent ? $page->translation->content : null)"
-            :presenter="$widget->type->meta['content_presenter'] ?? null"
+            :content="$showContent ? ($widget->translation->content ?: ($showPageContent ? $page->translation->content : null)) : null"
+            :content-type="$widget->translation->content ? $widget->type->content_structure : ($showPageContent ? $page->type->content_structure : null)"
+            :muted="in_array($containerKey, $theme->secondary_containers)"
             :text-align="$widget->meta['align'] ?? $widget->type->meta['align'] ?? null"
-            :title="$widget->translation->title ?? ($showPageTitle ? $page->translation->title : null)"
+            :title="$showTitle ? ($widget->translation->title ?: ($showPageTitle ? $page->translation->title : null)) : null"
+            :heading-style="($widget->meta['heading_style'] ?? null) ?: ($widget->type->meta['heading_style'] ?? null)"
+            :heading-tag="$showPageTitle ? 'h1' : null"
         />
     @endif
 
     @if ($tags->isEmpty())
         <x-capell::no-results>
-            {{ __('No tags found.') }}
+            {!! isset($widget->translation->meta['no_results']) && $widget->translation->meta['no_results'] !== '' ? $widget->translation->meta['no_results'] : __('capell-blog::messages.no_tags_found') !!}
         </x-capell::no-results>
     @else
-        <ul class="@sm:grid-cols-2 @md:grid-cols-3 grid gap-x-6 gap-y-2">
+        <ul class="flex flex-wrap gap-2">
             @foreach ($tags as $tag)
-                @php($url = $tagPage->pageUrl->full_url . '/' . $tag->getTranslation('slug', $language->code))
-                <x-capell::badge
-                    :$url
-                    :count="$tag->pages_count"
-                >
-                    {{ $tag->getTranslation('name', $language->code) }}
-                </x-capell::badge>
+                @php($url = $tag->getPageUrl($tagPage, $language))
+                <li>
+                    <x-capell-blog::tag :$url>
+                        {{ $tag->getTranslation('name', $language->code) }}
+                        <x-slot:count>
+                            ({{ $tag->pages_count }})
+                        </x-slot>
+                    </x-capell-blog::tag>
+                </li>
             @endforeach
         </ul>
     @endif

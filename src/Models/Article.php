@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Capell\Blog\Models;
 
 use ArrayAccess;
+use Capell\Blog\Database\Factories\ArticleFactory;
 use Capell\Blog\Models\Concerns\HasTags;
 use Capell\Core\Database\Factories\PageFactory;
 use Capell\Core\Enums\PublishStatusEnum;
@@ -153,10 +154,6 @@ use Spatie\Tags\Tag;
  * @property-read int|null $activities_count
  * @property-read Collection|Page[] $related
  * @property-read int|null $related_count
- *
- * @mixin Model
- * @mixin Model
- *
  * @property-read string|null $title
  *
  * @mixin Model
@@ -167,9 +164,16 @@ class Article extends Page
 
     protected $table = 'pages';
 
+    protected static string $factory = ArticleFactory::class;
+
     #[Override]
     public function getForeignKey()
     {
         return 'page_' . $this->getKeyName();
+    }
+
+    public function getMorphClass()
+    {
+        return 'page';
     }
 }

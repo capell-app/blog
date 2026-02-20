@@ -12,6 +12,7 @@ use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Filament\Resources\Articles\ArticleResource;
 use Capell\Core\Enums\ModelEnum;
 use Capell\Core\Facades\CapellCore;
+use Capell\Core\Models\Type;
 
 class CreateArticle extends CreatePage
 {
@@ -21,10 +22,15 @@ class CreateArticle extends CreatePage
         return CapellAdmin::getResource(AdminResourceEnum::Page, strtolower(ResourceEnum::Article->name));
     }
 
-    protected function afterFill(): void
+    protected function beforeFill(): void
     {
+        parent::beforeFill();
+
         $this->data['layout_id'] = GetArticleLayoutAction::run()?->id;
 
-        $this->data['type_id'] = CapellCore::getModel(ModelEnum::Type)::pageType()->where('key', 'article')->value('id');
+        /** @var class-string<Type> $model */
+        $model = CapellCore::getModel(ModelEnum::Type);
+
+        $this->data['type_id'] = $model::query()->pageType()->where('key', 'article')->value('id');
     }
 }

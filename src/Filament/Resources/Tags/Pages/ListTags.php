@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Capell\Blog\Filament\Resources\Tags\Pages;
 
 use Capell\Admin\Facades\CapellAdmin;
-use Capell\Admin\Filament\Actions\CreateModalAction;
+use Capell\Admin\Filament\Actions\CreateAction;
 use Capell\Admin\Filament\Concerns\HasSiteTableFilterTabs;
 use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Filament\Resources\Tags\TagResource;
@@ -31,7 +31,7 @@ class ListTags extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateModalAction::make(),
+            CreateAction::make(),
             LocaleSwitcher::make(),
         ];
     }

@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Capell\Blog\View\Components\Widget\Page;
 
-use Capell\Blog\Enums\ResourceEnum;
-use Capell\Blog\Services\Loader\BlogLoader;
+use Capell\Blog\Enums\BlogTypeGroupEnum;
+use Capell\Blog\Support\Loader\BlogLoader;
 use Capell\Core\Models\Page;
 use Capell\Frontend\Facades\Frontend;
 use Capell\Layout\View\Components\Widget\AbstractWidget;
+use Exception;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
@@ -18,7 +19,7 @@ class Archives extends AbstractWidget
 
     protected Collection|LengthAwarePaginator $archives;
 
-    protected static string $defaultView = 'capell-layout::components.widget.page.archives';
+    protected static string $defaultView = 'capell-blog::components.widget.page.archives';
 
     public function render(array $data = [])
     {
@@ -31,23 +32,28 @@ class Archives extends AbstractWidget
 
     protected function mountWidget(): void
     {
-        $type = $this->widget->meta['page_group'] ?? strtolower(ResourceEnum::Article->name);
+        $language = Frontend::language();
+        $site = Frontend::site();
+
+        $this->archivePage = BlogLoader::getArchivePage($site, $language);
+
+        throw_unless($this->archivePage, Exception::class, 'Blog Archives Widget: No archive page not found');
+
+        $group = $this->widget->meta['page_group'] ?? BlogTypeGroupEnum::Article->value;
 
         $limit = $this->widget->meta['limit'] ?? config('capell-frontend.pagination_limit', 12);
 
         $this->archives = BlogLoader::getArchives(
-            site: Frontend::site(),
-            language: Frontend::language(),
-            type: $type,
+            site: $site,
+            language: $language,
+            group: $group,
             limit: $limit,
         );
 
-        if ($this->archives->isEmpty() && config('capell-layout.widget.hide_empty')) {
-            $this->skipRender = true;
-
+        if ($this->archives->isNotEmpty()) {
             return;
         }
 
-        $this->archivePage = BlogLoader::getArchivePage(Frontend::site(), Frontend::language());
+        $this->skipRender = ! empty($this->widgetData['meta']['hide_no_results']) || config('capell-layout.widget.skip_render_empty') === true;
     }
 }

@@ -9,6 +9,7 @@ use Capell\Admin\Filament\Resources\Pages\Tables\PagesTable;
 use Capell\Blog\Models\Tag;
 use Capell\Core\Enums\ModelEnum;
 use Capell\Core\Facades\CapellCore; // adjust if different namespace
+use Capell\Core\Models\Language;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -61,7 +62,10 @@ class ArticlePagesTable implements TableConfigurator
 
                     $languageId = $livewire->getTableFilterState('filter')['language_id'] ?? null;
                     if ($languageId) {
-                        $code = CapellCore::getModel(ModelEnum::Language)::query()->find($languageId, 'code')?->code;
+                        /** @var class-string<Language> $model */
+                        $model = CapellCore::getModel(ModelEnum::Language);
+
+                        $code = $model::query()->find($languageId, 'code')?->code;
                         if ($code) {
                             $query->whereRaw('JSON_EXTRACT(`tags`.`name`, ' . DB::getPdo()->quote('$.' . $code) . ') IS NOT NULL');
                         }

@@ -8,6 +8,7 @@ use Capell\Admin\Filament\Components\Forms\CacheFrequencySelect;
 use Capell\Admin\Filament\Components\Forms\FixedWidthSidebar;
 use Capell\Core\Enums\ModelEnum;
 use Capell\Core\Facades\CapellCore;
+use Capell\Core\Models\Type;
 use Capell\Layout\Filament\Components\Forms\Widget\CreateWidgetDetailsSchema;
 use Capell\Layout\Filament\Components\Forms\Widget\Tab\WidgetAdminTab;
 use Capell\Layout\Filament\Components\Forms\Widget\Tab\WidgetDisplayTab;
@@ -20,11 +21,12 @@ use Capell\Layout\Filament\Resources\Widgets\Schemas\Types\DefaultWidgetSchema;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 use Override;
 
 class RelatedWidgetSchema extends DefaultWidgetSchema
@@ -46,7 +48,12 @@ class RelatedWidgetSchema extends DefaultWidgetSchema
             CreateWidgetDetailsSchema::make($schema),
             WidgetTranslationsRepeater::make($schema)
                 ->contained(fn (string $operation): bool => $operation === 'create'),
-            ...WidgetSettingsSchema::make($schema),
+            Section::make(__('capell-admin::generic.settings'))
+                ->columns()
+                ->compact()
+                ->icon(Heroicon::OutlinedCog6Tooth)
+                ->collapsed()
+                ->schema(WidgetSettingsSchema::make($schema)),
         ];
     }
 
@@ -76,10 +83,15 @@ class RelatedWidgetSchema extends DefaultWidgetSchema
                                     ->helperText(__('capell-layout::generic.exclude_types_info'))
                                     ->multiple()
                                     ->options(
-                                        fn (): array => CapellCore::getModel(ModelEnum::Type)::query()
-                                            ->pageType()
-                                            ->pluck('name', 'key')
-                                            ->toArray(),
+                                        function (): array {
+                                            /** @var class-string<Type> $model */
+                                            $model = CapellCore::getModel(ModelEnum::Type);
+
+                                            return $model::query()
+                                                ->pageType()
+                                                ->pluck('name', 'key')
+                                                ->toArray();
+                                        },
                                     ),
                             ]),
                             Grid::make(3)
@@ -91,11 +103,7 @@ class RelatedWidgetSchema extends DefaultWidgetSchema
                                         ->default(true),
                                     CacheFrequencySelect::make('cache_frequency'),
                                 ]),
-                            Fieldset::make(__('capell-admin::generic.display_settings'))
-                                ->statePath('meta')
-                                ->columns(['default' => 1, 'md' => 2, 'lg' => 3, 'xl' => 4])
-                                ->columnSpanFull()
-                                ->schema(WidgetResultsSchema::make()),
+                            ...WidgetResultsSchema::make($schema),
                         ]),
                         WidgetComponentFilesSection::make()
                             ->statePath('meta'),
