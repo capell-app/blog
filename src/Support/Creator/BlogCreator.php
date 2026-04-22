@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Support\Creator;
 
-use Capell\Admin\Filament\Resources\Pages\Schemas\Types\ResultsPageSchema;
-use Capell\Admin\Filament\Resources\Types\Schemas\Types\PageTypeSchema;
+use Capell\Admin\Filament\Schemas\Pages\ResultsPageSchema;
+use Capell\Admin\Filament\Schemas\Types\PageTypeSchema;
 use Capell\Blog\Enums\BlogLayoutEnum;
 use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Enums\BlogTypeGroupEnum;
@@ -13,8 +13,8 @@ use Capell\Blog\Enums\LivewirePageComponentEnum;
 use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Enums\WidgetComponentEnum as BlogWidgetComponentEnum;
 use Capell\Blog\Enums\WidgetSchemaEnum;
-use Capell\Blog\Filament\Resources\Articles\Schemas\Types\ArticlePageSchema;
-use Capell\Blog\Filament\Resources\Widgets\Schemas\Types\ArticleWidgetSchema;
+use Capell\Blog\Filament\Schemas\Articles\ArticlePageSchema;
+use Capell\Blog\Filament\Schemas\Widgets\ArticleWidgetSchema;
 use Capell\Core\Actions\AddPageToNavigationAction;
 use Capell\Core\Enums\LayoutEnum;
 use Capell\Core\Enums\LayoutGroupEnum;
@@ -22,6 +22,7 @@ use Capell\Core\Enums\ModelEnum as CoreModelEnum;
 use Capell\Core\Enums\PageTypeEnum;
 use Capell\Core\Enums\TypeEnum;
 use Capell\Core\Enums\TypeGroupEnum;
+use Capell\Core\Enums\UrlParamTypeEnum;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Layout;
@@ -31,20 +32,21 @@ use Capell\Core\Models\Site;
 use Capell\Core\Models\Type;
 use Capell\Core\Support\Creator\LayoutCreator;
 use Capell\Core\Support\Creator\TypeCreator;
-use Capell\Layout\Enums\LayoutTypeEnum;
-use Capell\Layout\Enums\LivewireComponentsEnum;
-use Capell\Layout\Enums\ModelEnum;
-use Capell\Layout\Filament\Resources\Types\Schemas\Types\WidgetTypeSchema;
-use Capell\Layout\Models\Widget;
-use Capell\Layout\Support\Creator\TypeCreator as LayoutTypeCreator;
-use Capell\Layout\Support\Creator\WidgetCreator;
+use Capell\Mosaic\Enums\LayoutTypeEnum;
+use Capell\Mosaic\Enums\LivewireComponentsEnum;
+use Capell\Mosaic\Enums\ModelEnum;
+use Capell\Mosaic\Filament\Schemas\Types\WidgetTypeSchema;
+use Capell\Mosaic\Models\Widget;
+use Capell\Mosaic\Support\Creator\TypeCreator as LayoutTypeCreator;
+use Capell\Mosaic\Support\Creator\WidgetCreator;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
 
 class BlogCreator
 {
-    public function setup(Site $site, $createWidgets = true): void
+    public function setup(Site $site, bool $createWidgets = true): void
     {
         $typeCreator = resolve(TypeCreator::class);
         $layoutCreator = resolve(LayoutCreator::class);
@@ -83,7 +85,7 @@ class BlogCreator
             $this->createArchivesWidget($languages);
             $this->createTagsWidget($languages);
             $this->createArticleWidget($articleType);
-            $this->relatedPagesWidget($resultsType, $languages);
+            $this->relatedArticlesWidget($resultsType, $languages);
         }
     }
 
@@ -111,7 +113,7 @@ class BlogCreator
                 'limit' => 10,
                 'listable' => false,
                 'pagination' => true,
-                'url_params' => ['tag' => 'string'],
+                'url_params' => ['tag' => UrlParamTypeEnum::String->value],
                 'with_date' => true,
                 'with_image' => true,
                 'with_summary' => true,
@@ -119,10 +121,12 @@ class BlogCreator
         ]);
     }
 
-    public function createTagPage(Site $site, ?Page $parent, Collection $languages, ?Type $type = null, ?Layout $layout = null): Page
+    public function createTagPage(Site $site, ?Page $parent = null, ?Collection $languages = null, ?Type $type = null, ?Layout $layout = null): Page
     {
         $type ??= $this->createTagPageType();
         $layout ??= $this->getLayout(LayoutEnum::Results);
+        $languages ??= $site->languages;
+        $parent ??= $this->createTagsPage($site, $this->createBlogPage($site));
 
         $pageModel = CapellCore::getModel(CoreModelEnum::Page);
 
@@ -135,29 +139,25 @@ class BlogCreator
             'name' => __('capell-blog::generic.tag_page'),
         ]);
 
-        $page->forceFill([
-            'is_published' => true,
-            'is_current' => true,
-        ]);
-
         $page->save();
 
         $languages->each(function (Language $language) use ($page): void {
-            $pageTranslation = $page->translations()->firstOrCreate([
+            $translation = $page->translations()->firstOrCreate([
                 'language_id' => $language->id,
             ], [
-                'slug' => '*',
                 'title' => __('capell-blog::generic.tag_page_title'),
+                'meta' => ['slug' => '*'],
             ]);
         });
 
         return $page;
     }
 
-    public function createTagsPage(Site $site, ?Page $parent, Collection $languages, ?Type $type = null, ?Layout $layout = null, bool $createWidgets = false): Page
+    public function createTagsPage(Site $site, ?Page $parent, ?Collection $languages = null, ?Type $type = null, ?Layout $layout = null, bool $createWidgets = false): Page
     {
         $type ??= $this->getPageType(PageTypeEnum::System);
         $layout ??= self::createTagsLayout();
+        $languages ??= $site->languages;
 
         if ($createWidgets) {
             $this->createTagsWidget($languages);
@@ -176,22 +176,17 @@ class BlogCreator
             'name' => __('capell-blog::generic.tags_page'),
         ]);
 
-        $page->forceFill([
-            'is_published' => true,
-            'is_current' => true,
-        ]);
-
         $page->save();
 
         $languages->each(function (Language $language) use ($page): void {
             $page->translations()->firstOrCreate([
                 'language_id' => $language->id,
             ], [
-                'slug' => 'tags',
                 'title' => __('capell-blog::generic.tags_page_title'),
                 'content' => '<p>' . __('capell-blog::generic.tags_page_description') . '</p>',
                 'meta' => [
                     'label' => __('capell-blog::generic.tags'),
+                    'slug' => 'tags',
                 ],
             ]);
         });
@@ -249,8 +244,6 @@ class BlogCreator
 
         $page->forceFill([
             'name' => __('capell-blog::generic.blog_archive_page'),
-            'is_published' => true,
-            'is_current' => true,
         ]);
 
         $page->save();
@@ -259,10 +252,10 @@ class BlogCreator
             $page->translations()->firstOrCreate([
                 'language_id' => $language->id,
             ], [
-                'slug' => '*',
                 'title' => __('capell-blog::generic.blog_archive_title'),
                 'meta' => [
                     'description' => __('capell-blog::generic.archive'),
+                    'slug' => '*',
                 ],
             ]);
         });
@@ -292,7 +285,7 @@ class BlogCreator
                 'limit' => 10,
                 'listable' => false,
                 'pagination' => true,
-                'url_params' => ['date' => 'string'],
+                'url_params' => ['date' => UrlParamTypeEnum::String->value],
                 'with_date' => true,
                 'with_image' => true,
                 'with_summary' => true,
@@ -408,7 +401,7 @@ class BlogCreator
         $widget = Widget::query()->firstOrCreate([
             'key' => 'archives',
         ], [
-            'name' => __('capell-blog::generic.archive'),
+            'name' => __('capell-blog::generic.article_archives'),
             'type_id' => $type->id,
             'meta' => [
                 'component' => BlogWidgetComponentEnum::Archives,
@@ -450,6 +443,7 @@ class BlogCreator
             'type_id' => $type->id,
             'meta' => [
                 'component' => BlogWidgetComponentEnum::Tags,
+                'page_model' => Relation::getMorphAlias(CapellCore::getModel(\Capell\Blog\Enums\ModelEnum::Article)),
                 'size' => 'sm',
             ],
             'admin' => [
@@ -498,8 +492,6 @@ class BlogCreator
 
         $page->forceFill([
             'name' => __('capell-blog::generic.blog_archives_page'),
-            'is_published' => true,
-            'is_current' => true,
         ]);
 
         $page->save();
@@ -508,12 +500,12 @@ class BlogCreator
             $page->translations()->firstOrCreate([
                 'language_id' => $language->id,
             ], [
-                'slug' => str(__('capell-blog::generic.archives'))->slug(),
                 'title' => __('capell-blog::generic.archives'),
                 'content' => sprintf('<p>%s</p>', __('capell-blog::generic.blog_archives_description')),
                 'meta' => [
                     'title' => __('capell-blog::generic.blog_archives_title'),
                     'description' => __('capell-blog::generic.archives'),
+                    'slug' => str(__('capell-blog::generic.archives'))->slug(),
                 ],
             ]);
         });
@@ -521,7 +513,7 @@ class BlogCreator
         return $page;
     }
 
-    public function createArticleLayout(bool $createWidgets = false): Layout
+    public function createArticleLayout(bool $createWidgets = true): Layout
     {
         if ($createWidgets) {
             $languages = Language::all();
@@ -538,12 +530,12 @@ class BlogCreator
             $articleType = $this->createArticleWidgetType();
             $this->createArticleWidget($articleType);
 
-            $this->relatedPagesWidget($resultsType, $languages);
+            $this->relatedArticlesWidget($resultsType, $languages);
             $this->createTagsWidget($languages);
             $this->createArchivesWidget($languages);
         }
 
-        return Layout::query()->firstOrCreate(['key' => 'article'], [
+        return Layout::query()->firstOrCreate(['key' => BlogLayoutEnum::Article->value], [
             'name' => __('capell-blog::generic.article'),
             'group' => LayoutGroupEnum::Default->value,
             'containers' => [
@@ -565,7 +557,7 @@ class BlogCreator
                         'html_class' => 'sidebar-sticky space-y-8',
                     ],
                     'widgets' => [
-                        ['widget_key' => 'related-pages', 'meta' => ['hide_no_results' => true]],
+                        ['widget_key' => 'latest-articles', 'meta' => ['hide_no_results' => true]],
                         ['widget_key' => 'tags', 'meta' => ['hide_no_results' => true]],
                         ['widget_key' => 'archives', 'meta' => ['hide_no_results' => true]],
                     ],
@@ -577,7 +569,7 @@ class BlogCreator
     public function createArticlePageType(): Type
     {
         return Type::query()->firstOrCreate([
-            'key' => 'article',
+            'key' => BlogPageTypeEnum::Article->value,
             'type' => TypeEnum::Page,
         ], [
             'name' => __('capell-blog::generic.article'),
@@ -601,13 +593,13 @@ class BlogCreator
             'type_id' => $type->id,
             'meta' => [
                 'with_date' => true,
-                'with_author' => false,
+                'with_author' => true,
                 'with_next_prev' => true,
             ],
         ]);
     }
 
-    public function relatedPagesWidget(?Type $type = null, ?Collection $languages = null): Widget
+    public function relatedArticlesWidget(?Type $type = null, ?Collection $languages = null): Widget
     {
         if (! $type instanceof Type) {
             $typeCreator = resolve(LayoutTypeCreator::class);
@@ -627,6 +619,7 @@ class BlogCreator
                 'component' => BlogWidgetComponentEnum::PageRelated,
                 'limit' => 6,
                 'pagination' => false,
+                'page_model' => Relation::getMorphAlias(CapellCore::getModel(\Capell\Blog\Enums\ModelEnum::Article)),
                 'exclude_types' => ['home'],
                 'exclude_parent' => true,
                 'with_summary' => true,
@@ -645,7 +638,7 @@ class BlogCreator
             $widget->translations()->firstOrCreate([
                 'language_id' => $language->id,
             ], [
-                'title' => __('capell-layout::heading.related_pages'),
+                'title' => __('capell-mosaic::heading.related_pages'),
             ]);
         });
 
@@ -677,6 +670,7 @@ class BlogCreator
         ?Type $type = null,
         ?Layout $layout = null,
         ?Collection $languages = null,
+        array $meta = [],
     ): Page {
         if (! $type instanceof Type) {
             $type = self::createBlogPageType();
@@ -696,10 +690,10 @@ class BlogCreator
             'type_id' => $type->id,
         ]);
 
+        $page->mergeMeta($meta);
+
         $page->forceFill([
             'name' => __('capell-blog::generic.blog'),
-            'is_published' => true,
-            'is_current' => true,
         ]);
 
         $page->save();
@@ -709,10 +703,10 @@ class BlogCreator
                 'language_id' => $language->id,
             ], [
                 'title' => __('capell-blog::generic.latest_articles'),
-                'slug' => 'blog',
                 'meta' => [
                     'label' => __('capell-blog::generic.blog'),
                     'no_results' => __('capell-blog::messages.no_articles_found'),
+                    'slug' => 'blog',
                 ],
             ]);
         });
@@ -744,7 +738,7 @@ class BlogCreator
                 'page_group' => strtolower(ResourceEnum::Article->name),
                 'pagination' => true,
                 'sitemap' => true,
-                'url_params' => ['page' => 'int'],
+                'url_params' => ['page' => UrlParamTypeEnum::Int->value],
                 'with_date' => true,
                 'with_image' => true,
                 'with_summary' => true,
@@ -770,10 +764,12 @@ class BlogCreator
                 'component' => LivewireComponentsEnum::PagesWidget,
                 'livewire' => true,
                 'limit' => 5,
+                'page_model' => Relation::getMorphAlias(CapellCore::getModel(\Capell\Blog\Enums\ModelEnum::Article)),
                 'page_group' => strtolower(ResourceEnum::Article->name),
                 'pagination' => false,
                 'with_date' => true,
                 'with_image' => true,
+                'with_summary' => true,
                 'with_link_text' => true,
                 'margin' => ['b-lg'],
             ],

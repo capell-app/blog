@@ -7,25 +7,23 @@ namespace Capell\Blog\Filament\Resources\Tags\Tables;
 use Capell\Admin\Enums\FilamentColorEnum;
 use Capell\Admin\Filament\Components\Tables\Actions\EditAction;
 use Capell\Admin\Filament\Components\Tables\Actions\ReplicateAction;
+use Capell\Admin\Filament\Components\Tables\Columns\DateColumn;
 use Capell\Admin\Filament\Components\Tables\Columns\IdentifierColumn;
 use Capell\Admin\Filament\Components\Tables\Columns\NameColumn;
 use Capell\Admin\Filament\Components\Tables\Columns\SiteColumn;
 use Capell\Admin\Filament\Components\Tables\Columns\StatusIconColumn;
 use Capell\Admin\Filament\Components\Tables\Filters\StatusFilter;
 use Capell\Admin\Filament\Contracts\TableConfigurator;
-use Capell\Admin\Filament\Resources\Pages\PageResource;
-use Capell\Blog\Models\Tag;
 use Capell\Core\Models\Language;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Blade;
-use Illuminate\Support\HtmlString;
 
 class TagsTable implements TableConfigurator
 {
@@ -37,11 +35,17 @@ class TagsTable implements TableConfigurator
                     ->select('*')
                     ->withTranslatedLocales('name'),
             )
+            ->defaultSort('name')
             ->columns(static::getTableColumns())
             ->filters([
                 SelectFilter::make('site_id')
                     ->label(__('capell-admin::form.site'))
                     ->relationship(name: 'site', titleAttribute: 'name'),
+                TernaryFilter::make('featured')
+                    ->label(__('capell-mosaic::table.featured'))
+                    ->trueLabel(__('capell-admin::generic.yes'))
+                    ->falseLabel(__('capell-admin::generic.no'))
+                    ->placeholder(__('capell-admin::generic.all')),
                 StatusFilter::make('status'),
             ])
             ->recordActions([
@@ -74,7 +78,7 @@ class TagsTable implements TableConfigurator
                     },
                 ),
             TextColumn::make('slug')
-                ->label(__('capell-layout::table.slug'))
+                ->label(__('capell-blog::table.slug'))
                 ->searchable()
                 ->sortable()
                 ->color(FilamentColorEnum::LightGray->value)
@@ -84,47 +88,20 @@ class TagsTable implements TableConfigurator
                 ->toggleable(isToggledHiddenByDefault: true)
                 ->view('capell-admin::components.tables.columns.locale-flags'),
             SiteColumn::make('site.name'),
-            TextColumn::make('pages_count')
-                ->label(__('capell-admin::table.total_pages'))
-                ->counts('pages')
+            TextColumn::make('taggables_count')
+                ->label(__('capell-blog::table.total_taggables'))
+                ->counts('taggables')
                 ->sortable()
-                ->alignCenter()
+                ->alignRight()
                 ->numeric()
-                ->disabledClick()
-                ->toggleable()
-                ->formatStateUsing(function (Tag $record, $state): ?HtmlString {
-                    if (! $state) {
-                        return null;
-                    }
-
-                    $url = PageResource::getUrl('index', ['tableFilters[tags][value]' => $record->id]);
-
-                    return new HtmlString(
-                        Blade::render('capell-admin::components.tables.url', ['state' => $state, 'url' => $url]),
-                    );
-                }),
-            IconColumn::make('featured')
-                ->label(__('capell-layout::table.featured'))
-                ->trueIcon('heroicon-o-star')
-                ->falseIcon(false)
-                ->color(fn (Tag $record): string => $record->featured ? 'primary' : 'gray')
+                ->toggleable(),
+            ToggleColumn::make('featured')
+                ->label(__('capell-mosaic::table.featured'))
                 ->alignCenter()
                 ->toggleable(),
             StatusIconColumn::make('status'),
-            TextColumn::make('created_at')
-                ->label(__('capell-admin::table.created_at'))
-                ->sortable()
-                ->since()
-                ->size('sm')
-                ->alignRight()
-                ->toggleable(isToggledHiddenByDefault: true),
-            TextColumn::make('updated_at')
-                ->label(__('capell-admin::table.updated_at'))
-                ->sortable()
-                ->since()
-                ->size('sm')
-                ->alignRight()
-                ->toggleable(),
+            DateColumn::make('created_at'),
+            DateColumn::make('updated_at'),
         ];
     }
 }

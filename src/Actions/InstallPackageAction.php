@@ -9,8 +9,8 @@ use Capell\Core\Enums\LayoutEnum;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\Type;
-use Capell\Layout\Enums\LayoutTypeEnum;
-use Capell\Layout\Enums\WidgetTypeEnum;
+use Capell\Mosaic\Enums\LayoutTypeEnum;
+use Capell\Mosaic\Enums\WidgetTypeEnum;
 use Exception;
 use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
@@ -83,7 +83,7 @@ class InstallPackageAction
         Site::with('languages')->each(function (Site $site) use ($blogCreator, $resultsWidgetType): void {
             $blogCreator->createTagsWidget($site->languages);
 
-            $blogCreator->relatedPagesWidget(type: $resultsWidgetType, languages: $site->languages);
+            $blogCreator->relatedArticlesWidget(type: $resultsWidgetType);
 
             CreateBlogPagesAction::run($site);
         });

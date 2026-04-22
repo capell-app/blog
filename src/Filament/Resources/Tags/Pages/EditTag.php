@@ -10,6 +10,7 @@ use Capell\Admin\Filament\Actions\DeleteAction;
 use Capell\Admin\Filament\Concerns\HasPageCacheNotification;
 use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Filament\Resources\Tags\TagResource;
+use Capell\Blog\Models\Tag;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\EditRecord;
@@ -39,7 +40,7 @@ class EditTag extends EditRecord implements PageCacheNotifiable
             return static::$title;
         }
 
-        return new HtmlString(__('capell-layout::heading.edit_tag_record', [
+        return new HtmlString(__('capell-mosaic::heading.edit_tag_record', [
             'name' => Str::limit($this->getRecordTitle(), 40),
         ]));
     }
@@ -52,7 +53,7 @@ class EditTag extends EditRecord implements PageCacheNotifiable
             ActionGroup::make([
                 CreateAction::make()
                     ->record($this->getRecord())
-                    ->url(fn ($record) => static::getResource()::getUrl('create')),
+                    ->url(fn (Tag $record) => static::getResource()::getUrl('create')),
             ]),
         ];
     }

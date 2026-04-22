@@ -7,19 +7,23 @@ namespace Capell\Blog\Providers;
 use Capell\Admin\Enums\ResourceEnum as AdminResourceEnum;
 use Capell\Admin\Enums\SchemaTypeEnum;
 use Capell\Admin\Facades\CapellAdmin;
-use Capell\Admin\Providers\AdminServiceProvider;
 use Capell\Blog\Console\Commands\CreateBlogPagesCommand;
 use Capell\Blog\Console\Commands\DemoCommand;
+use Capell\Blog\Console\Commands\FakerCommand;
 use Capell\Blog\Console\Commands\InstallCommand;
 use Capell\Blog\Console\Commands\SetupCommand;
 use Capell\Blog\Enums\LivewirePageComponentEnum;
 use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Enums\WidgetComponentEnum;
 use Capell\Blog\Enums\WidgetSchemaEnum;
-use Capell\Blog\Filament\Resources\Articles\Schemas\Types\ArticlePageSchema;
+use Capell\Blog\Filament\Schemas\Articles\ArticlePageSchema;
 use Capell\Blog\Listeners\AddBlogPagesToNavigation;
+use Capell\Blog\Listeners\ArticleTranslationSavedListener;
+use Capell\Blog\Models\Article;
 use Capell\Blog\Models\Tag;
+use Capell\Blog\Models\Taggable;
 use Capell\Blog\Support\BlogModelRegistrar;
+use Capell\Blog\Support\Creator\ArticleCreator;
 use Capell\Blog\Support\Creator\BlogCreator;
 use Capell\Blog\Support\Loader\BlogLoader;
 use Capell\Blog\Support\Sitemap\ArchivesSitemap;
@@ -31,22 +35,25 @@ use Capell\Blog\View\Components\AssetAfterTitle;
 use Capell\Blog\View\Components\Footer\Pages;
 use Capell\Blog\View\Components\Footer\Tags;
 use Capell\Blog\View\Components\Page\BeforeContentTags;
+use Capell\Core\Data\PageTypeData;
+use Capell\Core\Data\VendorAssetData;
 use Capell\Core\Enums\ModelEnum as CoreModelEnum;
 use Capell\Core\Events\NavigationCreating;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
+use Capell\Core\Models\Translation;
 use Capell\Core\Models\Type;
 use Capell\Core\Support\Packages\AbstractPackageServiceProvider;
 use Capell\Core\Support\StaticSite\StaticSiteExtensionRegistry;
+use Capell\Core\Workspaces\WorkspaceRegistry;
 use Capell\Frontend\Data\RenderHookContext;
 use Capell\Frontend\Enums\RenderHookLocation;
-use Capell\Frontend\Providers\FrontendServiceProvider;
 use Capell\Frontend\Support\Render\RenderHookRegistry;
-use Capell\Layout\Enums\ComponentTypeEnum;
-use Capell\Layout\Enums\ModelEnum;
-use Capell\Layout\Enums\TypeSchemaEnum as LayoutSchemaEnum;
-use Capell\Layout\Models\Content;
+use Capell\Mosaic\Enums\ComponentTypeEnum;
+use Capell\Mosaic\Enums\ModelEnum;
+use Capell\Mosaic\Enums\TypeSchemaEnum as LayoutSchemaEnum;
+use Capell\Mosaic\Models\Section;
 use Composer\InstalledVersions;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
@@ -63,7 +70,10 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
 
     public static string $packageName = 'capell-app/blog';
 
-    public static string $description = 'Article page type with blog archives.';
+    public function bootingPackage(): void
+    {
+        $this->registerTranslationEvents();
+    }
 
     public function configurePackage(Package $package): void
     {
@@ -74,6 +84,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
             ->hasCommands([
                 CreateBlogPagesCommand::class,
                 DemoCommand::class,
+                FakerCommand::class,
                 InstallCommand::class,
                 SetupCommand::class,
             ]);
@@ -85,7 +96,8 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
             ->registerResources()
             ->registerModels()
             ->registerRelationships()
-            ->registerPackageMetadata();
+            ->registerPackageMetadata()
+            ->registerPackageAssets();
 
         $this->booted(function (): void {
             if (! $this->isPackageInstalled()) {
@@ -114,6 +126,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
             ->registerDefaultPages()
             ->registerBladeComponents()
             ->registerLivewireComponents()
+            ->registerTypes()
             ->registerRenderHooks()
             ->registerStaticSiteExtensions();
     }
@@ -125,22 +138,17 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
             type: static::getType(),
             serviceProviderClass: static::class,
             path: realpath(__DIR__ . '/../..'),
-            sort: 9,
-            description: static::getDescription(),
-            permissions: $this->getPackagePermissions(),
-            installCommand: 'capell:blog-install',
-            setupCommand: 'capell:blog-setup',
-            demoCommand: 'capell:blog-demo',
-            demoParams: ['user', 'sites'],
-            requirements: [
-                AdminServiceProvider::$packageName,
-                FrontendServiceProvider::$packageName,
-            ],
             version: $this->getVersion(),
-            url: 'https://capell.app',
-            tailwindSources: [
-                'resources/views/**/*.blade.php',
-            ],
+            permissions: $this->getPackagePermissions(),
+        );
+
+        return $this;
+    }
+
+    private function registerPackageAssets(): self
+    {
+        CapellCore::registerVendorAsset(
+            VendorAssetData::tailwindSource('resources/views/**/*.blade.php', static::$packageName),
         );
 
         return $this;
@@ -177,13 +185,17 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
     {
         BlogModelRegistrar::register();
 
+        WorkspaceRegistry::register(Article::class);
+        WorkspaceRegistry::register(Tag::class);
+        WorkspaceRegistry::register(Taggable::class);
+
         return $this;
     }
 
     private function registerModelRelations(): self
     {
         CapellCore::registerModelRelations(CoreModelEnum::Page, 'tags');
-        CapellCore::registerModelRelations(ModelEnum::Content, 'tags');
+        CapellCore::registerModelRelations(ModelEnum::Section, 'tags');
 
         return $this;
     }
@@ -198,15 +210,31 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
 
     private function registerLivewireComponents(): self
     {
-        foreach (LivewirePageComponentEnum::getComponents() as $name => $component) {
-            if (! $component) {
-                continue;
-            }
+        if ($this->isLivewireV3()) {
+            foreach (LivewirePageComponentEnum::getComponents() as $name => $component) {
+                if (! $component) {
+                    continue;
+                }
 
-            Livewire::component($name, $component);
+                Livewire::component($name, $component);
+            }
+        } else {
+            Livewire::addNamespace(
+                namespace: 'capell-blog',
+                classNamespace: 'Capell\\Blog\\Livewire',
+                classPath: __DIR__ . '/../Livewire',
+                classViewPath: __DIR__ . '/../../resources/views/livewire',
+            );
         }
 
         return $this;
+    }
+
+    private function isLivewireV3(): bool
+    {
+        $version = InstalledVersions::getVersion('livewire/livewire');
+
+        return version_compare($version, '4.0.0', '<');
     }
 
     private function registerRenderHooks(): self
@@ -216,7 +244,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
             fn (RenderHookContext $context): ?View => resolve(Tags::class, [
                 'item' => $context->item,
             ])
-                ?->render() ?: null,
+                ?->render(),
             target: 'footer.index',
         );
 
@@ -225,37 +253,38 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
             fn (RenderHookContext $context): ?View => resolve(Pages::class, [
                 'item' => $context->item,
             ])
-                ?->render() ?: null,
+                ?->render(),
             target: 'footer.index',
         );
 
         resolve(RenderHookRegistry::class)->register(
             RenderHookLocation::ArticleMeta,
             fn (RenderHookContext $context): ?View => resolve(ArticleMeta::class, [
-                'withAuthor' => $context->withAuthor ?? false,
-                'author' => $context->author ?? null,
+                'item' => $context->item ?? null,
+                'withAuthor' => $context->item['withAuthor'] ?? false,
+                'author' => $context->item['author'] ?? null,
             ])
-                ?->render() ?: null,
+                ?->render(),
         );
 
         resolve(RenderHookRegistry::class)->register(
             RenderHookLocation::BeforeContent,
             fn (RenderHookContext $context): ?View => resolve(BeforeContentTags::class, [
                 'item' => $context->item ?? null,
-                'tags' => $context->item->tags ?? null,
+                'tags' => $context->item['tags'] ?? null,
             ])
-                ?->render() ?: null,
+                ?->render(),
         );
 
         resolve(RenderHookRegistry::class)->register(
             RenderHookLocation::AfterTitle,
             fn (RenderHookContext $context): ?View => resolve(AssetAfterTitle::class, [
-                'publishDate' => $context->publishDate ?? null,
-                'publishDatePosition' => $context->publishDatePosition ?? null,
-                'tags' => $context->tags ?? null,
-                'publishDateOutput' => $context->publishDateOutput ?? null,
+                'publishDate' => $context->item['publishDate'] ?? null,
+                'publishDatePosition' => $context->item['publishDatePosition'] ?? null,
+                'tags' => $context->item['tags'] ?? null,
+                'publishDateOutput' => $context->item['publishDateOutput'] ?? null,
             ])
-                ?->render() ?: null,
+                ?->render(),
         );
 
         return $this;
@@ -296,8 +325,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
                 Tag::class,
                 'taggable',
                 'taggables',
-            )
-                ->ordered(),
+            ),
         );
 
         Site::resolveRelationUsing(
@@ -305,15 +333,15 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
             fn (Site $model): HasMany => $model->hasMany(Tag::class, 'site_id'),
         );
 
-        if (class_exists(Content::class)) {
-            Content::resolveRelationUsing(
+        if (class_exists(Section::class)) {
+            Section::resolveRelationUsing(
                 'tags',
-                fn (Content $model): MorphToMany => $model->morphToMany(Tag::class, 'taggable', 'taggables'),
+                fn (Section $model): MorphToMany => $model->morphToMany(Tag::class, 'taggable', 'taggables'),
             );
 
             Tag::resolveRelationUsing(
-                'contents',
-                fn (Tag $model): MorphToMany => $model->morphedByMany(Content::class, 'taggable', 'taggables'),
+                'sections',
+                fn (Tag $model): MorphToMany => $model->morphedByMany(Section::class, 'taggable', 'taggables'),
             );
         }
 
@@ -384,6 +412,27 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
         if (! $registry->has('blog-tags-archives')) {
             $registry->register('blog-tags-archives', resolve(BlogStaticSiteExtension::class));
         }
+
+        return $this;
+    }
+
+    private function registerTranslationEvents(): self
+    {
+        Event::listen('eloquent.saved: ' . Translation::class, ArticleTranslationSavedListener::class);
+
+        return $this;
+    }
+
+    private function registerTypes(): self
+    {
+        CapellCore::registerPageType(
+            new PageTypeData(
+                name: 'article',
+                model: Article::class,
+                label: fn (): string => __('capell-blog::generic.article'),
+                creatorClass: ArticleCreator::class,
+            ),
+        );
 
         return $this;
     }

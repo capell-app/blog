@@ -5,25 +5,18 @@ declare(strict_types=1);
 ?>
 
 @php
-    use Capell\Blog\Support\Loader\TagLoader;
     use Capell\Frontend\Facades\Frontend;
     use Filament\Support\Icons\Heroicon;
 
     $language = Frontend::language();
-    $site = Frontend::site();
 @endphp
 
 @props([
     'linkClass' => '',
-    'tagPage' => null,
+    'tagPage',
     'tags',
     'tagIcon' => 'heroicon-' . Heroicon::OutlinedTag->value,
 ])
-@php
-    if (! $tagPage) {
-        $tagPage = TagLoader::getTagResultsPage($site, $language);
-    }
-@endphp
 
 @if ($tags && $tagPage)
     <div {{ $attributes->merge(['class' => 'flex items-center gap-2']) }}>
@@ -34,10 +27,7 @@ declare(strict_types=1);
         <div class="flex flex-wrap gap-x-2 gap-y-1.5">
             @foreach ($tags as $tag)
                 @php($url = $tagPage->pageUrl->full_url . '/' . $tag->getTranslation('slug', $language->code))
-                <x-capell-blog::tag
-                    :$url
-                    wire:navigate
-                >
+                <x-capell-blog::tag :$url wire:navigate>
                     {{ $tag->getTranslation('name', $language->code) }}
                 </x-capell-blog::tag>
             @endforeach

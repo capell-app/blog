@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Capell\Blog\Filament\Resources\Tags\Schemas;
 
 use Capell\Admin\Filament\Components\Forms\NameInput;
-use Capell\Admin\Filament\Components\Forms\Site\SiteSelect;
+use Capell\Admin\Filament\Components\Forms\SiteSelect;
 use Capell\Admin\Filament\Components\Forms\StatusToggle;
 use Capell\Admin\Filament\Contracts\FormConfigurator;
 use Capell\Admin\Support\SlugGenerator;
@@ -39,7 +39,7 @@ class TagForm implements FormConfigurator
                         }),
 
                     TextInput::make('slug')
-                        ->label(__('capell-layout::form.slug'))
+                        ->label(__('capell-mosaic::form.slug'))
                         ->alphaDash()
                         ->required()
                         ->maxLength(128)
@@ -52,15 +52,16 @@ class TagForm implements FormConfigurator
                     SiteSelect::make('site_id'),
 
                     Grid::make()
+                        ->columnSpanFull()
                         ->schema([
                             Checkbox::make('featured')
-                                ->label(__('capell-layout::form.featured'))
+                                ->label(__('capell-mosaic::form.featured'))
                                 ->helperText(__('capell-admin::generic.featured_hint')),
 
                             StatusToggle::make('status'),
                         ]),
                 ])
-                ->contained(in_array($schema->getOperation(), ['create', 'edit'])),
+                ->contained(in_array($schema->getOperation(), ['create', 'edit'], true)),
         ];
     }
 }
