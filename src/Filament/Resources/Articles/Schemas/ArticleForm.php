@@ -8,13 +8,14 @@ use Capell\Admin\Data\Configurators\ConfiguratorContextData;
 use Capell\Admin\Enums\ConfiguratorTypeEnum;
 use Capell\Admin\Filament\Contracts\FormConfigurator;
 use Capell\Admin\Support\Configurators\ConfiguratorResolver;
+use Capell\Blog\Actions\EnsureArticlePublishingDefaultsAction;
 use Capell\Blog\Filament\Configurators\Articles\ArticlePageConfigurator;
 use Capell\Blog\Filament\Resources\Articles\ArticleResource;
 use Capell\Blog\Models\Article;
-use Capell\Blog\Support\Creator\BlogCreator;
 use Capell\Core\Contracts\Pageable;
 use Capell\Core\Models\Type;
 use Filament\Schemas\Schema;
+use RuntimeException;
 
 class ArticleForm implements FormConfigurator
 {
@@ -43,7 +44,12 @@ class ArticleForm implements FormConfigurator
         $defaultType = Article::getDefaultType($resourceClass);
 
         if (! $defaultType instanceof Type) {
-            $defaultType = resolve(BlogCreator::class)->createArticlePageType();
+            EnsureArticlePublishingDefaultsAction::run();
+            $defaultType = Article::getDefaultType($resourceClass);
+        }
+
+        if (! $defaultType instanceof Type) {
+            throw new RuntimeException('Unable to resolve article page type.');
         }
 
         $adminType = $resolver->resolveForType($defaultType, ConfiguratorTypeEnum::Page, ArticlePageConfigurator::getKey());
