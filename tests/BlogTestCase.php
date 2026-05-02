@@ -9,6 +9,7 @@ use Capell\Admin\Providers\AdminServiceProvider;
 use Capell\Admin\Providers\Filament\AdminPanelProvider;
 use Capell\Blog\Providers\AdminServiceProvider as BlogAdminServiceProvider;
 use Capell\Blog\Providers\BlogServiceProvider;
+use Capell\Blog\Providers\ConsoleServiceProvider as BlogConsoleServiceProvider;
 use Capell\Blog\Providers\FrontendServiceProvider as BlogFrontendServiceProvider;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Media;
@@ -21,6 +22,7 @@ use Capell\Tags\Providers\TagsServiceProvider;
 use Capell\Tests\AbstractTestCase;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Blade;
 use Livewire\LivewireServiceProvider;
 use Override;
 
@@ -29,6 +31,8 @@ class BlogTestCase extends AbstractTestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        Blade::anonymousComponentPath(__DIR__ . '/../../default-theme/resources/views/components', 'capell');
 
         $this->registerAndMigrateSettings(
             CapellCore::getSettingMigrations(),
@@ -64,6 +68,7 @@ class BlogTestCase extends AbstractTestCase
             FrontendServiceProvider::class,
             BlogServiceProvider::class,
             BlogAdminServiceProvider::class,
+            BlogConsoleServiceProvider::class,
             BlogFrontendServiceProvider::class,
             DefaultThemeServiceProvider::class,
             TagsServiceProvider::class,
@@ -82,6 +87,7 @@ class BlogTestCase extends AbstractTestCase
 
         CapellCore::forcePackageInstalled(AdminServiceProvider::$packageName);
         CapellCore::forcePackageInstalled(BlogServiceProvider::$packageName);
+        CapellCore::forcePackageInstalled('capell-app/default-theme');
         CapellCore::forcePackageInstalled(FrontendServiceProvider::$packageName);
         CapellCore::forcePackageInstalled(MosaicServiceProvider::$packageName);
 

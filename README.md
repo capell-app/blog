@@ -1,57 +1,92 @@
-# Capell Blog
+# Blog
 
-**Product group:** Capell Foundation
-**Tier:** Free
+Status: **Available, schema-owning** · Kind: **package** · Tier: **free** · Bundle: **foundation** · Contexts: **admin, frontend, console** · Product group: **Capell Foundation**
 
-Capell Blog adds article publishing to Capell: article pages, tags, archives, RSS, sitemap integration, and optional Mosaic widgets.
+## What This Plugin Adds
 
-![Blog hero banner](./HERO_BANNER.svg)
+Blog adds article publishing, archive pages, tag pages, article widgets, sitemaps, and frontend Livewire page components to Capell.
 
-## When to install it
+- Article Filament resource.
+- Blog, archive, and tag frontend Livewire components.
+- Article widgets and configurators for Mosaic.
+- Sitemap extensions for articles, archives, and tags.
+- Commands to install and create blog pages.
 
-Install Blog when the site needs chronological content: news, guides, press releases, changelogs, events, or editorial articles that should appear in archives and feeds.
+## Why It Matters
 
-## Quick install
+**For developers:** Builds on core pages, layouts, translations, page URLs, Mosaic widgets, and tags while keeping article-specific logic in actions and loaders.
 
-```bash
-composer require capell-app/blog
-php artisan capell:blog-install
-php artisan capell:blog-demo
-```
+**For teams:** Gives editors a dedicated article workflow that still fits the same structured publishing foundation as pages.
 
-Create the default Blog, Archives, and Tags pages for a site:
+## Screens And Workflow
 
-```bash
-php artisan capell:blog-create-pages 1
-```
+Screenshots are generated from [docs/screenshots.json](docs/screenshots.json) during package deployment.
 
-## What appears in the admin
+- Articles admin index.
+- Create/edit article form.
+- Blog page frontend output.
+- Archive page frontend output.
+- Tag page frontend output.
 
-| Area           | What editors can do                                                         |
-| -------------- | --------------------------------------------------------------------------- |
-| Articles       | Create, edit, tag, publish, and schedule article pages                      |
-| Tags           | Manage the tag taxonomy used by articles                                    |
-| Pages          | Use generated Blog, Archives, and Tags pages                                |
-| Mosaic widgets | Place Article, Related, Archives, and Tags widgets when Mosaic is installed |
+## Technical Shape
 
-## What developers get
+- BlogServiceProvider, AdminServiceProvider, ConsoleServiceProvider, and FrontendServiceProvider register package surfaces.
+- Migration creates articles.
+- Model: Article.
+- Filament resource: ArticleResource.
+- Livewire pages: Blog, Archive, Tag.
+- Listeners sync navigation and translation changes.
 
-- Article page type and schema registration.
-- Workspace-aware tags and article records.
-- Livewire listing pages for blog index, date archives, and tag views.
-- Sitemap entries for articles, archive pages, and tag pages.
+## Data Model
 
-## Common commands
+- articles stores uuid, workspace, type, layout, site, meta, visible_from, and visible_until.
+- Articles connect to sites, types, layouts, page URLs, translations, Mosaic widget assets, and tags.
+- Blog requires Mosaic before install.
+- Deletion and retention behaviour should be verified against the host application policy.
 
-| Command                                  | Purpose                                                |
-| ---------------------------------------- | ------------------------------------------------------ |
-| `php artisan capell:blog-install`        | Install migrations, config, resources, and permissions |
-| `php artisan capell:blog-create-pages 1` | Create default blog pages for site `1`                 |
-| `php artisan capell:blog-demo`           | Seed demo articles                                     |
-| `php artisan capell:blog-setup`          | Setup-only phase used by package installers            |
+## Install Impact
 
-## Deeper docs
+- Adds articles table and article admin resource.
+- Adds blog frontend components and sitemap extensions.
+- Adds console commands for setup, install, demo, faker, and page creation.
+- Requires Mosaic package first.
+- May add blog pages to navigation through listener behaviour.
 
-- [Hosted documentation](https://docs.capell.app/packages/blog/)
-- [Database reference](docs/blog-database.md)
-- [API reference](docs/blog-api.md)
+## Commands
+
+- `capell:blog-create-pages {site : The ID of the site to create blog pages for}` (packages/blog/src/Console/Commands/CreateBlogPagesCommand.php)
+- `capell:blog-demo {--sites=} {--user=} {--limit=}` (packages/blog/src/Console/Commands/DemoCommand.php)
+- `capell:blog-faker {--count=25} {--sites=} {--languages=} {--force}` (packages/blog/src/Console/Commands/FakerCommand.php)
+- `capell:blog-install` (packages/blog/src/Console/Commands/InstallCommand.php)
+- `capell:blog-setup {--user= : Ignored — accepted for compatibility with capell:install} {--sites= : Ignored — accepted for compatibility with capell:install} {--languages= : Ignored — accepted for compatibility with capell:install} {--url= : Ignored — accepted for compatibility with capell:install}` (packages/blog/src/Console/Commands/SetupCommand.php)
+
+## Admin And Access
+
+- ArticleResource (packages/blog/src/Filament/Resources/Articles/ArticleResource.php, slug `article`)
+- CreateArticle (packages/blog/src/Filament/Resources/Articles/Pages/CreateArticle.php)
+- EditArticle (packages/blog/src/Filament/Resources/Articles/Pages/EditArticle.php)
+- ListArticles (packages/blog/src/Filament/Resources/Articles/Pages/ListArticles.php)
+
+- Gate: ArticleHealthWidgetAbstract: `developer`, `admin`, `super_admin`
+- Gate: TopPagesWidgetAbstract: `admin`, `super_admin`
+- Gate: TrafficChartWidgetAbstract: `admin`, `super_admin`
+
+## Common Pitfalls
+
+- Install Mosaic first.
+- Run the package setup before expecting archive/tag pages.
+- Check layouts before creating article records.
+- Cache and sitemap output may need regeneration after setup.
+
+## Quick Start
+
+1. Install the package with `composer require capell-app/blog`.
+2. Run the package migrations or the Capell package installer required by the host app.
+3. Open the new admin or frontend surface and verify the result.
+
+## Next Steps
+
+- [docs/overview.md](docs/overview.md)
+- [../mosaic/README.md](../mosaic/README.md)
+- [../tags/README.md](../tags/README.md)
+- [../seo-tools/README.md](../seo-tools/README.md)

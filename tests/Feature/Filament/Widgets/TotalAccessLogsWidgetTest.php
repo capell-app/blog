@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Capell\Admin\Filament\Widgets\Health\TotalAccessLogsWidget;
+use Capell\Admin\Filament\Widgets\Health\TotalPageViewsWidget;
 use Capell\Blog\Models\Article;
 use Capell\Core\Models\AccessLog;
 use Capell\Tests\Support\Concerns\CreatesAdminUser;
@@ -19,7 +19,7 @@ it('renders the access logs widget', function (): void {
 
     $accessLog = AccessLog::factory()->page($article)->create();
 
-    livewire(TotalAccessLogsWidget::class)
+    livewire(TotalPageViewsWidget::class)
         ->assertOk()
         ->assertCanSeeTableRecords([$accessLog]);
 });

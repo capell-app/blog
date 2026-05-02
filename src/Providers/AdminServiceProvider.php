@@ -27,7 +27,7 @@ final class AdminServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->registerResources();
+        //
     }
 
     public function boot(): void
@@ -36,6 +36,7 @@ final class AdminServiceProvider extends ServiceProvider
             return;
         }
 
+        $this->registerResources();
         $this->registerWidgetComponents();
         $this->registerConfigurators();
         $this->registerDefaultPages();

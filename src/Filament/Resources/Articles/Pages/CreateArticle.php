@@ -18,7 +18,8 @@ class CreateArticle extends CreatePage
     /** @return class-string<ArticleResource> */
     public static function getResource(): string
     {
-        return CapellAdmin::getResource(AdminResourceEnum::Page, strtolower(ResourceEnum::Article->name));
+        return CapellAdmin::getResourceIfExists(AdminResourceEnum::Page, strtolower(ResourceEnum::Article->name))
+            ?? ArticleResource::class;
     }
 
     protected function beforeFill(): void
