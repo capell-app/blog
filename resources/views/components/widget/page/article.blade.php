@@ -1,10 +1,5 @@
-<?php
-
-declare(strict_types=1);
-
-?>
-
 @php
+    use Capell\Blog\View\Components\ArticleMeta;
     use Capell\Frontend\Enums\RenderHookLocation;
     use Capell\Frontend\Facades\Frontend;
     use Capell\Frontend\Support\Render\RenderHookRegistry;
@@ -24,6 +19,33 @@ declare(strict_types=1);
     'withDate' => (bool) $widget->getMeta('with_date'),
     'withNextPrev' => (bool) $widget->getMeta('with_next_prev'),
 ])
+@php
+    $author ??= $withAuthor ? $page->loadMissing('creator')->creator : null;
+    $nextPage ??= null;
+    $previousPage ??= null;
+    $articleMeta = app(RenderHookRegistry::class)->renderAll(
+        RenderHookLocation::ArticleMeta,
+        [
+            'withAuthor' => $withAuthor,
+            'author' => $author,
+        ],
+    );
+
+    $articleMetaComponent = resolve(ArticleMeta::class, [
+        'withAuthor' => $withAuthor,
+        'author' => $author,
+    ]);
+
+    if ($articleMeta === '') {
+        $articleMeta = view('capell-blog::components.article-meta', [
+            'tagPage' => $articleMetaComponent->tagPage,
+            'tags' => $articleMetaComponent->tags,
+            'author' => $author,
+            'withAuthor' => $withAuthor,
+        ])->render();
+    }
+@endphp
+
 <x-capell-mosaic::widget.wrapper
     :$container
     :$containerKey
@@ -53,15 +75,29 @@ declare(strict_types=1);
         </x-capell::content>
     </div>
 
-    {!!
-        app(RenderHookRegistry::class)->renderAll(
-            RenderHookLocation::ArticleMeta,
-            [
-                'withAuthor' => $withAuthor,
-                'author' => $author,
-            ],
-        )
-    !!}
+    @if ($articleMeta !== '')
+        {!! $articleMeta !!}
+    @else
+        <div
+            class="article-meta mb-4 mt-10 flex items-end justify-between border-t border-black/10 pt-8 dark:border-gray-700/50"
+        >
+            @if ($withAuthor && $author)
+                <x-capell-blog::page.author :$author />
+            @endif
+
+            @if ($articleMetaComponent->tags->isNotEmpty())
+                <div
+                    class="article-tags flex flex-col items-center gap-x-10 gap-y-6 md:flex-row md:justify-between lg:flex-row-reverse"
+                >
+                    <x-capell-blog::page.tags
+                        :tagPage="$articleMetaComponent->tagPage"
+                        :tags="$articleMetaComponent->tags"
+                        with_tag_icon="true"
+                    />
+                </div>
+            @endif
+        </div>
+    @endif
 
     @if ($withNextPrev && ($previousPage || $nextPage))
         <div
@@ -84,5 +120,3 @@ declare(strict_types=1);
         </div>
     @endif
 </x-capell-mosaic::widget.wrapper>
-
-<?php

@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Capell\Blog\View\Components\Footer;
 
 use Capell\Blog\Enums\BlogTypeGroupEnum;
-use Capell\Blog\Enums\ModelEnum;
 use Capell\Core\Enums\PageOrderEnum;
-use Capell\Core\Facades\CapellCore;
 use Capell\Frontend\Facades\Frontend;
 use Capell\Frontend\Support\Loader\PageLoader;
 use Illuminate\Contracts\View\View as ViewContract;
@@ -27,7 +25,7 @@ class Pages extends Component
             ordering: PageOrderEnum::Latest,
             pageGroup: BlogTypeGroupEnum::Article,
             withImage: true,
-            morphModel: CapellCore::getModel(ModelEnum::Article),
+            morphModel: 'article',
         );
     }
 

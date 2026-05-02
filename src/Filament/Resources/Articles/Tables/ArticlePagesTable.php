@@ -20,14 +20,13 @@ use Capell\Admin\Filament\Contracts\HasPageResource;
 use Capell\Admin\Filament\Contracts\TableConfigurator;
 use Capell\Admin\Filament\Contracts\ValidatesDelete;
 use Capell\Admin\Support\Loader\SiteLoader;
-use Capell\Blog\Models\Tag;
+use Capell\Blog\Models\Article;
 use Capell\Core\Actions\GetEditPageResourceUrlAction;
 use Capell\Core\Actions\PageDeletedAction;
 use Capell\Core\Contracts\Pageable;
-use Capell\Core\Enums\ModelEnum;
-use Capell\Core\Facades\CapellCore; // adjust if different namespace
-use Capell\Core\Models\Language;
+use Capell\Core\Models\Language; // adjust if different namespace
 use Capell\Core\Models\Page;
+use Capell\Tags\Models\Tag;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -318,7 +317,7 @@ class ArticlePagesTable implements TableConfigurator
 
                     if (isset($data['language_id']) && $data['language_id'] !== null && $data['language_id'] !== '') {
                         /** @var class-string<Language> $model */
-                        $model = CapellCore::getModel(ModelEnum::Language);
+                        $model = Language::class;
 
                         $indicators['language_id'] = __(
                             'capell-admin::filter.language',
@@ -328,7 +327,7 @@ class ArticlePagesTable implements TableConfigurator
 
                     if (isset($data['canonical_page_id']) && $data['canonical_page_id'] !== null && $data['canonical_page_id'] !== '') {
                         /** @var class-string<Page> $model */
-                        $model = CapellCore::getModel(\Capell\Blog\Enums\ModelEnum::Article);
+                        $model = Article::class;
 
                         $indicators['canonical_page_id'] = __(
                             'capell-admin::filter.canonical_page',
@@ -350,7 +349,7 @@ class ArticlePagesTable implements TableConfigurator
     protected static function getLanguageSearchResults(HasTable $livewire, ?string $search = null): array
     {
         /* @var class-string<Language> $model */
-        $model = CapellCore::getModel(ModelEnum::Language);
+        $model = Language::class;
 
         $activeTabSiteId = $livewire instanceof ListRecords ? $livewire->activeTab : null;
 
@@ -392,7 +391,7 @@ class ArticlePagesTable implements TableConfigurator
                     $languageId = $livewire->getTableFilterState('filter')['language_id'] ?? null;
                     if ($languageId !== null) {
                         /** @var class-string<Language> $model */
-                        $model = CapellCore::getModel(ModelEnum::Language);
+                        $model = Language::class;
 
                         $code = $model::query()->find($languageId, 'code')?->code;
                         if ($code) {

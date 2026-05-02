@@ -17,6 +17,12 @@ class GenerateArchiveUrl
 
     public function handle(PageUrl $url, ArchiveMonthData $date): string
     {
-        return sprintf('%s/%d-%02d', $url->full_url, $date->year, $date->month);
+        $archiveDate = sprintf('%d-%02d', $date->year, $date->month);
+
+        if (str_contains($url->full_url, '*')) {
+            return str_replace('*', $archiveDate, $url->full_url);
+        }
+
+        return sprintf('%s/%s', $url->full_url, $archiveDate);
     }
 }

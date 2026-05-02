@@ -6,14 +6,12 @@ namespace Capell\Blog\Support\StaticSite;
 
 use Capell\Blog\Data\ArchiveMonthData;
 use Capell\Blog\Enums\BlogTypeGroupEnum;
-use Capell\Blog\Models\Tag;
 use Capell\Blog\Support\Loader\BlogLoader;
 use Capell\Blog\Support\Loader\TagLoader;
-use Capell\Core\Enums\ModelEnum as CoreModelEnum;
-use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\SiteDomain;
+use Capell\Tags\Models\Tag;
 use Illuminate\Support\Collection;
 
 class BlogStaticSiteExtension
@@ -21,7 +19,7 @@ class BlogStaticSiteExtension
     public function __invoke(Site $site, SiteDomain $domain, callable $visit): void
     {
         /** @var class-string<Page> $pageModel */
-        $pageModel = CapellCore::getModel(CoreModelEnum::Page);
+        $pageModel = Page::class;
 
         $this->visitTaggedPages($pageModel, $site, $domain, $visit);
         $this->visitArchivePages($pageModel, $site, $domain, $visit);

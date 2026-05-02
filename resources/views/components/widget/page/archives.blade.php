@@ -1,14 +1,14 @@
-<?php
-
-declare(strict_types=1);
-
-?>
-
 @php
     use Capell\Blog\Actions\GenerateArchiveUrl;
+    use Capell\Blog\Data\ArchiveMonthData;
+    use Capell\Blog\Enums\BlogTypeGroupEnum;
+    use Capell\Blog\Support\Loader\BlogLoader;
     use Capell\Frontend\Facades\Frontend;
+    use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+    use Illuminate\Support\Collection;
 
     $site = Frontend::site();
+    $language = Frontend::language();
     $page = Frontend::page();
     $theme = Frontend::theme();
     $urlParams = Frontend::params();
@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 @props([
     'archiveDate' => $urlParams['archive_date'] ?? null,
-    'archives' => [],
     'container',
     'containerKey',
     'containerWidth' => null,
@@ -26,6 +25,29 @@ declare(strict_types=1);
     'showPageTitle' => $widgetData['meta']['show_page_title'] ?? false,
     'widget',
 ])
+@php
+    $archivePage ??= BlogLoader::getArchivePage($site, $language);
+    $archives ??= collect();
+
+    if (! $archivePage) {
+        $archives = collect();
+    }
+
+    if ($archivePage && $archives instanceof Collection && $archives->isEmpty()) {
+        $archives = BlogLoader::getArchives(
+            site: $site,
+            language: $language,
+            group: $widget->meta['page_group'] ?? BlogTypeGroupEnum::Article->value,
+            limit: $widget->meta['limit'] ?? config('capell-frontend.pagination_limit', 12),
+        );
+    }
+
+    if (! $archives instanceof Collection && ! $archives instanceof LengthAwarePaginator) {
+        $archives = collect($archives)
+            ->map(fn (ArchiveMonthData|array $archive): ArchiveMonthData => ArchiveMonthData::from($archive));
+    }
+@endphp
+
 <x-capell-mosaic::widget.wrapper
     :$container
     :$containerKey
@@ -57,7 +79,7 @@ declare(strict_types=1);
 
     @if ($archives?->isEmpty())
         <x-capell::no-results>
-            {!! $widget->translation->getMeta('no_results', __('capell-blog::messages.no_archives_found')) !!}
+            {{ $widget->translation->getMeta('no_results', __('capell-blog::messages.no_archives_found')) }}
         </x-capell::no-results>
     @else
         <ul
@@ -82,5 +104,3 @@ declare(strict_types=1);
         </ul>
     @endif
 </x-capell-mosaic::widget.wrapper>
-
-<?php

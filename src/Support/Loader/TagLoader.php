@@ -6,16 +6,14 @@ namespace Capell\Blog\Support\Loader;
 
 use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Enums\CacheEnum;
-use Capell\Blog\Enums\ModelEnum;
-use Capell\Blog\Enums\TagTypeEnum;
-use Capell\Blog\Models\Tag;
 use Capell\Core\Contracts\Pageable;
-use Capell\Core\Enums\ModelEnum as CoreModelEnum;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
 use Capell\Frontend\Support\ModelServing\RetrievedModelStore;
+use Capell\Tags\Enums\TagTypeEnum;
+use Capell\Tags\Models\Tag;
 use Illuminate\Contracts\Database\Eloquent\Builder as BuilderContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -54,7 +52,7 @@ class TagLoader
             $fromCache = false;
 
             /** @var class-string<Page> $model */
-            $model = CapellCore::getModel(CoreModelEnum::Page);
+            $model = Page::class;
 
             return $model::getFirstPageByTypeForSite(BlogPageTypeEnum::Tag->value, site: $site, language: $language);
         });
@@ -75,7 +73,7 @@ class TagLoader
         bool $hasArticles = false,
     ): Builder {
         /* @var class-string<Tag> $model */
-        $model = CapellCore::getModel(ModelEnum::Tag);
+        $model = Tag::class;
 
         return $model::query()
             ->withCount([
@@ -155,20 +153,24 @@ class TagLoader
         return $tags;
     }
 
-    public static function tagPage(string $slug, Language $language): ?Tag
+    public static function tagPage(string $slug, Site $site, Language $language): ?Tag
     {
-        $key = CacheEnum::tagPage($slug);
+        $key = CacheEnum::tagPage($site->id, $language->id, $slug);
 
         $fromCache = true;
 
-        $tag = CapellCore::rememberCache($key, function () use ($slug, $language, &$fromCache): ?Tag {
+        $tag = CapellCore::rememberCache($key, function () use ($slug, $site, $language, &$fromCache): ?Tag {
             $fromCache = false;
 
             /** @var class-string<Tag> $model */
-            $model = CapellCore::getModel(ModelEnum::Tag);
+            $model = Tag::class;
 
-            return $model::query()->where('type', TagTypeEnum::Page)
+            return $model::query()->where('type', TagTypeEnum::Page->value)
                 ->where('slug->' . $language->code, $slug)
+                ->where(
+                    fn (Builder $query): Builder => $query->where('site_id', $site->id)->orWhereNull('site_id'),
+                )
+                ->orderByRaw('CASE WHEN site_id = ? THEN 0 ELSE 1 END', [$site->id])
                 ->first();
         });
 

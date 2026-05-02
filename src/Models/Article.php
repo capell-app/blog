@@ -7,9 +7,9 @@ namespace Capell\Blog\Models;
 use Bkwld\Cloner\Cloneable;
 use Capell\Blog\Database\Factories\ArticleFactory;
 use Capell\Blog\Enums\BlogPageTypeEnum;
-use Capell\Blog\Models\Concerns\HasTags;
 use Capell\Blog\Observers\ArticleObserver;
 use Capell\Blog\Support\Loader\BlogLoader;
+use Capell\Core\Concerns\HasCapellMedia;
 use Capell\Core\Contracts\Pageable;
 use Capell\Core\Contracts\PageCacheable;
 use Capell\Core\Enums\MediaCollectionEnum;
@@ -24,7 +24,6 @@ use Capell\Core\Models\Concerns\HasTranslations;
 use Capell\Core\Models\Concerns\HasType;
 use Capell\Core\Models\Concerns\HasTypes;
 use Capell\Core\Models\Concerns\HasUserstamps;
-use Capell\Core\Models\Concerns\InteractsWithMedia;
 use Capell\Core\Models\Contracts\Publishable;
 use Capell\Core\Models\Contracts\Translatable;
 use Capell\Core\Models\Contracts\Typeable;
@@ -34,7 +33,8 @@ use Capell\Core\Models\Layout;
 use Capell\Core\Models\PageUrl;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\Type;
-use Capell\Core\Workspaces\BelongsToWorkspace;
+use Capell\Tags\Models\Concerns\HasTags;
+use Capell\Workspaces\BelongsToWorkspace;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
@@ -46,6 +46,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\MediaLibrary\HasMedia;
@@ -59,6 +60,7 @@ class Article extends Model implements HasMedia, Pageable, PageCacheable, Publis
     use Cloneable;
     use CloneableExcept;
     use HasAssets;
+    use HasCapellMedia;
 
     /** @use HasFactory<ArticleFactory> */
     use HasFactory;
@@ -73,7 +75,6 @@ class Article extends Model implements HasMedia, Pageable, PageCacheable, Publis
     use HasType;
     use HasTypes;
     use HasUserstamps;
-    use InteractsWithMedia;
     use LogsActivity;
     use SoftDeletes;
 
@@ -87,6 +88,7 @@ class Article extends Model implements HasMedia, Pageable, PageCacheable, Publis
         'meta',
         'name',
         'order',
+        'uuid',
         'visible_from',
         'visible_until',
         'site_id',
@@ -103,7 +105,7 @@ class Article extends Model implements HasMedia, Pageable, PageCacheable, Publis
     {
         return Type::query()
             ->pageType()
-            ->adminResource($group)
+            ->when($group !== null, fn (Builder $query): Builder => $query->adminResource($group))
             ->where('key', BlogPageTypeEnum::Article->value)
             ->ordered()
             ->first();
@@ -262,6 +264,15 @@ class Article extends Model implements HasMedia, Pageable, PageCacheable, Publis
             })
             ->orderByRaw($effectivePublishDateExpression . ' desc')
             ->orderBy('id', 'desc');
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $article): void {
+            if ($article->uuid === null || $article->uuid === '') {
+                $article->uuid = Str::uuid()->toString();
+            }
+        });
     }
 
     /** @return array<string, mixed>|null */

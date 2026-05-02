@@ -1,92 +1,57 @@
-<p align="center">
-  <a href="https://capell.app"><img src="https://capell.app/images/logo.svg" alt="Capell" width="280"></a>
-</p>
-
 # Capell Blog
 
-![Blog Hero Banner](./HERO_BANNER.svg)
+**Product group:** Capell Foundation
+**Tier:** Free
 
-Article publishing for Capell. Adds a dedicated **Article** page type, tagging, archives, and blog/archive/tag listing pages — all integrated with the workspace-aware editorial pipeline.
+Capell Blog adds article publishing to Capell: article pages, tags, archives, RSS, sitemap integration, and optional Mosaic widgets.
 
-**[Full documentation →](https://docs.capell.app/packages/blog/)**
+![Blog hero banner](./HERO_BANNER.svg)
 
-## Overview
+## When to install it
 
-- **Article page type** — a fully-featured page with body, excerpt, featured image, publish dates, and tags.
-- **Tagging** via Spatie Laravel Tags, with a workspace-aware custom `Tag` model.
-- **Default pages per site** — a Blog index, Archives page, and Tags page, created by command.
-- **Livewire pages** for the blog listing, date archives, and tag views.
-- **Filament resources** for managing Articles and Tags from the admin.
-- **Sitemap integration** — article, archive, and tag URLs are included in the site's sitemap.
-- **Layout widgets** — when the Layout package is installed, Blog registers `Article`, `Related`, `Archives`, and `Tags` widgets.
+Install Blog when the site needs chronological content: news, guides, press releases, changelogs, events, or editorial articles that should appear in archives and feeds.
 
-## Prerequisites
+## Quick install
 
-- Filament resources
-    - `Articles` resource with create/edit/list pages
-    - `Tags` resource with list/create/edit and relation manager
-- Widgets (for Layout builder)
-    - `Article`, `RelatedWidget`, `Archives`, `Tags`
-- Schemas
-    - Registers `ArticlePageSchema` for Page
-    - Registers widget schemas when Layout package is installed
-- Navigation + default pages
-    - Registers Blog and Archives default pages
-    - Listens to navigation creation to add entries
-- Commands
-    - `capell:blog-install` — publish config/migration and migrate
-    - `capell:blog-demo` — optional demo
-
-## Installation
-
-```sh
+```bash
+composer require capell-app/blog
 php artisan capell:blog-install
+php artisan capell:blog-demo
 ```
-
-The installer registers the Article page type, Filament resources, and permissions; publishes the tags config and the `alter_tags_table` migration; and runs migrations.
 
 Create the default Blog, Archives, and Tags pages for a site:
 
-```sh
-php artisan capell:blog-create-pages {site-id}
+```bash
+php artisan capell:blog-create-pages 1
 ```
 
-    ```bash
-    php artisan capell:blog-install
-    ```
+## What appears in the admin
 
-```sh
-php artisan capell:blog-demo --sites=1 --limit=20
-```
+| Area           | What editors can do                                                         |
+| -------------- | --------------------------------------------------------------------------- |
+| Articles       | Create, edit, tag, publish, and schedule article pages                      |
+| Tags           | Manage the tag taxonomy used by articles                                    |
+| Pages          | Use generated Blog, Archives, and Tags pages                                |
+| Mosaic widgets | Place Article, Related, Archives, and Tags widgets when Mosaic is installed |
 
-## Core concepts
+## What developers get
 
-    ```bash
-    php artisan capell:blog-create-pages {site-id}
-    ```
+- Article page type and schema registration.
+- Workspace-aware tags and article records.
+- Livewire listing pages for blog index, date archives, and tag views.
+- Sitemap entries for articles, archive pages, and tag pages.
 
-3. (Optional) Seed demo data:
-    ```bash
-    php artisan capell:blog-demo
-    ```
+## Common commands
 
-## Database
+| Command                                  | Purpose                                                |
+| ---------------------------------------- | ------------------------------------------------------ |
+| `php artisan capell:blog-install`        | Install migrations, config, resources, and permissions |
+| `php artisan capell:blog-create-pages 1` | Create default blog pages for site `1`                 |
+| `php artisan capell:blog-demo`           | Seed demo articles                                     |
+| `php artisan capell:blog-setup`          | Setup-only phase used by package installers            |
 
-| Migration                   | Effect                                                                                                                 |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `create_articles_table.php` | Creates `articles` (workspace-scoped, typed, layout-linked, soft-delete)                                               |
-| `alter_tags_table.php`      | Adds `workspace_id`, `site_id`, `featured`, and `status` to the Spatie `tags` table, and `workspace_id` to `taggables` |
+## Deeper docs
 
-Factories ship for Articles, Article types, and Tags. See [docs/blog-database.md](docs/blog-database.md) for the full schema.
-
-## Artisan commands
-
-| Command                           | Purpose                                                |
-| --------------------------------- | ------------------------------------------------------ |
-| `capell:blog-install`             | Publish migrations and configs; run install action     |
-| `capell:blog-setup`               | Setup-only phase (used by installer)                   |
-| `capell:blog-create-pages {site}` | Create Blog, Archives, and Tags pages for a site       |
-| `capell:blog-demo`                | Seed demo articles (`--sites=`, `--user=`, `--limit=`) |
-
-- Database reference: [docs/blog-database.md](docs/blog-database.md) · [docs.capell.app](https://docs.capell.app/packages/blog/)
-- API reference: [docs/blog-api.md](docs/blog-api.md)
+- [Hosted documentation](https://docs.capell.app/packages/foundation/blog/)
+- [Database reference](docs/blog-database.md)
+- [API reference](docs/blog-api.md)

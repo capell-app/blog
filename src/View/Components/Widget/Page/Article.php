@@ -26,6 +26,7 @@ class Article extends AbstractWidget
     {
         return parent::render([
             ...$data,
+            'author' => $this->author,
             'previousPage' => $this->previousPage,
             'nextPage' => $this->nextPage,
         ]);

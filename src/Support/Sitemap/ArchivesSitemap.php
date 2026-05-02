@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Support\Sitemap;
 
+use Capell\Blog\Actions\GenerateArchiveUrl;
 use Capell\Blog\Data\ArchiveMonthData;
 use Capell\Blog\Enums\BlogTypeGroupEnum;
 use Capell\Blog\Support\Loader\BlogLoader;
 use Capell\Core\Contracts\Pageable;
-use Capell\Core\Data\SitemapPageData;
-use Capell\Core\Enums\ModelEnum as CoreModelEnum;
-use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Page;
-use Capell\Core\Support\Sitemap\AbstractSitemapPages;
-use Capell\Core\Support\Sitemap\SitemapChainBuilder;
+use Capell\SeoTools\Data\SitemapPageData;
+use Capell\SeoTools\Support\Sitemap\AbstractSitemapPages;
+use Capell\SeoTools\Support\Sitemap\SitemapChainBuilder;
 use Illuminate\Support\Collection;
 
 class ArchivesSitemap extends AbstractSitemapPages
@@ -21,7 +20,7 @@ class ArchivesSitemap extends AbstractSitemapPages
     public function fetch(): Collection
     {
         /** @var class-string<Page> $model */
-        $model = CapellCore::getModel(CoreModelEnum::Page);
+        $model = Page::class;
 
         $maybeArchivePage = $model::getFirstPageByTypeForSite('archive', $this->site, $this->language);
         if (! ($maybeArchivePage instanceof Pageable)) {
@@ -44,7 +43,7 @@ class ArchivesSitemap extends AbstractSitemapPages
     {
         return new SitemapPageData(
             label: $monthData->getDate()->format('F Y') . ' (' . $monthData->total . ')',
-            url: $archivePage->pageUrl->full_url . sprintf('/%d-%d', $monthData->year, $monthData->month),
+            url: GenerateArchiveUrl::run($archivePage->pageUrl, $monthData),
         );
     }
 

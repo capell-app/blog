@@ -94,11 +94,13 @@ enum CacheEnum: string
     /**
      * Generate a cache key for tag page.
      *
+     * @param  int  $siteId  The site ID
+     * @param  int  $languageId  The language ID
      * @param  string  $slug  The slug
      * @return string The cache key
      */
-    public static function tagPage(string $slug): string
+    public static function tagPage(int $siteId, int $languageId, string $slug): string
     {
-        return sprintf('tag-%s-page', $slug);
+        return sprintf('site-%d-lang-%d-tag-%s-page', $siteId, $languageId, $slug);
     }
 }

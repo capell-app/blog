@@ -1,9 +1,3 @@
-<?php
-
-declare(strict_types=1);
-
-?>
-
 @php
     use Capell\Frontend\Facades\Frontend;
     use Filament\Support\Icons\Heroicon;
@@ -34,5 +28,3 @@ declare(strict_types=1);
         </div>
     </div>
 @endif
-
-<?php

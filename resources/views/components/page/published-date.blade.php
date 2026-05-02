@@ -1,9 +1,3 @@
-<?php
-
-declare(strict_types=1);
-
-?>
-
 @props(['date'])
 <time
     datetime="{{ $date->toW3cString() }}"
@@ -11,5 +5,3 @@ declare(strict_types=1);
 >
     {{ __('capell-frontend::generic.visible_from', ['date' => $date->format(config('capell-frontend.date_format'))]) }}
 </time>
-
-<?php

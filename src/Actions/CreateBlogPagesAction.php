@@ -8,11 +8,11 @@ use Capell\Blog\Enums\BlogLayoutEnum;
 use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Support\Creator\BlogCreator;
 use Capell\Core\Enums\LayoutEnum;
-use Capell\Core\Enums\NavigationHandle;
 use Capell\Core\Enums\PageTypeEnum;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\Type;
+use Capell\Navigation\Enums\NavigationHandle;
 use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Capell\Blog\Enums;
 
 use Capell\Blog\Filament\Resources\Articles\ArticleResource;
-use Capell\Blog\Filament\Resources\Tags\TagResource;
+use Capell\Tags\Filament\Resources\Tags\TagResource;
 
 enum ResourceEnum: string
 {

@@ -15,9 +15,6 @@ class ArticleObserver
 
     public function deleted(Article $article): void
     {
-        // Shadow-column maintenance runs in the BelongsToWorkspace trait's
-        // `deleting` hook, before this observer fires.
-
         $this->clearCache();
     }
 

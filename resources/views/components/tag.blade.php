@@ -1,7 +1,4 @@
 <?php
-
-declare(strict_types=1);
-
 use Capell\Frontend\Facades\Frontend;
 
 $language = Frontend::language();
@@ -36,5 +33,3 @@ $theme = Frontend::theme();
         <span class="ml-1">{{ $count }}</span>
     @endif
 </a>
-
-<?php

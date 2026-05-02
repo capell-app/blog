@@ -1,10 +1,5 @@
-<?php
-
-declare(strict_types=1);
-
-?>
-
 @php
+    use Capell\Blog\Support\Loader\TagLoader;
     use Capell\Frontend\Facades\Frontend;
 
     $language = Frontend::language();
@@ -22,6 +17,22 @@ declare(strict_types=1);
     'showPageTitle' => $widgetData['meta']['show_page_title'] ?? false,
     'widget',
 ])
+@php
+    $tagPage ??= null;
+    $tags ??= collect();
+
+    if ($tags->isEmpty()) {
+        $tags = TagLoader::getTags(
+            site: $site,
+            language: $language,
+            limit: $widget->meta['limit'] ?? null,
+            hasArticles: true,
+        );
+    }
+
+    $tagPage ??= TagLoader::getTagResultsPage($site, $language);
+@endphp
+
 <x-capell-mosaic::widget.wrapper
     class="widget-tags"
     :$container
@@ -55,7 +66,7 @@ declare(strict_types=1);
 
     @if ($tags->isEmpty())
         <x-capell::no-results>
-            {!! $widget->translation->getMeta('no_results', __('capell-blog::messages.no_tags_found')) !!}
+            {{ $widget->translation->getMeta('no_results', __('capell-blog::messages.no_tags_found')) }}
         </x-capell::no-results>
     @else
         <ul class="flex flex-wrap gap-2">
@@ -79,5 +90,3 @@ declare(strict_types=1);
         />
     @endif
 </x-capell-mosaic::widget.wrapper>
-
-<?php

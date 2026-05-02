@@ -21,12 +21,15 @@
         "php": "^8.2",
         "capell-app/admin": "*",
         "capell-app/frontend": "*",
-        "filament/spatie-laravel-tags-plugin": "^4.0|^5.0"
+        "capell-app/mosaic": "*",
+        "capell-app/navigation": "*",
+        "capell-app/tags": "*",
+        "capell-app/workspaces": "*"
     },
     "autoload": {
         "psr-4": {
             "Capell\\Blog\\": "src/",
-            "Capell\\Blog\\Database\\Factories\\": "packages/blog/database/factories"
+            "Capell\\Blog\\Database\\Factories\\": "database/factories"
         }
     },
     "extra": {
@@ -34,6 +37,9 @@
             "providers": [
                 "Capell\\Blog\\Providers\\BlogServiceProvider"
             ]
+        },
+        "branch-alias": {
+            "dev-main": "4.x-dev"
         }
     },
     "config": {

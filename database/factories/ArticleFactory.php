@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Capell\Blog\Database\Factories;
 
 use Capell\Blog\Models\Article;
-use Capell\Blog\Models\Tag;
 use Capell\Blog\Support\Creator\BlogCreator;
 use Capell\Core\Database\Factories\Concerns\HasAdmin;
 use Capell\Core\Database\Factories\Concerns\HasFactoryPublishDates;
@@ -14,6 +13,7 @@ use Capell\Core\Database\Factories\Concerns\HasTranslations;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\Type;
+use Capell\Tags\Models\Tag;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

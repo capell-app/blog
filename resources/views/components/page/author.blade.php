@@ -1,7 +1,4 @@
 <?php
-
-declare(strict_types=1);
-
 use Capell\Frontend\Facades\Frontend;
 
 $page = Frontend::page();
@@ -35,7 +32,7 @@ $page = Frontend::page();
                         'dark:prose-invert' => $theme->withDarkMode,
                     ])
                 >
-                    {!! $author->bio !!}
+                    {!! nl2br(e($author->bio)) !!}
                 </div>
             @endif
         </div>

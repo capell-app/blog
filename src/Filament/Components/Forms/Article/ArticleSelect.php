@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Filament\Components\Forms\Article;
 
-use Capell\Blog\Enums\ModelEnum;
-use Capell\Core\Facades\CapellCore;
+use Capell\Blog\Models\Article;
 use Closure;
 use Filament\Forms\Components\MorphToSelect;
 use Filament\Forms\Components\MorphToSelect\Type;
@@ -20,7 +19,7 @@ class ArticleSelect extends MorphToSelect
 
         $this->label(__('capell-blog::form.article'))
             ->types([
-                Type::make(CapellCore::getModel(ModelEnum::Article))
+                Type::make(Article::class)
                     ->titleAttribute('name')
                     ->modifyOptionsQueryUsing($this->modifyKeySelectOptionsQueryUsing),
             ]);

@@ -62,7 +62,7 @@ class InstallPackageAction
                 ];
             }
 
-            if (in_array($layoutKey, ['results', 'tags'], true) && ! in_array($archivesWidget->key, array_column($containers['sidebar']['widgets'], 'widget_key'), true)) {
+            if ($layoutKey === LayoutEnum::Results && ! in_array($archivesWidget->key, array_column($containers['sidebar']['widgets'], 'widget_key'), true)) {
                 $containers['sidebar']['widgets'][] = [
                     'widget_key' => $archivesWidget->key,
                 ];

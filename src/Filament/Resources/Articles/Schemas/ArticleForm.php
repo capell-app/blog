@@ -4,61 +4,55 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Filament\Resources\Articles\Schemas;
 
-use Capell\Admin\Enums\SchemaTypeEnum;
-use Capell\Admin\Filament\Components\Forms\Type\TypeSchema;
+use Capell\Admin\Data\Configurators\ConfiguratorContextData;
+use Capell\Admin\Enums\ConfiguratorTypeEnum;
 use Capell\Admin\Filament\Contracts\FormConfigurator;
+use Capell\Admin\Support\Configurators\ConfiguratorResolver;
+use Capell\Blog\Filament\Configurators\Articles\ArticlePageConfigurator;
 use Capell\Blog\Filament\Resources\Articles\ArticleResource;
-use Capell\Blog\Filament\Schemas\Articles\ArticlePageSchema;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Creator\BlogCreator;
 use Capell\Core\Contracts\Pageable;
-use Capell\Core\Enums\ModelEnum;
-use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Type;
-use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 
 class ArticleForm implements FormConfigurator
 {
-    /**
-     * @param  class-string<ArticleResource>  $resourceClass
-     */
-    public static function configure(Schema $schema, string $resourceClass = ArticleResource::class): Schema
+    public static function configure(Schema $configurator, ?ConfiguratorContextData $context = null): Schema
     {
-        return $schema->components(self::getFormSchema($schema, $resourceClass));
-    }
+        $resourceClass = ArticleResource::class;
+        $resolver = resolve(ConfiguratorResolver::class);
+        $record = $configurator->getRecord();
 
-    protected static function getFormSchema(Schema $schema, string $resourceClass): array
-    {
-        return [
-            TypeSchema::make()
-                ->columns($schema->getColumns())
-                ->schema(
-                    function (Get $get, TypeSchema $component, ?Pageable $record) use ($schema, $resourceClass): array {
-                        $typeId = $get('type_id') ?? ($record instanceof Pageable ? $record->type_id : null);
+        if ($record instanceof Pageable && $record->type_id !== null) {
+            /** @var class-string<Type> $model */
+            $model = Type::class;
 
-                        if ($typeId !== null) {
-                            /** @var class-string<Type> $model */
-                            $model = CapellCore::getModel(ModelEnum::Type);
+            $type = $model::query()->find($record->type_id);
+            $adminType = $type instanceof Type
+                ? $resolver->resolveForType($type, ConfiguratorTypeEnum::Page, ArticlePageConfigurator::getKey())
+                : ArticlePageConfigurator::class;
 
-                            $admin = $model::query()->where('id', $typeId)->value('admin');
-                        } else {
-                            $defaultType = Article::getDefaultType($resourceClass);
+            if (method_exists($record, 'type')) {
+                $record->loadMissing('type');
+            }
 
-                            if (! $defaultType instanceof Type) {
-                                $defaultType = resolve(BlogCreator::class)->createArticlePageType();
-                            }
+            return $adminType::configure($configurator, ConfiguratorContextData::forEdit(ConfiguratorTypeEnum::Page));
+        }
 
-                            $admin = $defaultType->admin;
-                        }
+        $defaultType = Article::getDefaultType($resourceClass);
 
-                        $adminSchema = isset($admin['schema']) && filled($admin['schema'])
-                            ? $admin['schema']
-                            : ArticlePageSchema::getKey();
+        if (! $defaultType instanceof Type) {
+            $defaultType = resolve(BlogCreator::class)->createArticlePageType();
+        }
 
-                        return $component->getTypeSchema($schema, SchemaTypeEnum::Page, name: $adminSchema);
-                    },
-                ),
-        ];
+        $adminType = $resolver->resolveForType($defaultType, ConfiguratorTypeEnum::Page, ArticlePageConfigurator::getKey());
+        $operation = $configurator->getOperation();
+
+        return $adminType::configure($configurator, new ConfiguratorContextData(
+            ConfiguratorTypeEnum::Page,
+            in_array($operation, ['create', 'createOption', 'edit', 'editOption', 'replicate'], true) ? $operation : 'create',
+            $defaultType->key,
+        ));
     }
 }

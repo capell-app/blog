@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Console\Commands;
 
-use Capell\Blog\Enums\TagTypeEnum;
 use Capell\Blog\Models\Article;
-use Capell\Blog\Models\Tag;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Site;
+use Capell\Tags\Enums\TagTypeEnum;
+use Capell\Tags\Models\Tag;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 

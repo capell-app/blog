@@ -5,16 +5,13 @@ declare(strict_types=1);
 namespace Capell\Blog\Support\Sitemap;
 
 use Capell\Blog\Enums\BlogTypeGroupEnum;
-use Capell\Blog\Enums\ModelEnum;
 use Capell\Blog\Models\Article;
-use Capell\Blog\Support\Loader\BlogLoader;
 use Capell\Core\Contracts\Pageable;
-use Capell\Core\Data\SitemapPageData;
 use Capell\Core\Enums\PageOrderEnum;
-use Capell\Core\Facades\CapellCore;
-use Capell\Core\Support\Sitemap\AbstractSitemapPages;
+use Capell\Core\Models\Page;
 use Capell\Frontend\Support\Loader\PageLoader;
-use Exception;
+use Capell\SeoTools\Data\SitemapPageData;
+use Capell\SeoTools\Support\Sitemap\AbstractSitemapPages;
 use Illuminate\Support\Collection;
 
 class ArticlesSitemap extends AbstractSitemapPages
@@ -22,9 +19,9 @@ class ArticlesSitemap extends AbstractSitemapPages
     public function fetch(): Collection
     {
         // Locate the Blog page for the site & language
-        $blogPage = BlogLoader::getBlogPage($this->site);
+        $blogPage = Page::getFirstPageByTypeForSite('blog', site: $this->site, language: $this->language);
         if (! $blogPage instanceof Pageable) {
-            throw new Exception('Blog page not found for site: ' . $this->site->name);
+            return collect();
         }
 
         // Build recursive node: blog page with articles children
@@ -36,7 +33,7 @@ class ArticlesSitemap extends AbstractSitemapPages
             limit: 100,
             ordering: PageOrderEnum::Latest,
             pageGroup: BlogTypeGroupEnum::Article->value,
-            morphModel: CapellCore::getModel(ModelEnum::Article),
+            morphModel: 'article',
         );
 
         $node->children = $articles->map(

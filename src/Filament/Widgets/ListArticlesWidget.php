@@ -10,12 +10,10 @@ use Capell\Admin\Filament\Components\Tables\Columns\DateColumn;
 use Capell\Admin\Filament\Components\Tables\Columns\Page\PageNameColumn;
 use Capell\Admin\Filament\Resources\Sites\SiteResource;
 use Capell\Admin\Support\Loader\SiteLoader;
-use Capell\Blog\Enums\ModelEnum;
 use Capell\Blog\Filament\Resources\Articles\ArticleResource;
 use Capell\Blog\Models\Article;
 use Capell\Core\Actions\GetEditPageResourceUrlAction;
 use Capell\Core\Contracts\Pageable;
-use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Site;
 use Filament\Actions\Action;
 use Filament\Support\Enums\Alignment;
@@ -33,7 +31,8 @@ class ListArticlesWidget extends BaseWidget
 {
     use HasWidgetShield;
 
-    protected int|string|array $columnSpan = ['default' => 2, 'sm' => 2, 'md' => 1];
+    /** @var int|string|array<string, int|string|null> */
+    protected int|string|array $columnSpan = ['default' => 'full', 'md' => 1];
 
     protected static ?int $sort = 5;
 
@@ -66,7 +65,7 @@ class ListArticlesWidget extends BaseWidget
             ->query(
                 function (): Builder {
                     /** @var class-string<Article> $model */
-                    $model = CapellCore::getModel(ModelEnum::Article);
+                    $model = Article::class;
 
                     return $model::query()
                         ->with([
@@ -153,7 +152,7 @@ class ListArticlesWidget extends BaseWidget
     {
         return $query->cursorPaginate(
             perPage: ($this->getTableRecordsPerPage() === 'all') ? $query->count() : $this->getTableRecordsPerPage(),
-            cursorName: (in_array($this->getTable()->getQueryStringIdentifier(), [null, '', '0'], true) ? 'authentication-logs' : $this->getTable()->getQueryStringIdentifier()) . '_cursor',
+            cursorName: (in_array($this->getTable()->getQueryStringIdentifier(), [null, '', '0'], true) ? 'list-articles' : $this->getTable()->getQueryStringIdentifier()) . '_cursor',
         );
     }
 }

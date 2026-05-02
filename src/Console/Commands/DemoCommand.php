@@ -6,23 +6,19 @@ namespace Capell\Blog\Console\Commands;
 
 use Capell\Blog\Actions\CreateBlogPagesAction;
 use Capell\Blog\Enums\BlogPageTypeEnum;
-use Capell\Blog\Enums\ModelEnum as BlogModelEnum;
-use Capell\Blog\Enums\TagTypeEnum;
 use Capell\Blog\Models\Article;
-use Capell\Blog\Models\Tag;
 use Capell\Blog\Support\Creator\ArticleCreator;
 use Capell\Blog\Support\Creator\BlogCreator;
 use Capell\Core\Console\Commands\Concerns\HasSitesOption;
 use Capell\Core\Contracts\Pageable;
-use Capell\Core\Enums\ModelEnum;
-use Capell\Core\Enums\ModelEnum as CoreModelEnum;
-use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\Type;
 use Capell\Core\Support\Creator\DemoCreator;
+use Capell\Tags\Enums\TagTypeEnum;
+use Capell\Tags\Models\Tag;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -115,7 +111,7 @@ class DemoCommand extends Command
     private function resolveSites(array $siteNames)
     {
         /** @var class-string<Site> $model */
-        $model = CapellCore::getModel(CoreModelEnum::Site);
+        $model = Site::class;
 
         return $model::query()
             ->with(['languages'])
@@ -132,7 +128,7 @@ class DemoCommand extends Command
 
         if ($userOption) {
             /** @var class-string<User> $model */
-            $model = CapellCore::getModel('User');
+            $model = config('auth.providers.users.model');
 
             return $model::query()->find($userOption);
         }
@@ -362,10 +358,10 @@ class DemoCommand extends Command
     private function createArticleTags(Site $site, Collection $languages): void
     {
         /** @var class-string<Page> $model */
-        $pageModel = CapellCore::getModel(ModelEnum::Page);
+        $pageModel = Page::class;
 
         /** @var class-string<Article> $model */
-        $model = CapellCore::getModel(BlogModelEnum::Article);
+        $model = Article::class;
 
         $articles = $model::query()
             ->where('site_id', $site->id)
@@ -399,7 +395,7 @@ class DemoCommand extends Command
 
     private function createPageTag(Pageable $page, Collection $languages): Tag
     {
-        $tagModel = CapellCore::getModel(BlogModelEnum::Tag);
+        $tagModel = Tag::class;
 
         $tag_names = [];
         $tag_slugs = [];
@@ -443,7 +439,7 @@ class DemoCommand extends Command
             $root = $page;
         }
 
-        $tagModel = CapellCore::getModel(BlogModelEnum::Tag);
+        $tagModel = Tag::class;
 
         $label = $root->translations->firstWhere('language_id', $language->id)->label;
 
@@ -456,7 +452,6 @@ class DemoCommand extends Command
         $this->progress = $this->output->createProgressBar($max);
         $this->progress->setFormat(' [%bar%] %percent:3s%% | %message%');
         $this->progress->setMessage('');
-        $this->progress->start();
     }
 
     private function setProgressMessage(string $message): void
@@ -486,7 +481,7 @@ class DemoCommand extends Command
     private function countExistingArticles(Site $site): int
     {
         /** @var class-string<Article> $model */
-        $model = CapellCore::getModel(BlogModelEnum::Article);
+        $model = Article::class;
 
         return min(
             $model::query()

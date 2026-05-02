@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Capell\Blog\Listeners;
 
 use Capell\Blog\Support\Loader\BlogLoader;
-use Capell\Core\Actions\AddPageToNavigationAction;
 use Capell\Core\Contracts\Pageable;
-use Capell\Core\Enums\NavigationHandle;
-use Capell\Core\Events\NavigationCreating;
+use Capell\Navigation\Actions\AddPageToNavigationAction;
+use Capell\Navigation\Enums\NavigationHandle;
+use Capell\Navigation\Events\NavigationCreating;
 
 class AddBlogPagesToNavigation
 {

@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class SettingsTab
 {
-    public static function make(Schema $schema, array $components = []): Tab
+    public static function make(Schema $configurator, array $components = []): Tab
     {
         return Tab::make(__('capell-admin::tab.settings'))
             ->icon(Heroicon::OutlinedCog6Tooth)
