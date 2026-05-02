@@ -1,83 +1,57 @@
-# Capell Packages
+# Capell Blog
 
-First-party add-ons for [Capell CMS](https://github.com/capell-app/capell). Install only the packages your project needs: foundation CMS features, premium forms, editorial workflows, operations tooling, growth analytics, search/SEO, and Theme Studio all live here.
+**Product group:** Capell Foundation
+**Tier:** Free
 
-## Product groups
+Capell Blog adds article publishing to Capell: article pages, tags, archives, RSS, sitemap integration, and optional Mosaic widgets.
 
-| Group                 | Tier    | Packages                                                                                                        |
-| --------------------- | ------- | --------------------------------------------------------------------------------------------------------------- |
-| Capell Foundation     | Free    | Mosaic, Blog, Navigation, Tags, Redirects, Address, Media Curator, Frontend Toolbar, HTML Minify, Default Theme |
-| Capell Forms          | Premium | Forms                                                                                                           |
-| Capell Publishing Pro | Premium | Workspaces, Filament Peek                                                                                       |
-| Capell Operations     | Premium | Backup, Developer Tools, Authentication Log                                                                     |
-| Capell Growth         | Premium | Analytics, Campaigns                                                                                            |
-| Capell Search & SEO   | Premium | SEO Tools, Site Search                                                                                          |
-| Capell Theme Studio   | Premium | Theme Studio, Theme Studio Core, Theme Studio Admin, SaaS Theme, Corporate Theme, Agency Theme                  |
+![Blog hero banner](./HERO_BANNER.svg)
 
-## Pick the package by job
+## When to install it
 
-| Need                                                   | Product group         | Composer package                                                                                                                                                             |
-| ------------------------------------------------------ | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Visual page builder                                    | Capell Foundation     | `capell-app/mosaic`                                                                                                                                                          |
-| Articles, tags, archives, RSS                          | Capell Foundation     | `capell-app/blog`                                                                                                                                                            |
-| Header, footer, and sidebar menus                      | Capell Foundation     | `capell-app/navigation`                                                                                                                                                      |
-| Shared tagging across content types                    | Capell Foundation     | `capell-app/tags`                                                                                                                                                            |
-| 301/302 redirects                                      | Capell Foundation     | `capell-app/redirects`                                                                                                                                                       |
-| Country and address fields                             | Capell Foundation     | `capell-app/address`                                                                                                                                                         |
-| Curator instead of Spatie MediaLibrary                 | Capell Foundation     | `capell-app/media-curator`                                                                                                                                                   |
-| Editor-managed forms and submissions                   | Capell Forms          | `capell-app/forms`                                                                                                                                                           |
-| Drafts, previews, approvals, scheduled publishing      | Capell Publishing Pro | `capell-app/workspaces`, `capell-app/filament-peek`                                                                                                                          |
-| Content package export, import, and restore            | Capell Operations     | `capell-app/backup`                                                                                                                                                          |
-| System, queue, permission, and config health           | Capell Operations     | `capell-app/developer-tools`                                                                                                                                                 |
-| Login and activity visibility                          | Capell Operations     | `capell-app/authentication-log`                                                                                                                                              |
-| Campaign landing pages and conversion goals            | Capell Growth         | `capell-app/campaigns`                                                                                                                                                       |
-| First-party analytics and visitor journeys             | Capell Growth         | `capell-app/analytics`                                                                                                                                                       |
-| SEO audits, sitemaps, structured data, AI-assisted SEO | Capell Search & SEO   | `capell-app/seo-tools`                                                                                                                                                       |
-| Public site keyword search and search analytics        | Capell Search & SEO   | `capell-app/site-search`                                                                                                                                                     |
-| Premium frontend themes and theme tooling              | Capell Theme Studio   | `capell-app/theme-studio`, `capell-app/theme-studio-core`, `capell-app/theme-studio-admin`, `capell-app/theme-saas`, `capell-app/theme-corporate`, `capell-app/theme-agency` |
+Install Blog when the site needs chronological content: news, guides, press releases, changelogs, events, or editorial articles that should appear in archives and feeds.
 
-## Common install pattern
-
-Most packages follow this shape:
+## Quick install
 
 ```bash
-composer require capell-app/<package>
-php artisan capell:<package>-install
-php artisan capell:<package>-demo
-```
-
-Some packages auto-register through Laravel package discovery or have theme-specific commands. Check each package README for the exact commands.
-
-## Recommended editorial stack
-
-For a content-heavy site with pages, widgets, articles, approvals, and search metadata:
-
-```bash
-composer require capell-app/mosaic capell-app/blog capell-app/workspaces capell-app/seo-tools
-php artisan capell:mosaic-install
+composer require capell-app/blog
 php artisan capell:blog-install
+php artisan capell:blog-demo
 ```
 
-Then configure SEO Tools and Workspaces from the Capell admin.
+Create the default Blog, Archives, and Tags pages for a site:
 
-## Package notes
+```bash
+php artisan capell:blog-create-pages 1
+```
 
-| Product group         | What appears in the admin                                                                                                                     |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| Capell Foundation     | Contents, widgets, layouts, articles, navigation, tags, redirects, address fields, media backend integration                                  |
-| Capell Forms          | Form records, submissions, validation, notifications, and lead capture workflows                                                              |
-| Capell Publishing Pro | Workspace switcher, approvals, preview links, publish checks, scheduled publishing, stale drafts, version comparison                          |
-| Capell Operations     | Import sessions, package validation, recovery workflows, system health, queue health, permission audit, config drift, authentication activity |
-| Capell Growth         | Campaign records, CTA blocks, conversion goals, analytics widgets, attribution reports                                                        |
-| Capell Search & SEO   | SEO settings, AI-assist panels, sitemap tools, audits, broken links, 404 reports, search analytics                                            |
-| Capell Theme Studio   | Dedicated Studio page, curated gallery, shared content model, presets, preview/publish flow, and premium SaaS, Corporate, and Agency themes   |
+## What appears in the admin
 
-## Documentation
+| Area           | What editors can do                                                         |
+| -------------- | --------------------------------------------------------------------------- |
+| Articles       | Create, edit, tag, publish, and schedule article pages                      |
+| Tags           | Manage the tag taxonomy used by articles                                    |
+| Pages          | Use generated Blog, Archives, and Tags pages                                |
+| Mosaic widgets | Place Article, Related, Archives, and Tags widgets when Mosaic is installed |
 
-- Core docs: [docs.capell.app](https://docs.capell.app)
-- Package registry: [Capell-approved packages](https://docs.capell.app/packages/)
-- Per-package API and database references live beside each package under `packages/<name>/docs/`.
+## What developers get
 
-## License
+- Article page type and schema registration.
+- Workspace-aware tags and article records.
+- Livewire listing pages for blog index, date archives, and tag views.
+- Sitemap entries for articles, archive pages, and tag pages.
 
-Proprietary unless an individual package states otherwise.
+## Common commands
+
+| Command                                  | Purpose                                                |
+| ---------------------------------------- | ------------------------------------------------------ |
+| `php artisan capell:blog-install`        | Install migrations, config, resources, and permissions |
+| `php artisan capell:blog-create-pages 1` | Create default blog pages for site `1`                 |
+| `php artisan capell:blog-demo`           | Seed demo articles                                     |
+| `php artisan capell:blog-setup`          | Setup-only phase used by package installers            |
+
+## Deeper docs
+
+- [Hosted documentation](https://docs.capell.app/packages/blog/)
+- [Database reference](docs/blog-database.md)
+- [API reference](docs/blog-api.md)

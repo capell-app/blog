@@ -1,8 +1,15 @@
 {
-    "name": "capell-app/capell-packages",
-    "description": "Capell 4 Packages",
-    "home": "https://capell.app",
-    "type": "library",
+    "name": "capell-app/blog",
+    "description": "Blog for Capell",
+    "keywords": [
+        "capell",
+        "blog",
+        "laravel",
+        "filamentphp",
+        "cms"
+    ],
+    "homepage": "https://github.com/capell-app/blog",
+    "license": "proprietary",
     "authors": [
         {
             "name": "Howdu",
@@ -10,265 +17,33 @@
             "role": "Developer"
         }
     ],
-    "scripts": {
-        "post-autoload-dump": [
-            "@clear",
-            "@prepare",
-            "CACHE_STORE=array php ./vendor/bin/testbench package:discover --ansi"
-        ],
-        "rector": "rector",
-        "lint": "pint --parallel packages tests",
-        "analyze": "phpstan analyse --memory-limit=-1 --configuration=phpstan.neon",
-        "prettier": "npx prettier --write \"packages/**/*.{css,js,yml,json,md,blade.php}\"",
-        "eslint": "npx eslint 'packages/**/resources/js/**/*.js' --max-warnings=0",
-        "preflight": [
-            "@prettier",
-            "@eslint",
-            "@rector",
-            "@lint",
-            "@analyze"
-        ],
-        "coverage": "php -d memory_limit=-1 -d pcov.enabled=1 -d pcov.directory=. -d pcov.exclude='~vendor|tests|storage|bootstrap|.temp~' vendor/bin/pest --coverage --min=80 --colors=always --configuration=phpunit.xml",
-        "coverage-report": "php -d memory_limit=-1 -d pcov.enabled=1 -d pcov.directory=. -d pcov.exclude='~vendor|tests|storage|bootstrap|.temp~' vendor/bin/pest --coverage --coverage-html=coverage --colors=always --configuration=phpunit.xml",
-        "test:unit": "php -d memory_limit=-1 vendor/bin/pest --colors=always --parallel --configuration=phpunit.xml",
-        "test": [
-            "@clear",
-            "@test:unit"
-        ],
-        "clear": [
-            "CACHE_STORE=array php vendor/bin/testbench package:purge-skeleton --ansi",
-            "@clear:views"
-        ],
-        "clear:views": "rm -rf storage/framework/views/phpunit-*",
-        "prepare": "CACHE_STORE=array php vendor/bin/testbench package:discover --ansi",
-        "build": "CACHE_STORE=array php vendor/bin/testbench workbench:build --ansi",
-        "serve": [
-            "Composer\\Config::disableProcessTimeout",
-            "@build",
-            "CACHE_STORE=array php vendor/bin/testbench serve --ansi"
-        ]
-    },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "./packages/*/*",
-            "options": {
-                "symlink": true
-            }
-        },
-        {
-            "type": "path",
-            "url": "./packages/*/themes/*",
-            "options": {
-                "symlink": true
-            }
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/capell-app/admin"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/capell-app/backup"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/capell-app/core"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/capell-app/frontend"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/capell-app/installer"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/capell-app/plugins"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/howdu/filament-adjacency-list"
-        }
-    ],
     "require": {
         "php": "^8.2",
-        "ext-fileinfo": "*",
-        "ext-intl": "*",
-        "ext-simplexml": "*",
-        "aimeos/laravel-nestedset": "^7.0",
-        "amidesfahani/filament-tinyeditor": "^4.0",
-        "awcodes/filament-badgeable-column": "^3.0|^4.0",
-        "awobaz/compoships": "^2.3",
-        "bezhansalleh/filament-shield": "^4.1",
-        "bkwld/cloner": "^3.11",
-        "blade-ui-kit/blade-heroicons": "^2.5",
-        "capell-app/admin": "^2.0",
-        "capell-app/backup": "^2.0",
-        "capell-app/core": "^2.0",
-        "capell-app/frontend": "^2.0",
-        "capell-app/html-minify": "^2.0",
-        "capell-app/installer": "^2.0",
-        "capell-app/mcp": "*",
-        "capell-app/plugins": "^2.0",
-        "cms-multi/filament-clear-cache": "^3.0",
-        "codewithdennis/filament-select-tree": "^4.0",
-        "croustibat/filament-jobs-monitor": "^4.4",
-        "filament/filament": "^4.7|^5.2",
-        "filament/spatie-laravel-media-library-plugin": "^4.0|^5.0",
-        "filament/spatie-laravel-settings-plugin": "^4.0|^5.0",
-        "filament/spatie-laravel-tags-plugin": "^4.0|^5.0",
-        "guava/filament-icon-picker": "^3.0|^4.0",
-        "guzzlehttp/guzzle": "^7.5",
-        "howdu/filament-record-switcher": "^2.0",
-        "icamys/php-sitemap-generator": "^4.4.1",
-        "jfcherng/php-diff": "^7.0",
-        "lara-zeus/spatie-translatable": "^1.0|^2.0",
-        "laravel/framework": "^11.44.2|^12.0|^13.0",
-        "laravel/prompts": "^0.2|^0.3",
-        "livewire/blaze": "^1.0",
-        "lorisleiva/laravel-actions": "^2.8",
-        "michaloravec/laravel-paginateroute": "^1.0",
-        "openai-php/laravel": "^0.10|^0.18",
-        "opis/json-schema": "^2.3",
-        "pboivin/filament-peek": "^4.0",
-        "prism-php/prism": "^0.100",
-        "saade/filament-adjacency-list": "dev-feat/laravel-13-support",
-        "silber/page-cache": "^1.0.9",
-        "spatie/laravel-activitylog": "^4.0",
-        "spatie/laravel-data": "^4.5",
-        "spatie/laravel-package-tools": "^1.14.1",
-        "staudenmeir/eloquent-has-many-deep": "^1.1",
-        "staudenmeir/eloquent-json-relations": "^1.1",
-        "stechstudio/filament-impersonate": "^5.3",
-        "symfony/filesystem": "^7.2",
-        "symfony/process": "^7.2",
-        "symplify/monorepo-builder": "^10.3.3",
-        "tanmuhittin/laravel-google-translate": "^2.4",
-        "tapp/filament-authentication-log": "^4.0|^5.0",
-        "torann/geoip": "^3.0"
-    },
-    "conflict": {
-        "firebase/php-jwt": "<7.0.0"
-    },
-    "require-dev": {
-        "barryvdh/laravel-ide-helper": "*",
-        "calebdw/larastan-livewire": "^2.4",
-        "canvural/larastan-strict-rules": "^3.0",
-        "driftingly/rector-laravel": "^2.0",
-        "fakerphp/faker": "^1.24.1",
-        "larastan/larastan": "^3.0",
-        "laravel/pail": "^1.2.3",
-        "laravel/pint": "^1.25.0",
-        "laravel/pao": "^1.0",
-        "mrpunyapal/peststan": "^0.1.0",
-        "mockery/mockery": "^1.6.12",
-        "nunomaduro/collision": "^8.8.3",
-        "orchestra/testbench": "*",
-        "pestphp/pest": "^3.0|^4.1",
-        "pestphp/pest-plugin-arch": "^3.0|^4.0",
-        "pestphp/pest-plugin-laravel": "^3.0|^4.0",
-        "pestphp/pest-plugin-livewire": "^3.0|^4.0",
-        "pestphp/pest-plugin-type-coverage": "^3.0|^4.0",
-        "phpstan/extension-installer": "^1.4",
-        "phpstan/phpstan-beberlei-assert": "^2.0",
-        "phpstan/phpstan-mockery": "^2.0",
-        "phpstan/phpstan-strict-rules": "^2.0",
-        "rector/rector": "^2.0",
-        "sinnbeck/laravel-dom-assertions": "^3.0",
-        "soyhuce/phpstan-extension": "^1.1|^2.1",
-        "spatie/laravel-ray": "^1.36"
+        "capell-app/admin": "*",
+        "capell-app/frontend": "*",
+        "capell-app/mosaic": "*",
+        "capell-app/navigation": "*",
+        "capell-app/tags": "*",
+        "capell-app/workspaces": "*"
     },
     "autoload": {
         "psr-4": {
-            "Capell\\Address\\": "packages/foundation/address/src",
-            "Capell\\Address\\Database\\Factories\\": "packages/foundation/address/database/factories",
-            "Capell\\Analytics\\": "packages/growth/analytics/src",
-            "Capell\\Analytics\\Database\\Factories\\": "packages/growth/analytics/database/factories",
-            "Capell\\Assistant\\": "packages/commercial/assistant/src",
-            "Capell\\AuthenticationLog\\": "packages/operations/authentication-log/src",
-            "Capell\\AuthenticationLog\\Database\\Factories\\": "packages/operations/authentication-log/database/factories",
-            "Capell\\Backup\\": "packages/operations/backup/src",
-            "Capell\\Backup\\Database\\Factories\\": "packages/operations/backup/database/factories",
-            "Capell\\Blog\\": "packages/foundation/blog/src",
-            "Capell\\Blog\\Database\\Factories\\": "packages/foundation/blog/database/factories",
-            "Capell\\Campaigns\\": "packages/growth/campaigns/src",
-            "Capell\\Campaigns\\Database\\Factories\\": "packages/growth/campaigns/database/factories",
-            "Capell\\DeveloperTools\\": "packages/operations/developer-tools/src",
-            "Capell\\DefaultTheme\\": "packages/foundation/themes/default/src",
-            "Capell\\FilamentPeek\\": "packages/publishing-pro/filament-peek/src",
-            "Capell\\Forms\\": "packages/forms/forms/src",
-            "Capell\\Forms\\Database\\Factories\\": "packages/forms/forms/database/factories",
-            "Capell\\HtmlMinify\\": "packages/foundation/html-minify/src",
-            "Capell\\MediaCurator\\": "packages/foundation/media-curator/src",
-            "Capell\\ContentBlocks\\": "packages/foundation/content-blocks/src",
-            "Capell\\ContentBlocks\\Database\\Factories\\": "packages/foundation/content-blocks/database/factories",
-            "Capell\\Mosaic\\": "packages/foundation/mosaic/src",
-            "Capell\\Mosaic\\Database\\Factories\\": "packages/foundation/mosaic/database/factories",
-            "Capell\\Navigation\\": "packages/foundation/navigation/src",
-            "Capell\\Navigation\\Database\\Factories\\": "packages/foundation/navigation/database/factories",
-            "Capell\\Redirects\\": "packages/foundation/redirects/src",
-            "Capell\\SeoTools\\": "packages/search-seo/seo-tools/src",
-            "Capell\\SeoTools\\Database\\Factories\\": "packages/search-seo/seo-tools/database/factories",
-            "Capell\\SiteSearch\\": "packages/search-seo/site-search/src",
-            "Capell\\SiteSearch\\Database\\Factories\\": "packages/search-seo/site-search/database/factories",
-            "Capell\\Tags\\": "packages/foundation/tags/src",
-            "Capell\\Tags\\Database\\Factories\\": "packages/foundation/tags/database/factories",
-            "Capell\\ThemeStudio\\Admin\\": "packages/theme-studio/admin/src",
-            "Capell\\ThemeStudio\\Agency\\": "packages/theme-studio/themes/agency/src",
-            "Capell\\ThemeStudio\\Core\\": "packages/theme-studio/core/src",
-            "Capell\\ThemeStudio\\Corporate\\": "packages/theme-studio/themes/corporate/src",
-            "Capell\\ThemeStudio\\Saas\\": "packages/theme-studio/themes/saas/src",
-            "Capell\\Toolbar\\": "packages/foundation/toolbar/src",
-            "Capell\\Workspaces\\": "packages/publishing-pro/workspaces/src",
-            "Capell\\Workspaces\\Database\\Factories\\": "packages/publishing-pro/workspaces/database/factories"
+            "Capell\\Blog\\": "src/",
+            "Capell\\Blog\\Database\\Factories\\": "database/factories"
         }
     },
-    "autoload-dev": {
-        "psr-4": {
-            "Capell\\Address\\Tests\\": "packages/foundation/address/tests",
-            "Capell\\Analytics\\Tests\\": "packages/growth/analytics/tests",
-            "Capell\\Assistant\\Tests\\": "packages/commercial/assistant/tests",
-            "Capell\\AuthenticationLog\\Tests\\": "packages/operations/authentication-log/tests",
-            "Capell\\Backup\\Tests\\": "packages/operations/backup/tests",
-            "Capell\\Blog\\Tests\\": "packages/foundation/blog/tests",
-            "Capell\\Campaigns\\Tests\\": "packages/growth/campaigns/tests",
-            "Capell\\DeveloperTools\\Tests\\": "packages/operations/developer-tools/tests",
-            "Capell\\FilamentPeek\\Tests\\": "packages/publishing-pro/filament-peek/tests",
-            "Capell\\Forms\\Tests\\": "packages/forms/forms/tests",
-            "Capell\\HtmlMinify\\Tests\\": "packages/foundation/html-minify/tests",
-            "Capell\\MediaCurator\\Tests\\": "packages/foundation/media-curator/tests",
-            "Capell\\ContentBlocks\\Tests\\": "packages/foundation/content-blocks/tests",
-            "Capell\\Mosaic\\Tests\\": "packages/foundation/mosaic/tests",
-            "Capell\\Navigation\\Tests\\": "packages/foundation/navigation/tests",
-            "Capell\\Plugins\\Tests\\": "packages/plugins/tests",
-            "Capell\\Redirects\\Tests\\": "packages/foundation/redirects/tests",
-            "Capell\\SeoTools\\Tests\\": "packages/search-seo/seo-tools/tests",
-            "Capell\\SiteSearch\\Tests\\": "packages/search-seo/site-search/tests",
-            "Capell\\Tags\\Tests\\": "packages/foundation/tags/tests",
-            "Capell\\Tests\\": "tests",
-            "Capell\\Tests\\Packages\\": "tests/Packages",
-            "Capell\\ThemeStudio\\Admin\\Tests\\": "packages/theme-studio/admin/tests",
-            "Capell\\ThemeStudio\\Agency\\Tests\\": "packages/theme-studio/themes/agency/tests",
-            "Capell\\ThemeStudio\\Core\\Tests\\": "packages/theme-studio/core/tests",
-            "Capell\\ThemeStudio\\Corporate\\Tests\\": "packages/theme-studio/themes/corporate/tests",
-            "Capell\\ThemeStudio\\Saas\\Tests\\": "packages/theme-studio/themes/saas/tests",
-            "Capell\\Toolbar\\Tests\\": "packages/foundation/toolbar/tests",
-            "Capell\\Workspaces\\Tests\\": "packages/publishing-pro/workspaces/tests"
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Capell\\Blog\\Providers\\BlogServiceProvider"
+            ]
+        },
+        "branch-alias": {
+            "dev-main": "4.x-dev"
         }
     },
     "config": {
-        "optimize-autoloader": true,
-        "sort-packages": true,
-        "process-timeout": 0,
-        "allow-plugins": {
-            "composer/package-versions-deprecated": true,
-            "pestphp/pest-plugin": true,
-            "phpstan/extension-installer": true,
-            "php-http/discovery": true
-        }
+        "sort-packages": true
     },
-    "minimum-stability": "dev",
     "prefer-stable": true
 }
