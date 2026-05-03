@@ -48,9 +48,7 @@ class ArticleForm implements FormConfigurator
             $defaultType = Article::getDefaultType($resourceName);
         }
 
-        if (! $defaultType instanceof Type) {
-            throw new RuntimeException('Unable to resolve article page type.');
-        }
+        throw_unless($defaultType instanceof Type, RuntimeException::class, 'Unable to resolve article page type.');
 
         $adminType = $resolver->resolveForType($defaultType, ConfiguratorTypeEnum::Page, ArticlePageConfigurator::getKey());
         $operation = $configurator->getOperation();

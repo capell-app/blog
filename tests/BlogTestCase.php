@@ -7,6 +7,7 @@ namespace Capell\Blog\Tests;
 use Capell\Admin\Facades\CapellAdmin;
 use Capell\Admin\Providers\AdminServiceProvider;
 use Capell\Admin\Providers\Filament\AdminPanelProvider;
+use Capell\Analytics\Providers\AnalyticsServiceProvider;
 use Capell\Blog\Providers\AdminServiceProvider as BlogAdminServiceProvider;
 use Capell\Blog\Providers\BlogServiceProvider;
 use Capell\Blog\Providers\ConsoleServiceProvider as BlogConsoleServiceProvider;
@@ -25,6 +26,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Blade;
 use Livewire\LivewireServiceProvider;
 use Override;
+use Spatie\ImageOptimizer\Optimizers\Svgo;
 
 class BlogTestCase extends AbstractTestCase
 {
@@ -65,6 +67,7 @@ class BlogTestCase extends AbstractTestCase
             ...parent::getPackageProviders($app),
             MosaicServiceProvider::class,
             AdminServiceProvider::class,
+            AnalyticsServiceProvider::class,
             FrontendServiceProvider::class,
             BlogServiceProvider::class,
             BlogAdminServiceProvider::class,
@@ -86,6 +89,11 @@ class BlogTestCase extends AbstractTestCase
         parent::getEnvironmentSetUp($app);
 
         CapellCore::forcePackageInstalled(AdminServiceProvider::$packageName);
+        CapellCore::registerPackage(
+            AnalyticsServiceProvider::$packageName,
+            path: realpath(__DIR__ . '/../../analytics'),
+        );
+        CapellCore::forcePackageInstalled(AnalyticsServiceProvider::$packageName);
         CapellCore::forcePackageInstalled(BlogServiceProvider::$packageName);
         CapellCore::forcePackageInstalled('capell-app/default-theme');
         CapellCore::forcePackageInstalled(FrontendServiceProvider::$packageName);
@@ -102,5 +110,8 @@ class BlogTestCase extends AbstractTestCase
 
         $app->make(Repository::class)->set('tags.tag_model', Tag::class);
         $app->make(Repository::class)->set('media-library.media_model', Media::class);
+        $app->make(Repository::class)->set('media-library.image_optimizers', [
+            Svgo::class => [],
+        ]);
     }
 }
