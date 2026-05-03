@@ -8,12 +8,18 @@ use Capell\Core\Models\Translation;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
 it('ignores non article translations when the article morph map is unavailable', function (): void {
-    Relation::morphMap(['page' => Page::class], merge: false);
+    $originalMorphMap = Relation::morphMap();
 
-    $translation = new Translation;
-    $translation->translatable_type = 'page';
+    try {
+        Relation::morphMap(['page' => Page::class], merge: false);
 
-    (new ArticleTranslationSavedListener)($translation);
+        $translation = new Translation;
+        $translation->translatable_type = 'page';
 
-    expect(true)->toBeTrue();
+        (new ArticleTranslationSavedListener)($translation);
+
+        expect(true)->toBeTrue();
+    } finally {
+        Relation::morphMap($originalMorphMap, merge: false);
+    }
 });
