@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Providers;
 
+use Capell\Admin\Data\AdminSurfaceContributionData;
+use Capell\Admin\Enums\ResourceEnum as AdminResourceEnum;
+use Capell\Admin\Facades\CapellAdmin;
 use Capell\Blog\Enums\LivewirePageComponentEnum;
+use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Listeners\ArticleTranslationSavedListener;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\BlogModelRegistrar;
@@ -34,11 +38,6 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
 
     public static string $packageName = 'capell-app/blog';
 
-    public function bootingPackage(): void
-    {
-        $this->registerTranslationEvents();
-    }
-
     public function configurePackage(Package $package): void
     {
         $package
@@ -49,13 +48,12 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
 
     public function registeringPackage(): void
     {
-        $this
-            ->registerRelationships()
-            ->registerPackageMetadata()
-            ->registerPackageAssets()
-            ->registerBlazeComponents();
+        $this->app->register(AdminServiceProvider::class);
 
-        $this->booted(function (): void {
+        $this
+            ->registerPackageMetadata();
+
+        $this->app->booted(function (): void {
             if (! $this->isPackageInstalled()) {
                 return;
             }
@@ -72,12 +70,17 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
     private function bootInstalledPackage(): self
     {
         return $this
+            ->registerRelationships()
             ->registerModels()
             ->registerModelRelations()
+            ->registerAdminResources()
             ->registerAboutCommand()
+            ->registerPackageAssets()
+            ->registerBlazeComponents()
             ->registerBladeComponents()
             ->registerLivewireComponents()
             ->registerTypes()
+            ->registerTranslationEvents()
             ->registerWorkspaces();
     }
 
@@ -135,6 +138,22 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
     private function registerModels(): self
     {
         BlogModelRegistrar::register();
+
+        return $this;
+    }
+
+    private function registerAdminResources(): self
+    {
+        CapellAdmin::contributeToAdminSurface(AdminSurfaceContributionData::resource(
+            class: ResourceEnum::Article->value,
+            group: AdminResourceEnum::Page->name,
+            name: strtolower(ResourceEnum::Article->name),
+        ));
+
+        CapellAdmin::contributeToAdminSurface(AdminSurfaceContributionData::resource(
+            class: ResourceEnum::Tag->value,
+            group: ResourceEnum::Tag->name,
+        ));
 
         return $this;
     }

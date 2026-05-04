@@ -6,9 +6,11 @@ namespace Capell\Blog\Filament\Widgets;
 
 use Capell\Admin\Contracts\CapellWidgetContract;
 use Capell\Admin\Filament\Concerns\GatedByRoleAndSettings;
+use Capell\Admin\Filament\Concerns\HasDashboardDateRange;
+use Capell\Analytics\Enums\AnalyticsEventType;
+use Capell\Analytics\Models\AnalyticsEvent;
 use Capell\Blog\Data\Dashboard\TrafficChartData;
 use Capell\Blog\Data\Dashboard\TrafficPointData;
-use Capell\Core\Models\AccessLog;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 final class TrafficChartWidgetAbstract extends Widget implements CapellWidgetContract
 {
     use GatedByRoleAndSettings;
+    use HasDashboardDateRange;
 
     protected static string $settingsKey = 'traffic_chart';
 
@@ -37,14 +40,18 @@ final class TrafficChartWidgetAbstract extends Widget implements CapellWidgetCon
 
     private function getData(): TrafficChartData
     {
-        $rows = AccessLog::query()
+        [$rangeStart, $rangeEnd] = $this->getDashboardDateRange();
+
+        $rows = AnalyticsEvent::query()
             ->select(
-                DB::raw('DATE(created_at) as date'),
+                DB::raw('DATE(occurred_at) as date'),
                 DB::raw('COUNT(*) as views'),
-                DB::raw('COUNT(DISTINCT session_id) as visitors'),
+                DB::raw('COUNT(DISTINCT visit_id) as visitors'),
             )
-            ->where('created_at', '>=', now()->subDays(30))
-            ->groupBy(DB::raw('DATE(created_at)'))
+            ->where('type', AnalyticsEventType::PageView)
+            ->where('occurred_at', '>=', $rangeStart)
+            ->where('occurred_at', '<=', $rangeEnd)
+            ->groupBy(DB::raw('DATE(occurred_at)'))
             ->orderBy('date')
             ->get();
 

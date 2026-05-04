@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Capell\Blog\Console\Commands;
 
 use Capell\Blog\Actions\CreateBlogPagesAction;
+use Capell\Blog\Actions\EnsureArticlePublishingDefaultsAction;
+use Capell\Blog\Enums\BlogLayoutEnum;
 use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Creator\ArticleCreator;
-use Capell\Blog\Support\Creator\BlogCreator;
 use Capell\Core\Console\Commands\Concerns\HasSitesOption;
 use Capell\Core\Contracts\Pageable;
+use Capell\Core\Enums\TypeEnum;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\Page;
@@ -34,8 +36,6 @@ class DemoCommand extends Command
     protected $signature = 'capell:blog-demo {--sites=} {--user=} {--limit=}';
 
     protected $description = 'Setup demo blog pages, tags and sample articles for selected sites.';
-
-    private BlogCreator $blogCreator;
 
     private DemoCreator $demoCreator;
 
@@ -170,7 +170,6 @@ class DemoCommand extends Command
         $this->newLine();
 
         $this->demoCreator = resolve(DemoCreator::class, ['author' => $user]);
-        $this->blogCreator = resolve(BlogCreator::class);
 
         // Calculate all steps upfront for an accurate progress bar
         $pagesTree = config('capell-demo.pages', []);
@@ -221,9 +220,16 @@ class DemoCommand extends Command
         $demo = $this->getDemoData($site->name, $site->languages->pluck('code')->toArray());
         $createdCount = 0;
 
-        $type = $this->blogCreator->createArticlePageType();
+        EnsureArticlePublishingDefaultsAction::run();
 
-        $layout = $this->blogCreator->createArticleLayout();
+        $type = Type::query()
+            ->where('key', BlogPageTypeEnum::Article->value)
+            ->where('type', TypeEnum::Page->value)
+            ->firstOrFail();
+
+        $layout = Layout::query()
+            ->where('key', BlogLayoutEnum::Article->value)
+            ->firstOrFail();
 
         foreach ($demo['children'] as $child) {
             if ($limit !== null && $createdCount >= $limit) {

@@ -7,8 +7,28 @@ use Capell\Blog\Support\Sitemap\ArticlesSitemap;
 use Capell\Blog\Support\Sitemap\TagsSitemap;
 use Symfony\Component\Finder\Finder;
 
+it('declares navigation as an explicit package dependency', function (): void {
+    $packagePath = dirname(__DIR__, 2);
+    $capellManifestContents = file_get_contents($packagePath . '/capell.json');
+    $composerManifestContents = file_get_contents($packagePath . '/composer.json');
+
+    $capellManifest = json_decode(
+        $capellManifestContents === false ? '[]' : $capellManifestContents,
+        associative: true,
+        flags: JSON_THROW_ON_ERROR,
+    );
+    $composerManifest = json_decode(
+        $composerManifestContents === false ? '[]' : $composerManifestContents,
+        associative: true,
+        flags: JSON_THROW_ON_ERROR,
+    );
+
+    expect($capellManifest['requires'])->toContain('capell-app/navigation')
+        ->and($composerManifest['require'])->toHaveKey('capell-app/navigation');
+});
+
 it('keeps blog package references inside the blog source package except intentional bridges', function (): void {
-    $rootPath = dirname(__DIR__, 5);
+    $rootPath = dirname(__DIR__, 4);
     $violations = [];
 
     $files = (new Finder)
@@ -21,7 +41,7 @@ it('keeps blog package references inside the blog source package except intentio
     foreach ($files as $file) {
         $relativePath = str_replace($rootPath . '/', '', $file->getPathname());
 
-        if (str_starts_with($relativePath, 'packages/foundation/blog/src/')) {
+        if (str_starts_with($relativePath, 'packages/blog/src/')) {
             continue;
         }
 

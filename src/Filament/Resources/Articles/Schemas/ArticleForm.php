@@ -8,19 +8,20 @@ use Capell\Admin\Data\Configurators\ConfiguratorContextData;
 use Capell\Admin\Enums\ConfiguratorTypeEnum;
 use Capell\Admin\Filament\Contracts\FormConfigurator;
 use Capell\Admin\Support\Configurators\ConfiguratorResolver;
+use Capell\Blog\Actions\EnsureArticlePublishingDefaultsAction;
 use Capell\Blog\Filament\Configurators\Articles\ArticlePageConfigurator;
 use Capell\Blog\Filament\Resources\Articles\ArticleResource;
 use Capell\Blog\Models\Article;
-use Capell\Blog\Support\Creator\BlogCreator;
 use Capell\Core\Contracts\Pageable;
 use Capell\Core\Models\Type;
 use Filament\Schemas\Schema;
+use RuntimeException;
 
 class ArticleForm implements FormConfigurator
 {
     public static function configure(Schema $configurator, ?ConfiguratorContextData $context = null): Schema
     {
-        $resourceClass = ArticleResource::class;
+        $resourceName = ArticleResource::getResourceName();
         $resolver = resolve(ConfiguratorResolver::class);
         $record = $configurator->getRecord();
 
@@ -40,11 +41,14 @@ class ArticleForm implements FormConfigurator
             return $adminType::configure($configurator, ConfiguratorContextData::forEdit(ConfiguratorTypeEnum::Page));
         }
 
-        $defaultType = Article::getDefaultType($resourceClass);
+        $defaultType = Article::getDefaultType($resourceName);
 
         if (! $defaultType instanceof Type) {
-            $defaultType = resolve(BlogCreator::class)->createArticlePageType();
+            EnsureArticlePublishingDefaultsAction::run();
+            $defaultType = Article::getDefaultType($resourceName);
         }
+
+        throw_unless($defaultType instanceof Type, RuntimeException::class, 'Unable to resolve article page type.');
 
         $adminType = $resolver->resolveForType($defaultType, ConfiguratorTypeEnum::Page, ArticlePageConfigurator::getKey());
         $operation = $configurator->getOperation();

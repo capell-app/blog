@@ -20,6 +20,7 @@
     "require": {
         "php": "^8.2",
         "capell-app/admin": "*",
+        "capell-app/analytics": "*",
         "capell-app/frontend": "*",
         "capell-app/mosaic": "*",
         "capell-app/navigation": "*",
@@ -37,9 +38,6 @@
             "providers": [
                 "Capell\\Blog\\Providers\\BlogServiceProvider"
             ]
-        },
-        "branch-alias": {
-            "dev-main": "4.x-dev"
         }
     },
     "config": {

@@ -1,34 +1,7 @@
-# Database Reference — Capell Blog
+# Blog
 
-## Migrations
+This page has been consolidated into [Overview](overview.md).
 
-| File                                            | Effect                       |
-| ----------------------------------------------- | ---------------------------- |
-| `database/migrations/create_articles_table.php` | Creates the `articles` table |
+The package README and overview now carry the current source-of-truth summary for what Blog adds, why it matters, technical shape, data model, install impact, pitfalls, and screenshot plan.
 
-Run them via `php artisan capell:blog-install`, which also publishes the tags config override.
-
-## `articles`
-
-Workspace-aware page record for article content.
-
-Key columns: `id`, `workspace_id`, `site_id`, `type_id`, `layout_id`, `name`, `meta` (JSON), publish dates (`start_date`, `end_date`), `order`, userstamps, timestamps, soft deletes.
-
-Traits on the `Article` model: `BelongsToWorkspace`, `HasTags`, `HasTranslations`, `HasPublishDates`, `HasPageOrdering`, `HasAssets`, `HasMetaData`, `LogsActivity`, `InteractsWithMedia`, `Cloneable`, `SoftDeletes`.
-
-## Factories
-
-- `database/factories/ArticleFactory.php`
-- `database/factories/ArticleTypeFactory.php`
-
-## Relations registered at runtime
-
-Registered in `BlogServiceProvider`:
-
-- `Page::tags()` — morph-to-many `Capell\Blog\Models\Tag` via `taggables`
-- `Site::tags()` — has-many `Capell\Blog\Models\Tag`
-
-When the Layout package is also installed:
-
-- `Content::tags()` — morph-to-many `Tag`
-- `Tag::contents()` — morphed-by-many `Content`
+Restore this topic as a focused deep dive only when it has code references, screenshots, or workflow detail that does not belong in the overview.

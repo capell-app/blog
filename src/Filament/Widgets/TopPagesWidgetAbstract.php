@@ -6,9 +6,11 @@ namespace Capell\Blog\Filament\Widgets;
 
 use Capell\Admin\Contracts\CapellWidgetContract;
 use Capell\Admin\Filament\Concerns\GatedByRoleAndSettings;
+use Capell\Admin\Filament\Concerns\HasDashboardDateRange;
+use Capell\Analytics\Enums\AnalyticsEventType;
+use Capell\Analytics\Models\AnalyticsEvent;
 use Capell\Blog\Data\Dashboard\TopPageData;
 use Capell\Blog\Data\Dashboard\TopPagesData;
-use Capell\Core\Models\AccessLog;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 final class TopPagesWidgetAbstract extends Widget implements CapellWidgetContract
 {
     use GatedByRoleAndSettings;
+    use HasDashboardDateRange;
 
     protected static string $settingsKey = 'top_pages';
 
@@ -37,16 +40,20 @@ final class TopPagesWidgetAbstract extends Widget implements CapellWidgetContrac
 
     private function getData(): TopPagesData
     {
-        $rows = AccessLog::query()
-            ->select('url', DB::raw('COUNT(*) as views'))
-            ->where('created_at', '>=', now()->subDays(30))
-            ->groupBy('url')
+        [$rangeStart, $rangeEnd] = $this->getDashboardDateRange();
+
+        $rows = AnalyticsEvent::query()
+            ->select('path', DB::raw('COUNT(*) as views'))
+            ->where('type', AnalyticsEventType::PageView)
+            ->where('occurred_at', '>=', $rangeStart)
+            ->where('occurred_at', '<=', $rangeEnd)
+            ->groupBy('path')
             ->orderByDesc('views')
             ->limit(5)
             ->get();
 
         $pages = $rows->map(fn (object $row): TopPageData => new TopPageData(
-            path: $row->url,
+            path: $row->path,
             views: (int) $row->views,
         ));
 

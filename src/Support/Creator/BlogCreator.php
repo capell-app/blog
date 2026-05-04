@@ -6,6 +6,8 @@ namespace Capell\Blog\Support\Creator;
 
 use Capell\Admin\Filament\Configurators\Pages\ResultsPageConfigurator;
 use Capell\Admin\Filament\Configurators\Types\PageTypeConfigurator;
+use Capell\Blog\Actions\EnsureArticlePublishingDefaultsAction;
+use Capell\Blog\Actions\EnsureBlogPublishingSurfaceAction;
 use Capell\Blog\Enums\BlogLayoutEnum;
 use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Enums\BlogTypeGroupEnum;
@@ -47,45 +49,8 @@ class BlogCreator
 {
     public function setup(Site $site, bool $createWidgets = true): void
     {
-        $typeCreator = resolve(TypeCreator::class);
-        $layoutCreator = resolve(LayoutCreator::class);
-        $layoutTypeCreator = resolve(LayoutTypeCreator::class);
-
-        $languages = $site->getAllLanguages();
-
-        // Types
-        $blogType = $this->createBlogPageType();
-        $tagType = $this->createTagPageType();
-        $archivePageType = $this->createArchivePageType();
-        $systemType = $typeCreator->systemPageType();
-        $this->createArticlePageType();
-
-        // Layouts
-        $blogLayout = $this->createBlogPageLayout();
-        $archivesLayout = $this->createArchivesLayout();
-        $tagsLayout = $this->createTagsLayout();
-        $resultsLayout = $layoutCreator->createResultsLayout();
-        $this->createArticleLayout(createWidgets: $createWidgets);
-
-        // Pages
-        $blogPage = $this->createBlogPage($site, $blogType, $blogLayout, $languages);
-        $archivesPage = $this->createArchivesPage($blogPage, $systemType, $archivesLayout, $languages);
-        $this->createArchivePage($archivesPage, $archivePageType, $resultsLayout, $languages);
-        $tagsPage = $this->createTagsPage($site, $blogPage, $languages, type: $systemType, layout: $tagsLayout, createWidgets: $createWidgets);
-        $this->createTagPage($site, $tagsPage, $languages, type: $tagType, layout: $resultsLayout);
-
-        // Widgets
-        if ($createWidgets) {
-            $articleType = $this->createArticleWidgetType();
-            $resultsType = $layoutTypeCreator->resultsWidgetType();
-            $this->createArticleWidgetType();
-
-            $this->createLatestArticlesWidget($languages);
-            $this->createArchivesWidget($languages);
-            $this->createTagsWidget($languages);
-            $this->createArticleWidget($articleType);
-            $this->relatedArticlesWidget($resultsType, $languages);
-        }
+        EnsureArticlePublishingDefaultsAction::run($createWidgets);
+        EnsureBlogPublishingSurfaceAction::run($site, $site->getAllLanguages(), $createWidgets);
     }
 
     public function createTagPageType(): Type
