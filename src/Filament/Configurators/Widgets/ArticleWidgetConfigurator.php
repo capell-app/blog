@@ -8,7 +8,7 @@ use Capell\LayoutBuilder\Filament\Components\Forms\Widget\AdminSchema;
 use Capell\LayoutBuilder\Filament\Components\Forms\Widget\SettingsSchema;
 use Capell\LayoutBuilder\Filament\Components\Forms\Widget\Tab\WidgetDisplayTab;
 use Capell\LayoutBuilder\Filament\Configurators\Widgets\DefaultWidgetConfigurator;
-use Filament\FormBuilder\Components\Checkbox;
+use Filament\Forms\Components\Checkbox;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;

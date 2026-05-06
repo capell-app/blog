@@ -32,7 +32,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
-use Filament\FormBuilder\Components\Select;
+use Filament\Forms\Components\Select;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Resources\Pages\Page as ResourcePage;
 use Filament\Tables\Columns\TextColumn;
