@@ -6,6 +6,7 @@ use Capell\Blog\Actions\GenerateArchiveUrl;
 use Capell\Blog\Data\ArchiveMonthData;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Creator\BlogCreator;
+use Capell\Blog\Support\Sitemap\ArticlesSitemap;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
@@ -95,6 +96,33 @@ test('blog page lists articles', function (): void {
                     },
                 ),
         );
+});
+
+test('articles sitemap nests published articles below the blog page', function (): void {
+    $blogCreator = resolve(BlogCreator::class);
+
+    $siteDomain = SiteDomain::factory()->default()->create();
+    $site = $siteDomain->site;
+
+    $blogPage = $blogCreator->createBlogPage($site);
+    $articleType = $blogCreator->createArticlePageType();
+    $articleLayout = $blogCreator->createArticleLayout();
+
+    $article = Article::factory()
+        ->site($site)
+        ->layout($articleLayout)
+        ->type($articleType)
+        ->withTranslations($site->languages)
+        ->create();
+
+    $sitemapPages = (new ArticlesSitemap($site, $siteDomain, $siteDomain->language))->fetch();
+    $blogNode = $sitemapPages->first();
+
+    expect($sitemapPages)->toHaveCount(1)
+        ->and($blogNode->pageId)->toBe($blogPage->id)
+        ->and($blogNode->children)->toHaveCount(1)
+        ->and($blogNode->children->first()->pageId)->toBe($article->id)
+        ->and($blogNode->children->first()->url)->toBe($article->pageUrl->full_url);
 });
 
 test('visit blogs page with no articles and see appropriate message', function (): void {
