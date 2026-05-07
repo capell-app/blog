@@ -54,7 +54,7 @@ class Related extends AbstractPagesWidget
             modifyQuery: fn (Builder $query) => $query
                 ->where('pages.id', '!=', $page->id)
                 ->when(
-                    $excludeParent && $page->parent_id,
+                    $excludeParent && $page->parent_id !== null,
                     fn (BuilderContract $query): BuilderContract => $query->where('pages.id', '!=', $page->parent_id),
                 )
                 ->whereHas(

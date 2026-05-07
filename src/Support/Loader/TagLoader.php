@@ -137,7 +137,7 @@ class TagLoader
                 return $query->paginate($limit, ['*'], $paginationKey);
             }
 
-            if ($limit) {
+            if ($limit !== null) {
                 $query->limit($limit);
             }
 

@@ -31,11 +31,11 @@ class BlogStaticSiteExtension
     private function visitTaggedPages(string $pageModel, Site $site, SiteDomain $domain, callable $visit): void
     {
         $tagPage = $pageModel::getFirstPageByTypeForSite('tag', $site, $domain->language);
-        if (! $tagPage) {
+        if ($tagPage === null) {
             return;
         }
 
-        if (! $tagPage->pageUrl) {
+        if ($tagPage->pageUrl === null) {
             return;
         }
 
@@ -65,7 +65,7 @@ class BlogStaticSiteExtension
 
         $archives->each(function (ArchiveMonthData $archive) use ($pageModel, $site, $domain, $visit): void {
             $archivePage = $pageModel::getFirstPageByTypeForSite('archive', $site, $domain->language);
-            if (! $archivePage || ! $archivePage->pageUrl) {
+            if ($archivePage === null || $archivePage->pageUrl === null) {
                 return;
             }
 

@@ -778,7 +778,7 @@ class BlogCreator
 
         $type = $typeModel::query()->where('key', $key)->pageType()->first();
 
-        if ($type) {
+        if ($type !== null) {
             return $type;
         }
 
@@ -799,7 +799,7 @@ class BlogCreator
 
         $layout = $layoutModel::query()->firstWhere('key', $key);
 
-        if ($layout) {
+        if ($layout !== null) {
             return $layout;
         }
 

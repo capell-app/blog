@@ -50,7 +50,7 @@ test('tag page list articles by tag', function (): void {
 
     $title = trans($tagPage->translation->title, ['tag_name' => $tag->translate('name', $language->code)]);
 
-    $containers = $tagPage->layout->containers;
+    $containers = $tagPage->layout->getAttribute('containers');
     $containerWidgets = collect($containers)->pluck('widgets.*.widget_key')->flatten()->filter()->toArray();
 
     expect($tagPage)

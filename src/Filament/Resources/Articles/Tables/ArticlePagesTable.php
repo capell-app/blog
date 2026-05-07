@@ -25,7 +25,6 @@ use Capell\Core\Actions\GetEditPageResourceUrlAction;
 use Capell\Core\Actions\PageDeletedAction;
 use Capell\Core\Contracts\Pageable;
 use Capell\Core\Models\Language; // adjust if different namespace
-use Capell\Core\Models\Page;
 use Capell\Tags\Models\Tag;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
@@ -326,7 +325,7 @@ class ArticlePagesTable implements TableConfigurator
                     }
 
                     if (isset($data['canonical_page_id']) && $data['canonical_page_id'] !== null && $data['canonical_page_id'] !== '') {
-                        /** @var class-string<Page> $model */
+                        /** @var class-string<Article> $model */
                         $model = Article::class;
 
                         $indicators['canonical_page_id'] = __(
@@ -379,7 +378,7 @@ class ArticlePagesTable implements TableConfigurator
                 name: 'tags',
                 titleAttribute: 'name',
                 modifyQueryUsing: function (Builder $query, HasTable $livewire): void {
-                    $siteId = $livewire->activeTab;
+                    $siteId = $livewire instanceof ListRecords ? $livewire->activeTab : null;
 
                     if (in_array($siteId, [null, '', '0'], true)) {
                         $query->with('site')->orderBy('site_id');
@@ -394,7 +393,7 @@ class ArticlePagesTable implements TableConfigurator
                         $model = Language::class;
 
                         $code = $model::query()->find($languageId, 'code')?->code;
-                        if ($code) {
+                        if ($code !== null && $code !== '') {
                             $query->whereRaw('JSON_EXTRACT(`tags`.`name`, ' . DB::getPdo()->quote('$.' . $code) . ') IS NOT NULL');
                         }
                     }

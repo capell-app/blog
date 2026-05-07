@@ -58,7 +58,12 @@ class EnsureArticlePublishingDefaultsAction
             $layout = Layout::query()->firstWhere('key', $layoutKey->value)
                 ?? resolve(LayoutCreator::class)->create($layoutKey);
 
-            $containers = $layout->containers;
+            $containers = $layout->getAttribute('containers');
+
+            if (! is_array($containers)) {
+                $containers = [];
+            }
+
             $sidebarWidgets = $containers['sidebar']['widgets'] ?? [];
             $sidebarWidgetKeys = array_column($sidebarWidgets, 'widget_key');
 

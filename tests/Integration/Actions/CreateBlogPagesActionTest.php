@@ -32,7 +32,11 @@ it('creates the blog, archives, archive, tags, and tag pages for the site', func
 
 it('adds the archives widget to the results layout sidebar during install', function (): void {
     $resultsLayout = Layout::query()->firstWhere('key', LayoutEnum::Results->value);
-    $sidebarWidgetKeys = array_column($resultsLayout->containers['sidebar']['widgets'], 'widget_key');
+    $containers = $resultsLayout->getAttribute('containers');
+
+    expect($containers)->toBeArray();
+
+    $sidebarWidgetKeys = array_column($containers['sidebar']['widgets'], 'widget_key');
 
     expect($sidebarWidgetKeys)->toContain('archives');
 });

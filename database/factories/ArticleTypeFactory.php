@@ -9,12 +9,7 @@ use Capell\Blog\Enums\BlogTypeGroupEnum;
 use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Filament\Configurators\Articles\ArticlePageConfigurator;
 use Capell\Core\Database\Factories\TypeFactory;
-use Capell\Core\Models\Page;
-use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends Factory<Page>
- */
 class ArticleTypeFactory extends TypeFactory
 {
     public function article(): TypeFactory

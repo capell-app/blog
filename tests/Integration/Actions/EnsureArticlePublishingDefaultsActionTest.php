@@ -39,8 +39,14 @@ it('updates default and results sidebars with article publishing widgets', funct
     $defaultLayout = Layout::query()->firstWhere('key', LayoutEnum::Default->value);
     $resultsLayout = Layout::query()->firstWhere('key', LayoutEnum::Results->value);
 
-    $defaultSidebarWidgetKeys = array_column($defaultLayout->containers['sidebar']['widgets'], 'widget_key');
-    $resultsSidebarWidgetKeys = array_column($resultsLayout->containers['sidebar']['widgets'], 'widget_key');
+    $defaultContainers = $defaultLayout->getAttribute('containers');
+    $resultsContainers = $resultsLayout->getAttribute('containers');
+
+    expect($defaultContainers)->toBeArray()
+        ->and($resultsContainers)->toBeArray();
+
+    $defaultSidebarWidgetKeys = array_column($defaultContainers['sidebar']['widgets'], 'widget_key');
+    $resultsSidebarWidgetKeys = array_column($resultsContainers['sidebar']['widgets'], 'widget_key');
 
     expect($defaultSidebarWidgetKeys)->toContain('latest-articles')
         ->and($defaultSidebarWidgetKeys)->not->toContain('latest-pages')

@@ -324,7 +324,13 @@ class DemoCommand extends Command
         $title = Arr::random($variations);
 
         foreach ($languages as $language) {
-            $data['title'][$language->code] = $title . ' ' . $data['name'][$language->code];
+            $languageCode = $language->getAttribute('code');
+
+            if (! is_string($languageCode)) {
+                continue;
+            }
+
+            $data['title'][$languageCode] = $title . ' ' . $data['name'][$languageCode];
         }
 
         $pageCreator = resolve(ArticleCreator::class);
@@ -363,7 +369,7 @@ class DemoCommand extends Command
 
     private function createArticleTags(Site $site, Collection $languages): void
     {
-        /** @var class-string<Page> $model */
+        /** @var class-string<Page> $pageModel */
         $pageModel = Page::class;
 
         /** @var class-string<Article> $model */
@@ -409,7 +415,7 @@ class DemoCommand extends Command
 
         $languages->each(function (Language $language) use (&$tag_names, &$tag_slugs, $page, $tagModel, &$tag): void {
             $translation = $page->translations->firstWhere('language_id', $language->id);
-            if (! $translation) {
+            if ($translation === null) {
                 return;
             }
 

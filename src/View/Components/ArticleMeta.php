@@ -39,7 +39,7 @@ class ArticleMeta extends Component
 
     public function render(): ?View
     {
-        if ($this->tags->isEmpty() && ($this->withAuthor && ! $this->author)) {
+        if ($this->tags->isEmpty() && ($this->withAuthor && $this->author === null)) {
             return null;
         }
 
