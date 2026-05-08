@@ -71,7 +71,6 @@ Gives editors a dedicated article workflow that still fits the same structured p
 - Tier: free
 - Bundle: foundation
 - Contexts: `admin`, `frontend`, `console`
-- Requires: `capell-app/core`, `capell-app/admin`, `capell-app/frontend`, `capell-app/layout-builder`, `capell-app/tags`
 - Optional dependencies: None listed.
 
 ## Admin Surfaces

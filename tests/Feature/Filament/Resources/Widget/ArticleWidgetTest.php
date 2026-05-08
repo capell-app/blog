@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
+use Capell\Admin\LayoutBuilder\Filament\Resources\Widgets\Pages\EditWidget;
+use Capell\Admin\LayoutBuilder\Filament\Resources\Widgets\Pages\ListWidgets;
 use Capell\Blog\Support\Creator\BlogCreator;
-use Capell\LayoutBuilder\Filament\Resources\Widgets\Pages\EditWidget;
-use Capell\LayoutBuilder\Filament\Resources\Widgets\Pages\ListWidgets;
-use Capell\LayoutBuilder\Models\Widget;
+use Capell\Core\Models\Widget;
 use Capell\Tests\Support\Concerns\CreatesAdminUser;
 
 use function Pest\Laravel\assertDatabaseHas;

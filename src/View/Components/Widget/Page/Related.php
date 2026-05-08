@@ -6,9 +6,9 @@ namespace Capell\Blog\View\Components\Widget\Page;
 
 use Capell\Blog\Support\Loader\TagLoader;
 use Capell\Core\Models\Page;
+use Capell\FoundationTheme\View\Components\Widget\Page\AbstractPagesWidget;
 use Capell\Frontend\Facades\Frontend;
 use Capell\Frontend\Support\Loader\PageLoader;
-use Capell\LayoutBuilder\View\Components\Widget\Page\AbstractPagesWidget;
 use Illuminate\Contracts\Database\Eloquent\Builder as BuilderContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;

@@ -18,7 +18,6 @@ use Capell\FoundationTheme\Providers\FoundationThemeServiceProvider;
 use Capell\Frontend\Contracts\SettingsMigrationProviderInterface;
 use Capell\Frontend\Providers\FrontendServiceProvider;
 use Capell\Insights\Providers\InsightsServiceProvider;
-use Capell\LayoutBuilder\Providers\LayoutBuilderServiceProvider;
 use Capell\Tags\Models\Tag;
 use Capell\Tags\Providers\TagsServiceProvider;
 use Capell\Tests\AbstractTestCase;
@@ -67,7 +66,6 @@ class BlogTestCase extends AbstractTestCase
         return [
             ...parent::getPackageProviders($app),
             ContentSectionsServiceProvider::class,
-            LayoutBuilderServiceProvider::class,
             AdminServiceProvider::class,
             InsightsServiceProvider::class,
             FrontendServiceProvider::class,
@@ -100,7 +98,6 @@ class BlogTestCase extends AbstractTestCase
         CapellCore::forcePackageInstalled('capell-app/foundation-theme');
         CapellCore::forcePackageInstalled(FrontendServiceProvider::$packageName);
         CapellCore::forcePackageInstalled(ContentSectionsServiceProvider::$packageName);
-        CapellCore::forcePackageInstalled(LayoutBuilderServiceProvider::$packageName);
 
         CapellCore::registerPackage(
             TagsServiceProvider::$packageName,

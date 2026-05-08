@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Filament\Configurators\Widgets;
 
-use Capell\LayoutBuilder\Filament\Components\Forms\Widget\AdminSchema;
-use Capell\LayoutBuilder\Filament\Components\Forms\Widget\SettingsSchema;
-use Capell\LayoutBuilder\Filament\Components\Forms\Widget\Tab\WidgetDisplayTab;
-use Capell\LayoutBuilder\Filament\Configurators\Widgets\DefaultWidgetConfigurator;
+use Capell\Admin\LayoutBuilder\Filament\Components\Forms\Widget\AdminSchema;
+use Capell\Admin\LayoutBuilder\Filament\Components\Forms\Widget\SettingsSchema;
+use Capell\Admin\LayoutBuilder\Filament\Components\Forms\Widget\Tab\WidgetDisplayTab;
+use Capell\Admin\LayoutBuilder\Filament\Configurators\Widgets\DefaultWidgetConfigurator;
 use Filament\Forms\Components\Checkbox;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Section;

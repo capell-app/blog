@@ -12,7 +12,6 @@
         "capell-app/admin",
         "capell-app/insights",
         "capell-app/frontend",
-        "capell-app/layout-builder",
         "capell-app/navigation",
         "capell-app/tags"
     ],

@@ -6,8 +6,8 @@ namespace Capell\Blog\View\Components\Widget\Tag;
 
 use Capell\Blog\Support\Loader\TagLoader;
 use Capell\Core\Models\Page;
+use Capell\FoundationTheme\View\Components\Widget\AbstractWidget;
 use Capell\Frontend\Facades\Frontend;
-use Capell\LayoutBuilder\View\Components\Widget\AbstractWidget;
 use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;

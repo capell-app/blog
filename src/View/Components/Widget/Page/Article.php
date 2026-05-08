@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Capell\Blog\View\Components\Widget\Page;
 
 use Capell\Core\Contracts\Pageable;
+use Capell\FoundationTheme\View\Components\Widget\AbstractWidget;
 use Capell\Frontend\Facades\Frontend;
 use Capell\Frontend\Support\Loader\PageLoader;
-use Capell\LayoutBuilder\View\Components\Widget\AbstractWidget;
 use Closure;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\View\View;
