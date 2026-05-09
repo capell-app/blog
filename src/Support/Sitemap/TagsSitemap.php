@@ -64,7 +64,7 @@ class TagsSitemap extends AbstractSitemapPages
 
     private function getTagPages(Page $tagPage): Collection
     {
-        return TagLoader::getTags(site: $this->site, language: $this->language, limit: 100)
+        return TagLoader::getTags(site: $this->site, language: $this->language)
             ->map(fn (Tag $tag): SitemapPageData => $this->format($tagPage, $tag))
             ->values();
     }

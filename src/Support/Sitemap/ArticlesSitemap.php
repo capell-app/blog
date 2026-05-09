@@ -30,7 +30,7 @@ class ArticlesSitemap extends AbstractSitemapPages
         $articles = PageLoader::getPages(
             language: $this->language,
             site: $this->site,
-            limit: 100,
+            limit: null,
             ordering: PageOrderEnum::Latest,
             pageGroup: BlogTypeGroupEnum::Article->value,
             morphModel: 'article',
