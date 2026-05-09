@@ -11,7 +11,7 @@ use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
-use Capell\Frontend\Support\ModelServing\RetrievedModelStore;
+use Capell\Frontend\Contracts\RenderedModelTracker;
 use Capell\Tags\Enums\TagTypeEnum;
 use Capell\Tags\Models\Tag;
 use Illuminate\Contracts\Database\Eloquent\Builder as BuilderContract;
@@ -35,7 +35,7 @@ class TagLoader
 
         if ($fromCache) {
             $tags->each(function (Tag $tag): void {
-                resolve(RetrievedModelStore::class)->track($tag);
+                resolve(RenderedModelTracker::class)->track($tag);
             });
         }
 
@@ -58,7 +58,7 @@ class TagLoader
         });
 
         if ($fromCache && $page instanceof Pageable) {
-            resolve(RetrievedModelStore::class)->track($page);
+            resolve(RenderedModelTracker::class)->track($page);
         }
 
         return $page;
@@ -146,7 +146,7 @@ class TagLoader
 
         if ($fromCache && $tags instanceof Collection) {
             $tags->each(function (Tag $tag): void {
-                resolve(RetrievedModelStore::class)->track($tag);
+                resolve(RenderedModelTracker::class)->track($tag);
             });
         }
 
@@ -175,7 +175,7 @@ class TagLoader
         });
 
         if ($fromCache && $tag instanceof Tag) {
-            resolve(RetrievedModelStore::class)->track($tag);
+            resolve(RenderedModelTracker::class)->track($tag);
         }
 
         return $tag;

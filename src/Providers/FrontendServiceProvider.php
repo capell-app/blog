@@ -14,10 +14,10 @@ use Capell\Blog\View\Components\Footer\Pages;
 use Capell\Blog\View\Components\Footer\Tags;
 use Capell\Blog\View\Components\Page\BeforeContentTags;
 use Capell\Core\Facades\CapellCore;
-use Capell\Core\Support\StaticSite\StaticSiteExtensionRegistry;
 use Capell\Frontend\Data\RenderHookContext;
 use Capell\Frontend\Enums\RenderHookLocation;
 use Capell\Frontend\Support\Render\RenderHookRegistry;
+use Capell\HtmlCache\Support\StaticSite\StaticSiteExtensionRegistry;
 use Capell\SeoSuite\Support\Sitemap\SitemapPageRegistry;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\View;
@@ -102,6 +102,10 @@ final class FrontendServiceProvider extends ServiceProvider
 
     private function registerStaticSiteExtensions(): void
     {
+        if (! app()->bound(StaticSiteExtensionRegistry::class)) {
+            return;
+        }
+
         $registry = resolve(StaticSiteExtensionRegistry::class);
 
         if (! $registry->has('blog-tags-archives')) {

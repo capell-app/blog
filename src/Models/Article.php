@@ -11,7 +11,6 @@ use Capell\Blog\Observers\ArticleObserver;
 use Capell\Blog\Support\Loader\BlogLoader;
 use Capell\Core\Concerns\HasCapellMedia;
 use Capell\Core\Contracts\Pageable;
-use Capell\Core\Contracts\PageCacheable;
 use Capell\Core\Enums\MediaCollectionEnum;
 use Capell\Core\Enums\PageOrderEnum;
 use Capell\Core\Models\Concerns\CloneableExcept;
@@ -54,7 +53,7 @@ use Staudenmeir\EloquentJsonRelations\HasJsonRelationships;
 use Staudenmeir\EloquentJsonRelations\Relations\BelongsToJson;
 
 #[ObservedBy(ArticleObserver::class)]
-class Article extends Model implements HasMedia, Pageable, PageCacheable, Publishable, Translatable, Typeable, Userstampable
+class Article extends Model implements HasMedia, Pageable, Publishable, Translatable, Typeable, Userstampable
 {
     use BelongsToWorkspace;
     use Cloneable;

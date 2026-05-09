@@ -11,7 +11,6 @@ use Capell\Admin\Filament\Components\Tables\Columns\DateColumn;
 use Capell\Admin\Filament\Components\Tables\Columns\IdentifierColumn;
 use Capell\Admin\Filament\Components\Tables\Columns\LanguagesColumn;
 use Capell\Admin\Filament\Components\Tables\Columns\MediaLibraryImageColumn;
-use Capell\Admin\Filament\Components\Tables\Columns\Page\PageCachedIconColumn;
 use Capell\Admin\Filament\Components\Tables\Columns\Page\PageNameColumn;
 use Capell\Admin\Filament\Components\Tables\Columns\SiteColumn;
 use Capell\Admin\Filament\Components\Tables\Columns\TypeColumn;
@@ -223,8 +222,6 @@ class ArticlePagesTable implements TableConfigurator
                 ->toggleable()
                 ->width(0),
             TypeColumn::make('type.name')
-                ->toggleable(isToggledHiddenByDefault: true),
-            PageCachedIconColumn::make('cached')
                 ->toggleable(isToggledHiddenByDefault: true),
             TextColumn::make('creator.name')
                 ->label(__('capell-admin::table.created_by'))
