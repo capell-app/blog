@@ -7,11 +7,7 @@
     "tier": "free",
     "bundle": "foundation",
     "description": "Blog adds article publishing, archive pages, tag pages, article widgets, sitemaps, and frontend Livewire page components to Capell.",
-    "surfaces": [
-        "admin",
-        "frontend",
-        "console"
-    ],
+    "surfaces": ["admin", "frontend", "console"],
     "dependencies": {
         "requires": [
             "capell-app/core",
@@ -31,18 +27,10 @@
     },
     "providers": {
         "metadata": [],
-        "install": [
-            "Capell\\Blog\\Providers\\ConsoleServiceProvider"
-        ],
-        "runtime": [
-            "Capell\\Blog\\Providers\\BlogServiceProvider"
-        ],
-        "admin": [
-            "Capell\\Blog\\Providers\\AdminServiceProvider"
-        ],
-        "frontend": [
-            "Capell\\Blog\\Providers\\FrontendServiceProvider"
-        ]
+        "install": ["Capell\\Blog\\Providers\\ConsoleServiceProvider"],
+        "runtime": ["Capell\\Blog\\Providers\\BlogServiceProvider"],
+        "admin": ["Capell\\Blog\\Providers\\AdminServiceProvider"],
+        "frontend": ["Capell\\Blog\\Providers\\FrontendServiceProvider"]
     },
     "database": {
         "migrations": true,
@@ -52,16 +40,9 @@
     "commands": {
         "install": "capell:blog-install",
         "setup": "capell:blog-setup",
-        "setupParams": [
-            "sites",
-            "languages"
-        ],
+        "setupParams": ["sites", "languages"],
         "demo": "capell:blog-demo",
-        "demoParams": [
-            "sites",
-            "user",
-            "limit"
-        ],
+        "demoParams": ["sites", "user", "limit"],
         "health": null
     },
     "settings": [],
