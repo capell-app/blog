@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Console\Commands;
 
+use Capell\Blog\Actions\CreateBlogHeroDemoContentAction;
 use Capell\Blog\Actions\CreateBlogPagesAction;
 use Capell\Blog\Actions\EnsureArticlePublishingDefaultsAction;
 use Capell\Blog\Enums\BlogLayoutEnum;
@@ -176,6 +177,10 @@ class DemoCommand extends Command
         $this->setProgressMessage('Creating tags for site pages');
         $this->createArticleTags($site, $site->languages);
         $this->setProgressMessage('Tags created/updated');
+
+        $this->setProgressMessage('Creating blog hero demo content');
+        CreateBlogHeroDemoContentAction::run($site);
+        $this->setProgressMessage('Blog hero demo content created');
 
         $this->finishProgress();
         $this->newLine();

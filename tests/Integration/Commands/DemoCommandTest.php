@@ -5,7 +5,9 @@ declare(strict_types=1);
 use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Models\Article;
 use Capell\Core\Models\Language;
+use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
+use Capell\Core\Models\Widget;
 use Capell\Tags\Enums\TagTypeEnum;
 use Capell\Tags\Models\Tag;
 use Illuminate\Console\Command;
@@ -54,7 +56,7 @@ it('runs demo command and creates articles and tags for the site', function (): 
     $articles = $articleModel::query()
         ->where('site_id', $site->id)
         ->whereRelation('type', 'key', BlogPageTypeEnum::Article->value)
-        ->with('tags')
+        ->with(['tags', 'translations'])
         ->get();
 
     expect($articles)->toHaveCount(2);
@@ -76,4 +78,25 @@ it('runs demo command and creates articles and tags for the site', function (): 
     $articleLinkedToPageTag = $articles->first(fn (Article $article): bool => $article->tags->contains(fn (Tag $tag): bool => $tag->type === TagTypeEnum::Page->value));
 
     expect($articleLinkedToPageTag)->not()->toBeNull();
+
+    $blogPage = Page::query()
+        ->with(['layout', 'translations'])
+        ->where('site_id', $site->id)
+        ->whereRelation('type', 'key', 'blog')
+        ->first();
+
+    expect($blogPage)->not()->toBeNull()
+        ->and($blogPage->layout?->containers)->toHaveKey('hero')
+        ->and(Widget::query()->where('key', 'blog-hero')->exists())->toBeTrue()
+        ->and(Widget::query()->where('key', 'article-hero')->exists())->toBeTrue();
+
+    $blogPage->translations->each(function ($translation): void {
+        expect($translation->meta['hero'] ?? null)->toContain(__('capell-blog::generic.latest_articles'));
+    });
+
+    $articles->each(function (Article $article): void {
+        $article->translations->each(function ($translation): void {
+            expect($translation->meta['hero'] ?? null)->toContain($translation->title);
+        });
+    });
 });

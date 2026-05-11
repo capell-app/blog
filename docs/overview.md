@@ -100,7 +100,7 @@ Gives editors a dedicated article workflow that still fits the same structured p
 
 ## Migrations
 
-- Migration: create_articles_table.php
+- Migration: 2026_05_10_190842_01_create_articles_table.php
 
 ## ERD Excerpt
 

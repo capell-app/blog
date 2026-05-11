@@ -45,7 +45,7 @@ class InstallCommand extends Command
     private function publishMigrations(): bool
     {
         $migrations = [
-            __DIR__ . '/../../../database/migrations/create_articles_table.php',
+            __DIR__ . '/../../../database/migrations/2026_05_10_190842_01_create_articles_table.php',
         ];
 
         $this->call('capell:publish-migrations', ['--items' => $migrations]);
