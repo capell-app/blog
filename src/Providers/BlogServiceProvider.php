@@ -9,18 +9,22 @@ use Capell\Admin\Enums\ResourceEnum as AdminResourceEnum;
 use Capell\Admin\Facades\CapellAdmin;
 use Capell\Blog\Enums\LivewirePageComponentEnum;
 use Capell\Blog\Enums\ResourceEnum;
+use Capell\Blog\Enums\WidgetComponentEnum;
 use Capell\Blog\Listeners\ArticleTranslationSavedListener;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\BlogModelRegistrar;
 use Capell\ContentSections\Models\Section;
 use Capell\Core\Actions\RegisterBlazeOptimizedViewsAction;
 use Capell\Core\Data\PageTypeData;
+use Capell\Core\Data\RenderableDefinitionData;
 use Capell\Core\Data\VendorAssetData;
+use Capell\Core\Enums\RenderableTypeEnum;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\Translation;
 use Capell\Core\Support\Packages\AbstractPackageServiceProvider;
+use Capell\Core\Support\Renderables\RenderableRegistry;
 use Capell\PublishingStudio\WorkspaceRegistry;
 use Capell\Tags\Models\Tag;
 use Composer\InstalledVersions;
@@ -85,6 +89,8 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
             ->registerPackageAssets()
             ->registerBlazeComponents()
             ->registerBladeComponents()
+            ->registerPageRenderables()
+            ->registerWidgetRenderables()
             ->registerLivewireComponents()
             ->registerTypes()
             ->registerTranslationEvents()
@@ -210,6 +216,44 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
                 classPath: __DIR__ . '/../Livewire',
                 classViewPath: __DIR__ . '/../../resources/views/livewire',
             );
+        }
+
+        return $this;
+    }
+
+    private function registerPageRenderables(): self
+    {
+        $registry = resolve(RenderableRegistry::class);
+
+        foreach (LivewirePageComponentEnum::cases() as $pageComponent) {
+            $livewireComponent = $pageComponent->getComponent();
+            if ($livewireComponent === null) {
+                continue;
+            }
+            if ($livewireComponent === '') {
+                continue;
+            }
+
+            $registry->register(new RenderableDefinitionData(
+                key: $pageComponent->value,
+                type: RenderableTypeEnum::Page,
+                livewire: $pageComponent->value,
+            ));
+        }
+
+        return $this;
+    }
+
+    private function registerWidgetRenderables(): self
+    {
+        $registry = resolve(RenderableRegistry::class);
+
+        foreach (WidgetComponentEnum::cases() as $widgetComponent) {
+            $registry->register(new RenderableDefinitionData(
+                key: $widgetComponent->value,
+                type: RenderableTypeEnum::Widget,
+                blade: $widgetComponent->value,
+            ));
         }
 
         return $this;
