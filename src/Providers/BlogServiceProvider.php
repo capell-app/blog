@@ -55,9 +55,6 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
         $this->app->register(AdminServiceProvider::class);
         $this->app->register(ConsoleServiceProvider::class);
 
-        $this
-            ->registerPackageMetadata();
-
         $this->app->booting(function (): void {
             if ($this->isPackageInstalled()) {
                 $this->registerAdminResources();
@@ -95,21 +92,6 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
             ->registerTypes()
             ->registerTranslationEvents()
             ->registerPublishingStudio();
-    }
-
-    private function registerPackageMetadata(): self
-    {
-        CapellCore::registerPackage(
-            static::$packageName,
-            type: static::getType(),
-            serviceProviderClass: static::class,
-            path: realpath(__DIR__ . '/../..'),
-            version: $this->getVersion(),
-            permissions: $this->getPackagePermissions(),
-            description: fn (): string => __('capell-blog::package.description'),
-        );
-
-        return $this;
     }
 
     private function registerPackageAssets(): self
