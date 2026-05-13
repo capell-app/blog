@@ -13,11 +13,7 @@
         "bundle": "foundation"
     },
     "namespace": "Capell\\Blog",
-    "surfaces": [
-        "admin",
-        "frontend",
-        "console"
-    ],
+    "surfaces": ["admin", "frontend", "console"],
     "dependencies": {
         "requires": [
             "capell-app/admin",
@@ -37,18 +33,10 @@
     },
     "providers": {
         "metadata": [],
-        "install": [
-            "Capell\\Blog\\Providers\\ConsoleServiceProvider"
-        ],
-        "runtime": [
-            "Capell\\Blog\\Providers\\BlogServiceProvider"
-        ],
-        "admin": [
-            "Capell\\Blog\\Providers\\AdminServiceProvider"
-        ],
-        "frontend": [
-            "Capell\\Blog\\Providers\\FrontendServiceProvider"
-        ]
+        "install": ["Capell\\Blog\\Providers\\ConsoleServiceProvider"],
+        "runtime": ["Capell\\Blog\\Providers\\BlogServiceProvider"],
+        "admin": ["Capell\\Blog\\Providers\\AdminServiceProvider"],
+        "frontend": ["Capell\\Blog\\Providers\\FrontendServiceProvider"]
     },
     "contributes": [],
     "database": {
@@ -68,15 +56,10 @@
     "performance": {
         "frontendRenderBudgetMs": 20,
         "adminQueryBudget": 40,
-        "cacheTags": [
-            "blog"
-        ],
+        "cacheTags": ["blog"],
         "cacheSafety": {
             "cacheable": false,
-            "variesBy": [
-                "site",
-                "locale"
-            ],
+            "variesBy": ["site", "locale"],
             "sensitiveOutput": false,
             "invalidationSources": [],
             "queueInvalidation": true
@@ -92,12 +75,7 @@
     "marketplace": {
         "summary": "Blog adds article publishing, archive pages, tag pages, article widgets, Site Discovery sitemap contributions, and frontend Livewire page components to Capell.",
         "screenshots": [],
-        "categories": [
-            "admin",
-            "console",
-            "foundation",
-            "frontend"
-        ]
+        "categories": ["admin", "console", "foundation", "frontend"]
     },
     "contributionTraceability": {
         "deferredContributions": [

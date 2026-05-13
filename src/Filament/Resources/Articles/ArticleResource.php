@@ -79,11 +79,6 @@ class ArticleResource extends PageResource
         return (string) (__('capell-blog::generic.articles'));
     }
 
-    public static function getNavigationParentItem(): ?string
-    {
-        return null;
-    }
-
     public static function shouldRegisterNavigation(): bool
     {
         return CapellCore::getPackage(BlogServiceProvider::$packageName)->isInstalled();

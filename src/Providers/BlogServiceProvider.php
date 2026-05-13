@@ -103,33 +103,6 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
         return $this;
     }
 
-    private function getVersion(): string
-    {
-        if (! class_exists(InstalledVersions::class)) {
-            return 'dev';
-        }
-
-        if (! InstalledVersions::isInstalled(static::$packageName)) {
-            return 'dev';
-        }
-
-        return InstalledVersions::getPrettyVersion(static::$packageName) ?? 'dev';
-    }
-
-    private function getPackagePermissions(): array
-    {
-        return [
-            'create_article',
-            'replicate_article',
-            'reorder_article',
-            'restore_any_article',
-            'restore_article',
-            'update_article',
-            'view_any_article',
-            'view_article',
-        ];
-    }
-
     private function registerModels(): self
     {
         BlogModelRegistrar::register();

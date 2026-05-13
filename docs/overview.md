@@ -49,6 +49,12 @@ Gives editors a dedicated article workflow that still fits the same structured p
 - Archive page frontend output.
 - Tag page frontend output.
 
+## Screenshots
+
+![Articles admin index](../../../public/docs/screenshots/packages/blog/articles-admin-index.png)
+
+The frontend screenshots need seeded blog pages and articles before they are useful. Keep them in the manifest, but do not use the current blank captures as documentation assets.
+
 ## Pitfalls
 
 - Run the package setup before expecting archive/tag pages.
