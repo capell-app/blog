@@ -58,7 +58,7 @@ test('tag page list articles by tag', function (): void {
         ->and($containerWidgets)->toContain('breadcrumbs')
         ->and($articles)->toHaveCount(5);
 
-    get($tag->getUrl($tagPage, $language))
+    $response = get($tag->getUrl($tagPage, $language))
         ->assertOk()
         ->assertDontSeeText(':Tag_name Articles')
         ->assertElementExists(
@@ -89,6 +89,27 @@ test('tag page list articles by tag', function (): void {
                     },
                 ),
         );
+
+    $document = new DOMDocument;
+    @$document->loadHTML($response->getContent());
+
+    $breadcrumbText = trim((string) (new DOMXPath($document))
+        ->query('//nav[contains(concat(" ", normalize-space(@class), " "), " breadcrumbs ")]')
+        ?->item(0)
+        ?->textContent);
+
+    expect(preg_replace('/\s+/', ' ', $breadcrumbText))
+        ->toContain('Blog')
+        ->toContain('Tags')
+        ->not->toContain($title);
+
+    $headingClasses = collect((new DOMXPath($document))->query('//*[self::h1 or self::h2 or self::h3 or self::h4][contains(concat(" ", normalize-space(@class), " "), " not-prose ")]'))
+        ->map(fn (DOMElement $heading): string => (string) $heading->getAttribute('class'));
+
+    $headingClasses->each(function (string $class): void {
+        expect(preg_match_all('/(?:^|\s)(?:\\S+:)?text-(?:base|lg|xl|2xl|3xl|4xl)(?:\s|$)/', $class))
+            ->toBe(1);
+    });
 });
 
 test('tag page resolves site tag before global tag with same slug', function (): void {

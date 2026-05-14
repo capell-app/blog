@@ -9,6 +9,7 @@ use Capell\Core\Enums\LayoutEnum;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Layout;
 use Capell\Core\Support\Creator\LayoutCreator;
+use Capell\LayoutBuilder\Actions\ApplyLayoutSidebarWidgetContributionsAction;
 use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
@@ -28,12 +29,12 @@ class EnsureArticlePublishingDefaultsAction
             $articleWidgetType = $blogCreator->createArticleWidgetType();
             $blogCreator->createArticleWidget($articleWidgetType);
 
-            $latestArticlesWidget = $blogCreator->createLatestArticlesWidget();
-            $archivesWidget = $blogCreator->createArchivesWidget();
+            $blogCreator->createLatestArticlesWidget();
+            $blogCreator->createArchivesWidget();
             $blogCreator->createTagsWidget(Language::all());
             $blogCreator->relatedArticlesWidget();
 
-            $this->updateLayoutSidebars($latestArticlesWidget->key, $archivesWidget->key);
+            $this->updateLayoutSidebars();
         }
 
         $blogCreator->createArticleLayout(createWidgets: $createWidgets);
@@ -47,7 +48,7 @@ class EnsureArticlePublishingDefaultsAction
         $blogCreator->createTagPageType();
     }
 
-    private function updateLayoutSidebars(string $latestArticlesWidgetKey, string $archivesWidgetKey): void
+    private function updateLayoutSidebars(): void
     {
         $layouts = [
             LayoutEnum::Results,
@@ -58,35 +59,7 @@ class EnsureArticlePublishingDefaultsAction
             $layout = Layout::query()->firstWhere('key', $layoutKey->value)
                 ?? resolve(LayoutCreator::class)->create($layoutKey);
 
-            $containers = $layout->getAttribute('containers');
-
-            if (! is_array($containers)) {
-                $containers = [];
-            }
-
-            $sidebarWidgets = $containers['sidebar']['widgets'] ?? [];
-            $sidebarWidgetKeys = array_column($sidebarWidgets, 'widget_key');
-
-            if (! in_array($latestArticlesWidgetKey, $sidebarWidgetKeys, true)) {
-                $containers['sidebar']['widgets'] = array_values(array_filter(
-                    $sidebarWidgets,
-                    fn (array $widget): bool => $widget['widget_key'] !== 'latest-pages',
-                ));
-
-                $containers['sidebar']['widgets'][] = [
-                    'widget_key' => $latestArticlesWidgetKey,
-                ];
-            }
-
-            $sidebarWidgetKeys = array_column($containers['sidebar']['widgets'], 'widget_key');
-
-            if ($layoutKey === LayoutEnum::Results && ! in_array($archivesWidgetKey, $sidebarWidgetKeys, true)) {
-                $containers['sidebar']['widgets'][] = [
-                    'widget_key' => $archivesWidgetKey,
-                ];
-            }
-
-            $layout->update(['containers' => $containers]);
+            ApplyLayoutSidebarWidgetContributionsAction::run($layout);
         }
     }
 }

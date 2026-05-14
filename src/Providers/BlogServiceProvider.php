@@ -13,6 +13,7 @@ use Capell\Blog\Enums\WidgetComponentEnum;
 use Capell\Blog\Listeners\ArticleTranslationSavedListener;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\BlogModelRegistrar;
+use Capell\Blog\Support\BlogSidebarWidgetContributor;
 use Capell\ContentSections\Models\Section;
 use Capell\Core\Actions\RegisterBlazeOptimizedViewsAction;
 use Capell\Core\Data\PageTypeData;
@@ -25,6 +26,7 @@ use Capell\Core\Models\Site;
 use Capell\Core\Models\Translation;
 use Capell\Core\Support\Packages\AbstractPackageServiceProvider;
 use Capell\Core\Support\Renderables\RenderableRegistry;
+use Capell\LayoutBuilder\Contracts\LayoutSidebarWidgetContributor;
 use Capell\PublishingStudio\WorkspaceRegistry;
 use Capell\Tags\Models\Tag;
 use Composer\InstalledVersions;
@@ -54,6 +56,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
     {
         $this->app->register(AdminServiceProvider::class);
         $this->app->register(ConsoleServiceProvider::class);
+        $this->app->tag([BlogSidebarWidgetContributor::class], LayoutSidebarWidgetContributor::TAG);
 
         $this->app->booting(function (): void {
             if ($this->isPackageInstalled()) {
