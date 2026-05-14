@@ -6,10 +6,10 @@ use Capell\Blog\Actions\CreateBlogPagesAction;
 use Capell\Blog\Actions\InstallPackageAction;
 use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Core\Enums\LayoutEnum;
-use Capell\Core\LayoutBuilder\Actions\InstallPackageAction as LayoutBuilderInstallPackageAction;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
+use Capell\LayoutBuilder\Actions\InstallPackageAction as LayoutBuilderInstallPackageAction;
 
 beforeEach(function (): void {
     LayoutBuilderInstallPackageAction::run();
