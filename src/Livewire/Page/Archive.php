@@ -110,15 +110,15 @@ class Archive extends AbstractPage
 
         $date = isset($parts[1]) ? (int) $parts[1] : 1;
 
-        if (isset($dates[0]) && mb_strlen($dates[0]) === 4) {
+        if (isset($dates[0]) && mb_strlen($dates[0]) === 4 && is_numeric($dates[0])) {
             $year = (int) $dates[0];
         }
 
-        if (isset($dates[1]) && $dates[1] >= 0 && $dates[1] <= 12) {
+        if (isset($dates[1]) && is_numeric($dates[1]) && (int) $dates[1] >= 1 && (int) $dates[1] <= 12) {
             $month = (int) $dates[1];
         }
 
-        abort_if(! is_numeric($date) && ($year === 0 || $year === null), 404);
+        abort_if(! is_numeric($date) || $year === 0 || $year === null, 404);
 
         return [$year, $month];
     }

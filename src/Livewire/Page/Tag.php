@@ -79,6 +79,7 @@ class Tag extends AbstractPage
     protected function getViewData(): array
     {
         return [
+            'Tag_name' => $this->tagName,
             'tag_slug' => $this->tagSlug,
             'tag_name' => $this->tagName,
         ];

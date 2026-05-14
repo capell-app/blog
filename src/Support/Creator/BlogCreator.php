@@ -39,6 +39,7 @@ use Capell\Core\Models\Type;
 use Capell\Core\Models\Widget;
 use Capell\Core\Support\Creator\LayoutCreator;
 use Capell\Core\Support\Creator\TypeCreator;
+use Capell\Frontend\Enums\RenderingStrategyEnum;
 use Capell\Navigation\Actions\AddPageToNavigationAction;
 use Capell\Navigation\Models\Navigation;
 use Filament\Support\Icons\Heroicon;
@@ -78,6 +79,7 @@ class BlogCreator
                 'limit' => 10,
                 'listable' => false,
                 'pagination' => true,
+                'rendering_strategy' => RenderingStrategyEnum::FullLivewire->value,
                 'url_params' => ['tag' => UrlParamTypeEnum::String->value],
                 'with_date' => true,
                 'with_image' => true,
@@ -262,6 +264,7 @@ class BlogCreator
                 'limit' => 10,
                 'listable' => false,
                 'pagination' => true,
+                'rendering_strategy' => RenderingStrategyEnum::FullLivewire->value,
                 'url_params' => ['date' => UrlParamTypeEnum::String->value],
                 'with_date' => true,
                 'with_image' => true,
@@ -733,6 +736,7 @@ class BlogCreator
                 'listable' => false,
                 'page_group' => strtolower(ResourceEnum::Article->name),
                 'pagination' => true,
+                'rendering_strategy' => RenderingStrategyEnum::FullLivewire->value,
                 'sitemap' => true,
                 'url_params' => ['page' => UrlParamTypeEnum::Int->value],
                 'with_date' => true,

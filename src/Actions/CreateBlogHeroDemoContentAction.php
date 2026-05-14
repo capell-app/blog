@@ -8,12 +8,12 @@ use Capell\Blog\Models\Article;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\LayoutBuilder\Actions\AddHeroWidgetToLayoutAction;
 use Capell\Core\LayoutBuilder\Actions\CreateHeroWidgetAction;
-use Capell\Core\LayoutBuilder\Support\Creator\DemoCreator;
 use Capell\Core\LayoutBuilder\Support\Creator\TypeCreator;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\Translation;
+use Capell\DemoKit\Support\Creator\DemoCreator;
 use Lorisleiva\Actions\Concerns\AsAction;
 
 final class CreateBlogHeroDemoContentAction
