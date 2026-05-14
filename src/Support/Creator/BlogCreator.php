@@ -6,7 +6,6 @@ namespace Capell\Blog\Support\Creator;
 
 use Capell\Admin\Filament\Configurators\Pages\ResultsPageConfigurator;
 use Capell\Admin\Filament\Configurators\Types\PageTypeConfigurator;
-use Capell\Admin\LayoutBuilder\Filament\Configurators\Types\WidgetTypeConfigurator;
 use Capell\Blog\Actions\EnsureArticlePublishingDefaultsAction;
 use Capell\Blog\Actions\EnsureBlogPublishingSurfaceAction;
 use Capell\Blog\Enums\BlogLayoutEnum;
@@ -39,6 +38,7 @@ use Capell\Core\Models\Type;
 use Capell\Core\Models\Widget;
 use Capell\Core\Support\Creator\LayoutCreator;
 use Capell\Core\Support\Creator\TypeCreator;
+use Capell\LayoutBuilder\Filament\Configurators\Types\WidgetTypeConfigurator;
 use Capell\Navigation\Actions\AddPageToNavigationAction;
 use Capell\Navigation\Models\Navigation;
 use Filament\Support\Icons\Heroicon;

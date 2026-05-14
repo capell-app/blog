@@ -29,14 +29,14 @@ describe('blog capell.json manifest', function (): void {
         expect($manifest['dependencies']['requires'])->toContain('capell-app/core');
     });
 
-    it('does not require the removed layout-builder package', function () use ($blogManifest, $blogComposerManifest): void {
+    it('requires the layout-builder package for article widgets and layout defaults', function () use ($blogManifest, $blogComposerManifest): void {
         $manifest = $blogManifest();
         $composerManifest = $blogComposerManifest();
 
         expect($manifest['dependencies']['requires'])
-            ->not->toContain('capell-app/layout-builder')
+            ->toContain('capell-app/layout-builder')
             ->and($composerManifest['require'])
-            ->not->toHaveKey('capell-app/layout-builder');
+            ->toHaveKey('capell-app/layout-builder');
     });
 
     it('passes install context into the demo command', function () use ($blogManifest): void {
