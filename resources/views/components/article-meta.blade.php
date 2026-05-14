@@ -2,7 +2,7 @@
     class="article-meta mb-4 mt-10 flex items-end justify-between border-t border-black/10 pt-8 dark:border-gray-700/50"
 >
     @if ($withAuthor && $author)
-        <x-capell-blog::page.author :$author />
+        <x-capell-blog::page.author :author="$author" />
     @endif
 
     @if ($tags->isNotEmpty())

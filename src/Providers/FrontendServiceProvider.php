@@ -71,7 +71,7 @@ final class FrontendServiceProvider extends ServiceProvider
 
         resolve(RenderHookRegistry::class)->register(
             RenderHookLocation::ArticleMeta,
-            fn (RenderHookContext $context): ?View => resolve(ArticleMeta::class, [
+            fn (RenderHookContext $context): string|View|null => resolve(ArticleMeta::class, [
                 'item' => $context->item ?? null,
                 'withAuthor' => $context->item['withAuthor'] ?? false,
                 'author' => $context->item['author'] ?? null,

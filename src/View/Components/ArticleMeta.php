@@ -21,6 +21,21 @@ class ArticleMeta extends Component
 
     public function __construct(public bool $withAuthor = false, public ?Model $author = null)
     {
+        if ($this->withAuthor && ! $this->author instanceof Model) {
+            $page = Frontend::page();
+
+            if ($page instanceof Model) {
+                $page->loadMissing('creator');
+
+                $creator = $page->getRelation('creator');
+
+                if ($creator instanceof Model) {
+                    $this->author = $creator;
+                }
+            }
+
+        }
+
         $this->tags = TagLoader::getPageTags(Frontend::page());
 
         if ($this->tags->isNotEmpty()) {
@@ -37,7 +52,7 @@ class ArticleMeta extends Component
         }
     }
 
-    public function render(): ?View
+    public function render(): string|View|null
     {
         if ($this->tags->isEmpty() && ($this->withAuthor && ! $this->author instanceof Model)) {
             return null;
@@ -48,6 +63,6 @@ class ArticleMeta extends Component
             'tags' => $this->tags,
             'author' => $this->author,
             'withAuthor' => $this->withAuthor,
-        ]);
+        ])->render();
     }
 }

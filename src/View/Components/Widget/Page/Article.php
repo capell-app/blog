@@ -11,6 +11,7 @@ use Capell\Frontend\Support\Loader\PageLoader;
 use Closure;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Model;
 
 class Article extends AbstractWidget
 {
@@ -38,13 +39,19 @@ class Article extends AbstractWidget
         $language = Frontend::language();
         $site = Frontend::site();
 
-        if (! isset($page->type->meta['hidden']) && isset($this->widget->meta['with_next_prev'])) {
+        if (! isset($page->type->meta['hidden']) && (bool) $this->widget->getMeta('with_next_prev')) {
             $this->previousPage = PageLoader::getPreviousPage($page, $site, $language);
             $this->nextPage = PageLoader::getNextPage($page, $site, $language);
         }
 
-        if (isset($this->widget->meta['with_author']) && $page->relationLoaded('creator')) {
-            $this->author = $page->creator;
+        if ((bool) $this->widget->getMeta('with_author') && $page instanceof Model) {
+            $page->loadMissing('creator');
+
+            $creator = $page->getRelation('creator');
+
+            if ($creator instanceof Authenticatable) {
+                $this->author = $creator;
+            }
         }
     }
 }
