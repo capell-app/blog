@@ -43,8 +43,8 @@ class Article extends AbstractWidget
             $this->nextPage = PageLoader::getNextPage($page, $site, $language);
         }
 
-        if (isset($this->widget->meta['with_author'])) {
-            $this->author = $page->loadMissing('creator')->creator;
+        if (isset($this->widget->meta['with_author']) && $page->relationLoaded('creator')) {
+            $this->author = $page->creator;
         }
     }
 }

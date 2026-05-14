@@ -20,7 +20,7 @@
     'withNextPrev' => (bool) $widget->getMeta('with_next_prev'),
 ])
 @php
-    $author ??= $withAuthor ? $page->loadMissing('creator')->creator : null;
+    $author ??= $withAuthor && $page->relationLoaded('creator') ? $page->creator : null;
     $nextPage ??= null;
     $previousPage ??= null;
     $articleMeta = app(RenderHookRegistry::class)->renderAll(
