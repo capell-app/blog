@@ -32,14 +32,14 @@ test('can create article widget type', function (): void {
     Widget::query()->create([
         'name' => $newData->name,
         'key' => str($newData->name)->slug()->toString(),
-        'type_id' => $type->id,
+        'blueprint_id' => $type->id,
         'status' => true,
     ]);
 
     assertDatabaseHas(Widget::class, [
         'name' => $newData->name,
         'key' => str($newData->name)->slug()->toString(),
-        'type_id' => $type->id,
+        'blueprint_id' => $type->id,
     ]);
 });
 

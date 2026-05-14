@@ -103,7 +103,7 @@ class BlogCreator
         $page = $pageModel::query()->firstOrNew([
             'layout_id' => $layout->id,
             'site_id' => $site->id,
-            'type_id' => $type->id,
+            'blueprint_id' => $type->id,
             'parent_id' => $parent?->getKey(),
         ], [
             'name' => __('capell-blog::generic.tag_page'),
@@ -145,7 +145,7 @@ class BlogCreator
         $page = $pageModel::query()->firstOrNew([
             'layout_id' => $layout->id,
             'site_id' => $site->id,
-            'type_id' => $type->id,
+            'blueprint_id' => $type->id,
             'parent_id' => $parent?->getKey(),
         ], [
             'name' => __('capell-blog::generic.tags_page'),
@@ -215,7 +215,7 @@ class BlogCreator
         $page = Page::query()->firstOrNew([
             'layout_id' => $layout->id,
             'site_id' => $site->id,
-            'type_id' => $type->id,
+            'blueprint_id' => $type->id,
             'parent_id' => $parent->id,
         ]);
 
@@ -391,7 +391,7 @@ class BlogCreator
             'key' => 'archives',
         ], [
             'name' => __('capell-blog::generic.article_archives'),
-            'type_id' => $type->id,
+            'blueprint_id' => $type->id,
             'meta' => [
                 'component' => BlogWidgetComponentEnum::Archives,
                 'page_group' => strtolower(ResourceEnum::Article->name),
@@ -429,7 +429,7 @@ class BlogCreator
             'key' => 'tags',
         ], [
             'name' => __('capell-blog::generic.tags'),
-            'type_id' => $type->id,
+            'blueprint_id' => $type->id,
             'meta' => [
                 'component' => BlogWidgetComponentEnum::Tags,
                 'page_model' => Relation::getMorphAlias(Article::class),
@@ -475,7 +475,7 @@ class BlogCreator
         $page = Page::query()->firstOrNew([
             'layout_id' => $layout->id,
             'site_id' => $site->id,
-            'type_id' => $type->id,
+            'blueprint_id' => $type->id,
             'parent_id' => $parent->id,
         ]);
 
@@ -584,7 +584,7 @@ class BlogCreator
             'key' => 'article',
         ], [
             'name' => __('capell-blog::generic.article'),
-            'type_id' => $type->id,
+            'blueprint_id' => $type->id,
             'meta' => [
                 'with_date' => true,
                 'with_author' => true,
@@ -608,7 +608,7 @@ class BlogCreator
             'key' => 'related-pages',
         ], [
             'name' => __('capell-admin::generic.related_pages'),
-            'type_id' => $type->id,
+            'blueprint_id' => $type->id,
             'meta' => [
                 'component' => BlogWidgetComponentEnum::PageRelated,
                 'limit' => 6,
@@ -684,7 +684,7 @@ class BlogCreator
         $page = Page::query()->firstOrNew([
             'layout_id' => $layout->id,
             'site_id' => $site->id,
-            'type_id' => $type->id,
+            'blueprint_id' => $type->id,
         ]);
 
         $page->mergeMeta($meta);
@@ -759,7 +759,7 @@ class BlogCreator
             'key' => 'latest-articles',
         ], [
             'name' => __('capell-blog::generic.latest_articles'),
-            'type_id' => $type->id,
+            'blueprint_id' => $type->id,
             'meta' => [
                 'component' => LivewireComponentsEnum::PagesWidget,
                 'livewire' => true,

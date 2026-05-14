@@ -255,7 +255,7 @@ class ArticlePagesTable implements TableConfigurator
                     modifyQueryUsing: fn (Builder $query) => $query->enabled()->ordered(),
                 ),
 
-            SelectFilter::make('type_id')
+            SelectFilter::make('blueprint_id')
                 ->label(__('capell-admin::form.page_type'))
                 ->searchable()
                 ->preload()

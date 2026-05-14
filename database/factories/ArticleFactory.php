@@ -36,7 +36,7 @@ class ArticleFactory extends Factory
         return [
             'name' => fn () => $this->faker->realTextBetween(2, 60),
             'layout_id' => fn (): int => $this->resolveArticleLayout()->id,
-            'type_id' => fn (): int => $this->resolveArticlePageType()->id,
+            'blueprint_id' => fn (): int => $this->resolveArticlePageType()->id,
             'site_id' => Site::factory()->withTranslations(),
             'created_at' => fn () => $this->faker->dateTimeBetween('-1 year', '-6 month'),
             'updated_at' => fn (array $attributes) => $this->faker->dateTimeBetween($attributes['created_at']),
@@ -55,7 +55,7 @@ class ArticleFactory extends Factory
 
     public function type(Type $type): static
     {
-        return $this->set('type_id', $type->id);
+        return $this->set('blueprint_id', $type->id);
     }
 
     public function withTags(): self

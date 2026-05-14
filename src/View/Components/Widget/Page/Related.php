@@ -65,7 +65,7 @@ class Related extends AbstractPagesWidget
                         ->when(
                             $this->widget->meta['exclude_types'] ?? false,
                             fn (BuilderContract $query): BuilderContract => $query->whereNotIn(
-                                'types.key',
+                                'blueprints.key',
                                 $this->widget->meta['exclude_types'] ?? [],
                             ),
                         ),

@@ -31,7 +31,7 @@ class ArticleCreator extends PageCreator
             'name' => $data['name'],
             'layout_id' => $data['layout_id'] ?? $this->getLayout($data['layout_key'] ?? LayoutEnum::Default)->id,
             'site_id' => $site->id,
-            'type_id' => $data['type_id'] ?? $this->getPageType($data['type_key'] ?? PageTypeEnum::Default)->id,
+            'blueprint_id' => $data['blueprint_id'] ?? $this->getPageType($data['type_key'] ?? PageTypeEnum::Default)->id,
             'meta' => [
                 'image_id' => $data['image_id'] ?? null,
             ],
@@ -45,7 +45,7 @@ class ArticleCreator extends PageCreator
                 'name' => $data['name'],
                 'layout_id' => $defaults['layout_id'],
                 'site_id' => $site->id,
-                'type_id' => $defaults['type_id'],
+                'blueprint_id' => $defaults['blueprint_id'],
             ],
             fn (array $data): array => CapellCore::mergeModelInterceptorData($defaults, $data),
             PageInterceptorInterface::class,

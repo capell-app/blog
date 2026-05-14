@@ -128,7 +128,7 @@ class ArticleResource extends PageResource
         /* @var class-string<\Capell\Core\Models\Type> $model */
         $model = Type::class;
 
-        $data['type_id'] = $model::query()
+        $data['blueprint_id'] = $model::query()
             ->pageType()
             ->where('group', BlogTypeGroupEnum::Article)
             ->value('id');

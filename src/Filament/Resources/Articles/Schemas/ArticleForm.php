@@ -25,11 +25,11 @@ class ArticleForm implements FormConfigurator
         $resolver = resolve(ConfiguratorResolver::class);
         $record = $configurator->getRecord();
 
-        if ($record instanceof Pageable && $record->type_id !== null) {
+        if ($record instanceof Pageable && $record->blueprint_id !== null) {
             /** @var class-string<Type> $model */
             $model = Type::class;
 
-            $type = $model::query()->find($record->type_id);
+            $type = $model::query()->find($record->blueprint_id);
             $adminType = $type instanceof Type
                 ? $resolver->resolveForType($type, ConfiguratorTypeEnum::Page, ArticlePageConfigurator::getKey())
                 : ArticlePageConfigurator::class;

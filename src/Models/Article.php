@@ -91,7 +91,7 @@ class Article extends Model implements HasMedia, Pageable, Publishable, Translat
         'visible_from',
         'visible_until',
         'site_id',
-        'type_id',
+        'blueprint_id',
     ];
 
     protected array $clone_exempt_attributes = [
