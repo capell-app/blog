@@ -7,9 +7,8 @@ use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Enums\CacheEnum;
 use Capell\Blog\Models\Article;
 use Capell\Core\Enums\PageOrderEnum;
-use Capell\Core\Facades\CapellCore;
-use Capell\Core\LayoutBuilder\Actions\InstallPackageAction as LayoutBuilderInstallPackageAction;
 use Capell\Core\Models\Type;
+use Capell\LayoutBuilder\Actions\InstallPackageAction as LayoutBuilderInstallPackageAction;
 
 beforeEach(function (): void {
     LayoutBuilderInstallPackageAction::run();
