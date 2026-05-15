@@ -6,17 +6,17 @@ This page is the consolidated implementation overview for the Blog package. It i
 
 ## What This Plugin Adds
 
-Blog adds article publishing, archive pages, tag pages, article widgets, Site Discovery sitemap contributions, and frontend Livewire page components to Capell.
+Blog adds article publishing, archive pages, tag pages, article elements, Site Discovery sitemap contributions, and frontend Livewire page components to Capell.
 
 - Article Filament resource.
 - Blog, archive, and tag frontend Livewire components.
-- Article widgets and configurators for layout builder.
+- Article elements and configurators for layout builder.
 - Site Discovery sitemap contributions for articles, archives, and tags.
 - Commands to install and create blog pages.
 
 ## Developer Notes
 
-Builds on core pages, layouts, translations, page URLs, core layout builder widgets, and tags while keeping article-specific logic in actions and loaders.
+Builds on core pages, layouts, translations, page URLs, core layout builder elements, and tags while keeping article-specific logic in actions and loaders.
 
 - BlogServiceProvider, AdminServiceProvider, ConsoleServiceProvider, and FrontendServiceProvider register package surfaces.
 - Migration creates articles.
@@ -37,7 +37,7 @@ Gives editors a dedicated article workflow that still fits the same structured p
 ## Data And Retention
 
 - articles stores uuid, workspace, type, layout, site, meta, visible_from, and visible_until.
-- Articles connect to sites, types, layouts, page URLs, translations, core layout builder widget assets, and tags.
+- Articles connect to sites, types, layouts, page URLs, translations, core layout builder element assets, and tags.
 - Blog uses the layout builder APIs provided by the admin/frontend core packages.
 - Deletion and retention behaviour should be verified against the host application policy.
 
@@ -98,9 +98,9 @@ The frontend screenshots need seeded blog pages and articles before they are use
 
 ## Permissions And Gates
 
-- Gate: ArticleHealthWidgetAbstract: `developer`, `admin`, `super_admin`
-- Gate: TopPagesWidgetAbstract: `admin`, `super_admin`
-- Gate: TrafficChartWidgetAbstract: `admin`, `super_admin`
+- Gate: ArticleHealthElementAbstract: `developer`, `admin`, `super_admin`
+- Gate: TopPagesElementAbstract: `admin`, `super_admin`
+- Gate: TrafficChartElementAbstract: `admin`, `super_admin`
 
 ## Migrations
 
@@ -122,7 +122,7 @@ erDiagram
         bigint id PK
         uuid uuid
         bigint workspace_id
-        bigint type_id FK
+        bigint blueprint_id FK
         bigint layout_id FK
         bigint site_id FK
         json meta

@@ -13,10 +13,10 @@ class BeforeContentTags extends Component
 {
     public function __construct(public ?Model $item, public Collection $tags) {}
 
-    public function render(): ?View
+    public function render(): View|string
     {
         if (! $this->tags?->isNotEmpty()) {
-            return null;
+            return '';
         }
 
         return view('capell-blog::page.tags', [

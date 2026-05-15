@@ -27,8 +27,8 @@ final class TopPagesWidgetAbstract extends Widget implements CapellWidgetContrac
 
     protected string $view = 'capell-blog::filament.widgets.top-pages';
 
-    /** @var int|string|array<string, int|string|null> */
-    protected int|string|array $columnSpan = ['default' => 'full', 'md' => 1];
+    /** @var int|string|array<string, int|null> */
+    protected int|string|array $columnSpan = ['md' => 1];
 
     /**
      * @return array<string, mixed>

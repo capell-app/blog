@@ -13,11 +13,11 @@
     'containerKey',
     'containerWidth' => null,
     'loop',
-    'widget',
-    'headingSize' => $widget->getMeta('heading_size', 'h1'),
-    'withAuthor' => (bool) $widget->getMeta('with_author'),
-    'withDate' => (bool) $widget->getMeta('with_date'),
-    'withNextPrev' => (bool) $widget->getMeta('with_next_prev'),
+    'element',
+    'headingSize' => $element->getMeta('heading_size', 'h1'),
+    'withAuthor' => (bool) $element->getMeta('with_author'),
+    'withDate' => (bool) $element->getMeta('with_date'),
+    'withNextPrev' => (bool) $element->getMeta('with_next_prev'),
 ])
 @php
     $author ??= $withAuthor && $page->relationLoaded('creator') ? $page->creator : null;
@@ -46,12 +46,12 @@
     }
 @endphp
 
-<x-capell-layout-builder::widget.wrapper
+<x-capell-layout-builder::element.wrapper
     :$container
     :$containerKey
     :$containerWidth
     :index="$loop->index"
-    :$widget
+    :$element
     container-class="flex flex-col gap-6"
 >
     <div class="grid">
@@ -62,9 +62,9 @@
             :content="$page->translation->content"
             :content-type="$page->type->content_structure"
             :muted="in_array($containerKey, $theme->secondary_containers)"
-            :text-align="$widget->getMeta('align')"
+            :text-align="$element->getMeta('align')"
             :title="$page->translation->title"
-            :heading-style="$widget->getMeta('heading_style')"
+            :heading-style="$element->getMeta('heading_style')"
         >
             @if ($withDate)
                 <x-capell-blog::page.published-date
@@ -121,4 +121,4 @@
             @endif
         </div>
     @endif
-</x-capell-layout-builder::widget.wrapper>
+</x-capell-layout-builder::element.wrapper>

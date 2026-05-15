@@ -37,10 +37,10 @@ class Tags extends Component
         $this->tagPage = $tagPage;
     }
 
-    public function render(): ?ViewContract
+    public function render(): ViewContract|string
     {
         if (! $this->tagPage instanceof Pageable || $this->tags->isEmpty()) {
-            return null;
+            return '';
         }
 
         return view('capell-blog::components.footer.tags', [

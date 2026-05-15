@@ -11,61 +11,62 @@ use Capell\Blog\Actions\EnsureBlogPublishingSurfaceAction;
 use Capell\Blog\Enums\BlogLayoutEnum;
 use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Enums\BlogTypeGroupEnum;
+use Capell\Blog\Enums\ElementComponentEnum as BlogElementComponentEnum;
+use Capell\Blog\Enums\ElementConfiguratorEnum;
 use Capell\Blog\Enums\LivewirePageComponentEnum;
 use Capell\Blog\Enums\ResourceEnum;
-use Capell\Blog\Enums\WidgetComponentEnum as BlogWidgetComponentEnum;
-use Capell\Blog\Enums\WidgetConfiguratorEnum;
 use Capell\Blog\Filament\Configurators\Articles\ArticlePageConfigurator;
-use Capell\Blog\Filament\Configurators\Widgets\ArticleWidgetConfigurator;
+use Capell\Blog\Filament\Configurators\Elements\ArticleElementConfigurator;
 use Capell\Blog\Models\Article;
 use Capell\Core\Actions\SetupPageUrlsAction;
+use Capell\Core\Enums\BlueprintGroupEnum;
+use Capell\Core\Enums\BlueprintSubjectEnum;
 use Capell\Core\Enums\ContainerWidthEnum;
 use Capell\Core\Enums\LayoutEnum;
 use Capell\Core\Enums\LayoutGroupEnum;
 use Capell\Core\Enums\PageTypeEnum;
-use Capell\Core\Enums\TypeEnum;
-use Capell\Core\Enums\TypeGroupEnum;
 use Capell\Core\Enums\UrlParamTypeEnum;
+use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
-use Capell\Core\Models\Type;
-use Capell\Core\Models\Widget;
+use Capell\Core\Support\Creator\BlueprintCreator;
 use Capell\Core\Support\Creator\LayoutCreator;
-use Capell\Core\Support\Creator\TypeCreator;
 use Capell\Frontend\Enums\RenderingStrategyEnum;
 use Capell\LayoutBuilder\Enums\LayoutTypeEnum;
 use Capell\LayoutBuilder\Enums\LivewireComponentsEnum;
-use Capell\LayoutBuilder\Filament\Configurators\Types\WidgetTypeConfigurator;
+use Capell\LayoutBuilder\Filament\Configurators\Types\ElementTypeConfigurator;
+use Capell\LayoutBuilder\Models\Element;
+use Capell\LayoutBuilder\Support\Creator\ElementCreator;
 use Capell\LayoutBuilder\Support\Creator\TypeCreator as LayoutTypeCreator;
-use Capell\LayoutBuilder\Support\Creator\WidgetCreator;
 use Capell\Navigation\Actions\AddPageToNavigationAction;
 use Capell\Navigation\Models\Navigation;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
+use LogicException;
 
 class BlogCreator
 {
-    public function setup(Site $site, bool $createWidgets = true): void
+    public function setup(Site $site, bool $createElements = true): void
     {
-        EnsureArticlePublishingDefaultsAction::run($createWidgets);
-        EnsureBlogPublishingSurfaceAction::run($site, $site->getAllLanguages(), $createWidgets);
+        EnsureArticlePublishingDefaultsAction::run($createElements);
+        EnsureBlogPublishingSurfaceAction::run($site, $site->getAllLanguages(), $createElements);
     }
 
-    public function createTagPageType(): Type
+    public function createTagPageType(): Blueprint
     {
-        /** @var class-string<Type> $typeMode */
-        $typeMode = Type::class;
+        /** @var class-string<Blueprint> $typeMode */
+        $typeMode = Blueprint::class;
 
         return $typeMode::query()->firstOrCreate([
             'key' => BlogPageTypeEnum::Tag->value,
-            'type' => TypeEnum::Page,
+            'type' => BlueprintSubjectEnum::Page,
         ], [
             'name' => __('capell-blog::generic.tag_page'),
-            'group' => TypeGroupEnum::System->value,
+            'group' => BlueprintGroupEnum::System->value,
             'admin' => [
                 'type_configurator' => PageTypeConfigurator::getKey(),
                 'configurator' => ResultsPageConfigurator::getKey(),
@@ -88,7 +89,7 @@ class BlogCreator
         ]);
     }
 
-    public function createTagPage(Site $site, ?Page $parent = null, ?Collection $languages = null, ?Type $type = null, ?Layout $layout = null): Page
+    public function createTagPage(Site $site, ?Page $parent = null, ?Collection $languages = null, ?Blueprint $type = null, ?Layout $layout = null): Page
     {
         $site->unsetRelation('siteDomains');
         $site->loadMissing(['language', 'siteDomains.language']);
@@ -125,7 +126,7 @@ class BlogCreator
         return $page;
     }
 
-    public function createTagsPage(Site $site, ?Page $parent, ?Collection $languages = null, ?Type $type = null, ?Layout $layout = null, bool $createWidgets = false): Page
+    public function createTagsPage(Site $site, ?Page $parent, ?Collection $languages = null, ?Blueprint $type = null, ?Layout $layout = null, bool $createElements = false): Page
     {
         $site->unsetRelation('siteDomains');
         $site->loadMissing(['language', 'siteDomains.language']);
@@ -134,10 +135,10 @@ class BlogCreator
         $layout ??= self::createTagsLayout();
         $languages ??= $site->getAllLanguages();
 
-        if ($createWidgets) {
-            $this->createTagsWidget($languages);
-            $resultsWidgetType = resolve(LayoutTypeCreator::class)->resultsWidgetType();
-            resolve(WidgetCreator::class)->latestPagesWidget($resultsWidgetType, $languages);
+        if ($createElements) {
+            $this->createTagsElement($languages);
+            $resultsElementType = resolve(LayoutTypeCreator::class)->resultsElementType();
+            resolve(ElementCreator::class)->latestPagesElement($resultsElementType, $languages);
         }
 
         $pageModel = Page::class;
@@ -193,14 +194,14 @@ class BlogCreator
 
     public function createArchivePage(
         Page $parent,
-        ?Type $type = null,
+        ?Blueprint $type = null,
         ?Layout $layout = null,
         ?Collection $languages = null,
     ): Page {
         $site = $parent->site;
 
-        if (! $type instanceof Type) {
-            $type = Type::query()->where('key', BlogPageTypeEnum::Archive)->pageType()->first()
+        if (! $type instanceof Blueprint) {
+            $type = Blueprint::query()->where('key', BlogPageTypeEnum::Archive)->pageType()->first()
                 ?? self::createArchivePageType();
         }
 
@@ -242,14 +243,14 @@ class BlogCreator
         return $page;
     }
 
-    public function createArchivePageType(): Type
+    public function createArchivePageType(): Blueprint
     {
-        return Type::query()->firstOrCreate([
+        return Blueprint::query()->firstOrCreate([
             'key' => BlogPageTypeEnum::Archive->value,
-            'type' => TypeEnum::Page,
+            'type' => BlueprintSubjectEnum::Page,
         ], [
             'name' => __('capell-blog::generic.blog_archive_page'),
-            'group' => TypeGroupEnum::System->value,
+            'group' => BlueprintGroupEnum::System->value,
             'admin' => [
                 'type_configurator' => PageTypeConfigurator::getKey(),
                 'configurator' => ResultsPageConfigurator::getKey(),
@@ -280,9 +281,9 @@ class BlogCreator
                 'meta' => [
                     'colspan' => 9,
                 ],
-                'widgets' => [
-                    ['widget_key' => 'breadcrumbs'],
-                    ['widget_key' => 'archives', 'meta' => ['show_page_content' => true, 'show_page_title' => true]],
+                'elements' => [
+                    ['element_key' => 'breadcrumbs'],
+                    ['element_key' => 'archives', 'meta' => ['show_page_content' => true, 'show_page_title' => true]],
                 ],
             ],
             'sidebar' => [
@@ -293,9 +294,9 @@ class BlogCreator
                     'padding' => ['md'],
                     'html_class' => 'sidebar-sticky space-y-8',
                 ],
-                'widgets' => [
-                    ['widget_key' => 'latest-articles', 'meta' => ['hide_no_results' => true]],
-                    ['widget_key' => 'tags', 'meta' => ['hide_no_results' => true]],
+                'elements' => [
+                    ['element_key' => 'latest-articles', 'meta' => ['hide_no_results' => true]],
+                    ['element_key' => 'tags', 'meta' => ['hide_no_results' => true]],
                 ],
             ],
         ];
@@ -304,7 +305,7 @@ class BlogCreator
             'name' => __('capell-blog::generic.archives'),
             'group' => LayoutGroupEnum::System->value,
             'containers' => $containers,
-            'widgets' => $this->widgetKeys($containers),
+            'elements' => $this->elementKeys($containers),
         ]);
     }
 
@@ -315,10 +316,10 @@ class BlogCreator
                 'meta' => [
                     'colspan' => 9,
                 ],
-                'widgets' => [
-                    ['widget_key' => 'breadcrumbs'],
-                    ['widget_key' => 'page-content'],
-                    ['widget_key' => 'page-slot'],
+                'elements' => [
+                    ['element_key' => 'breadcrumbs'],
+                    ['element_key' => 'page-content'],
+                    ['element_key' => 'page-slot'],
                 ],
             ],
             'sidebar' => [
@@ -329,9 +330,9 @@ class BlogCreator
                     'padding' => ['md'],
                     'html_class' => 'sidebar-sticky space-y-8',
                 ],
-                'widgets' => [
-                    ['widget_key' => 'tags', 'meta' => ['hide_no_results' => true]],
-                    ['widget_key' => 'archives', 'meta' => ['hide_no_results' => true]],
+                'elements' => [
+                    ['element_key' => 'tags', 'meta' => ['hide_no_results' => true]],
+                    ['element_key' => 'archives', 'meta' => ['hide_no_results' => true]],
                 ],
             ],
         ];
@@ -340,7 +341,7 @@ class BlogCreator
             'name' => __('capell-blog::generic.blog_page'),
             'group' => LayoutGroupEnum::System->value,
             'containers' => $containers,
-            'widgets' => $this->widgetKeys($containers),
+            'elements' => $this->elementKeys($containers),
         ]);
     }
 
@@ -351,9 +352,9 @@ class BlogCreator
                 'meta' => [
                     'colspan' => 9,
                 ],
-                'widgets' => [
-                    ['widget_key' => 'breadcrumbs'],
-                    ['widget_key' => 'tags', 'meta' => ['show_page_title' => true, 'show_page_content' => true]],
+                'elements' => [
+                    ['element_key' => 'breadcrumbs'],
+                    ['element_key' => 'tags', 'meta' => ['show_page_title' => true, 'show_page_content' => true]],
                 ],
             ],
             'sidebar' => [
@@ -364,8 +365,8 @@ class BlogCreator
                     'padding' => ['md'],
                     'html_class' => 'sidebar-sticky space-y-8',
                 ],
-                'widgets' => [
-                    ['widget_key' => 'latest-pages', 'meta' => ['hide_no_results' => true]],
+                'elements' => [
+                    ['element_key' => 'latest-pages', 'meta' => ['hide_no_results' => true]],
                 ],
             ],
         ];
@@ -374,26 +375,26 @@ class BlogCreator
             'name' => __('capell-blog::generic.tags'),
             'group' => LayoutGroupEnum::System->value,
             'containers' => $containers,
-            'widgets' => $this->widgetKeys($containers),
+            'elements' => $this->elementKeys($containers),
         ]);
     }
 
-    public function createArchivesWidget(?Collection $languages = null): Widget
+    public function createArchivesElement(?Collection $languages = null): Element
     {
         if (! $languages instanceof Collection) {
             $languages = Language::all();
         }
 
         $typeCreator = resolve(LayoutTypeCreator::class);
-        $type = $typeCreator->resultsWidgetType();
+        $type = $typeCreator->resultsElementType();
 
-        $widget = Widget::query()->firstOrCreate([
+        $element = Element::query()->firstOrCreate([
             'key' => 'archives',
         ], [
             'name' => __('capell-blog::generic.article_archives'),
             'blueprint_id' => $type->id,
             'meta' => [
-                'component' => BlogWidgetComponentEnum::Archives,
+                'component' => BlogElementComponentEnum::Archives,
                 'page_group' => strtolower(ResourceEnum::Article->name),
                 'pagination' => true,
                 'with_image' => true,
@@ -404,8 +405,8 @@ class BlogCreator
             ],
         ]);
 
-        $languages->each(function (Language $language) use ($widget): void {
-            $widget->translations()->firstOrCreate([
+        $languages->each(function (Language $language) use ($element): void {
+            $element->translations()->firstOrCreate([
                 'language_id' => $language->id,
             ], [
                 'title' => __('capell-blog::generic.archives'),
@@ -415,23 +416,23 @@ class BlogCreator
             ]);
         });
 
-        return $widget;
+        return $element;
     }
 
-    public function createTagsWidget(Collection $languages): void
+    public function createTagsElement(Collection $languages): void
     {
-        $widgetModel = Widget::class;
+        $elementModel = Element::class;
 
         $typeCreator = resolve(LayoutTypeCreator::class);
-        $type = $typeCreator->resultsWidgetType();
+        $type = $typeCreator->resultsElementType();
 
-        $widget = $widgetModel::query()->firstOrCreate([
+        $element = $elementModel::query()->firstOrCreate([
             'key' => 'tags',
         ], [
             'name' => __('capell-blog::generic.tags'),
             'blueprint_id' => $type->id,
             'meta' => [
-                'component' => BlogWidgetComponentEnum::Tags,
+                'component' => BlogElementComponentEnum::Tags,
                 'page_model' => Relation::getMorphAlias(Article::class),
                 'size' => 'sm',
             ],
@@ -440,8 +441,8 @@ class BlogCreator
             ],
         ]);
 
-        $languages->each(function (Language $language) use ($widget): void {
-            $widget->translations()->firstOrCreate([
+        $languages->each(function (Language $language) use ($element): void {
+            $element->translations()->firstOrCreate([
                 'language_id' => $language->id,
             ], [
                 'title' => __('capell-blog::generic.tags'),
@@ -454,7 +455,7 @@ class BlogCreator
 
     public function createArchivesPage(
         Page $parent,
-        ?Type $type = null,
+        ?Blueprint $type = null,
         ?Layout $layout = null,
         ?Collection $languages = null,
     ): Page {
@@ -463,9 +464,9 @@ class BlogCreator
             $layout = Layout::query()->firstWhere('key', 'archives') ?? self::createArchivesLayout();
         }
 
-        if (! $type instanceof Type) {
-            $type = Type::query()->where('key', 'system')->pageType()->first()
-                ?? resolve(TypeCreator::class)->systemPageType();
+        if (! $type instanceof Blueprint) {
+            $type = Blueprint::query()->where('key', 'system')->pageType()->first()
+                ?? resolve(BlueprintCreator::class)->systemPageType();
         }
 
         if (! $languages instanceof Collection) {
@@ -504,26 +505,26 @@ class BlogCreator
         return $page;
     }
 
-    public function createArticleLayout(bool $createWidgets = true): Layout
+    public function createArticleLayout(bool $createElements = true): Layout
     {
-        if ($createWidgets) {
+        if ($createElements) {
             $languages = Language::all();
-            $widgetCreator = resolve(WidgetCreator::class);
+            $elementCreator = resolve(ElementCreator::class);
             $typeCreator = resolve(LayoutTypeCreator::class);
-            $systemWidgetType = $typeCreator->systemWidgetType();
-            $pageContentWidgetType = $typeCreator->pageContentWidgetType();
-            $resultsType = $typeCreator->resultsWidgetType();
+            $systemElementType = $typeCreator->systemElementType();
+            $pageContentElementType = $typeCreator->pageContentElementType();
+            $resultsType = $typeCreator->resultsElementType();
 
-            $widgetCreator->breadcrumbWidget($systemWidgetType);
-            $widgetCreator->pageSlotWidget($systemWidgetType);
-            $widgetCreator->pageContentWidget($pageContentWidgetType);
+            $elementCreator->breadcrumbElement($systemElementType);
+            $elementCreator->pageSlotElement($systemElementType);
+            $elementCreator->pageContentElement($pageContentElementType);
 
-            $articleType = $this->createArticleWidgetType();
-            $this->createArticleWidget($articleType);
+            $articleType = $this->createArticleElementType();
+            $this->createArticleElement($articleType);
 
-            $this->relatedArticlesWidget($resultsType, $languages);
-            $this->createTagsWidget($languages);
-            $this->createArchivesWidget($languages);
+            $this->relatedArticlesElement($resultsType, $languages);
+            $this->createTagsElement($languages);
+            $this->createArchivesElement($languages);
         }
 
         $containers = [
@@ -531,9 +532,9 @@ class BlogCreator
                 'meta' => [
                     'colspan' => 9,
                 ],
-                'widgets' => [
-                    ['widget_key' => 'breadcrumbs'],
-                    ['widget_key' => 'article'],
+                'elements' => [
+                    ['element_key' => 'breadcrumbs'],
+                    ['element_key' => 'article'],
                 ],
             ],
             'sidebar' => [
@@ -544,10 +545,10 @@ class BlogCreator
                     'padding' => ['md'],
                     'html_class' => 'sidebar-sticky space-y-8',
                 ],
-                'widgets' => [
-                    ['widget_key' => 'latest-articles', 'meta' => ['hide_no_results' => true]],
-                    ['widget_key' => 'tags', 'meta' => ['hide_no_results' => true]],
-                    ['widget_key' => 'archives', 'meta' => ['hide_no_results' => true]],
+                'elements' => [
+                    ['element_key' => 'latest-articles', 'meta' => ['hide_no_results' => true]],
+                    ['element_key' => 'tags', 'meta' => ['hide_no_results' => true]],
+                    ['element_key' => 'archives', 'meta' => ['hide_no_results' => true]],
                 ],
             ],
         ];
@@ -556,15 +557,15 @@ class BlogCreator
             'name' => __('capell-blog::generic.article'),
             'group' => LayoutGroupEnum::Default->value,
             'containers' => $containers,
-            'widgets' => $this->widgetKeys($containers),
+            'elements' => $this->elementKeys($containers),
         ]);
     }
 
-    public function createArticlePageType(): Type
+    public function createArticlePageType(): Blueprint
     {
-        return Type::query()->firstOrCreate([
+        return Blueprint::query()->firstOrCreate([
             'key' => BlogPageTypeEnum::Article->value,
-            'type' => TypeEnum::Page,
+            'type' => BlueprintSubjectEnum::Page,
         ], [
             'name' => __('capell-blog::generic.article'),
             'group' => BlogTypeGroupEnum::Article->value,
@@ -578,9 +579,9 @@ class BlogCreator
         ]);
     }
 
-    public function createArticleWidget(Type $type): Widget
+    public function createArticleElement(Blueprint $type): Element
     {
-        return Widget::query()->firstOrCreate([
+        return Element::query()->firstOrCreate([
             'key' => 'article',
         ], [
             'name' => __('capell-blog::generic.article'),
@@ -593,24 +594,24 @@ class BlogCreator
         ]);
     }
 
-    public function relatedArticlesWidget(?Type $type = null, ?Collection $languages = null): Widget
+    public function relatedArticlesElement(?Blueprint $type = null, ?Collection $languages = null): Element
     {
-        if (! $type instanceof Type) {
+        if (! $type instanceof Blueprint) {
             $typeCreator = resolve(LayoutTypeCreator::class);
-            $type = $typeCreator->resultsWidgetType();
+            $type = $typeCreator->resultsElementType();
         }
 
         if (! $languages instanceof Collection) {
             $languages = Language::all();
         }
 
-        $widget = Widget::query()->firstOrCreate([
+        $element = Element::query()->firstOrCreate([
             'key' => 'related-pages',
         ], [
             'name' => __('capell-admin::generic.related_pages'),
             'blueprint_id' => $type->id,
             'meta' => [
-                'component' => BlogWidgetComponentEnum::PageRelated,
+                'component' => BlogElementComponentEnum::PageRelated,
                 'limit' => 6,
                 'pagination' => false,
                 'page_model' => Relation::getMorphAlias(Article::class),
@@ -623,37 +624,37 @@ class BlogCreator
             ],
             'admin' => [
                 'icon' => 'heroicon-c-link',
-                'type_configurator' => WidgetTypeConfigurator::getKey(),
-                'configurator' => WidgetConfiguratorEnum::Related->name,
+                'type_configurator' => ElementTypeConfigurator::getKey(),
+                'configurator' => ElementConfiguratorEnum::Related->name,
             ],
         ]);
 
-        $languages->each(function (Language $language) use ($widget): void {
-            $widget->translations()->firstOrCreate([
+        $languages->each(function (Language $language) use ($element): void {
+            $element->translations()->firstOrCreate([
                 'language_id' => $language->id,
             ], [
                 'title' => __('capell-layout-builder::heading.related_pages'),
             ]);
         });
 
-        return $widget;
+        return $element;
     }
 
-    public function createArticleWidgetType(): Type
+    public function createArticleElementType(): Blueprint
     {
-        return Type::query()->firstOrCreate([
+        return Blueprint::query()->firstOrCreate([
             'key' => 'article',
-            'type' => LayoutTypeEnum::Widget,
+            'type' => LayoutTypeEnum::Element,
         ], [
             'name' => __('capell-blog::generic.article'),
-            'group' => TypeGroupEnum::System->value,
+            'group' => BlueprintGroupEnum::System->value,
             'admin' => [
                 'type_configurator' => PageTypeConfigurator::getKey(),
-                'configurator' => ArticleWidgetConfigurator::getKey(),
+                'configurator' => ArticleElementConfigurator::getKey(),
                 'icon' => 'heroicon-o-newspaper',
             ],
             'meta' => [
-                'component' => BlogWidgetComponentEnum::Article,
+                'component' => BlogElementComponentEnum::Article,
                 'margin' => ['xl'],
             ],
         ]);
@@ -661,7 +662,7 @@ class BlogCreator
 
     public function createBlogPage(
         Site $site,
-        ?Type $type = null,
+        ?Blueprint $type = null,
         ?Layout $layout = null,
         ?Collection $languages = null,
         array $meta = [],
@@ -669,7 +670,7 @@ class BlogCreator
         $site->unsetRelation('siteDomains');
         $site->loadMissing(['language', 'siteDomains.language']);
 
-        if (! $type instanceof Type) {
+        if (! $type instanceof Blueprint) {
             $type = self::createBlogPageType();
         }
 
@@ -713,14 +714,14 @@ class BlogCreator
         return $page;
     }
 
-    public function createBlogPageType(): Type
+    public function createBlogPageType(): Blueprint
     {
-        return Type::query()->firstOrCreate([
+        return Blueprint::query()->firstOrCreate([
             'key' => BlogPageTypeEnum::Blog->value,
-            'type' => TypeEnum::Page,
+            'type' => BlueprintSubjectEnum::Page,
         ], [
             'name' => __('capell-blog::generic.blog'),
-            'group' => TypeGroupEnum::Results->value,
+            'group' => BlueprintGroupEnum::Results->value,
             'admin' => [
                 'type_configurator' => PageTypeConfigurator::getKey(),
                 'configurator' => ResultsPageConfigurator::getKey(),
@@ -746,22 +747,22 @@ class BlogCreator
         ]);
     }
 
-    public function createLatestArticlesWidget(?Collection $languages = null): Widget
+    public function createLatestArticlesElement(?Collection $languages = null): Element
     {
         if (! $languages instanceof Collection) {
             $languages = Language::all();
         }
 
         $typeCreator = resolve(LayoutTypeCreator::class);
-        $type = $typeCreator->resultsWidgetType();
+        $type = $typeCreator->resultsElementType();
 
-        $widget = Widget::query()->firstOrCreate([
+        $element = Element::query()->firstOrCreate([
             'key' => 'latest-articles',
         ], [
             'name' => __('capell-blog::generic.latest_articles'),
             'blueprint_id' => $type->id,
             'meta' => [
-                'component' => LivewireComponentsEnum::PagesWidget,
+                'component' => LivewireComponentsEnum::PagesElement,
                 'livewire' => true,
                 'limit' => 5,
                 'page_model' => Relation::getMorphAlias(Article::class),
@@ -778,24 +779,24 @@ class BlogCreator
             ],
         ]);
 
-        $languages->each(function (Language $language) use ($widget): void {
-            $widget->translations()->firstOrCreate([
+        $languages->each(function (Language $language) use ($element): void {
+            $element->translations()->firstOrCreate([
                 'language_id' => $language->id,
             ], [
                 'title' => __('capell-blog::generic.latest_articles'),
             ]);
         });
 
-        return $widget;
+        return $element;
     }
 
-    private function getPageType(string|PageTypeEnum $key): Type
+    private function getPageType(string|PageTypeEnum $key): Blueprint
     {
-        $typeModel = Type::class;
+        $typeModel = Blueprint::class;
 
         $type = $typeModel::query()->where('key', $key)->pageType()->first();
 
-        if ($type !== null) {
+        if ($type instanceof Blueprint) {
             return $type;
         }
 
@@ -803,7 +804,13 @@ class BlogCreator
             $key = $key->value;
         }
 
-        return resolve(TypeCreator::class)->createPageType($key);
+        $createdType = resolve(BlueprintCreator::class)->createPageType($key);
+
+        if ($createdType instanceof Blueprint) {
+            return $createdType;
+        }
+
+        throw new LogicException('Expected page type creator to return a Blueprint model.');
     }
 
     private function getLayout(LayoutEnum|string $key): Layout
@@ -832,21 +839,21 @@ class BlogCreator
             return $layout;
         }
 
-        $widgetCreator = resolve(WidgetCreator::class);
-        $widgetCreator->breadcrumbWidget();
-        $widgetCreator->pageContentWidget();
-        $widgetCreator->pageSlotWidget();
-        $widgetCreator->latestPagesWidget();
+        $elementCreator = resolve(ElementCreator::class);
+        $elementCreator->breadcrumbElement();
+        $elementCreator->pageContentElement();
+        $elementCreator->pageSlotElement();
+        $elementCreator->latestPagesElement();
 
         $containers = [
             'main' => [
                 'meta' => [
                     'colspan' => 9,
                 ],
-                'widgets' => [
-                    ['widget_key' => 'breadcrumbs'],
-                    ['widget_key' => 'page-content'],
-                    ['widget_key' => 'page-slot'],
+                'elements' => [
+                    ['element_key' => 'breadcrumbs'],
+                    ['element_key' => 'page-content'],
+                    ['element_key' => 'page-slot'],
                 ],
             ],
             'sidebar' => [
@@ -857,26 +864,26 @@ class BlogCreator
                     'padding' => ['md'],
                     'html_class' => 'sidebar-sticky space-y-8',
                 ],
-                'widgets' => [
-                    ['widget_key' => 'latest-pages'],
+                'elements' => [
+                    ['element_key' => 'latest-pages'],
                 ],
             ],
         ];
 
         $layout->update([
             'containers' => $containers,
-            'widgets' => $this->widgetKeys($containers),
+            'elements' => $this->elementKeys($containers),
         ]);
 
         return $layout;
     }
 
-    private function widgetKeys(array $containers): array
+    private function elementKeys(array $containers): array
     {
         return collect($containers)
-            ->flatMap(fn (array $container): array => $container['widgets'] ?? [])
-            ->unique('widget_key')
-            ->pluck('widget_key')
+            ->flatMap(fn (array $container): array => $container['elements'] ?? [])
+            ->unique('element_key')
+            ->pluck('element_key')
             ->values()
             ->all();
     }

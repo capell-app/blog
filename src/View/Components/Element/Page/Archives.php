@@ -2,26 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Capell\Blog\View\Components\Widget\Page;
+namespace Capell\Blog\View\Components\Element\Page;
 
 use Capell\Blog\Enums\BlogTypeGroupEnum;
 use Capell\Blog\Support\Loader\BlogLoader;
 use Capell\Core\Contracts\Pageable;
 use Capell\Core\Models\Page;
-use Capell\FoundationTheme\View\Components\Widget\AbstractWidget;
+use Capell\FoundationTheme\View\Components\Element\AbstractElement;
 use Capell\Frontend\Facades\Frontend;
 use Closure;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 
-class Archives extends AbstractWidget
+class Archives extends AbstractElement
 {
     protected ?Page $archivePage = null;
 
     protected null|Collection|LengthAwarePaginator $archives = null;
 
-    protected static string $defaultView = 'capell-blog::components.widget.page.archives';
+    protected static string $defaultView = 'capell-blog::components.element.page.archives';
 
     public function render(array $data = []): View|string|Closure
     {
@@ -32,7 +32,7 @@ class Archives extends AbstractWidget
         ]);
     }
 
-    protected function mountWidget(): void
+    protected function mountElement(): void
     {
         $language = Frontend::language();
         $site = Frontend::site();
@@ -45,9 +45,9 @@ class Archives extends AbstractWidget
             return;
         }
 
-        $group = $this->widget->meta['page_group'] ?? BlogTypeGroupEnum::Article->value;
+        $group = $this->element->meta['page_group'] ?? BlogTypeGroupEnum::Article->value;
 
-        $limit = $this->widget->meta['limit'] ?? config('capell-frontend.pagination_limit', 12);
+        $limit = $this->element->meta['limit'] ?? config('capell-frontend.pagination_limit', 12);
 
         $this->archives = BlogLoader::getArchives(
             site: $site,
@@ -60,11 +60,11 @@ class Archives extends AbstractWidget
             return;
         }
 
-        if (isset($this->widgetData['meta']['hide_no_results']) && $this->widgetData['meta']['hide_no_results']) {
+        if (isset($this->elementData['meta']['hide_no_results']) && $this->elementData['meta']['hide_no_results']) {
             $this->skipRender = true;
         }
 
-        if (config('capell-layout-builder.widget.skip_render_empty') === true) {
+        if (config('capell-layout-builder.element.skip_render_empty') === true) {
             $this->skipRender = true;
         }
     }

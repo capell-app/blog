@@ -8,11 +8,11 @@ use Capell\Admin\Filament\Configurators\Types\PageTypeConfigurator;
 use Capell\Blog\Enums\BlogTypeGroupEnum;
 use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Filament\Configurators\Articles\ArticlePageConfigurator;
-use Capell\Core\Database\Factories\TypeFactory;
+use Capell\Core\Database\Factories\BlueprintFactory;
 
-class ArticleTypeFactory extends TypeFactory
+class ArticleTypeFactory extends BlueprintFactory
 {
-    public function article(): TypeFactory
+    public function article(): BlueprintFactory
     {
         return $this->page()
             ->group(BlogTypeGroupEnum::Article->value)

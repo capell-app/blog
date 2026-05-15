@@ -30,15 +30,15 @@ it('creates the blog, archives, archive, tags, and tag pages for the site', func
     expect($pageTypeKeys)->toContain(BlogPageTypeEnum::Blog->value);
 });
 
-it('adds the archives widget to the results layout sidebar during install', function (): void {
+it('adds the archives element to the results layout sidebar during install', function (): void {
     $resultsLayout = Layout::query()->firstWhere('key', LayoutEnum::Results->value);
     $containers = $resultsLayout->getAttribute('containers');
 
     expect($containers)->toBeArray();
 
-    $sidebarWidgetKeys = array_column($containers['sidebar']['widgets'], 'widget_key');
+    $sidebarElementKeys = array_column($containers['sidebar']['elements'], 'element_key');
 
-    expect($sidebarWidgetKeys)->toContain('archives');
+    expect($sidebarElementKeys)->toContain('archives');
 });
 
 it('creates an archive placeholder page under the archives parent', function (): void {

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Capell\Blog\Filament\Configurators\Widgets;
+namespace Capell\Blog\Filament\Configurators\Elements;
 
-use Capell\LayoutBuilder\Filament\Components\Forms\Widget\AdminSchema;
-use Capell\LayoutBuilder\Filament\Components\Forms\Widget\SettingsSchema;
-use Capell\LayoutBuilder\Filament\Components\Forms\Widget\Tab\WidgetDisplayTab;
-use Capell\LayoutBuilder\Filament\Configurators\Widgets\DefaultWidgetConfigurator;
+use Capell\LayoutBuilder\Filament\Components\Forms\Element\AdminSchema;
+use Capell\LayoutBuilder\Filament\Components\Forms\Element\SettingsSchema;
+use Capell\LayoutBuilder\Filament\Components\Forms\Element\Tab\ElementDisplayTab;
+use Capell\LayoutBuilder\Filament\Configurators\Elements\DefaultElementConfigurator;
 use Filament\Forms\Components\Checkbox;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Section;
@@ -16,7 +16,7 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 
-class ArticleWidgetConfigurator extends DefaultWidgetConfigurator
+class ArticleElementConfigurator extends DefaultElementConfigurator
 {
     protected function getFormSchema(Schema $configurator): array
     {
@@ -42,7 +42,7 @@ class ArticleWidgetConfigurator extends DefaultWidgetConfigurator
                     ->visibleOn(['edit', 'editOption'])
                     ->columnSpanFull()
                     ->tabs([
-                        WidgetDisplayTab::make([
+                        ElementDisplayTab::make([
                             ...SettingsSchema::make($configurator),
                             $this->articleSettingsSchema(),
                         ]),

@@ -13,7 +13,7 @@ use Capell\Blog\Filament\Configurators\Articles\ArticlePageConfigurator;
 use Capell\Blog\Filament\Resources\Articles\ArticleResource;
 use Capell\Blog\Models\Article;
 use Capell\Core\Contracts\Pageable;
-use Capell\Core\Models\Type;
+use Capell\Core\Models\Blueprint;
 use Filament\Schemas\Schema;
 use RuntimeException;
 
@@ -26,11 +26,11 @@ class ArticleForm implements FormConfigurator
         $record = $configurator->getRecord();
 
         if ($record instanceof Pageable && $record->blueprint_id !== null) {
-            /** @var class-string<Type> $model */
-            $model = Type::class;
+            /** @var class-string<Blueprint> $model */
+            $model = Blueprint::class;
 
             $type = $model::query()->find($record->blueprint_id);
-            $adminType = $type instanceof Type
+            $adminType = $type instanceof Blueprint
                 ? $resolver->resolveForType($type, ConfiguratorTypeEnum::Page, ArticlePageConfigurator::getKey())
                 : ArticlePageConfigurator::class;
 
@@ -43,12 +43,12 @@ class ArticleForm implements FormConfigurator
 
         $defaultType = Article::getDefaultType($resourceName);
 
-        if (! $defaultType instanceof Type) {
+        if (! $defaultType instanceof Blueprint) {
             EnsureArticlePublishingDefaultsAction::run();
             $defaultType = Article::getDefaultType($resourceName);
         }
 
-        throw_unless($defaultType instanceof Type, RuntimeException::class, 'Unable to resolve article page type.');
+        throw_unless($defaultType instanceof Blueprint, RuntimeException::class, 'Unable to resolve article page type.');
 
         $adminType = $resolver->resolveForType($defaultType, ConfiguratorTypeEnum::Page, ArticlePageConfigurator::getKey());
         $operation = $configurator->getOperation();

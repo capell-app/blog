@@ -1,6 +1,6 @@
 # Blog
 
-Blog adds article publishing, archive pages, tag pages, article widgets, Site Discovery sitemap contributions, and frontend Livewire page components to Capell.
+Blog adds article publishing, archive pages, tag pages, article elements, Site Discovery sitemap contributions, and frontend Livewire page components to Capell.
 
 ## At A Glance
 
@@ -12,17 +12,17 @@ Blog adds article publishing, archive pages, tag pages, article widgets, Site Di
 
 ## What It Adds
 
-Blog adds article publishing, archive pages, tag pages, article widgets, Site Discovery sitemap contributions, and frontend Livewire page components to Capell.
+Blog adds article publishing, archive pages, tag pages, article elements, Site Discovery sitemap contributions, and frontend Livewire page components to Capell.
 
 - Article Filament resource.
 - Blog, archive, and tag frontend Livewire components.
-- Article widgets and configurators for layout builder.
+- Article elements and configurators for layout builder.
 - Site Discovery sitemap contributions for articles, archives, and tags.
 - Commands to install and create blog pages.
 
 ## Why It Matters
 
-**For developers:** Builds on core pages, layouts, translations, page URLs, core layout builder widgets, and tags while keeping article-specific logic in actions and loaders.
+**For developers:** Builds on core pages, layouts, translations, page URLs, core layout builder elements, and tags while keeping article-specific logic in actions and loaders.
 
 **For teams:** Gives editors a dedicated article workflow that still fits the same structured publishing foundation as pages.
 
@@ -72,7 +72,7 @@ Screenshots are generated from [docs/screenshots.json](docs/screenshots.json) du
 | Data      | `packages/blog/src/Data`      | Structured payloads, form state, view models, and integration data. |
 | Enums     | `packages/blog/src/Enums`     | Persisted states and Filament option values.                        |
 | Models    | `packages/blog/src/Models`    | Eloquent records owned by the package.                              |
-| Filament  | `packages/blog/src/Filament`  | Admin resources, pages, widgets, and settings UI.                   |
+| Filament  | `packages/blog/src/Filament`  | Admin resources, pages, elements, and settings UI.                  |
 | Livewire  | `packages/blog/src/Livewire`  | Interactive frontend or admin components.                           |
 | Providers | `packages/blog/src/Providers` | Registration, extension hooks, routes, migrations, and resources.   |
 | Resources | `packages/blog/resources`     | Views, translations, assets, and package resources.                 |
@@ -83,7 +83,7 @@ Screenshots are generated from [docs/screenshots.json](docs/screenshots.json) du
 
 - Resources: `ArticleResource`.
 - Pages: `CreateArticle`, `EditArticle`, `ListArticles`.
-- Widgets: `ArticleHealthWidgetAbstract`, `ArticleWidgetConfigurator`, `ListArticlesWidget`, `RelatedWidgetConfigurator`, `TopPagesWidgetAbstract`, `TrafficChartWidgetAbstract`.
+- Elements: `ArticleHealthElementAbstract`, `ArticleElementConfigurator`, `ListArticlesElement`, `RelatedElementConfigurator`, `TopPagesElementAbstract`, `TrafficChartElementAbstract`.
 
 ## Runtime Surface
 
@@ -101,7 +101,7 @@ Screenshots are generated from [docs/screenshots.json](docs/screenshots.json) du
 ## Data And Persistence
 
 - articles stores uuid, workspace, type, layout, site, meta, visible_from, and visible_until.
-- Articles connect to sites, types, layouts, page URLs, translations, core layout builder widget assets, and tags.
+- Articles connect to sites, types, layouts, page URLs, translations, core layout builder element assets, and tags.
 - Blog uses the layout builder APIs provided by the admin/frontend core packages.
 - Deletion and retention behaviour should be verified against the host application policy.
 
@@ -134,9 +134,9 @@ Screenshots are generated from [docs/screenshots.json](docs/screenshots.json) du
 - EditArticle (packages/blog/src/Filament/Resources/Articles/Pages/EditArticle.php)
 - ListArticles (packages/blog/src/Filament/Resources/Articles/Pages/ListArticles.php)
 
-- Gate: ArticleHealthWidgetAbstract: `developer`, `admin`, `super_admin`
-- Gate: TopPagesWidgetAbstract: `admin`, `super_admin`
-- Gate: TrafficChartWidgetAbstract: `admin`, `super_admin`
+- Gate: ArticleHealthElementAbstract: `developer`, `admin`, `super_admin`
+- Gate: TopPagesElementAbstract: `admin`, `super_admin`
+- Gate: TrafficChartElementAbstract: `admin`, `super_admin`
 
 ## Common Pitfalls
 
@@ -162,7 +162,7 @@ vendor/bin/pest packages/blog/tests --configuration=phpunit.xml
 
 ## Maintenance Notes
 
-- Keep Blog widget setup aligned with the layout builder APIs provided by admin/frontend core packages.
+- Keep Blog element setup aligned with the layout builder APIs provided by admin/frontend core packages.
 - Put behaviour changes in `src/Actions/`; UI classes, commands, and controllers should call actions instead of owning domain logic.
 - Use package `Data` classes at boundaries instead of passing anonymous arrays between layers.
 - Use backed enums for persisted values and enum labels for Filament options.

@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-namespace Capell\Blog\View\Components\Widget\Tag;
+namespace Capell\Blog\View\Components\Element\Tag;
 
 use Capell\Blog\Support\Loader\TagLoader;
 use Capell\Core\Models\Page;
-use Capell\FoundationTheme\View\Components\Widget\AbstractWidget;
+use Capell\FoundationTheme\View\Components\Element\AbstractElement;
 use Capell\Frontend\Facades\Frontend;
 use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 
-class Tags extends AbstractWidget
+class Tags extends AbstractElement
 {
     public ?Page $tagPage = null;
 
     public ?Collection $tags = null;
 
-    protected static string $defaultView = 'capell-blog::components.widget.tag.tags';
+    protected static string $defaultView = 'capell-blog::components.element.tag.tags';
 
     public function render(array $data = []): View|string|Closure
     {
@@ -29,9 +29,9 @@ class Tags extends AbstractWidget
         ]);
     }
 
-    protected function mountWidget(): void
+    protected function mountElement(): void
     {
-        $limit = $this->widget->meta['limit'] ?? null;
+        $limit = $this->element->meta['limit'] ?? null;
 
         $site = Frontend::site();
         $language = Frontend::language();
@@ -55,11 +55,11 @@ class Tags extends AbstractWidget
             return;
         }
 
-        if (isset($this->widgetData['meta']['hide_no_results']) && $this->widgetData['meta']['hide_no_results']) {
+        if (isset($this->elementData['meta']['hide_no_results']) && $this->elementData['meta']['hide_no_results']) {
             $this->skipRender = true;
         }
 
-        if (config('capell-layout-builder.widget.skip_render_empty') === true) {
+        if (config('capell-layout-builder.element.skip_render_empty') === true) {
             $this->skipRender = true;
         }
     }

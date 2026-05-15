@@ -15,7 +15,6 @@ class EditArticle extends EditPage
 {
     use InteractsWithRecord { resolveRecord as baseResolveRecord; }
 
-    /** @return class-string<ArticleResource> */
     public static function getResource(): string
     {
         return AdminSurfaceLookup::resourceIfRegistered(AdminResourceEnum::Page, strtolower(ResourceEnum::Article->name))

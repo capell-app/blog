@@ -12,12 +12,12 @@ use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Creator\ArticleCreator;
 use Capell\Core\Contracts\Pageable;
-use Capell\Core\Enums\TypeEnum;
+use Capell\Core\Enums\BlueprintSubjectEnum;
+use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
-use Capell\Core\Models\Type;
 use Capell\DemoKit\Actions\BuildDemoGenerationPlanAction;
 use Capell\DemoKit\Console\Commands\Concerns\HasSitesOption;
 use Capell\DemoKit\Data\DemoSiteGenerationPlanData;
@@ -199,9 +199,9 @@ class DemoCommand extends Command
 
         EnsureArticlePublishingDefaultsAction::run();
 
-        $type = Type::query()
+        $type = Blueprint::query()
             ->where('key', BlogPageTypeEnum::Article->value)
-            ->where('type', TypeEnum::Page->value)
+            ->where('type', BlueprintSubjectEnum::Page->value)
             ->firstOrFail();
 
         $layout = Layout::query()
@@ -238,7 +238,7 @@ class DemoCommand extends Command
         Site $site,
         Collection $languages,
         string $parentName,
-        Type $type,
+        Blueprint $type,
         Layout $layout,
         ?Model $author,
         ?int $limit,

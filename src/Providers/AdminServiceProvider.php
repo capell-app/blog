@@ -9,9 +9,9 @@ use Capell\Admin\Enums\ConfiguratorTypeEnum;
 use Capell\Admin\Enums\ResourceEnum as AdminResourceEnum;
 use Capell\Admin\Facades\CapellAdmin;
 use Capell\Blog\Actions\EnsureBlogPublishingSurfaceAction;
+use Capell\Blog\Enums\ElementComponentEnum;
+use Capell\Blog\Enums\ElementConfiguratorEnum;
 use Capell\Blog\Enums\ResourceEnum;
-use Capell\Blog\Enums\WidgetComponentEnum;
-use Capell\Blog\Enums\WidgetConfiguratorEnum;
 use Capell\Blog\Filament\Configurators\Articles\ArticlePageConfigurator;
 use Capell\Blog\Listeners\AddBlogPagesToNavigation;
 use Capell\Core\Facades\CapellCore;
@@ -37,7 +37,7 @@ final class AdminServiceProvider extends ServiceProvider
         }
 
         $this->registerResources();
-        $this->registerWidgetComponents();
+        $this->registerElementComponents();
         $this->registerConfigurators();
         $this->registerDefaultPages();
         $this->registerNavigationListener();
@@ -57,9 +57,9 @@ final class AdminServiceProvider extends ServiceProvider
         ));
     }
 
-    private function registerWidgetComponents(): void
+    private function registerElementComponents(): void
     {
-        CapellCore::registerComponents(ComponentTypeEnum::Widget->name, WidgetComponentEnum::cases());
+        CapellCore::registerComponents(ComponentTypeEnum::Element->name, ElementComponentEnum::cases());
     }
 
     private function registerConfigurators(): void
@@ -70,12 +70,12 @@ final class AdminServiceProvider extends ServiceProvider
             name: ArticlePageConfigurator::getKey(),
         ));
 
-        foreach (WidgetConfiguratorEnum::cases() as $configurator) {
+        foreach (ElementConfiguratorEnum::cases() as $configurator) {
             $configuratorClass = $configurator->value;
 
             CapellAdmin::contributeToAdminSurface(AdminSurfaceContributionData::configurator(
                 class: $configuratorClass,
-                group: LayoutSchemaEnum::Widget->value,
+                group: LayoutSchemaEnum::Element->value,
                 name: $configuratorClass::getKey(),
             ));
         }

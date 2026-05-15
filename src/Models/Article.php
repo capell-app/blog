@@ -13,6 +13,7 @@ use Capell\Core\Concerns\HasCapellMedia;
 use Capell\Core\Contracts\Pageable;
 use Capell\Core\Enums\MediaCollectionEnum;
 use Capell\Core\Enums\PageOrderEnum;
+use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Concerns\CloneableExcept;
 use Capell\Core\Models\Concerns\HasAssets;
 use Capell\Core\Models\Concerns\HasMetaData;
@@ -31,7 +32,6 @@ use Capell\Core\Models\Language;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\PageUrl;
 use Capell\Core\Models\Site;
-use Capell\Core\Models\Type;
 use Capell\PublishingStudio\BelongsToWorkspace;
 use Capell\Tags\Models\Concerns\HasTags;
 use Carbon\CarbonImmutable;
@@ -80,7 +80,7 @@ class Article extends Model implements HasMedia, Pageable, Publishable, Translat
     protected $table = 'articles';
 
     /**
-     * @var array<string>
+     * @var list<string>
      */
     protected $fillable = [
         'layout_id',
@@ -100,9 +100,9 @@ class Article extends Model implements HasMedia, Pageable, Publishable, Translat
 
     protected static string $factory = ArticleFactory::class;
 
-    public static function getDefaultType(?string $group): ?Type
+    public static function getDefaultType(?string $group): ?Blueprint
     {
-        return Type::query()
+        return Blueprint::query()
             ->pageType()
             ->when($group !== null, fn (Builder $query): Builder => $query->adminResource($group))
             ->where('key', BlogPageTypeEnum::Article->value)
@@ -168,18 +168,19 @@ class Article extends Model implements HasMedia, Pageable, Publishable, Translat
         return $this->belongsTo(Layout::class);
     }
 
+    /** @return BelongsTo<Site, $this> */
     public function site(): BelongsTo
     {
         return $this->belongsTo(Site::class);
     }
 
-    /** @return MorphOne<PageUrl, self> */
+    /** @return MorphOne<PageUrl, $this> */
     public function pageUrl(): MorphOne
     {
         return $this->morphOne(PageUrl::class, 'pageable')->withDefault(['site_id' => $this->site_id]);
     }
 
-    /** @return MorphMany<PageUrl, self> */
+    /** @return MorphMany<PageUrl, $this> */
     public function pageUrls(): MorphMany
     {
         $model = $this->morphMany(PageUrl::class, 'pageable');
@@ -191,7 +192,7 @@ class Article extends Model implements HasMedia, Pageable, Publishable, Translat
         return $model;
     }
 
-    /** @return MorphMany<Article, self> */
+    /** @return MorphMany<Article, $this> */
     public function canonicalPages(): MorphMany
     {
         return $this->morphMany(
@@ -208,7 +209,7 @@ class Article extends Model implements HasMedia, Pageable, Publishable, Translat
     }
 
     /**
-     * @return BelongsToJson<Article, self>
+     * @return BelongsToJson<Article, $this>
      */
     public function related(): BelongsToJson
     {

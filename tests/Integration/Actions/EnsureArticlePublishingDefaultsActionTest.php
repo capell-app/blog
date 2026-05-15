@@ -6,34 +6,34 @@ use Capell\Blog\Actions\EnsureArticlePublishingDefaultsAction;
 use Capell\Blog\Enums\BlogLayoutEnum;
 use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Core\Enums\LayoutEnum;
+use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Layout;
-use Capell\Core\Models\Type;
-use Capell\Core\Models\Widget;
 use Capell\LayoutBuilder\Actions\InstallPackageAction as LayoutBuilderInstallPackageAction;
+use Capell\LayoutBuilder\Models\Element;
 
 beforeEach(function (): void {
     LayoutBuilderInstallPackageAction::run();
 });
 
-it('installs article publishing page types layouts and widgets', function (): void {
+it('installs article publishing page types layouts and elements', function (): void {
     EnsureArticlePublishingDefaultsAction::run();
 
-    expect(Type::query()->pageType()->where('key', BlogPageTypeEnum::Article->value)->exists())->toBeTrue()
-        ->and(Type::query()->pageType()->where('key', BlogPageTypeEnum::Blog->value)->exists())->toBeTrue()
-        ->and(Type::query()->pageType()->where('key', BlogPageTypeEnum::Archive->value)->exists())->toBeTrue()
-        ->and(Type::query()->pageType()->where('key', BlogPageTypeEnum::Tag->value)->exists())->toBeTrue()
+    expect(Blueprint::query()->pageType()->where('key', BlogPageTypeEnum::Article->value)->exists())->toBeTrue()
+        ->and(Blueprint::query()->pageType()->where('key', BlogPageTypeEnum::Blog->value)->exists())->toBeTrue()
+        ->and(Blueprint::query()->pageType()->where('key', BlogPageTypeEnum::Archive->value)->exists())->toBeTrue()
+        ->and(Blueprint::query()->pageType()->where('key', BlogPageTypeEnum::Tag->value)->exists())->toBeTrue()
         ->and(Layout::query()->where('key', BlogLayoutEnum::Article->value)->exists())->toBeTrue()
         ->and(Layout::query()->where('key', BlogLayoutEnum::BlogPage->value)->exists())->toBeTrue()
         ->and(Layout::query()->where('key', BlogLayoutEnum::Archives->value)->exists())->toBeTrue()
         ->and(Layout::query()->where('key', BlogLayoutEnum::Tags->value)->exists())->toBeTrue()
-        ->and(Widget::query()->where('key', 'article')->exists())->toBeTrue()
-        ->and(Widget::query()->where('key', 'latest-articles')->exists())->toBeTrue()
-        ->and(Widget::query()->where('key', 'archives')->exists())->toBeTrue()
-        ->and(Widget::query()->where('key', 'tags')->exists())->toBeTrue()
-        ->and(Widget::query()->where('key', 'related-pages')->exists())->toBeTrue();
+        ->and(Element::query()->where('key', 'article')->exists())->toBeTrue()
+        ->and(Element::query()->where('key', 'latest-articles')->exists())->toBeTrue()
+        ->and(Element::query()->where('key', 'archives')->exists())->toBeTrue()
+        ->and(Element::query()->where('key', 'tags')->exists())->toBeTrue()
+        ->and(Element::query()->where('key', 'related-pages')->exists())->toBeTrue();
 });
 
-it('updates default and results sidebars with article publishing widgets', function (): void {
+it('updates default and results sidebars with article publishing elements', function (): void {
     EnsureArticlePublishingDefaultsAction::run();
 
     $defaultLayout = Layout::query()->firstWhere('key', LayoutEnum::Default->value);
@@ -45,12 +45,12 @@ it('updates default and results sidebars with article publishing widgets', funct
     expect($defaultContainers)->toBeArray()
         ->and($resultsContainers)->toBeArray();
 
-    $defaultSidebarWidgetKeys = array_column($defaultContainers['sidebar']['widgets'], 'widget_key');
-    $resultsSidebarWidgetKeys = array_column($resultsContainers['sidebar']['widgets'], 'widget_key');
+    $defaultSidebarElementKeys = array_column($defaultContainers['sidebar']['elements'], 'element_key');
+    $resultsSidebarElementKeys = array_column($resultsContainers['sidebar']['elements'], 'element_key');
 
-    expect($defaultSidebarWidgetKeys)->toContain('latest-articles')
-        ->and($defaultSidebarWidgetKeys)->not->toContain('latest-pages')
-        ->and($resultsSidebarWidgetKeys)->toContain('latest-articles')
-        ->and($resultsSidebarWidgetKeys)->toContain('archives')
-        ->and($resultsSidebarWidgetKeys)->not->toContain('latest-pages');
+    expect($defaultSidebarElementKeys)->toContain('latest-articles')
+        ->and($defaultSidebarElementKeys)->not->toContain('latest-pages')
+        ->and($resultsSidebarElementKeys)->toContain('latest-articles')
+        ->and($resultsSidebarElementKeys)->toContain('archives')
+        ->and($resultsSidebarElementKeys)->not->toContain('latest-pages');
 });

@@ -7,13 +7,13 @@ namespace Capell\Blog\Providers;
 use Capell\Admin\Data\AdminSurfaceContributionData;
 use Capell\Admin\Enums\ResourceEnum as AdminResourceEnum;
 use Capell\Admin\Facades\CapellAdmin;
+use Capell\Blog\Enums\ElementComponentEnum;
 use Capell\Blog\Enums\LivewirePageComponentEnum;
 use Capell\Blog\Enums\ResourceEnum;
-use Capell\Blog\Enums\WidgetComponentEnum;
 use Capell\Blog\Listeners\ArticleTranslationSavedListener;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\BlogModelRegistrar;
-use Capell\Blog\Support\BlogSidebarWidgetContributor;
+use Capell\Blog\Support\BlogSidebarElementContributor;
 use Capell\ContentSections\Models\Section;
 use Capell\Core\Actions\RegisterBlazeOptimizedViewsAction;
 use Capell\Core\Data\PageTypeData;
@@ -26,7 +26,7 @@ use Capell\Core\Models\Site;
 use Capell\Core\Models\Translation;
 use Capell\Core\Support\Packages\AbstractPackageServiceProvider;
 use Capell\Core\Support\Renderables\RenderableRegistry;
-use Capell\LayoutBuilder\Contracts\LayoutSidebarWidgetContributor;
+use Capell\LayoutBuilder\Contracts\LayoutSidebarElementContributor;
 use Capell\PublishingStudio\WorkspaceRegistry;
 use Capell\Tags\Models\Tag;
 use Composer\InstalledVersions;
@@ -56,7 +56,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
     {
         $this->app->register(AdminServiceProvider::class);
         $this->app->register(ConsoleServiceProvider::class);
-        $this->app->tag([BlogSidebarWidgetContributor::class], LayoutSidebarWidgetContributor::TAG);
+        $this->app->tag([BlogSidebarElementContributor::class], LayoutSidebarElementContributor::TAG);
 
         $this->app->booting(function (): void {
             if ($this->isPackageInstalled()) {
@@ -90,7 +90,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
             ->registerBlazeComponents()
             ->registerBladeComponents()
             ->registerPageRenderables()
-            ->registerWidgetRenderables()
+            ->registerElementRenderables()
             ->registerLivewireComponents()
             ->registerTypes()
             ->registerTranslationEvents()
@@ -203,15 +203,15 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
         return $this;
     }
 
-    private function registerWidgetRenderables(): self
+    private function registerElementRenderables(): self
     {
         $registry = resolve(RenderableRegistry::class);
 
-        foreach (WidgetComponentEnum::cases() as $widgetComponent) {
+        foreach (ElementComponentEnum::cases() as $elementComponent) {
             $registry->register(new RenderableDefinitionData(
-                key: $widgetComponent->value,
+                key: $elementComponent->value,
                 type: RenderableTypeEnum::Widget,
-                blade: $widgetComponent->value,
+                blade: $elementComponent->value,
             ));
         }
 

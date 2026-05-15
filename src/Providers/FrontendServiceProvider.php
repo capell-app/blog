@@ -19,8 +19,8 @@ use Capell\Frontend\Enums\RenderHookLocation;
 use Capell\Frontend\Support\Render\RenderHookRegistry;
 use Capell\HtmlCache\Support\StaticSite\StaticSiteExtensionRegistry;
 use Capell\SiteDiscovery\Support\Sitemap\SitemapPageRegistry;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\View\View;
 
 final class FrontendServiceProvider extends ServiceProvider
 {
@@ -53,10 +53,13 @@ final class FrontendServiceProvider extends ServiceProvider
     {
         resolve(RenderHookRegistry::class)->register(
             RenderHookLocation::Footer,
-            fn (RenderHookContext $context): ?View => resolve(Tags::class, [
-                'item' => $context->item,
-            ])
-                ?->render(),
+            function (RenderHookContext $context): ?View {
+                $view = resolve(Tags::class, [
+                    'item' => $context->item,
+                ])->render();
+
+                return $view instanceof View ? $view : null;
+            },
             target: 'footer.index',
         );
 

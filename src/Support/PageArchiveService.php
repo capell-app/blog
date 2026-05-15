@@ -10,6 +10,7 @@ use Capell\Core\Models\Language;
 use Capell\Core\Models\Site;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use stdClass;
 
@@ -20,7 +21,7 @@ class PageArchiveService
      *
      * @param  bool  $paginate  Whether to paginate the results
      * @param  int|null  $perPage  Number of items per page if paginating
-     * @return LengthAwarePaginator<ArchiveMonthData>
+     * @return LengthAwarePaginator<ArchiveMonthData>|Collection<int, ArchiveMonthData>
      */
     public function getArchivedCountsByMonth(
         Site $site,

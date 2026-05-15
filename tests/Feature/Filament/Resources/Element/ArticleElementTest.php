@@ -3,57 +3,57 @@
 declare(strict_types=1);
 
 use Capell\Blog\Support\Creator\BlogCreator;
-use Capell\Core\Models\Widget;
-use Capell\LayoutBuilder\Filament\Resources\Widgets\Pages\EditWidget;
-use Capell\LayoutBuilder\Filament\Resources\Widgets\Pages\ListWidgets;
+use Capell\LayoutBuilder\Filament\Resources\Elements\Pages\EditElement;
+use Capell\LayoutBuilder\Filament\Resources\Elements\Pages\ListElements;
+use Capell\LayoutBuilder\Models\Element;
 use Capell\Tests\Support\Concerns\CreatesAdminUser;
 
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Livewire\livewire;
 
 uses(CreatesAdminUser::class)
-    ->group('widget');
+    ->group('element');
 
 beforeEach(function (): void {
     test()->actingAsAdmin();
 });
 
-test('can create article widget type', function (): void {
-    $newData = Widget::factory()->make();
+test('can create article element type', function (): void {
+    $newData = Element::factory()->make();
 
     $typeCreator = new BlogCreator;
 
-    $type = $typeCreator->createArticleWidgetType();
+    $type = $typeCreator->createArticleElementType();
 
-    livewire(ListWidgets::class)
+    livewire(ListElements::class)
         ->assertSuccessful()
         ->assertCountTableRecords(0);
 
-    Widget::query()->create([
+    Element::query()->create([
         'name' => $newData->name,
         'key' => str($newData->name)->slug()->toString(),
         'blueprint_id' => $type->id,
         'status' => true,
     ]);
 
-    assertDatabaseHas(Widget::class, [
+    assertDatabaseHas(Element::class, [
         'name' => $newData->name,
         'key' => str($newData->name)->slug()->toString(),
         'blueprint_id' => $type->id,
     ]);
 });
 
-test('can edit article widget', function (): void {
+test('can edit article element', function (): void {
     $typeCreator = new BlogCreator;
 
-    $type = $typeCreator->createArticleWidgetType();
+    $type = $typeCreator->createArticleElementType();
 
-    $newData = Widget::factory()->make();
+    $newData = Element::factory()->make();
 
-    $widget = Widget::factory()->for($type)->create();
+    $element = Element::factory()->for($type)->create();
 
-    livewire(EditWidget::class, [
-        'record' => $widget->getRouteKey(),
+    livewire(EditElement::class, [
+        'record' => $element->getRouteKey(),
     ])
         ->assertSuccessful()
         ->fillForm([
@@ -69,7 +69,7 @@ test('can edit article widget', function (): void {
         ->call('save')
         ->assertHasNoFormErrors();
 
-    expect($widget->refresh())
+    expect($element->refresh())
         ->name->toBe($newData->name)
         ->key->toBe($newData->key);
 });

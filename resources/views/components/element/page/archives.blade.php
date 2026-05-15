@@ -21,9 +21,9 @@
     'containerWidth' => null,
     'loop',
     'results',
-    'showPageContent' => $widgetData['meta']['show_page_content'] ?? false,
-    'showPageTitle' => $widgetData['meta']['show_page_title'] ?? false,
-    'widget',
+    'showPageContent' => $elementData['meta']['show_page_content'] ?? false,
+    'showPageTitle' => $elementData['meta']['show_page_title'] ?? false,
+    'element',
 ])
 @php
     $archivePage ??= BlogLoader::getArchivePage($site, $language);
@@ -37,8 +37,8 @@
         $archives = BlogLoader::getArchives(
             site: $site,
             language: $language,
-            group: $widget->meta['page_group'] ?? BlogTypeGroupEnum::Article->value,
-            limit: $widget->meta['limit'] ?? config('capell-frontend.pagination_limit', 12),
+            group: $element->meta['page_group'] ?? BlogTypeGroupEnum::Article->value,
+            limit: $element->meta['limit'] ?? config('capell-frontend.pagination_limit', 12),
         );
     }
 
@@ -48,42 +48,42 @@
     }
 @endphp
 
-<x-capell-layout-builder::widget.wrapper
+<x-capell-layout-builder::element.wrapper
     :$container
     :$containerKey
     :$containerWidth
     :index="$loop->index"
-    :$widget
+    :$element
 >
     @php
-        $showTitle = $widget->getMeta("container_options.{$containerKey}.hide_title") !== true
-            && ($widget->translation?->title || ($showPageTitle && $page->translation->title));
-        $showContent = $widget->getMeta("container_options.{$containerKey}.hide_content") !== true
-            && ($widget->translation?->content || ($showPageContent && $page->translation->content));
+        $showTitle = $element->getMeta("container_options.{$containerKey}.hide_title") !== true
+            && ($element->translation?->title || ($showPageTitle && $page->translation->title));
+        $showContent = $element->getMeta("container_options.{$containerKey}.hide_content") !== true
+            && ($element->translation?->content || ($showPageContent && $page->translation->content));
     @endphp
 
     @if ($showTitle || $showContent)
         <x-capell::content
-            class="widget-content mb-6"
+            class="element-content mb-6"
             :compact="true"
-            :content="$showContent ? ($widget->translation->content ?: ($showPageContent ? $page->translation->content : null)) : null"
-            :content-type="$widget->type->content_structure"
-            :divider="$widget->getMeta('content_divider')"
+            :content="$showContent ? ($element->translation->content ?: ($showPageContent ? $page->translation->content : null)) : null"
+            :content-type="$element->type->content_structure"
+            :divider="$element->getMeta('content_divider')"
             :muted="in_array($containerKey, $theme->secondary_containers)"
-            :text-align="$widget->getMeta('align')"
-            :title="$showTitle ? ($widget->translation->title ?: ($showPageTitle ? $page->translation->title : null)) : null"
-            :heading-style="$widget->getMeta('heading_style')"
+            :text-align="$element->getMeta('align')"
+            :title="$showTitle ? ($element->translation->title ?: ($showPageTitle ? $page->translation->title : null)) : null"
+            :heading-style="$element->getMeta('heading_style')"
             :heading-tag="$showPageTitle ? 'h1' : null"
         />
     @endif
 
     @if ($archives?->isEmpty())
         <x-capell::no-results>
-            {{ $widget->translation->getMeta('no_results', __('capell-blog::messages.no_archives_found')) }}
+            {{ $element->translation->getMeta('no_results', __('capell-blog::messages.no_archives_found')) }}
         </x-capell::no-results>
     @else
         <ul
-            class="widget-archives-months @md:grid-cols-2 grid gap-x-6 divide-y divide-gray-100 dark:divide-gray-600"
+            class="element-archives-months @md:grid-cols-2 grid gap-x-6 divide-y divide-gray-100 dark:divide-gray-600"
         >
             @foreach ($archives as $archive)
                 @php
@@ -96,11 +96,11 @@
                     :count="$archive->total"
                     :active="$active"
                     size="sm"
-                    class="widget-archives-month px-2"
+                    class="element-archives-month px-2"
                 >
                     {{ Carbon\Carbon::create()->day(1)->month($archive->month)->year($archive->year)->format('F Y') }}
                 </x-capell::list.list-item>
             @endforeach
         </ul>
     @endif
-</x-capell-layout-builder::widget.wrapper>
+</x-capell-layout-builder::element.wrapper>

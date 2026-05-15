@@ -52,10 +52,10 @@ class ArticleMeta extends Component
         }
     }
 
-    public function render(): string|View|null
+    public function render(): string|View
     {
         if ($this->tags->isEmpty() && ($this->withAuthor && ! $this->author instanceof Model)) {
-            return null;
+            return '';
         }
 
         return view('capell-blog::components.article-meta', [

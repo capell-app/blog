@@ -20,7 +20,7 @@ use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Livewire\livewire;
 
 uses(CreatesAdminUser::class)
-    ->group('widget');
+    ->group('element');
 
 beforeEach(function (): void {
     test()->actingAsAdmin();
@@ -109,7 +109,7 @@ describe('from list article', function (): void {
 
         $newData = Article::factory()->recycle($site)->type($type)->make();
 
-        $blogCreator->createArticleLayout(createWidgets: false);
+        $blogCreator->createArticleLayout(createElements: false);
 
         livewire(ListArticles::class)
             ->assertSuccessful()
@@ -147,7 +147,7 @@ describe('from list article', function (): void {
         $blogCreator = resolve(BlogCreator::class);
 
         $type = $blogCreator->createArticlePageType();
-        $layout = $blogCreator->createArticleLayout(createWidgets: false);
+        $layout = $blogCreator->createArticleLayout(createElements: false);
 
         $language = Language::factory()->create();
         $site = Site::factory()->recycle($language)->hasSiteDomains()->create();

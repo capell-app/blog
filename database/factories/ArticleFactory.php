@@ -12,10 +12,10 @@ use Capell\Core\Database\Factories\Concerns\HasAdmin;
 use Capell\Core\Database\Factories\Concerns\HasFactoryPublishDates;
 use Capell\Core\Database\Factories\Concerns\HasMeta;
 use Capell\Core\Database\Factories\Concerns\HasTranslations;
-use Capell\Core\Enums\TypeEnum;
+use Capell\Core\Enums\BlueprintSubjectEnum;
+use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\Site;
-use Capell\Core\Models\Type;
 use Capell\Tags\Models\Tag;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -53,7 +53,7 @@ class ArticleFactory extends Factory
         return $this->set('site_id', $site instanceof Site ? $site->id : $site);
     }
 
-    public function type(Type $type): static
+    public function type(Blueprint $type): static
     {
         return $this->set('blueprint_id', $type->id);
     }
@@ -80,13 +80,13 @@ class ArticleFactory extends Factory
             ->firstOrFail();
     }
 
-    private function resolveArticlePageType(): Type
+    private function resolveArticlePageType(): Blueprint
     {
         EnsureArticlePublishingDefaultsAction::run();
 
-        return Type::query()
+        return Blueprint::query()
             ->where('key', BlogPageTypeEnum::Article->value)
-            ->where('type', TypeEnum::Page->value)
+            ->where('type', BlueprintSubjectEnum::Page->value)
             ->firstOrFail();
     }
 }

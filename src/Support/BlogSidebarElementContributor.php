@@ -5,32 +5,32 @@ declare(strict_types=1);
 namespace Capell\Blog\Support;
 
 use Capell\Core\Enums\LayoutEnum;
-use Capell\LayoutBuilder\Contracts\LayoutSidebarWidgetContributor;
-use Capell\LayoutBuilder\Data\LayoutSidebarWidgetData;
+use Capell\LayoutBuilder\Contracts\LayoutSidebarElementContributor;
+use Capell\LayoutBuilder\Data\LayoutSidebarElementData;
 
-class BlogSidebarWidgetContributor implements LayoutSidebarWidgetContributor
+class BlogSidebarElementContributor implements LayoutSidebarElementContributor
 {
-    public function sidebarWidgets(): array
+    public function sidebarElements(): array
     {
         return [
-            new LayoutSidebarWidgetData(
-                widgetKey: 'latest-articles',
+            new LayoutSidebarElementData(
+                elementKey: 'latest-articles',
                 layoutKeys: [
                     LayoutEnum::Default->value,
                     LayoutEnum::Results->value,
                 ],
                 meta: ['hide_no_results' => true],
             ),
-            new LayoutSidebarWidgetData(
-                widgetKey: 'tags',
+            new LayoutSidebarElementData(
+                elementKey: 'tags',
                 layoutKeys: [
                     LayoutEnum::Default->value,
                     LayoutEnum::Results->value,
                 ],
                 meta: ['hide_no_results' => true],
             ),
-            new LayoutSidebarWidgetData(
-                widgetKey: 'archives',
+            new LayoutSidebarElementData(
+                elementKey: 'archives',
                 layoutKeys: [
                     LayoutEnum::Results->value,
                 ],

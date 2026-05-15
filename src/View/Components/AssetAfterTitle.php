@@ -19,13 +19,13 @@ class AssetAfterTitle extends Component
         public ?Closure $publishDateOutput = null,
     ) {}
 
-    public function render(): ?View
+    public function render(): View|string
     {
         if (
             (! $this->publishDate instanceof DateTimeImmutable || $this->publishDatePosition !== 'bottom')
             && ! $this->tags?->isNotEmpty()
         ) {
-            return null;
+            return '';
         }
 
         return view('capell-blog::hooks.asset-after-title', [

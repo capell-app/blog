@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Capell\Blog\Filament\Configurators\Widgets;
+namespace Capell\Blog\Filament\Configurators\Elements;
 
 use Capell\Admin\Filament\Components\Forms\CacheFrequencySelect;
 use Capell\Admin\Filament\Components\Forms\FixedWidthSidebar;
-use Capell\Core\Models\Type;
-use Capell\LayoutBuilder\Filament\Components\Forms\Widget\ComponentSection;
-use Capell\LayoutBuilder\Filament\Components\Forms\Widget\CreateDetailsSchema;
-use Capell\LayoutBuilder\Filament\Components\Forms\Widget\DisplaySection;
-use Capell\LayoutBuilder\Filament\Components\Forms\Widget\ResultsSchema;
-use Capell\LayoutBuilder\Filament\Components\Forms\Widget\SettingsSchema;
-use Capell\LayoutBuilder\Filament\Components\Forms\Widget\Tab\WidgetAdminTab;
-use Capell\LayoutBuilder\Filament\Components\Forms\Widget\Tab\WidgetDisplayTab;
-use Capell\LayoutBuilder\Filament\Components\Forms\Widget\TranslationsRepeater;
-use Capell\LayoutBuilder\Filament\Configurators\Widgets\DefaultWidgetConfigurator;
+use Capell\Core\Models\Blueprint;
+use Capell\LayoutBuilder\Filament\Components\Forms\Element\ComponentSection;
+use Capell\LayoutBuilder\Filament\Components\Forms\Element\CreateDetailsSchema;
+use Capell\LayoutBuilder\Filament\Components\Forms\Element\DisplaySection;
+use Capell\LayoutBuilder\Filament\Components\Forms\Element\ResultsSchema;
+use Capell\LayoutBuilder\Filament\Components\Forms\Element\SettingsSchema;
+use Capell\LayoutBuilder\Filament\Components\Forms\Element\Tab\ElementAdminTab;
+use Capell\LayoutBuilder\Filament\Components\Forms\Element\Tab\ElementDisplayTab;
+use Capell\LayoutBuilder\Filament\Components\Forms\Element\TranslationsRepeater;
+use Capell\LayoutBuilder\Filament\Configurators\Elements\DefaultElementConfigurator;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -27,7 +27,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Override;
 
-class RelatedWidgetConfigurator extends DefaultWidgetConfigurator
+class RelatedElementConfigurator extends DefaultElementConfigurator
 {
     #[Override]
     public function make(Schema $configurator): array
@@ -71,7 +71,7 @@ class RelatedWidgetConfigurator extends DefaultWidgetConfigurator
                 ->visibleOn('edit')
                 ->columnSpanFull()
                 ->tabs([
-                    WidgetDisplayTab::make([
+                    ElementDisplayTab::make([
                         DisplaySection::make([
                             Group::make([
                                 Checkbox::make('exclude_parent')
@@ -82,8 +82,8 @@ class RelatedWidgetConfigurator extends DefaultWidgetConfigurator
                                     ->multiple()
                                     ->options(
                                         function (): array {
-                                            /** @var class-string<Type> $model */
-                                            $model = Type::class;
+                                            /** @var class-string<Blueprint> $model */
+                                            $model = Blueprint::class;
 
                                             return $model::query()
                                                 ->pageType()
@@ -106,7 +106,7 @@ class RelatedWidgetConfigurator extends DefaultWidgetConfigurator
                         ComponentSection::make()
                             ->statePath('meta'),
                     ]),
-                    WidgetAdminTab::make(),
+                    ElementAdminTab::make(),
                 ]),
         ];
     }

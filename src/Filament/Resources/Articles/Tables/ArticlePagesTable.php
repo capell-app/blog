@@ -7,13 +7,13 @@ namespace Capell\Blog\Filament\Resources\Articles\Tables;
 use Capell\Admin\Enums\FilamentColorEnum;
 use Capell\Admin\Filament\Actions\Table\ReplicatePageAction;
 use Capell\Admin\Filament\Components\Tables\Actions\EditAction;
+use Capell\Admin\Filament\Components\Tables\Columns\BlueprintColumn;
 use Capell\Admin\Filament\Components\Tables\Columns\DateColumn;
 use Capell\Admin\Filament\Components\Tables\Columns\IdentifierColumn;
 use Capell\Admin\Filament\Components\Tables\Columns\LanguagesColumn;
 use Capell\Admin\Filament\Components\Tables\Columns\MediaLibraryImageColumn;
 use Capell\Admin\Filament\Components\Tables\Columns\Page\PageNameColumn;
 use Capell\Admin\Filament\Components\Tables\Columns\SiteColumn;
-use Capell\Admin\Filament\Components\Tables\Columns\TypeColumn;
 use Capell\Admin\Filament\Components\Tables\Filters\DateFilter;
 use Capell\Admin\Filament\Contracts\HasPageResource;
 use Capell\Admin\Filament\Contracts\TableConfigurator;
@@ -221,7 +221,7 @@ class ArticlePagesTable implements TableConfigurator
                 ->color(FilamentColorEnum::LightGray->value)
                 ->toggleable()
                 ->width(0),
-            TypeColumn::make('type.name')
+            BlueprintColumn::make('type.name')
                 ->toggleable(isToggledHiddenByDefault: true),
             TextColumn::make('creator.name')
                 ->label(__('capell-admin::table.created_by'))

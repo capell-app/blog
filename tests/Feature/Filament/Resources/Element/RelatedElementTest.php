@@ -3,30 +3,30 @@
 declare(strict_types=1);
 
 use Capell\Blog\Support\Creator\BlogCreator;
-use Capell\Core\Models\Type;
-use Capell\Core\Models\Widget;
-use Capell\LayoutBuilder\Filament\Resources\Widgets\Pages\EditWidget;
+use Capell\Core\Models\Blueprint;
+use Capell\LayoutBuilder\Filament\Resources\Elements\Pages\EditElement;
+use Capell\LayoutBuilder\Models\Element;
 use Capell\Tests\Support\Concerns\CreatesAdminUser;
 
 use function Pest\Livewire\livewire;
 
 uses(CreatesAdminUser::class)
-    ->group('widget');
+    ->group('element');
 
 beforeEach(function (): void {
     test()->actingAsAdmin();
 });
 
-test('can edit related widget', function (): void {
+test('can edit related element', function (): void {
     $typeCreator = new BlogCreator;
-    $widget = $typeCreator->relatedArticlesWidget();
+    $element = $typeCreator->relatedArticlesElement();
 
-    $newData = Widget::factory()->make();
+    $newData = Element::factory()->make();
 
-    Type::factory()->page()->state(['key' => 'home'])->create();
+    Blueprint::factory()->page()->state(['key' => 'home'])->create();
 
-    livewire(EditWidget::class, [
-        'record' => $widget->getRouteKey(),
+    livewire(EditElement::class, [
+        'record' => $element->getRouteKey(),
     ])
         ->assertSuccessful()
         ->fillForm([
@@ -42,7 +42,7 @@ test('can edit related widget', function (): void {
         ->call('save')
         ->assertHasNoFormErrors();
 
-    expect($widget->refresh())
+    expect($element->refresh())
         ->name->toBe($newData->name)
         ->key->toBe($newData->key);
 });

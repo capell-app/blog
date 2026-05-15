@@ -10,8 +10,8 @@ use Capell\Core\Models\Layout;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\Translation;
-use Capell\LayoutBuilder\Actions\AddHeroWidgetToLayoutAction;
-use Capell\LayoutBuilder\Actions\CreateHeroWidgetAction;
+use Capell\LayoutBuilder\Actions\AddHeroElementToLayoutAction;
+use Capell\LayoutBuilder\Actions\CreateHeroElementAction;
 use Capell\LayoutBuilder\Support\Creator\DemoCreator;
 use Capell\LayoutBuilder\Support\Creator\TypeCreator;
 use Lorisleiva\Actions\Concerns\AsAction;
@@ -23,15 +23,15 @@ final class CreateBlogHeroDemoContentAction
     public function handle(Site $site): void
     {
         $blogPage = $this->blogPage($site);
-        $blogHeroWidget = CreateHeroWidgetAction::run('blog-hero', __('capell-blog::generic.blog'));
-        CreateHeroWidgetAction::run('article-hero', __('capell-blog::generic.article'));
+        $blogHeroElement = CreateHeroElementAction::run('blog-hero', __('capell-blog::generic.blog'));
+        CreateHeroElementAction::run('article-hero', __('capell-blog::generic.article'));
 
         if ($blogPage instanceof Page && $blogPage->layout instanceof Layout) {
-            AddHeroWidgetToLayoutAction::run($blogHeroWidget, $blogPage->layout);
+            AddHeroElementToLayoutAction::run($blogHeroElement, $blogPage->layout);
 
             if (CapellCore::hasAsset('Section')) {
                 resolve(TypeCreator::class)->createDefaultContentType();
-                resolve(DemoCreator::class)->createContentsWidget($blogHeroWidget, $blogPage, 'hero');
+                resolve(DemoCreator::class)->createContentsElement($blogHeroElement, $blogPage, 'hero');
             }
 
             $this->applyBlogHeroMeta($blogPage);

@@ -1,11 +1,11 @@
 ---
 name: blog
-description: Use when editing Capell Blog articles, archives, tag pages, widgets, or sitemaps.
+description: Use when editing Capell Blog articles, archives, tag pages, elements, or sitemaps.
 ---
 
 # Capell Blog
 
-Article publishing, archive/tag pages, LayoutBuilder article widgets, and blog sitemaps.
+Article publishing, archive/tag pages, LayoutBuilder article elements, and blog sitemaps.
 
 ## Look
 
@@ -15,7 +15,7 @@ Article publishing, archive/tag pages, LayoutBuilder article widgets, and blog s
 
 ## Rules
 
-- Blog depends on LayoutBuilder; do not move widget logic into Core.
+- Blog depends on LayoutBuilder; do not move element logic into Core.
 - Keep article publishing actions separate from Filament pages.
 - Preserve sitemap and frontend Livewire behaviour when changing slugs.
 - Run `vendor/bin/pest packages/blog/tests`.

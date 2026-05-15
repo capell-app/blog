@@ -24,7 +24,7 @@ test('tag page list articles by tag', function (): void {
     $site = Site::factory()->recycle($language)->withTranslations()->create();
 
     $blogPage = $blogCreator->createBlogPage($site);
-    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createWidgets: true);
+    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createElements: true);
     $tagPage = $blogCreator->createTagPage($site, $tagsPage);
 
     $tag = Tag::factory()->translate($language)->type(TagTypeEnum::Page)->create();
@@ -51,11 +51,11 @@ test('tag page list articles by tag', function (): void {
     $title = trans($tagPage->translation->title, ['tag_name' => $tag->translate('name', $language->code)]);
 
     $containers = $tagPage->layout->getAttribute('containers');
-    $containerWidgets = collect($containers)->pluck('widgets.*.widget_key')->flatten()->filter()->toArray();
+    $containerElements = collect($containers)->pluck('elements.*.element_key')->flatten()->filter()->toArray();
 
     expect($tagPage)
         ->translation->title->toBe(':Tag_name Articles')
-        ->and($containerWidgets)->toContain('breadcrumbs')
+        ->and($containerElements)->toContain('breadcrumbs')
         ->and($articles)->toHaveCount(5);
 
     $response = get($tag->getUrl($tagPage, $language))
@@ -104,7 +104,7 @@ test('tag page list articles by tag', function (): void {
         ->not->toContain($title);
 
     $headingClasses = collect((new DOMXPath($document))->query('//*[self::h1 or self::h2 or self::h3 or self::h4][contains(concat(" ", normalize-space(@class), " "), " not-prose ")]'))
-        ->map(fn (DOMElement $heading): string => (string) $heading->getAttribute('class'));
+        ->map(fn (DOMElement $heading): string => $heading->getAttribute('class'));
 
     $headingClasses->each(function (string $class): void {
         expect(preg_match_all('/(?:^|\s)(?:\\S+:)?text-(?:base|lg|xl|2xl|3xl|4xl)(?:\s|$)/', $class))
@@ -119,7 +119,7 @@ test('tag page resolves site tag before global tag with same slug', function ():
     $site = Site::factory()->recycle($language)->withTranslations()->create();
 
     $blogPage = $blogCreator->createBlogPage($site);
-    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createWidgets: true);
+    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createElements: true);
     $tagPage = $blogCreator->createTagPage($site, $tagsPage);
 
     $slug = 'shared-topic';

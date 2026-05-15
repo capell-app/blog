@@ -7,7 +7,7 @@ use Capell\Blog\Models\Article;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
-use Capell\Core\Models\Widget;
+use Capell\LayoutBuilder\Models\Element;
 use Capell\Tags\Enums\TagTypeEnum;
 use Capell\Tags\Models\Tag;
 use Illuminate\Console\Command;
@@ -87,8 +87,8 @@ it('runs demo command and creates articles and tags for the site', function (): 
 
     expect($blogPage)->not()->toBeNull()
         ->and($blogPage->layout?->containers)->toHaveKey('hero')
-        ->and(Widget::query()->where('key', 'blog-hero')->exists())->toBeTrue()
-        ->and(Widget::query()->where('key', 'article-hero')->exists())->toBeTrue();
+        ->and(Element::query()->where('key', 'blog-hero')->exists())->toBeTrue()
+        ->and(Element::query()->where('key', 'article-hero')->exists())->toBeTrue();
 
     $blogPage->translations->each(function ($translation): void {
         expect($translation->meta['hero'] ?? null)->toContain(__('capell-blog::generic.latest_articles'));
