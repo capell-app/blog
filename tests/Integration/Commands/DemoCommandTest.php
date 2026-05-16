@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use Capell\Blog\Enums\BlogPageTypeEnum;
+use Capell\Blog\Enums\LivewirePageComponentEnum;
 use Capell\Blog\Models\Article;
+use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
@@ -11,10 +13,31 @@ use Capell\LayoutBuilder\Models\Element;
 use Capell\Tags\Enums\TagTypeEnum;
 use Capell\Tags\Models\Tag;
 use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 
 use function Pest\Laravel\artisan;
+
+it('registers blog model aliases before demo content is created', function (): void {
+    $originalMorphMap = Relation::morphMap();
+    $morphMapWithoutArticle = array_filter(
+        $originalMorphMap,
+        fn (string $modelClass): bool => $modelClass !== Article::class,
+    );
+
+    Relation::morphMap($morphMapWithoutArticle, merge: false);
+
+    artisan('capell:blog-demo', [
+        '--sites' => 'Missing Site',
+    ])
+        ->expectsOutput('Unable to find any sites for: Missing Site')
+        ->assertExitCode(Command::FAILURE);
+
+    expect(Relation::morphMap())->toHaveKey('article', Article::class);
+
+    Relation::morphMap($originalMorphMap, merge: false);
+});
 
 it('runs demo command and creates articles and tags for the site', function (): void {
     $capellDirectory = storage_path('app/capell');
@@ -56,10 +79,23 @@ it('runs demo command and creates articles and tags for the site', function (): 
     $articles = $articleModel::query()
         ->where('site_id', $site->id)
         ->whereRelation('type', 'key', BlogPageTypeEnum::Article->value)
-        ->with(['tags', 'translations'])
+        ->with(['pageUrl', 'tags', 'translations'])
         ->get();
 
     expect($articles)->toHaveCount(2);
+
+    $articles->each(function (Article $article): void {
+        expect($article->pageUrl)->not()->toBeNull()
+            ->and($article->pageUrl?->url)->toStartWith('/blog/');
+    });
+
+    $archiveType = Blueprint::query()
+        ->where('key', BlogPageTypeEnum::Archive->value)
+        ->pageType()
+        ->first();
+
+    expect($archiveType?->component)->toBe(LivewirePageComponentEnum::ArchivePage->value)
+        ->and($archiveType?->is_livewire)->toBeTrue();
 
     $articlesWithTagsCount = $articles
         ->filter(fn (Article $article): bool => $article->tags->isNotEmpty())

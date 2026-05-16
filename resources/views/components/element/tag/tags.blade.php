@@ -33,14 +33,14 @@
     $tagPage ??= TagLoader::getTagResultsPage($site, $language);
 @endphp
 
-<x-capell-layout-builder::element.wrapper
-    class="element-tags"
+<x-capell-layout-builder::widget.wrapper
+    class="element element-{{ $element->key }} element-tags"
     :$container
     :$containerKey
     :$containerWidth
     :$containerWidth
     :index="$loop->index"
-    :$element
+    :widget="$element"
 >
     @php
         $showTitle = $element->getMeta("container_options.{$containerKey}.hide_title") !== true
@@ -89,4 +89,4 @@
             :scrollToElement="$containerKey . '-' . $element->key . '-' . $loop->index"
         />
     @endif
-</x-capell-layout-builder::element.wrapper>
+</x-capell-layout-builder::widget.wrapper>

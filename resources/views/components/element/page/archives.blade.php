@@ -48,12 +48,13 @@
     }
 @endphp
 
-<x-capell-layout-builder::element.wrapper
+<x-capell-layout-builder::widget.wrapper
+    class="element element-{{ $element->key }}"
     :$container
     :$containerKey
     :$containerWidth
     :index="$loop->index"
-    :$element
+    :widget="$element"
 >
     @php
         $showTitle = $element->getMeta("container_options.{$containerKey}.hide_title") !== true
@@ -103,4 +104,4 @@
             @endforeach
         </ul>
     @endif
-</x-capell-layout-builder::element.wrapper>
+</x-capell-layout-builder::widget.wrapper>

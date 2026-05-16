@@ -40,6 +40,8 @@ use Spatie\LaravelPackageTools\Package;
 
 class BlogServiceProvider extends AbstractPackageServiceProvider
 {
+    private const LAYOUT_SIDEBAR_ELEMENT_CONTRIBUTOR = LayoutSidebarElementContributor::class;
+
     public static string $name = 'capell-blog';
 
     public static string $packageName = 'capell-app/blog';
@@ -56,7 +58,10 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
     {
         $this->app->register(AdminServiceProvider::class);
         $this->app->register(ConsoleServiceProvider::class);
-        $this->app->tag([BlogSidebarElementContributor::class], LayoutSidebarElementContributor::TAG);
+
+        if (interface_exists(self::LAYOUT_SIDEBAR_ELEMENT_CONTRIBUTOR)) {
+            $this->app->tag([BlogSidebarElementContributor::class], self::LAYOUT_SIDEBAR_ELEMENT_CONTRIBUTOR::TAG);
+        }
 
         $this->app->booting(function (): void {
             if ($this->isPackageInstalled()) {
@@ -152,7 +157,15 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
 
     private function registerBlazeComponents(): self
     {
-        RegisterBlazeOptimizedViewsAction::run(__DIR__ . '/../../resources/views/components');
+        foreach ([
+            __DIR__ . '/../../resources/views/components/article-meta.blade.php',
+            __DIR__ . '/../../resources/views/components/asset-after-title.blade.php',
+            __DIR__ . '/../../resources/views/components/footer',
+            __DIR__ . '/../../resources/views/components/page',
+            __DIR__ . '/../../resources/views/components/tag.blade.php',
+        ] as $path) {
+            RegisterBlazeOptimizedViewsAction::run($path);
+        }
 
         return $this;
     }
@@ -210,7 +223,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
         foreach (ElementComponentEnum::cases() as $elementComponent) {
             $registry->register(new RenderableDefinitionData(
                 key: $elementComponent->value,
-                type: RenderableTypeEnum::Widget,
+                type: RenderableTypeEnum::Element,
                 blade: $elementComponent->value,
             ));
         }

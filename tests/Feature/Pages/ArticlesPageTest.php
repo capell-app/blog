@@ -251,7 +251,11 @@ test('articles pagination', function (): void {
         ->sequence(fn ($sequence): array => ['visible_from' => CarbonImmutable::now()->subDays($sequence->index)])
         ->create();
 
-    $orderedArticles = Article::query()->with(['translation'])->whereKey($articles->pluck('id'))->publishedLatest()->get();
+    $orderedArticles = Article::query()
+        ->with('translation')
+        ->whereKey($articles->pluck('id'))
+        ->publishedLatest()
+        ->get();
 
     $this->shownArticles = 0;
 

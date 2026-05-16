@@ -11,6 +11,8 @@ use Capell\Blog\Observers\ArticleObserver;
 use Capell\Blog\Support\Loader\BlogLoader;
 use Capell\Core\Concerns\HasCapellMedia;
 use Capell\Core\Contracts\Pageable;
+use Capell\Core\Enums\BlueprintGroupEnum;
+use Capell\Core\Enums\BlueprintSubjectEnum;
 use Capell\Core\Enums\MediaCollectionEnum;
 use Capell\Core\Enums\PageOrderEnum;
 use Capell\Core\Models\Blueprint;
@@ -32,6 +34,7 @@ use Capell\Core\Models\Language;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\PageUrl;
 use Capell\Core\Models\Site;
+use Capell\Core\Models\Translation;
 use Capell\PublishingStudio\BelongsToWorkspace;
 use Capell\Tags\Models\Concerns\HasTags;
 use Carbon\CarbonImmutable;
@@ -41,6 +44,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -52,6 +56,9 @@ use Spatie\MediaLibrary\HasMedia;
 use Staudenmeir\EloquentJsonRelations\HasJsonRelationships;
 use Staudenmeir\EloquentJsonRelations\Relations\BelongsToJson;
 
+/**
+ * @method HasOne|MorphOne translation()
+ */
 #[ObservedBy(ArticleObserver::class)]
 class Article extends Model implements HasMedia, Pageable, Publishable, Translatable, Typeable, Userstampable
 {
@@ -103,10 +110,24 @@ class Article extends Model implements HasMedia, Pageable, Publishable, Translat
     public static function getDefaultType(?string $group): ?Blueprint
     {
         return Blueprint::query()
-            ->pageType()
-            ->when($group !== null, fn (Builder $query): Builder => $query->adminResource($group))
+            ->where('type', BlueprintSubjectEnum::Page)
+            ->when(
+                $group !== null,
+                fn (Builder $query): Builder => in_array($group, ['page', 'default'], true)
+                    ? $query->where(
+                        fn (Builder $query): Builder => $query
+                            ->whereNull('group')
+                            ->orWhereIn('group', [
+                                BlueprintGroupEnum::Default->value,
+                                BlueprintGroupEnum::System->value,
+                            ]),
+                    )
+                    : $query->where('group', $group),
+            )
             ->where('key', BlogPageTypeEnum::Article->value)
-            ->ordered()
+            ->orderBy('order')
+            ->orderBy('default', 'desc')
+            ->orderBy('name')
             ->first();
     }
 
@@ -166,6 +187,17 @@ class Article extends Model implements HasMedia, Pageable, Publishable, Translat
     public function layout(): BelongsTo
     {
         return $this->belongsTo(Layout::class);
+    }
+
+    public function translation(): HasOne|MorphOne
+    {
+        $relation = $this->morphOne(Translation::class, 'translatable');
+
+        if (method_exists($relation, 'chaperone')) {
+            $relation->chaperone('translatable');
+        }
+
+        return $relation;
     }
 
     /** @return BelongsTo<Site, $this> */

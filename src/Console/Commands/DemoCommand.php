@@ -10,6 +10,7 @@ use Capell\Blog\Actions\EnsureArticlePublishingDefaultsAction;
 use Capell\Blog\Enums\BlogLayoutEnum;
 use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Models\Article;
+use Capell\Blog\Support\BlogModelRegistrar;
 use Capell\Blog\Support\Creator\ArticleCreator;
 use Capell\Core\Contracts\Pageable;
 use Capell\Core\Enums\BlueprintSubjectEnum;
@@ -46,6 +47,8 @@ class DemoCommand extends Command
 
     public function handle(): int
     {
+        BlogModelRegistrar::register();
+
         $siteNames = $this->parseSitesOption();
 
         if ($siteNames === []) {

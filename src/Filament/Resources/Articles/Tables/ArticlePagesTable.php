@@ -103,6 +103,7 @@ class ArticlePagesTable implements TableConfigurator
             ->whereHas('site', fn (BuilderContract $query): BuilderContract => $query->withTrashed())
             ->whereHas('type')
             ->with([
+                'blueprint',
                 'canonicalPage',
                 'creator',
                 'editor',

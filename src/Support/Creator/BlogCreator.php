@@ -61,7 +61,7 @@ class BlogCreator
         /** @var class-string<Blueprint> $typeMode */
         $typeMode = Blueprint::class;
 
-        return $typeMode::query()->firstOrCreate([
+        $blueprint = $typeMode::query()->firstOrCreate([
             'key' => BlogPageTypeEnum::Tag->value,
             'type' => BlueprintSubjectEnum::Page,
         ], [
@@ -87,6 +87,27 @@ class BlogCreator
                 'with_summary' => true,
             ],
         ]);
+
+        $blueprint->forceFill([
+            'component' => LivewirePageComponentEnum::TagPage->value,
+            'is_livewire' => true,
+            'meta' => [
+                ...($blueprint->meta ?? []),
+                'accessible' => false,
+                'component' => LivewirePageComponentEnum::TagPage->value,
+                'livewire' => true,
+                'limit' => 10,
+                'listable' => false,
+                'pagination' => true,
+                'rendering_strategy' => RenderingStrategyEnum::FullLivewire->value,
+                'url_params' => ['tag' => UrlParamTypeEnum::String->value],
+                'with_date' => true,
+                'with_image' => true,
+                'with_summary' => true,
+            ],
+        ])->save();
+
+        return $blueprint;
     }
 
     public function createTagPage(Site $site, ?Page $parent = null, ?Collection $languages = null, ?Blueprint $type = null, ?Layout $layout = null): Page
@@ -109,6 +130,12 @@ class BlogCreator
         ], [
             'name' => __('capell-blog::generic.tag_page'),
         ]);
+
+        $page->meta = [
+            ...($page->meta ?? []),
+            'component' => LivewirePageComponentEnum::TagPage->value,
+            'rendering_strategy' => RenderingStrategyEnum::FullLivewire->value,
+        ];
 
         $page->save();
 
@@ -245,7 +272,7 @@ class BlogCreator
 
     public function createArchivePageType(): Blueprint
     {
-        return Blueprint::query()->firstOrCreate([
+        $blueprint = Blueprint::query()->firstOrCreate([
             'key' => BlogPageTypeEnum::Archive->value,
             'type' => BlueprintSubjectEnum::Page,
         ], [
@@ -259,7 +286,7 @@ class BlogCreator
             ],
             'meta' => [
                 'accessible' => false,
-                'component' => LivewirePageComponentEnum::ArchivePage,
+                'component' => LivewirePageComponentEnum::ArchivePage->value,
                 'livewire' => true,
                 'hidden_from_selection' => true,
                 'limit' => 10,
@@ -272,6 +299,36 @@ class BlogCreator
                 'with_summary' => true,
             ],
         ]);
+
+        $blueprint->forceFill([
+            'component' => LivewirePageComponentEnum::ArchivePage->value,
+            'name' => __('capell-blog::generic.blog_archive_page'),
+            'group' => BlueprintGroupEnum::System->value,
+            'is_livewire' => true,
+            'admin' => [
+                'type_configurator' => PageTypeConfigurator::getKey(),
+                'configurator' => ResultsPageConfigurator::getKey(),
+                'icon' => 'heroicon-o-archive-box',
+                'required_fields' => ['title'],
+            ],
+            'meta' => [
+                ...($blueprint->meta ?? []),
+                'accessible' => false,
+                'component' => LivewirePageComponentEnum::ArchivePage->value,
+                'livewire' => true,
+                'hidden_from_selection' => true,
+                'limit' => 10,
+                'listable' => false,
+                'pagination' => true,
+                'rendering_strategy' => RenderingStrategyEnum::FullLivewire->value,
+                'url_params' => ['date' => UrlParamTypeEnum::String->value],
+                'with_date' => true,
+                'with_image' => true,
+                'with_summary' => true,
+            ],
+        ])->save();
+
+        return $blueprint;
     }
 
     public function createArchivesLayout(): Layout
@@ -318,7 +375,7 @@ class BlogCreator
                 ],
                 'elements' => [
                     ['element_key' => 'breadcrumbs'],
-                    ['element_key' => 'page-content'],
+                    ['element_key' => 'page-content', 'meta' => ['show_page_title' => true]],
                     ['element_key' => 'page-slot'],
                 ],
             ],
@@ -405,6 +462,11 @@ class BlogCreator
             ],
         ]);
 
+        $element->forceFill([
+            'component' => BlogElementComponentEnum::Archives->value,
+            'is_livewire' => false,
+        ])->save();
+
         $languages->each(function (Language $language) use ($element): void {
             $element->translations()->firstOrCreate([
                 'language_id' => $language->id,
@@ -440,6 +502,11 @@ class BlogCreator
                 'icon' => 'heroicon-' . Heroicon::OutlinedTag->value,
             ],
         ]);
+
+        $element->forceFill([
+            'component' => BlogElementComponentEnum::Tags->value,
+            'is_livewire' => false,
+        ])->save();
 
         $languages->each(function (Language $language) use ($element): void {
             $element->translations()->firstOrCreate([
@@ -581,7 +648,7 @@ class BlogCreator
 
     public function createArticleElement(Blueprint $type): Element
     {
-        return Element::query()->firstOrCreate([
+        $element = Element::query()->firstOrCreate([
             'key' => 'article',
         ], [
             'name' => __('capell-blog::generic.article'),
@@ -592,6 +659,13 @@ class BlogCreator
                 'with_next_prev' => true,
             ],
         ]);
+
+        $element->forceFill([
+            'component' => BlogElementComponentEnum::Article->value,
+            'is_livewire' => false,
+        ])->save();
+
+        return $element;
     }
 
     public function relatedArticlesElement(?Blueprint $type = null, ?Collection $languages = null): Element
@@ -628,6 +702,11 @@ class BlogCreator
                 'configurator' => ElementConfiguratorEnum::Related->name,
             ],
         ]);
+
+        $element->forceFill([
+            'component' => BlogElementComponentEnum::PageRelated->value,
+            'is_livewire' => false,
+        ])->save();
 
         $languages->each(function (Language $language) use ($element): void {
             $element->translations()->firstOrCreate([
@@ -688,7 +767,11 @@ class BlogCreator
             'blueprint_id' => $type->id,
         ]);
 
-        $page->mergeMeta($meta);
+        $page->mergeMeta([
+            ...$meta,
+            'component' => LivewirePageComponentEnum::BlogPage->value,
+            'rendering_strategy' => RenderingStrategyEnum::FullLivewire->value,
+        ]);
 
         $page->forceFill([
             'name' => __('capell-blog::generic.blog'),
@@ -716,7 +799,7 @@ class BlogCreator
 
     public function createBlogPageType(): Blueprint
     {
-        return Blueprint::query()->firstOrCreate([
+        $blueprint = Blueprint::query()->firstOrCreate([
             'key' => BlogPageTypeEnum::Blog->value,
             'type' => BlueprintSubjectEnum::Page,
         ], [
@@ -745,6 +828,29 @@ class BlogCreator
                 'with_summary' => true,
             ],
         ]);
+
+        $blueprint->forceFill([
+            'component' => LivewirePageComponentEnum::BlogPage->value,
+            'is_livewire' => true,
+            'meta' => [
+                ...($blueprint->meta ?? []),
+                'component' => LivewirePageComponentEnum::BlogPage->value,
+                'livewire' => true,
+                'exclude_parent' => true,
+                'limit' => 10,
+                'listable' => false,
+                'page_group' => strtolower(ResourceEnum::Article->name),
+                'pagination' => true,
+                'rendering_strategy' => RenderingStrategyEnum::FullLivewire->value,
+                'sitemap' => true,
+                'url_params' => ['page' => UrlParamTypeEnum::Int->value],
+                'with_date' => true,
+                'with_image' => true,
+                'with_summary' => true,
+            ],
+        ])->save();
+
+        return $blueprint;
     }
 
     public function createLatestArticlesElement(?Collection $languages = null): Element
@@ -778,6 +884,11 @@ class BlogCreator
                 'icon' => 'heroicon-o-newspaper',
             ],
         ]);
+
+        $element->forceFill([
+            'component' => LivewireComponentsEnum::PagesElement->value,
+            'is_livewire' => true,
+        ])->save();
 
         $languages->each(function (Language $language) use ($element): void {
             $element->translations()->firstOrCreate([
@@ -833,11 +944,6 @@ class BlogCreator
     private function getResultsLayout(): Layout
     {
         $layout = $this->getLayout(LayoutEnum::Results);
-        $containers = $layout->getAttribute('containers');
-
-        if (is_array($containers) && $containers !== []) {
-            return $layout;
-        }
 
         $elementCreator = resolve(ElementCreator::class);
         $elementCreator->breadcrumbElement();
@@ -870,10 +976,10 @@ class BlogCreator
             ],
         ];
 
-        $layout->update([
+        $layout->forceFill([
             'containers' => $containers,
             'elements' => $this->elementKeys($containers),
-        ]);
+        ])->save();
 
         return $layout;
     }

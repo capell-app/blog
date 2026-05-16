@@ -17,7 +17,6 @@ use Capell\Blog\Listeners\AddBlogPagesToNavigation;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Site;
 use Capell\LayoutBuilder\Enums\ComponentTypeEnum;
-use Capell\LayoutBuilder\Enums\ConfiguratorTypeEnum as LayoutSchemaEnum;
 use Capell\Navigation\Events\NavigationCreating;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
@@ -25,6 +24,10 @@ use Illuminate\Support\ServiceProvider;
 
 final class AdminServiceProvider extends ServiceProvider
 {
+    private const LAYOUT_BUILDER_COMPONENT_TYPE_ENUM = ComponentTypeEnum::class;
+
+    private const LAYOUT_BUILDER_CONFIGURATOR_TYPE_ENUM = \Capell\LayoutBuilder\Enums\ConfiguratorTypeEnum::class;
+
     public function register(): void
     {
         //
@@ -59,7 +62,11 @@ final class AdminServiceProvider extends ServiceProvider
 
     private function registerElementComponents(): void
     {
-        CapellCore::registerComponents(ComponentTypeEnum::Element->name, ElementComponentEnum::cases());
+        if (! enum_exists(self::LAYOUT_BUILDER_COMPONENT_TYPE_ENUM)) {
+            return;
+        }
+
+        CapellCore::registerComponents(self::LAYOUT_BUILDER_COMPONENT_TYPE_ENUM::Element->name, ElementComponentEnum::cases());
     }
 
     private function registerConfigurators(): void
@@ -70,12 +77,20 @@ final class AdminServiceProvider extends ServiceProvider
             name: ArticlePageConfigurator::getKey(),
         ));
 
+        if (! enum_exists(self::LAYOUT_BUILDER_CONFIGURATOR_TYPE_ENUM)) {
+            return;
+        }
+
         foreach (ElementConfiguratorEnum::cases() as $configurator) {
             $configuratorClass = $configurator->value;
 
+            if (! class_exists($configuratorClass)) {
+                continue;
+            }
+
             CapellAdmin::contributeToAdminSurface(AdminSurfaceContributionData::configurator(
                 class: $configuratorClass,
-                group: LayoutSchemaEnum::Element->value,
+                group: self::LAYOUT_BUILDER_CONFIGURATOR_TYPE_ENUM::Element->value,
                 name: $configuratorClass::getKey(),
             ));
         }

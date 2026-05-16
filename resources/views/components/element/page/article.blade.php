@@ -46,12 +46,13 @@
     }
 @endphp
 
-<x-capell-layout-builder::element.wrapper
+<x-capell-layout-builder::widget.wrapper
+    class="element element-{{ $element->key }}"
     :$container
     :$containerKey
     :$containerWidth
     :index="$loop->index"
-    :$element
+    :widget="$element"
     container-class="flex flex-col gap-6"
 >
     <div class="grid">
@@ -121,4 +122,4 @@
             @endif
         </div>
     @endif
-</x-capell-layout-builder::element.wrapper>
+</x-capell-layout-builder::widget.wrapper>

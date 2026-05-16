@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Capell\Blog\Support\Creator;
 
 use Capell\Blog\Models\Article;
+use Capell\Core\Actions\UpdatePageUrlAction;
 use Capell\Core\Contracts\ModelInterceptors\PageInterceptorInterface;
 use Capell\Core\Contracts\Pageable;
 use Capell\Core\Enums\LayoutEnum;
@@ -84,6 +85,8 @@ class ArticleCreator extends PageCreator
             }
 
             $translation->save();
+
+            UpdatePageUrlAction::run($page->site, $translation, $page->getParentUrl($language));
         });
 
         return $page;
