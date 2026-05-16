@@ -37,6 +37,7 @@ class Tags extends AbstractElement
     {
         $limit = $this->element->meta['limit'] ?? null;
         $limit = is_numeric($limit) ? (int) $limit : null;
+
         $withPagination = (bool) $this->element->getMeta('pagination');
         $occurrence = is_numeric($this->elementData['occurrence'] ?? null) ? (int) $this->elementData['occurrence'] : $this->elementIndex + 1;
         $paginationKey = sprintf('tags-%s-%s-%d', $this->containerKey, $this->element->getKey(), $occurrence);

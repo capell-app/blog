@@ -8,6 +8,7 @@ use Capell\Blog\Data\ArticleMetaData;
 use Capell\Blog\Support\Loader\TagLoader;
 use Capell\Core\Contracts\Pageable;
 use Capell\Core\Models\Language;
+use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
 use Capell\Frontend\Contracts\RenderedModelTracker;
 use Exception;
@@ -50,7 +51,7 @@ final class BuildArticleMetaDataAction
             : null;
 
         throw_if(
-            $tags->isNotEmpty() && $tagPage === null,
+            $tags->isNotEmpty() && ! $tagPage instanceof Page,
             Exception::class,
             'Tag results page not found for the current site ' . $site->id . ' and language ' . $language->id,
         );

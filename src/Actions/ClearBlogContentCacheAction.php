@@ -79,7 +79,7 @@ final class ClearBlogContentCacheAction
     {
         $key = CacheEnum::siteTagsVersion($siteId, $languageId);
         $cache = Cache::store();
-        $cache->add($key, 0, null);
+        $cache->add($key, 0);
 
         $incremented = $cache->increment($key);
 

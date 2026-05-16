@@ -21,7 +21,6 @@ use Capell\Blog\Models\Article;
 use Capell\Core\Actions\SetupPageUrlsAction;
 use Capell\Core\Enums\BlueprintGroupEnum;
 use Capell\Core\Enums\BlueprintSubjectEnum;
-use Capell\Core\Enums\ContainerWidthEnum;
 use Capell\Core\Enums\LayoutEnum;
 use Capell\Core\Enums\LayoutGroupEnum;
 use Capell\Core\Enums\PageTypeEnum;
@@ -997,66 +996,6 @@ class BlogCreator
         throw new LogicException('Expected page type creator to return a Blueprint model.');
     }
 
-    private function getLayout(LayoutEnum|string $key): Layout
-    {
-        if ($key instanceof LayoutEnum) {
-            $key = $key->value;
-        }
-
-        $layoutModel = Layout::class;
-
-        $layout = $layoutModel::query()->firstWhere('key', $key);
-
-        if ($layout !== null) {
-            return $layout;
-        }
-
-        return resolve(LayoutCreator::class)->create($key);
-    }
-
-    private function getResultsLayout(): Layout
-    {
-        $layout = $this->getLayout(LayoutEnum::Results);
-
-        $elementCreator = resolve(ElementCreator::class);
-        $elementCreator->breadcrumbElement();
-        $elementCreator->pageContentElement();
-        $elementCreator->pageSlotElement();
-        $elementCreator->latestPagesElement();
-
-        $containers = [
-            'main' => [
-                'meta' => [
-                    'colspan' => 9,
-                ],
-                'elements' => [
-                    ['element_key' => 'breadcrumbs'],
-                    ['element_key' => 'page-content'],
-                    ['element_key' => 'page-slot'],
-                ],
-            ],
-            'sidebar' => [
-                'meta' => [
-                    'colspan' => 3,
-                    'override_columns' => 1,
-                    'container' => ContainerWidthEnum::Full,
-                    'padding' => ['md'],
-                    'html_class' => 'sidebar-sticky space-y-8',
-                ],
-                'elements' => [
-                    ['element_key' => 'latest-pages'],
-                ],
-            ],
-        ];
-
-        $layout->forceFill([
-            'containers' => $containers,
-            'elements' => $this->elementKeys($containers),
-        ])->save();
-
-        return $layout;
-    }
-
     /**
      * @param  array<string, array<string, mixed>>|null  $currentContainers
      * @param  array<string, array<string, mixed>>  $defaultContainers
@@ -1064,7 +1003,9 @@ class BlogCreator
      */
     private function withArticleLatestArticlesContainer(?array $currentContainers, array $defaultContainers): array
     {
-        $containers = $currentContainers ?: $defaultContainers;
+        $containers = $currentContainers !== null && $currentContainers !== []
+            ? $currentContainers
+            : $defaultContainers;
 
         if (isset($containers['sidebar']['elements']) && is_array($containers['sidebar']['elements'])) {
             $containers['sidebar']['elements'] = collect($containers['sidebar']['elements'])

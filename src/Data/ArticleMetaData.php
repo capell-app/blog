@@ -23,6 +23,10 @@ final class ArticleMetaData extends Data
 
     public function shouldRender(): bool
     {
-        return $this->tags->isNotEmpty() || ($this->withAuthor && $this->author instanceof Model);
+        if ($this->tags->isNotEmpty()) {
+            return true;
+        }
+
+        return $this->withAuthor && $this->author instanceof Model;
     }
 }
