@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Models;
 
+use ArrayAccess;
 use Bkwld\Cloner\Cloneable;
+use Capell\Blog\Actions\ClearBlogContentCacheAction;
 use Capell\Blog\Database\Factories\ArticleFactory;
 use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Observers\ArticleObserver;
@@ -49,6 +51,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -240,6 +243,43 @@ class Article extends Model implements HasMedia, Pageable, Publishable, Translat
         return $this->morphOneMedia(MediaCollectionEnum::Image->value);
     }
 
+    public function syncTags(string|array|ArrayAccess $tags): static
+    {
+        if (is_string($tags)) {
+            $tags = Arr::wrap($tags);
+        }
+
+        $className = static::getTagClassName();
+        $tagRecords = collect($className::findOrCreate($tags));
+
+        $this->tags()->sync($tagRecords->pluck('id')->toArray());
+        $this->clearBlogContentCache();
+
+        return $this;
+    }
+
+    public function syncTagsWithType(array|ArrayAccess $tags, ?string $type = null): static
+    {
+        $className = static::getTagClassName();
+
+        if ($this->languages->isNotEmpty()) {
+            $tagRecords = collect();
+
+            $this->languages->each(function (Language $language) use (&$tagRecords, &$tags, $className, $type): void {
+                $tagRecords->push($className::findOrCreate($tags, $type, $language->code));
+            });
+
+            $tags = $tagRecords->flatten();
+        } else {
+            $tags = collect($className::findOrCreate($tags, $type));
+        }
+
+        $this->syncTagIds($tags->pluck('id')->toArray(), $type);
+        $this->clearBlogContentCache();
+
+        return $this;
+    }
+
     /**
      * @return BelongsToJson<Article, $this>
      */
@@ -325,5 +365,12 @@ class Article extends Model implements HasMedia, Pageable, Publishable, Translat
     private function effectivePublishDateExpression(): string
     {
         return sprintf('COALESCE(%s, %s)', $this->qualifyColumn('visible_from'), $this->qualifyColumn('created_at'));
+    }
+
+    private function clearBlogContentCache(): void
+    {
+        if ($this->exists) {
+            ClearBlogContentCacheAction::run($this);
+        }
     }
 }

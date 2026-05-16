@@ -5,7 +5,10 @@ declare(strict_types=1);
 use Capell\Blog\Actions\EnsureArticlePublishingDefaultsAction;
 use Capell\Blog\Actions\EnsureBlogPublishingSurfaceAction;
 use Capell\Blog\Data\BlogPublishingSurfaceData;
+use Capell\Blog\Enums\BlogLayoutEnum;
 use Capell\Blog\Enums\BlogPageTypeEnum;
+use Capell\Core\Enums\LayoutEnum;
+use Capell\Core\Models\Layout;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
 use Capell\LayoutBuilder\Actions\InstallPackageAction as LayoutBuilderInstallPackageAction;
@@ -97,4 +100,23 @@ it('is idempotent for a site', function (): void {
             ->where('site_id', $site->id)
             ->whereHas('type', fn (Builder $query): Builder => $query->where('key', BlogPageTypeEnum::Tag->value))
             ->count())->toBe(1);
+});
+
+it('updates existing tag pages to the tag results layout without duplicating them', function (): void {
+    $site = Site::factory()->withTranslations()->create();
+
+    $surface = EnsureBlogPublishingSurfaceAction::run($site);
+    $legacyResultsLayout = Layout::query()->where('key', LayoutEnum::Results->value)->firstOrFail();
+
+    $surface->tagPage->forceFill(['layout_id' => $legacyResultsLayout->id])->save();
+
+    $updatedSurface = EnsureBlogPublishingSurfaceAction::run($site);
+    $tagResultsLayout = Layout::query()->where('key', BlogLayoutEnum::TagResults->value)->firstOrFail();
+
+    expect(Page::query()
+        ->where('site_id', $site->id)
+        ->whereHas('type', fn (Builder $query): Builder => $query->where('key', BlogPageTypeEnum::Tag->value))
+        ->count())->toBe(1)
+        ->and($updatedSurface->tagPage->is($surface->tagPage))->toBeTrue()
+        ->and($updatedSurface->tagPage->layout_id)->toBe($tagResultsLayout->id);
 });

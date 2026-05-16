@@ -7,6 +7,7 @@ namespace Capell\Blog\Providers;
 use Capell\Admin\Data\AdminSurfaceContributionData;
 use Capell\Admin\Enums\ResourceEnum as AdminResourceEnum;
 use Capell\Admin\Facades\CapellAdmin;
+use Capell\Blog\Actions\ClearBlogTagCacheAction;
 use Capell\Blog\Enums\ElementComponentEnum;
 use Capell\Blog\Enums\LivewirePageComponentEnum;
 use Capell\Blog\Enums\ResourceEnum;
@@ -99,6 +100,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
             ->registerLivewireComponents()
             ->registerTypes()
             ->registerTranslationEvents()
+            ->registerTagCacheEvents()
             ->registerPublishingStudio();
     }
 
@@ -283,6 +285,21 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
     private function registerTranslationEvents(): self
     {
         Event::listen('eloquent.saved: ' . Translation::class, ArticleTranslationSavedListener::class);
+
+        return $this;
+    }
+
+    private function registerTagCacheEvents(): self
+    {
+        Tag::created(function (Tag $tag): void {
+            ClearBlogTagCacheAction::run($tag);
+        });
+        Tag::updating(function (Tag $tag): void {
+            ClearBlogTagCacheAction::run($tag);
+        });
+        Tag::deleting(function (Tag $tag): void {
+            ClearBlogTagCacheAction::run($tag);
+        });
 
         return $this;
     }

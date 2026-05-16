@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Capell\Blog\View\Components;
 
-use Capell\Blog\Support\Loader\TagLoader;
+use Capell\Blog\Actions\BuildArticleMetaDataAction;
+use Capell\Blog\Data\ArticleMetaData;
 use Capell\Core\Models\Page;
 use Capell\Frontend\Facades\Frontend;
-use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\View\Component;
@@ -19,37 +19,22 @@ class ArticleMeta extends Component
 
     public Collection $tags;
 
-    public function __construct(public bool $withAuthor = false, public ?Model $author = null)
-    {
-        if ($this->withAuthor && ! $this->author instanceof Model) {
-            $page = Frontend::page();
+    public function __construct(
+        public bool $withAuthor = false,
+        public ?Model $author = null,
+        ?ArticleMetaData $articleMetaData = null,
+    ) {
+        $data = $articleMetaData ?? BuildArticleMetaDataAction::run(
+            page: Frontend::page(),
+            site: Frontend::site(),
+            language: Frontend::language(),
+            withAuthor: $this->withAuthor,
+            author: $this->author,
+        );
 
-            if ($page instanceof Model) {
-                $page->loadMissing('creator');
-
-                $creator = $page->getRelation('creator');
-
-                if ($creator instanceof Model) {
-                    $this->author = $creator;
-                }
-            }
-
-        }
-
-        $this->tags = TagLoader::getPageTags(Frontend::page());
-
-        if ($this->tags->isNotEmpty()) {
-            $site = Frontend::site();
-            $language = Frontend::language();
-
-            $this->tagPage = TagLoader::getTagResultsPage($site, $language);
-
-            throw_unless(
-                $this->tagPage,
-                Exception::class,
-                'Tag results page not found for the current site ' . $site->id . ' and language ' . $language->id,
-            );
-        }
+        $this->tags = $data->tags;
+        $this->tagPage = $data->tagPage;
+        $this->author = $data->author;
     }
 
     public function render(): string|View

@@ -1,5 +1,4 @@
 @php
-    use Capell\Blog\Support\Loader\TagLoader;
     use Capell\Frontend\Facades\Frontend;
 
     $language = Frontend::language();
@@ -20,17 +19,6 @@
 @php
     $tagPage ??= null;
     $tags ??= collect();
-
-    if ($tags->isEmpty()) {
-        $tags = TagLoader::getTags(
-            site: $site,
-            language: $language,
-            limit: $element->meta['limit'] ?? null,
-            hasArticles: true,
-        );
-    }
-
-    $tagPage ??= TagLoader::getTagResultsPage($site, $language);
 @endphp
 
 <x-capell-layout-builder::widget.wrapper
@@ -64,7 +52,7 @@
         />
     @endif
 
-    @if ($tags->isEmpty())
+    @if (count($tags) === 0)
         <x-capell::no-results>
             {{ $element->translation->getMeta('no_results', __('capell-blog::messages.no_tags_found')) }}
         </x-capell::no-results>

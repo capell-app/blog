@@ -18,6 +18,7 @@ use Illuminate\Contracts\Database\Eloquent\Builder as BuilderContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Cache;
 
 class TagLoader
 {
@@ -118,7 +119,11 @@ class TagLoader
             $limit = config('capell-frontend.pagination_limit', 10);
         }
 
-        $cacheKey = CacheEnum::siteTags($site->id, $language->id, $hasArticles, $limit, $paginationPage);
+        $paginationPage = $withPagination ? max(1, $paginationPage ?? 1) : $paginationPage;
+        $version = Cache::store()->get(CacheEnum::siteTagsVersion($site->id, $language->id), 0);
+        $version = is_numeric($version) ? (int) $version : 0;
+
+        $cacheKey = CacheEnum::siteTags($site->id, $language->id, $hasArticles, $limit, $paginationPage, $paginationKey, $version);
 
         $fromCache = true;
 
@@ -126,6 +131,7 @@ class TagLoader
             $language,
             $hasArticles,
             $limit,
+            $paginationPage,
             $paginationKey,
             $site,
             $withPagination,
@@ -134,7 +140,7 @@ class TagLoader
             $fromCache = false;
             $query = self::getTagsQuery($site, $language, $hasArticles);
             if ($withPagination) {
-                return $query->paginate($limit, ['*'], $paginationKey);
+                return $query->paginate($limit, ['*'], $paginationKey, $paginationPage);
             }
 
             if ($limit !== null) {
@@ -144,10 +150,12 @@ class TagLoader
             return $query->get();
         });
 
-        if ($fromCache && $tags instanceof Collection) {
-            $tags->each(function (Tag $tag): void {
-                resolve(RenderedModelTracker::class)->track($tag);
-            });
+        if ($fromCache) {
+            self::trackCachedTags($tags);
+        }
+
+        if ($tags instanceof LengthAwarePaginator) {
+            $tags->withPath(request()->url());
         }
 
         return $tags;
@@ -179,5 +187,14 @@ class TagLoader
         }
 
         return $tag;
+    }
+
+    private static function trackCachedTags(Collection|LengthAwarePaginator $tags): void
+    {
+        $collection = $tags instanceof LengthAwarePaginator ? $tags->getCollection() : $tags;
+
+        $collection->each(function (Tag $tag): void {
+            resolve(RenderedModelTracker::class)->track($tag);
+        });
     }
 }

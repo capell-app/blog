@@ -4,19 +4,23 @@ declare(strict_types=1);
 
 namespace Capell\Blog\View\Components\Element\Tag;
 
-use Capell\Blog\Support\Loader\TagLoader;
+use Capell\Blog\Actions\BuildTagListingDataAction;
+use Capell\Blog\Data\TagListingData;
 use Capell\Core\Models\Page;
 use Capell\FoundationTheme\View\Components\Element\AbstractElement;
 use Capell\Frontend\Facades\Frontend;
 use Closure;
 use Illuminate\Contracts\View\View;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
 class Tags extends AbstractElement
 {
     public ?Page $tagPage = null;
 
-    public ?Collection $tags = null;
+    public Collection|LengthAwarePaginator|null $tags = null;
+
+    public ?TagListingData $tagListing = null;
 
     protected static string $defaultView = 'capell-blog::components.element.tag.tags';
 
@@ -32,18 +36,27 @@ class Tags extends AbstractElement
     protected function mountElement(): void
     {
         $limit = $this->element->meta['limit'] ?? null;
+        $limit = is_numeric($limit) ? (int) $limit : null;
+        $withPagination = (bool) $this->element->getMeta('pagination');
+        $occurrence = is_numeric($this->elementData['occurrence'] ?? null) ? (int) $this->elementData['occurrence'] : $this->elementIndex + 1;
+        $paginationKey = sprintf('tags-%s-%s-%d', $this->containerKey, $this->element->getKey(), $occurrence);
+        $requestedPage = request()->query($paginationKey, 1);
+        $paginationPage = $withPagination && is_numeric($requestedPage) ? (int) $requestedPage : null;
 
         $site = Frontend::site();
         $language = Frontend::language();
 
-        $this->tags = TagLoader::getTags(
+        $this->tagListing = BuildTagListingDataAction::run(
             site: $site,
             language: $language,
             limit: $limit,
-            hasArticles: true,
+            paginationPage: $paginationPage,
+            withPagination: $withPagination,
+            paginationKey: $paginationKey,
         );
 
-        $this->tagPage = TagLoader::getTagResultsPage($site, $language);
+        $this->tags = $this->tagListing->tags;
+        $this->tagPage = $this->tagListing->tagPage;
 
         if (! $this->tagPage instanceof Page) {
             $this->skipRender = true;
@@ -51,7 +64,7 @@ class Tags extends AbstractElement
             return;
         }
 
-        if ($this->tags->isNotEmpty()) {
+        if (count($this->tags) > 0) {
             return;
         }
 

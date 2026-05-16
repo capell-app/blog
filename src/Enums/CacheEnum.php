@@ -78,9 +78,16 @@ enum CacheEnum: string
      * @param  int|null  $paginationPage  The pagination page (optional)
      * @return string The cache key
      */
-    public static function siteTags(int $siteId, int $languageId, bool $hasArticles, ?int $limit = null, ?int $paginationPage = null): string
-    {
-        $cacheKey = sprintf('site-tags-%d-lang-%d-limit-%s', $siteId, $languageId, $limit);
+    public static function siteTags(
+        int $siteId,
+        int $languageId,
+        bool $hasArticles,
+        ?int $limit = null,
+        ?int $paginationPage = null,
+        string $paginationKey = 'page',
+        int $version = 0,
+    ): string {
+        $cacheKey = sprintf('site-tags-%d-lang-%d-v-%d-limit-%s-key-%s', $siteId, $languageId, $version, $limit, $paginationKey);
 
         $cacheKey .= $hasArticles ? '-with-articles' : '-all';
 
@@ -89,6 +96,11 @@ enum CacheEnum: string
         }
 
         return $cacheKey;
+    }
+
+    public static function siteTagsVersion(int $siteId, int $languageId): string
+    {
+        return sprintf('site-tags-%d-lang-%d-version', $siteId, $languageId);
     }
 
     /**

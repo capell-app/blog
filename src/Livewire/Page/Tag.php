@@ -11,16 +11,14 @@ use Capell\Frontend\Livewire\Page\AbstractPage;
 use Capell\Frontend\Support\Loader\PageLoader;
 use Capell\Frontend\Support\State\FrontendState;
 use Capell\Tags\Models\Tag as TagModel;
-use Illuminate\Contracts\Database\Eloquent\Builder as BuilderContract;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\Relation;
 use Override;
 
 class Tag extends AbstractPage
 {
     public ?string $tagSlug = null;
 
-    protected static string $defaultView = 'capell::livewire.page.results';
+    protected static string $defaultView = 'capell-blog::livewire.page.results';
 
     protected TagModel $tag;
 
@@ -60,13 +58,9 @@ class Tag extends AbstractPage
             paginationKey: 'tag-pages',
             cacheKeyPrepend: 'tagged-' . $this->tag->id,
             morphModel: $model,
-            modifyQuery: fn (Builder $query) => $query->whereHas(
+            modifyQuery: fn (Builder $query): Builder => $query->whereHas(
                 'tags',
-                fn (BuilderContract $query): BuilderContract => $query->where(
-                    'taggable_type',
-                    Relation::getMorphAlias($model),
-                )
-                    ->where('taggables.tag_id', $this->tag->id),
+                fn (Builder $query): Builder => $query->whereKey($this->tag->id),
             ),
         );
 

@@ -9,6 +9,7 @@ use Capell\Core\Models\Site;
 use Capell\Tags\Enums\TagTypeEnum;
 use Capell\Tags\Models\Tag;
 use Capell\Tests\Support\Concerns\TestingFrontend;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
 
 use function Pest\Laravel\get;
 
@@ -155,7 +156,50 @@ test('tag page resolves site tag before global tag with same slug', function ():
     get($siteTag->getUrl($tagPage, $language))
         ->assertOk()
         ->assertSeeText('Site Topic Articles')
-        ->assertSeeText($siteArticle->translation->title)
         ->assertDontSeeText('Global Topic Articles')
-        ->assertDontSeeText($globalArticle->translation->title);
+        ->assertElementExists(
+            '.results',
+            fn (AssertElement $element): BaseAssert => $element
+                ->containsText($siteArticle->translation->title)
+                ->doesntContainText($globalArticle->translation->title),
+        );
+});
+
+test('tag page renders results without lazy-loading page translation data', function (): void {
+    $blogCreator = resolve(BlogCreator::class);
+
+    $language = Language::factory()->create();
+    $site = Site::factory()->recycle($language)->withTranslations()->create();
+
+    $blogPage = $blogCreator->createBlogPage($site);
+    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createElements: true);
+    $tagPage = $blogCreator->createTagPage($site, $tagsPage);
+
+    $tag = Tag::factory()
+        ->translate($language)
+        ->type(TagTypeEnum::Page)
+        ->site($site)
+        ->create();
+
+    $article = Article::factory()
+        ->site($site)
+        ->withTranslations($site->languages, ['title' => 'Lazy Load Guard Article'])
+        ->hasAttached($tag)
+        ->create(['visible_from' => '2023-02-01']);
+
+    $url = $tag->getUrl($tagPage, $language);
+    $title = trans($tagPage->translation->title, ['tag_name' => $tag->translate('name', $language->code)]);
+    $articleTitle = $article->translation->title;
+
+    $previous = EloquentModel::preventsLazyLoading();
+    EloquentModel::preventLazyLoading();
+
+    try {
+        get($url)
+            ->assertOk()
+            ->assertSeeText($title)
+            ->assertSeeText($articleTitle);
+    } finally {
+        EloquentModel::preventLazyLoading($previous);
+    }
 });

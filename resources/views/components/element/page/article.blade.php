@@ -1,5 +1,4 @@
 @php
-    use Capell\Blog\View\Components\ArticleMeta;
     use Capell\Frontend\Enums\RenderHookLocation;
     use Capell\Frontend\Facades\Frontend;
     use Capell\Frontend\Support\Render\RenderHookRegistry;
@@ -20,30 +19,53 @@
     'withNextPrev' => (bool) $element->getMeta('with_next_prev'),
 ])
 @php
-    $author ??= $withAuthor && $page->relationLoaded('creator') ? $page->creator : null;
     $nextPage ??= null;
     $previousPage ??= null;
+    $articleMetaData ??= null;
+    $author ??= $articleMetaData?->author;
+    $pageTranslation = method_exists($page, 'relationLoaded') && $page->relationLoaded('translation')
+        ? $page->getRelation('translation')
+        : null;
+    $pageType = method_exists($page, 'relationLoaded') && $page->relationLoaded('type')
+        ? $page->getRelation('type')
+        : null;
+    $pageImage = method_exists($page, 'relationLoaded') && $page->relationLoaded('image')
+        ? $page->getRelation('image')
+        : null;
+    $secondaryContainers = $theme?->secondary_containers ?? ['sidebar'];
+    $publishedDate = $page->visible_from ?: $page->created_at;
+    $summary = $pageTranslation?->summary ?: null;
     $articleMeta = app(RenderHookRegistry::class)->renderAll(
         RenderHookLocation::ArticleMeta,
         [
             'withAuthor' => $withAuthor,
             'author' => $author,
+            'articleMetaData' => $articleMetaData,
         ],
     );
 
-    $articleMetaComponent = resolve(ArticleMeta::class, [
-        'withAuthor' => $withAuthor,
-        'author' => $author,
-    ]);
-
-    if ($articleMeta === '') {
-        $articleMeta = view('capell-blog::components.article-meta', [
-            'tagPage' => $articleMetaComponent->tagPage,
-            'tags' => $articleMetaComponent->tags,
-            'author' => $articleMetaComponent->author,
-            'withAuthor' => $withAuthor,
-        ])->render();
-    }
+    $hasDefaultArticleMeta = $articleMetaData?->shouldRender() ?? false;
+    $headingTag = in_array($headingSize, ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'], true) ? $headingSize : 'h1';
+    $previousPageUrlModel = $previousPage !== null && method_exists($previousPage, 'relationLoaded') && $previousPage->relationLoaded('pageUrl')
+        ? $previousPage->getRelation('pageUrl')
+        : null;
+    $nextPageUrlModel = $nextPage !== null && method_exists($nextPage, 'relationLoaded') && $nextPage->relationLoaded('pageUrl')
+        ? $nextPage->getRelation('pageUrl')
+        : null;
+    $previousPageUrl = is_string($previousPageUrlModel?->url ?? null) && $previousPageUrlModel->url !== ''
+        ? $previousPageUrlModel->full_url
+        : null;
+    $nextPageUrl = is_string($nextPageUrlModel?->url ?? null) && $nextPageUrlModel->url !== ''
+        ? $nextPageUrlModel->full_url
+        : null;
+    $previousPageTranslation = $previousPage !== null && method_exists($previousPage, 'relationLoaded') && $previousPage->relationLoaded('translation')
+        ? $previousPage->getRelation('translation')
+        : null;
+    $nextPageTranslation = $nextPage !== null && method_exists($nextPage, 'relationLoaded') && $nextPage->relationLoaded('translation')
+        ? $nextPage->getRelation('translation')
+        : null;
+    $hasPreviousArticleLink = $previousPage && $previousPageUrl && $previousPageTranslation;
+    $hasNextArticleLink = $nextPage && $nextPageUrl && $nextPageTranslation;
 @endphp
 
 <x-capell-layout-builder::widget.wrapper
@@ -53,73 +75,145 @@
     :$containerWidth
     :index="$loop->index"
     :widget="$element"
-    container-class="flex flex-col gap-6"
+    container-class="capell-blog-article flex flex-col gap-10"
 >
-    <div class="grid">
-        <x-capell::content
-            :$containerKey
-            :image="$page->image"
-            :heading-size="$headingSize"
-            :content="$page->translation->content"
-            :content-type="$page->type->content_structure"
-            :muted="in_array($containerKey, $theme->secondary_containers)"
-            :text-align="$element->getMeta('align')"
-            :title="$page->translation->title"
-            :heading-style="$element->getMeta('heading_style')"
-        >
-            @if ($withDate)
-                <x-capell-blog::page.published-date
-                    class="mt-4 whitespace-nowrap"
-                    :date="$page->visible_from ?: $page->created_at"
-                />
-            @endif
-        </x-capell::content>
-    </div>
+    <article class="grid gap-10">
+        <header class="border-b border-slate-200 pb-8">
+            <div class="max-w-4xl">
+                <div class="mb-5 flex flex-wrap items-center gap-x-4 gap-y-2">
+                    <span
+                        class="text-primary text-xs font-semibold uppercase tracking-[0.12em]"
+                    >
+                        {{ __('capell-blog::generic.article') }}
+                    </span>
 
-    @if ($articleMeta !== '')
-        {!! $articleMeta !!}
-    @else
-        <div
-            class="article-meta mb-4 mt-10 flex items-end justify-between border-t border-black/10 pt-8 dark:border-gray-700/50"
-        >
-            @if ($withAuthor && $articleMetaComponent->author)
-                <x-capell-blog::page.author
-                    :author="$articleMetaComponent->author"
-                />
-            @endif
-
-            @if ($articleMetaComponent->tags->isNotEmpty())
-                <div
-                    class="article-tags flex flex-col items-center gap-x-10 gap-y-6 md:flex-row md:justify-between lg:flex-row-reverse"
-                >
-                    <x-capell-blog::page.tags
-                        :tagPage="$articleMetaComponent->tagPage"
-                        :tags="$articleMetaComponent->tags"
-                        with_tag_icon="true"
-                    />
+                    @if ($withDate && $publishedDate)
+                        <x-capell-blog::page.published-date
+                            class="whitespace-nowrap text-sm text-slate-500"
+                            :date="$publishedDate"
+                        />
+                    @endif
                 </div>
-            @endif
-        </div>
-    @endif
 
-    @if ($withNextPrev && ($previousPage || $nextPage))
-        <div
-            class="neighbor-links mt-10 flex divide-y divide-gray-100 border-t border-gray-100 pt-6 md:divide-x md:divide-y-0"
-        >
-            @if ($previousPage)
-                <x-capell::page.neighbor-link
-                    :neighbor-page="$previousPage"
-                    neighbor="previous"
-                />
-            @endif
+                <{{ $headingTag }}
+                    class="max-w-3xl text-balance text-4xl font-semibold leading-tight text-slate-950 md:text-5xl"
+                >
+                    {{ $pageTranslation?->title }}
+                </{{ $headingTag }}>
 
-            @if ($nextPage)
-                <x-capell::page.neighbor-link
-                    :neighbor-page="$nextPage"
-                    neighbor="next"
-                    class="ml-auto"
-                />
-            @endif
+                @if ($summary)
+                    <p class="mt-5 max-w-3xl text-lg leading-8 text-slate-600">
+                        {{ $summary }}
+                    </p>
+                @endif
+            </div>
+        </header>
+
+        <div class="grid">
+            <x-capell::content
+                class="capell-blog-article-content prose-headings:text-slate-950 prose-a:text-primary prose-p:leading-8 max-w-3xl text-slate-700"
+                :$containerKey
+                :image="$pageImage"
+                :heading-size="$headingSize"
+                :content="$pageTranslation?->content"
+                :content-type="$pageType?->content_structure"
+                :muted="in_array($containerKey, $secondaryContainers)"
+                :text-align="$element->getMeta('align')"
+                :title="null"
+                :image-title="$pageTranslation?->title"
+                :heading-style="$element->getMeta('heading_style')"
+            />
         </div>
-    @endif
+
+        @if ($articleMeta !== '')
+            {!! $articleMeta !!}
+        @elseif ($hasDefaultArticleMeta)
+            <div
+                class="article-meta flex flex-col gap-5 border-y border-slate-200 py-6 md:flex-row md:items-center md:justify-between"
+            >
+                @if ($withAuthor && $articleMetaData?->author)
+                    <x-capell-blog::page.author
+                        class="min-w-0"
+                        :author="$articleMetaData->author"
+                    />
+                @endif
+
+                @if ($articleMetaData->tags->isNotEmpty())
+                    <div
+                        class="article-tags flex flex-col gap-x-10 gap-y-4 md:items-end"
+                    >
+                        <x-capell-blog::page.tags
+                            :tagPage="$articleMetaData->tagPage"
+                            :tags="$articleMetaData->tags"
+                            with_tag_icon="true"
+                        />
+                    </div>
+                @endif
+            </div>
+        @endif
+
+        @if ($withNextPrev && ($hasPreviousArticleLink || $hasNextArticleLink))
+            <nav
+                class="neighbor-links grid gap-4 border-t border-slate-200 pt-8 md:grid-cols-2"
+                aria-label="{{ __('capell-blog::generic.article_navigation') }}"
+            >
+                @if ($hasPreviousArticleLink)
+                    <a
+                        href="{{ $previousPageUrl }}"
+                        title="{{ strip_tags((string) $previousPageTranslation?->title) }}"
+                        class="hover:border-primary/40 focus:border-primary/40 group flex min-h-36 flex-col justify-between rounded-lg border border-slate-200 bg-white p-5 text-left transition"
+                        @wireNavigate
+                    >
+                        <span
+                            class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500"
+                        >
+                            {{ __('capell-blog::generic.previous_article') }}
+                        </span>
+                        <span
+                            class="group-hover:text-primary group-focus:text-primary mt-4 text-lg font-semibold leading-snug text-slate-950"
+                        >
+                            {{ strip_tags((string) $previousPageTranslation?->label) }}
+                        </span>
+                        @if ($previousPageTranslation?->summary)
+                            <span
+                                class="mt-2 line-clamp-2 text-sm leading-6 text-slate-500"
+                            >
+                                {{ strip_tags((string) $previousPageTranslation->summary) }}
+                            </span>
+                        @endif
+                    </a>
+                @endif
+
+                @if ($hasNextArticleLink)
+                    <a
+                        href="{{ $nextPageUrl }}"
+                        title="{{ strip_tags((string) $nextPageTranslation?->title) }}"
+                        @class([
+                            'hover:border-primary/40 focus:border-primary/40 group flex min-h-36 flex-col justify-between rounded-lg border border-slate-200 bg-white p-5 text-left transition md:text-right',
+                            'md:col-start-2' => ! $hasPreviousArticleLink,
+                        ])
+                        @wireNavigate
+                    >
+                        <span
+                            class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500"
+                        >
+                            {{ __('capell-blog::generic.next_article') }}
+                        </span>
+                        <span
+                            class="group-hover:text-primary group-focus:text-primary mt-4 text-lg font-semibold leading-snug text-slate-950"
+                        >
+                            {{ strip_tags((string) $nextPageTranslation?->label) }}
+                        </span>
+                        @if ($nextPageTranslation?->summary)
+                            <span
+                                class="mt-2 line-clamp-2 text-sm leading-6 text-slate-500"
+                            >
+                                {{ strip_tags((string) $nextPageTranslation->summary) }}
+                            </span>
+                        @endif
+                    </a>
+                @endif
+            </nav>
+        @endif
+    </article>
 </x-capell-layout-builder::widget.wrapper>

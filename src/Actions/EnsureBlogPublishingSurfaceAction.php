@@ -72,7 +72,7 @@ class EnsureBlogPublishingSurfaceAction
             $tagsPage,
             languages: $languages,
             type: $this->getPageType($blogCreator, BlogPageTypeEnum::Tag->value),
-            layout: $this->getResultsLayout(),
+            layout: $blogCreator->createTagResultsLayout(),
         );
 
         $blogCreator->addPagesToNavigations(

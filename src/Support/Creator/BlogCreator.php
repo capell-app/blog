@@ -34,8 +34,8 @@ use Capell\Core\Models\Site;
 use Capell\Core\Support\Creator\BlueprintCreator;
 use Capell\Core\Support\Creator\LayoutCreator;
 use Capell\Frontend\Enums\RenderingStrategyEnum;
+use Capell\LayoutBuilder\Enums\ElementComponentEnum as LayoutElementComponentEnum;
 use Capell\LayoutBuilder\Enums\LayoutTypeEnum;
-use Capell\LayoutBuilder\Enums\LivewireComponentsEnum;
 use Capell\LayoutBuilder\Filament\Configurators\Types\ElementTypeConfigurator;
 use Capell\LayoutBuilder\Models\Element;
 use Capell\LayoutBuilder\Support\Creator\ElementCreator;
@@ -116,14 +116,13 @@ class BlogCreator
         $site->loadMissing(['language', 'siteDomains.language']);
 
         $type ??= $this->createTagPageType();
-        $layout ??= $this->getResultsLayout();
+        $layout ??= $this->createTagResultsLayout();
         $languages ??= $site->getAllLanguages();
         $parent ??= $this->createTagsPage($site, $this->createBlogPage($site));
 
         $pageModel = Page::class;
 
         $page = $pageModel::query()->firstOrNew([
-            'layout_id' => $layout->id,
             'site_id' => $site->id,
             'blueprint_id' => $type->id,
             'parent_id' => $parent?->getKey(),
@@ -131,6 +130,7 @@ class BlogCreator
             'name' => __('capell-blog::generic.tag_page'),
         ]);
 
+        $page->layout()->associate($layout);
         $page->meta = [
             ...($page->meta ?? []),
             'component' => LivewirePageComponentEnum::TagPage->value,
@@ -436,6 +436,29 @@ class BlogCreator
         ]);
     }
 
+    public function createTagResultsLayout(): Layout
+    {
+        $containers = [
+            'main' => [
+                'meta' => [
+                    'colspan' => 12,
+                ],
+                'elements' => [
+                    ['element_key' => 'breadcrumbs'],
+                    ['element_key' => 'page-content'],
+                    ['element_key' => 'page-slot'],
+                ],
+            ],
+        ];
+
+        return Layout::query()->firstOrCreate(['key' => BlogLayoutEnum::TagResults->value], [
+            'name' => __('capell-blog::generic.tag_results'),
+            'group' => LayoutGroupEnum::System->value,
+            'containers' => $containers,
+            'elements' => $this->elementKeys($containers),
+        ]);
+    }
+
     public function createArchivesElement(?Collection $languages = null): Element
     {
         if (! $languages instanceof Collection) {
@@ -589,6 +612,7 @@ class BlogCreator
             $articleType = $this->createArticleElementType();
             $this->createArticleElement($articleType);
 
+            $this->createLatestArticlesElement($languages);
             $this->relatedArticlesElement($resultsType, $languages);
             $this->createTagsElement($languages);
             $this->createArchivesElement($languages);
@@ -613,24 +637,44 @@ class BlogCreator
                     'html_class' => 'sidebar-sticky space-y-8',
                 ],
                 'elements' => [
-                    ['element_key' => 'latest-articles', 'meta' => ['hide_no_results' => true]],
                     ['element_key' => 'tags', 'meta' => ['hide_no_results' => true]],
                     ['element_key' => 'archives', 'meta' => ['hide_no_results' => true]],
                 ],
             ],
+            'latest' => [
+                'meta' => [
+                    'colspan' => 12,
+                    'container' => 'lg',
+                    'margin' => ['t-xl'],
+                    'padding' => ['t-lg', 'b-xl'],
+                    'html_class' => 'blog-latest-articles',
+                ],
+                'elements' => [
+                    ['element_key' => 'latest-articles', 'meta' => ['hide_no_results' => true]],
+                ],
+            ],
         ];
 
-        return Layout::query()->firstOrCreate(['key' => BlogLayoutEnum::Article->value], [
+        $layout = Layout::query()->firstOrCreate(['key' => BlogLayoutEnum::Article->value], [
             'name' => __('capell-blog::generic.article'),
             'group' => LayoutGroupEnum::Default->value,
             'containers' => $containers,
             'elements' => $this->elementKeys($containers),
         ]);
+
+        $mergedContainers = $this->withArticleLatestArticlesContainer($layout->containers, $containers);
+
+        $layout->forceFill([
+            'containers' => $mergedContainers,
+            'elements' => $this->elementKeys($mergedContainers),
+        ])->save();
+
+        return $layout;
     }
 
     public function createArticlePageType(): Blueprint
     {
-        return Blueprint::query()->firstOrCreate([
+        $blueprint = Blueprint::query()->firstOrCreate([
             'key' => BlogPageTypeEnum::Article->value,
             'type' => BlueprintSubjectEnum::Page,
         ], [
@@ -643,7 +687,21 @@ class BlogCreator
                 'resource' => strtolower(ResourceEnum::Article->name),
                 'required_fields' => ['title'],
             ],
+            'meta' => [
+                'suppress_layout_neighbor_links' => true,
+                'with_next_prev' => true,
+            ],
         ]);
+
+        $blueprint->forceFill([
+            'meta' => [
+                ...($blueprint->meta ?? []),
+                'suppress_layout_neighbor_links' => true,
+                'with_next_prev' => true,
+            ],
+        ])->save();
+
+        return $blueprint;
     }
 
     public function createArticleElement(Blueprint $type): Element
@@ -868,8 +926,8 @@ class BlogCreator
             'name' => __('capell-blog::generic.latest_articles'),
             'blueprint_id' => $type->id,
             'meta' => [
-                'component' => LivewireComponentsEnum::PagesElement,
-                'livewire' => true,
+                'component' => LayoutElementComponentEnum::PageLatest,
+                'livewire' => false,
                 'limit' => 5,
                 'page_model' => Relation::getMorphAlias(Article::class),
                 'page_group' => strtolower(ResourceEnum::Article->name),
@@ -886,8 +944,23 @@ class BlogCreator
         ]);
 
         $element->forceFill([
-            'component' => LivewireComponentsEnum::PagesElement->value,
-            'is_livewire' => true,
+            'blueprint_id' => $type->id,
+            'component' => LayoutElementComponentEnum::PageLatest->value,
+            'is_livewire' => false,
+            'meta' => [
+                ...($element->meta ?? []),
+                'component' => LayoutElementComponentEnum::PageLatest->value,
+                'livewire' => false,
+                'limit' => 5,
+                'page_model' => Relation::getMorphAlias(Article::class),
+                'page_group' => strtolower(ResourceEnum::Article->name),
+                'pagination' => false,
+                'with_date' => true,
+                'with_image' => true,
+                'with_summary' => true,
+                'with_link_text' => true,
+                'margin' => ['b-lg'],
+            ],
         ])->save();
 
         $languages->each(function (Language $language) use ($element): void {
@@ -982,6 +1055,27 @@ class BlogCreator
         ])->save();
 
         return $layout;
+    }
+
+    /**
+     * @param  array<string, array<string, mixed>>|null  $currentContainers
+     * @param  array<string, array<string, mixed>>  $defaultContainers
+     * @return array<string, array<string, mixed>>
+     */
+    private function withArticleLatestArticlesContainer(?array $currentContainers, array $defaultContainers): array
+    {
+        $containers = $currentContainers ?: $defaultContainers;
+
+        if (isset($containers['sidebar']['elements']) && is_array($containers['sidebar']['elements'])) {
+            $containers['sidebar']['elements'] = collect($containers['sidebar']['elements'])
+                ->reject(fn (array $element): bool => ($element['element_key'] ?? null) === 'latest-articles')
+                ->values()
+                ->all();
+        }
+
+        $containers['latest'] = $defaultContainers['latest'];
+
+        return $containers;
     }
 
     private function elementKeys(array $containers): array

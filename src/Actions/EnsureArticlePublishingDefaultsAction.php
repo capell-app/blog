@@ -40,6 +40,7 @@ class EnsureArticlePublishingDefaultsAction
         $blogCreator->createArticleLayout(createElements: $createElements);
         $blogCreator->createArchivesLayout();
         $blogCreator->createBlogPageLayout();
+        $blogCreator->createTagResultsLayout();
         $blogCreator->createTagsLayout();
 
         $blogCreator->createArticlePageType();

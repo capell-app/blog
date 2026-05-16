@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Capell\Blog\View\Components\Element\Page;
 
+use Capell\Blog\Actions\BuildArticleMetaDataAction;
+use Capell\Blog\Data\ArticleMetaData;
 use Capell\Core\Contracts\Pageable;
 use Capell\FoundationTheme\View\Components\Element\AbstractElement;
 use Capell\Frontend\Facades\Frontend;
@@ -11,7 +13,6 @@ use Capell\Frontend\Support\Loader\PageLoader;
 use Closure;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Model;
 
 class Article extends AbstractElement
 {
@@ -20,6 +21,8 @@ class Article extends AbstractElement
     public ?Pageable $nextPage = null;
 
     public ?Pageable $previousPage = null;
+
+    public ?ArticleMetaData $articleMeta = null;
 
     protected static string $defaultView = 'capell-blog::components.element.page.article';
 
@@ -30,6 +33,7 @@ class Article extends AbstractElement
             'author' => $this->author,
             'previousPage' => $this->previousPage,
             'nextPage' => $this->nextPage,
+            'articleMetaData' => $this->articleMeta,
         ]);
     }
 
@@ -44,14 +48,15 @@ class Article extends AbstractElement
             $this->nextPage = PageLoader::getNextPage($page, $site, $language);
         }
 
-        if ((bool) $this->element->getMeta('with_author') && $page instanceof Model) {
-            $page->loadMissing('creator');
+        $this->articleMeta = BuildArticleMetaDataAction::run(
+            page: $page,
+            site: $site,
+            language: $language,
+            withAuthor: (bool) $this->element->getMeta('with_author'),
+        );
 
-            $creator = $page->getRelation('creator');
-
-            if ($creator instanceof Authenticatable) {
-                $this->author = $creator;
-            }
+        if ($this->articleMeta->author instanceof Authenticatable) {
+            $this->author = $this->articleMeta->author;
         }
     }
 }

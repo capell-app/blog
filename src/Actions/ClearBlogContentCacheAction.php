@@ -10,6 +10,7 @@ use Capell\Blog\Models\Article;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Site;
+use Illuminate\Support\Facades\Cache;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 final class ClearBlogContentCacheAction
@@ -60,8 +61,7 @@ final class ClearBlogContentCacheAction
 
         CapellCore::removeCacheKey(CacheEnum::archivePage($siteId, $languageId));
         CapellCore::removeCacheKey(CacheEnum::tagResultsPage($siteId, $languageId));
-        CapellCore::removeCacheKey(CacheEnum::siteTags($siteId, $languageId, hasArticles: true));
-        CapellCore::removeCacheKey(CacheEnum::siteTags($siteId, $languageId, hasArticles: false));
+        $this->incrementSiteTagsVersion($siteId, $languageId);
     }
 
     private function clearSiteLanguageAgnosticCache(int $siteId): void
@@ -73,5 +73,20 @@ final class ClearBlogContentCacheAction
         ] as $pageType) {
             CapellCore::removeCacheKey(CacheEnum::blogPage($siteId, 'null', $pageType->value));
         }
+    }
+
+    private function incrementSiteTagsVersion(int $siteId, int $languageId): void
+    {
+        $key = CacheEnum::siteTagsVersion($siteId, $languageId);
+        $cache = Cache::store();
+        $cache->add($key, 0, null);
+
+        $incremented = $cache->increment($key);
+
+        if (is_int($incremented)) {
+            return;
+        }
+
+        $cache->forever($key, ((int) $cache->get($key, 0)) + 1);
     }
 }

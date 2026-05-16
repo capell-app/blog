@@ -19,7 +19,7 @@ class Archive extends AbstractPage
 
     public ?int $year = null;
 
-    protected static string $defaultView = 'capell::livewire.page.results';
+    protected static string $defaultView = 'capell-blog::livewire.page.results';
 
     protected function setup(): void
     {
@@ -45,7 +45,7 @@ class Archive extends AbstractPage
             paginationKey: 'article-archives',
             cacheKeyPrepend: sprintf('year-%s-month-%s', $this->year, $this->month),
             morphModel: 'article',
-            modifyQuery: function (Builder $query) {
+            modifyQuery: function (Builder $query): Builder {
                 if (DB::getDriverName() === 'sqlite') {
                     return $query
                         ->when(
