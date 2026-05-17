@@ -21,6 +21,7 @@ return [
     'latest_articles' => 'Latest Articles',
     'next_article' => 'Next article',
     'previous_article' => 'Previous article',
+    'read_article' => 'Read article',
     'tag_page' => 'Tag Page',
     'tag_page_title' => ':Tag_name Articles',
     'tag_results' => 'Tag Results',

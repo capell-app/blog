@@ -29,13 +29,14 @@ use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Symfony\Component\Console\Helper\ProgressBar;
 
 class DemoCommand extends Command
 {
     use HasSitesOption;
+
+    private const DemoArticleMetaKey = 'capell_blog_demo';
 
     protected $signature = 'capell:blog-demo {--sites=} {--user=} {--limit=}';
 
@@ -176,6 +177,9 @@ class DemoCommand extends Command
         $created = $this->createArticles($site, $user, $sitePlan, $languages, $limit);
 
         $this->setProgressMessage($created ? 'Demo pages created' : 'Demo pages not created');
+        $this->setProgressMessage('Refreshing existing demo articles');
+        $this->refreshExistingDemoArticles($site, $languages);
+        $this->setProgressMessage('Existing demo articles refreshed');
         $this->setProgressMessage('Creating tags for site pages');
         $this->createArticleTags($site, $languages);
         $this->setProgressMessage('Tags created/updated');
@@ -233,6 +237,34 @@ class DemoCommand extends Command
     }
 
     /**
+     * @param  Collection<int, Language>  $languages
+     */
+    private function refreshExistingDemoArticles(Site $site, Collection $languages): void
+    {
+        /** @var class-string<Article> $articleModel */
+        $articleModel = Article::class;
+
+        $articleModel::query()
+            ->where('site_id', $site->id)
+            ->whereRelation('type', 'key', BlogPageTypeEnum::Article->value)
+            ->whereHas('translations', function ($query): void {
+                $query->where('meta->' . self::DemoArticleMetaKey, true);
+            })
+            ->with(['translations'])
+            ->get()
+            ->each(function (Article $article) use ($languages): void {
+                $data = [
+                    'name' => $languages
+                        ->mapWithKeys(fn (Language $language): array => [$language->code => $article->name])
+                        ->all(),
+                ];
+
+                $this->refreshDemoArticleCopy($article, $languages, $data);
+                $this->removeRandomDemoMedia($article);
+            });
+    }
+
+    /**
      * @param  array<string, mixed>  $data
      * @param  Collection<int, Language>  $languages
      */
@@ -256,31 +288,21 @@ class DemoCommand extends Command
 
         $this->setProgressMessage('Creating page: ' . $fullName);
 
-        $title = Arr::random([
-            'The Ultimate Guide to',
-            'A Guide to Caring for',
-            'Discovering the Secrets of',
-            'Exploring the',
-            'The Complete Guide to',
-        ]);
-
-        foreach ($languages as $language) {
-            $languageCode = $language->getAttribute('code');
-
-            if (! is_string($languageCode)) {
-                continue;
-            }
-
-            $translatedName = is_array($data['name'] ?? null)
-                ? ($data['name'][$languageCode] ?? $name)
-                : $name;
-
-            $data['title'][$languageCode] = $title . ' ' . $translatedName;
-        }
-
         $articleCreator = resolve(ArticleCreator::class);
 
-        $this->demoCreator->createPage($data, $site, $languages, type: $type, layout: $layout, pageCreator: $articleCreator);
+        $article = $this->demoCreator->createPage(
+            $data,
+            $site,
+            $languages,
+            type: $type,
+            layout: $layout,
+            createMedia: false,
+            pageCreator: $articleCreator,
+        );
+
+        $this->refreshDemoArticleCopy($article, $languages, $data);
+        $this->removeRandomDemoMedia($article);
+
         $this->advanceProgress();
 
         $created = 1;
@@ -308,6 +330,103 @@ class DemoCommand extends Command
         }
 
         return $created;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @param  Collection<int, Language>  $languages
+     */
+    private function refreshDemoArticleCopy(Pageable $article, Collection $languages, array $data): void
+    {
+        foreach ($languages as $language) {
+            $languageCode = $language->getAttribute('code');
+
+            if (! is_string($languageCode) || $languageCode === '') {
+                continue;
+            }
+
+            $title = Str::title((string) (is_array($data['name'] ?? null)
+                ? ($data['name'][$languageCode] ?? $data['name']['en'] ?? $article->name)
+                : $article->name));
+
+            $content = $this->articleContent($title);
+            $summary = $this->articleSummary($title);
+            $slug = Str::slug($title);
+
+            $translation = $article->translations()->firstOrNew(['language_id' => $language->id]);
+            $meta = is_array($translation->meta) ? $translation->meta : [];
+            $plainContent = Str::of($content)->stripTags()->squish()->toString();
+
+            $translation->fill([
+                'title' => $title,
+                'content' => $content,
+                'meta' => [
+                    ...$meta,
+                    'description' => Str::limit($plainContent, 160),
+                    'label' => $title,
+                    'link_text' => 'Read article',
+                    'slug' => $slug,
+                    'summary' => $summary,
+                    self::DemoArticleMetaKey => true,
+                ],
+            ]);
+            $translation->save();
+        }
+    }
+
+    private function removeRandomDemoMedia(Pageable $article): void
+    {
+        if (! method_exists($article, 'clearMediaCollection')) {
+            return;
+        }
+
+        $article->clearMediaCollection('image');
+    }
+
+    private function articleSummary(string $title): string
+    {
+        return match ($title) {
+            'Customer Stories' => 'How teams use Capell to launch governed content workflows without losing frontend craft.',
+            'Case Studies' => 'Delivery notes from real Capell builds, covering scope, structure, launch, and measurable outcomes.',
+            'Support' => 'A practical support model for keeping Capell sites healthy after launch.',
+            'News' => 'Product and platform updates for teams running Capell in production.',
+            'Quality' => 'The checks that keep public output consistent across content, design, and deployment.',
+            default => sprintf('%s notes for teams building structured, maintainable Capell websites.', $title),
+        };
+    }
+
+    private function articleContent(string $title): string
+    {
+        $content = match ($title) {
+            'Customer Stories' => [
+                'Customer stories in Capell should show the operating model behind the outcome, not just a polished launch screen.',
+                'Use article content to capture the brief, editorial constraints, reusable layout decisions, and the governance work that made the site maintainable after handover.',
+            ],
+            'Case Studies' => [
+                'Case studies can explain the project shape without turning every customer win into a custom Blade template.',
+                'The article model stores the story, taxonomy, publish date, and route. The layout decides how that proof appears beside the rest of the site.',
+            ],
+            'Support' => [
+                'Support content should make ownership clear for editors, developers, and operators.',
+                'A Capell support article can document release cadence, package upgrades, content QA, static generation, and incident response in one governed publishing flow.',
+            ],
+            'News' => [
+                'News articles give product teams a reliable place to publish changes without creating new route code for each announcement.',
+                'Keep the post focused on what changed, who it affects, and what editors or developers should do next.',
+            ],
+            'Quality' => [
+                'Quality articles make the invisible checks visible: layout consistency, public-output safety, responsive behaviour, content freshness, and cache correctness.',
+                'The same article shell can support release notes, QA findings, and implementation guidance while staying aligned with the wider Capell site design.',
+            ],
+            default => [
+                sprintf('%s content should feel like part of the Capell product site, with practical detail and no placeholder filler.', $title),
+                'The demo keeps article copy structured and portable so the public template owns design decisions while editors own the message.',
+            ],
+        };
+
+        return collect($content)
+            ->map(fn (string $paragraph): string => sprintf('<p>%s</p>', e($paragraph)))
+            ->implode("\n");
     }
 
     /**

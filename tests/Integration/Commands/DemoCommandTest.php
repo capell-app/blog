@@ -136,3 +136,51 @@ it('runs demo command and creates articles and tags for the site', function (): 
         });
     });
 });
+
+it('does not rewrite existing non-demo articles when refreshing demo copy', function (): void {
+    $capellDirectory = storage_path('app/capell');
+    $demoDirectory = $capellDirectory . '/demo';
+
+    File::deleteDirectory($demoDirectory);
+
+    $sourceDemoDirectory = realpath(__DIR__ . '/../../../../../packages/demo-kit/demo');
+
+    throw_if($sourceDemoDirectory === false, RuntimeException::class, 'Demo fixtures directory not found.');
+
+    expect(File::copyDirectory($sourceDemoDirectory, $demoDirectory))->toBeTrue();
+
+    /** @var Language $language */
+    $language = Language::factory()->create([
+        'code' => 'en',
+    ]);
+
+    /** @var Site $site */
+    $site = Site::factory()->language($language)->withTranslations()->create();
+    $site->refresh()->loadMissing('languages', 'language');
+
+    /** @var Article $existingArticle */
+    $existingArticle = Article::factory()
+        ->site($site)
+        ->withTranslations($language, [
+            'title' => 'Editorial Strategy',
+            'content' => '<p>Real editorial copy that must stay untouched.</p>',
+            'meta' => [
+                'slug' => 'editorial-strategy',
+                'summary' => 'Original editorial summary.',
+            ],
+        ])
+        ->create(['name' => 'Editorial Strategy']);
+
+    artisan('capell:blog-demo', [
+        '--sites' => $site->name,
+        '--limit' => 1,
+    ])->assertExitCode(Command::SUCCESS);
+
+    $existingArticle->refresh()->load('translations');
+    $translation = $existingArticle->translations->firstWhere('language_id', $language->id);
+
+    expect($translation?->title)->toBe('Editorial Strategy')
+        ->and($translation?->content)->toBe('<p>Real editorial copy that must stay untouched.</p>')
+        ->and($translation?->meta['summary'] ?? null)->toBe('Original editorial summary.')
+        ->and($translation?->meta['capell_blog_demo'] ?? false)->toBeFalse();
+});
