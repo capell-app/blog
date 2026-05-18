@@ -39,7 +39,7 @@ class ArticleMeta extends Component
 
     public function render(): string|View
     {
-        if ($this->tags->isEmpty() && ($this->withAuthor && ! $this->author instanceof Model)) {
+        if ($this->tags->isEmpty() && (! $this->withAuthor || ! $this->author instanceof Model)) {
             return '';
         }
 

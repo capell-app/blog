@@ -62,45 +62,31 @@ class ArticlePagesTable implements TableConfigurator
                 'lg' => 3,
             ])
             ->columnManagerColumns(3)
-            ->recordClasses(fn (Pageable $record): ?string => $record->deleted_at !== null ? 'table-row-warning' : null)
+            ->recordClasses(self::recordClasses(...))
             ->recordActions([
                 EditAction::make(),
                 ActionGroup::make([
                     ReplicatePageAction::make(),
                     DeleteAction::make()
-                        ->after(function (Pageable $record): void {
-                            PageDeletedAction::run($record);
-                        }),
+                        ->after(self::afterRecordDeleted(...)),
                 ])
                     ->color('gray'),
             ])
             ->toolbarActions([
                 DeleteBulkAction::make()
-                    ->before(function (HasTable&ValidatesDelete $livewire, DeleteBulkAction $action, EloquentCollection|Collection|LazyCollection $records): void {
-                        $records->each(function (Pageable $record) use ($livewire, $action): void {
-                            if (! $livewire->validateDelete($record)) {
-                                $action->cancel();
-                            }
-                        });
-                    })
-                    ->after(function (DeleteBulkAction $action, Collection $records): void {
-                        $records->each(function (Pageable $record): void {
-                            PageDeletedAction::run($record);
-                        });
-                    }),
+                    ->before(self::beforeBulkDelete(...))
+                    ->after(self::afterBulkDelete(...)),
                 RestoreBulkAction::make(),
                 ForceDeleteBulkAction::make()
-                    ->after(function (Pageable $record): void {
-                        PageDeletedAction::run($record);
-                    }),
+                    ->after(self::afterRecordDeleted(...)),
             ])
-            ->recordUrl(fn (Pageable $record): ?string => GetEditPageResourceUrlAction::run($record));
+            ->recordUrl(self::getRecordUrl(...));
     }
 
     protected static function getTableQuery(Builder $query, HasTable $livewire): Builder
     {
         return $query
-            ->whereHas('site', fn (BuilderContract $query): BuilderContract => $query->withTrashed())
+            ->whereHas('site', self::includeTrashedSite(...))
             ->whereHas('type')
             ->with([
                 'blueprint',
@@ -108,19 +94,60 @@ class ArticlePagesTable implements TableConfigurator
                 'creator',
                 'editor',
                 'image',
-                'site' => fn (BuilderContract $query): BuilderContract => $query->withTrashed(),
+                'site' => self::includeTrashedSite(...),
                 'site.siteDomains',
                 'translation' => fn (BuilderContract $query): BuilderContract => $query->with('language')
                     ->select(['translatable_id', 'translatable_type', 'language_id', 'title'])
-                    ->when(
-                        $livewire->getTableFilterState('filter')['language_id'],
-                        fn (BuilderContract $query, int $id) => $query->where('language_id', $id),
-                    ),
+                    ->when($livewire->getTableFilterState('filter')['language_id'], self::applyTranslationLanguageFilter(...)),
                 'translations.language',
                 'type',
-                'pageUrls' => fn (BuilderContract $query): BuilderContract => $query->with('siteDomain')->ordered(),
+                'pageUrls' => self::includeOrderedPageUrls(...),
                 'pageUrl.siteDomain',
             ]);
+    }
+
+    protected static function recordClasses(Pageable $record): ?string
+    {
+        return $record->deleted_at !== null ? 'table-row-warning' : null;
+    }
+
+    protected static function afterRecordDeleted(Pageable $record): void
+    {
+        PageDeletedAction::run($record);
+    }
+
+    protected static function beforeBulkDelete(HasTable&ValidatesDelete $livewire, DeleteBulkAction $action, EloquentCollection|Collection|LazyCollection $records): void
+    {
+        $records->each(function (Pageable $record) use ($livewire, $action): void {
+            if (! $livewire->validateDelete($record)) {
+                $action->cancel();
+            }
+        });
+    }
+
+    protected static function afterBulkDelete(DeleteBulkAction $action, Collection $records): void
+    {
+        $records->each(self::afterRecordDeleted(...));
+    }
+
+    protected static function getRecordUrl(Pageable $record): ?string
+    {
+        return GetEditPageResourceUrlAction::run($record);
+    }
+
+    protected static function includeTrashedSite(BuilderContract $query): BuilderContract
+    {
+        return $query->withTrashed();
+    }
+
+    protected static function applyTranslationLanguageFilter(BuilderContract $query, int $languageId): BuilderContract
+    {
+        return $query->where('language_id', $languageId);
+    }
+
+    protected static function includeOrderedPageUrls(BuilderContract $query): BuilderContract
+    {
+        return $query->with('siteDomain')->ordered();
     }
 
     protected static function getTableColumns(): array
@@ -140,36 +167,14 @@ class ArticlePagesTable implements TableConfigurator
                 ->toggleable(isToggledHiddenByDefault: true),
             SiteColumn::make('site.name')
                 ->color(FilamentColorEnum::LightGray->value)
-                ->hidden(
-                    fn (HasTable $livewire): bool => (($livewire instanceof ListRecords && $livewire->activeTab !== null)
-                            && ! in_array($livewire->getTableFilterState('site_id'), [null, []], true))
-                        || SiteLoader::getTotalSites() <= 1,
-                ),
+                ->hidden(self::shouldHideSiteColumn(...)),
             TextColumn::make('url')
                 ->label(__('capell-admin::table.url'))
                 ->color('primary')
                 ->disabledClick()
                 ->html()
                 ->searchable(query: self::applyUrlSearch(...))
-                ->getStateUsing(function (Pageable $record, HasTable $livewire): ?HtmlString {
-                    $pageUrl = null;
-                    $languageId = $livewire->getTableFilterState('filter')['language_id'] ?? null;
-                    if ($languageId !== null && $languageId !== '') {
-                        $pageUrl = $record->pageUrls->firstWhere('language_id', $languageId);
-                    }
-
-                    if ($pageUrl === null) {
-                        $pageUrl = $record->pageUrls->first();
-                    }
-
-                    if ($pageUrl === null) {
-                        return null;
-                    }
-
-                    $short_url = str($pageUrl->url)->limit(40);
-
-                    return new HtmlString("<a href='" . $pageUrl->full_url . "' target='_blank'>" . $short_url . '</a>');
-                })
+                ->getStateUsing(self::getUrlColumnState(...))
                 ->toggleable(isToggledHiddenByDefault: true),
             MediaLibraryImageColumn::make('image')
                 ->collection('image')
@@ -194,6 +199,34 @@ class ArticlePagesTable implements TableConfigurator
             DateColumn::make('updated_at'),
             DateColumn::make('deleted_at'),
         ];
+    }
+
+    protected static function shouldHideSiteColumn(HasTable $livewire): bool
+    {
+        return (($livewire instanceof ListRecords && $livewire->activeTab !== null)
+                && ! in_array($livewire->getTableFilterState('site_id'), [null, []], true))
+            || SiteLoader::getTotalSites() <= 1;
+    }
+
+    protected static function getUrlColumnState(Pageable $record, HasTable $livewire): ?HtmlString
+    {
+        $pageUrl = null;
+        $languageId = $livewire->getTableFilterState('filter')['language_id'] ?? null;
+        if ($languageId !== null && $languageId !== '') {
+            $pageUrl = $record->pageUrls->firstWhere('language_id', $languageId);
+        }
+
+        if ($pageUrl === null) {
+            $pageUrl = $record->pageUrls->first();
+        }
+
+        if ($pageUrl === null) {
+            return null;
+        }
+
+        $shortUrl = str($pageUrl->url)->limit(40);
+
+        return new HtmlString("<a href='" . $pageUrl->full_url . "' target='_blank'>" . $shortUrl . '</a>');
     }
 
     protected static function applyNameSearch(Builder $query, string $search): Builder
@@ -252,7 +285,7 @@ class ArticlePagesTable implements TableConfigurator
                 ->relationship(
                     name: 'site',
                     titleAttribute: 'name',
-                    modifyQueryUsing: fn (Builder $query) => $query->ordered(),
+                    modifyQueryUsing: self::applyOrderedQuery(...),
                 ),
 
             SelectFilter::make('layout_id')
@@ -262,7 +295,7 @@ class ArticlePagesTable implements TableConfigurator
                 ->relationship(
                     name: 'layout',
                     titleAttribute: 'name',
-                    modifyQueryUsing: fn (Builder $query) => $query->enabled()->ordered(),
+                    modifyQueryUsing: self::applyEnabledOrderedQuery(...),
                 ),
 
             SelectFilter::make('blueprint_id')
@@ -272,9 +305,7 @@ class ArticlePagesTable implements TableConfigurator
                 ->relationship(
                     name: 'type',
                     titleAttribute: 'name',
-                    modifyQueryUsing: fn (Builder $query, ResourcePage|HasPageResource $livewire) => $query->enabled()
-                        ->pageType()
-                        ->adminResource($livewire::getResource()::getResourceName()),
+                    modifyQueryUsing: self::applyBlueprintFilterQuery(...),
                 ),
 
             self::getTagsFilter(),
@@ -287,62 +318,11 @@ class ArticlePagesTable implements TableConfigurator
                         ->label(__('capell-admin::table.language'))
                         ->searchable()
                         ->preload()
-                        ->options(function (HasTable $livewire): array {
-                            if (! $livewire->isTableLoaded()) {
-                                return [];
-                            }
-
-                            return self::getLanguageSearchResults($livewire);
-                        })
-                        ->getSearchResultsUsing(
-                            fn (HasTable $livewire, ?string $search): array => self::getLanguageSearchResults($livewire, $search),
-                        ),
+                        ->options(self::getLanguageOptions(...))
+                        ->getSearchResultsUsing(self::getLanguageSearchResults(...)),
                 ])
-                ->query(function (Builder $query, array $data): void {
-                    $query
-                        ->when(
-                            $data['language_id'] ?? null,
-                            fn (Builder $query) => $query->whereHas(
-                                'translations',
-                                fn (BuilderContract $query): BuilderContract => $query->where(
-                                    'language_id',
-                                    (int) $data['language_id'],
-                                ),
-                            ),
-                        )
-                        ->when(
-                            $data['canonical_page_id'] ?? null,
-                            fn (Builder $query) => $query->where(
-                                'meta->canonical_page_id',
-                                $data['canonical_page_id'],
-                            ),
-                        );
-                })
-                ->indicateUsing(function (array $data): array {
-                    $indicators = [];
-
-                    if (isset($data['language_id']) && $data['language_id'] !== null && $data['language_id'] !== '') {
-                        /** @var class-string<Language> $model */
-                        $model = Language::class;
-
-                        $indicators['language_id'] = __(
-                            'capell-admin::filter.language',
-                            ['search' => $model::query()->find($data['language_id'], 'name')?->name],
-                        );
-                    }
-
-                    if (isset($data['canonical_page_id']) && $data['canonical_page_id'] !== null && $data['canonical_page_id'] !== '') {
-                        /** @var class-string<Article> $model */
-                        $model = Article::class;
-
-                        $indicators['canonical_page_id'] = __(
-                            'capell-admin::filter.canonical_page',
-                            ['search' => $model::query()->where('id', $data['canonical_page_id'])->value('name')],
-                        );
-                    }
-
-                    return $indicators;
-                }),
+                ->query(self::applyFilterQuery(...))
+                ->indicateUsing(self::indicateFilter(...)),
 
             DateFilter::make('visible_from')
                 ->label(__('capell-admin::form.publish_date')),
@@ -352,6 +332,75 @@ class ArticlePagesTable implements TableConfigurator
         ];
     }
 
+    protected static function applyOrderedQuery(Builder $query): Builder
+    {
+        return $query->ordered();
+    }
+
+    protected static function applyEnabledOrderedQuery(Builder $query): Builder
+    {
+        return $query->enabled()->ordered();
+    }
+
+    protected static function applyBlueprintFilterQuery(Builder $query, ResourcePage|HasPageResource $livewire): Builder
+    {
+        return $query->enabled()
+            ->pageType()
+            ->adminResource($livewire::getResource()::getResourceName());
+    }
+
+    protected static function getLanguageOptions(HasTable $livewire): array
+    {
+        if (! $livewire->isTableLoaded()) {
+            return [];
+        }
+
+        return self::getLanguageSearchResults($livewire);
+    }
+
+    protected static function applyFilterQuery(Builder $query, array $data): void
+    {
+        $languageId = $data['language_id'] ?? null;
+        if ($languageId !== null && $languageId !== '') {
+            $query->whereHas(
+                'translations',
+                fn (BuilderContract $query): BuilderContract => $query->where('language_id', (int) $languageId),
+            );
+        }
+
+        $canonicalPageId = $data['canonical_page_id'] ?? null;
+        if ($canonicalPageId !== null && $canonicalPageId !== '') {
+            $query->where('meta->canonical_page_id', $canonicalPageId);
+        }
+    }
+
+    protected static function indicateFilter(array $data): array
+    {
+        $indicators = [];
+
+        if (isset($data['language_id']) && $data['language_id'] !== null && $data['language_id'] !== '') {
+            /** @var class-string<Language> $model */
+            $model = Language::class;
+
+            $indicators['language_id'] = __(
+                'capell-admin::filter.language',
+                ['search' => $model::query()->find($data['language_id'], 'name')?->name],
+            );
+        }
+
+        if (isset($data['canonical_page_id']) && $data['canonical_page_id'] !== null && $data['canonical_page_id'] !== '') {
+            /** @var class-string<Article> $model */
+            $model = Article::class;
+
+            $indicators['canonical_page_id'] = __(
+                'capell-admin::filter.canonical_page',
+                ['search' => $model::query()->where('id', $data['canonical_page_id'])->value('name')],
+            );
+        }
+
+        return $indicators;
+    }
+
     protected static function getLanguageSearchResults(HasTable $livewire, ?string $search = null): array
     {
         /* @var class-string<Language> $model */
@@ -359,16 +408,22 @@ class ArticlePagesTable implements TableConfigurator
 
         $activeTabSiteId = $livewire instanceof ListRecords ? $livewire->activeTab : null;
 
-        return $model::query()->when($activeTabSiteId, fn (Builder $query, int $siteId) => $query->whereHas(
-            'sites',
-            fn (BuilderContract $query): BuilderContract => $query->where('sites.id', $siteId),
-        ))
-            ->when(
-                $search,
-                fn (Builder $query, string $search) => $query
-                    ->where('name', 'like', sprintf('%%%s%%', $search))
-                    ->orWhere('code', 'like', sprintf('%%%s%%', $search)),
-            )
+        $query = $model::query();
+
+        if ($activeTabSiteId !== null) {
+            $query->whereHas(
+                'sites',
+                fn (BuilderContract $query): BuilderContract => $query->where('sites.id', $activeTabSiteId),
+            );
+        }
+
+        if ($search !== null && $search !== '') {
+            $query
+                ->where('name', 'like', sprintf('%%%s%%', $search))
+                ->orWhere('code', 'like', sprintf('%%%s%%', $search));
+        }
+
+        return $query
             ->ordered()
             ->get()
             ->pluck('name', 'id')
@@ -384,47 +439,63 @@ class ArticlePagesTable implements TableConfigurator
             ->relationship(
                 name: 'tags',
                 titleAttribute: 'name',
-                modifyQueryUsing: function (Builder $query, HasTable $livewire): void {
-                    $siteId = $livewire instanceof ListRecords ? $livewire->activeTab : null;
-
-                    if (in_array($siteId, [null, '', '0'], true)) {
-                        $query->with('site')->orderBy('site_id');
-                    } else {
-                        $query->where(fn (Builder $builder): Builder => $builder->where('site_id', $siteId)->orWhereNull('site_id'));
-                        $query->whereHas('pages', fn (BuilderContract $builder): BuilderContract => $builder->where('site_id', $siteId));
-                    }
-
-                    $languageId = $livewire->getTableFilterState('filter')['language_id'] ?? null;
-                    if ($languageId !== null) {
-                        /** @var class-string<Language> $model */
-                        $model = Language::class;
-
-                        $code = $model::query()->find($languageId, 'code')?->code;
-                        if ($code !== null && $code !== '') {
-                            $query->whereRaw('JSON_EXTRACT(`tags`.`name`, ' . DB::getPdo()->quote('$.' . $code) . ') IS NOT NULL');
-                        }
-                    }
-                },
+                modifyQueryUsing: self::modifyTagsFilterQuery(...),
             )
-            ->query(function (Builder $query, array $data): Builder {
-                $value = $data['value'] ?? null;
+            ->query(self::applyTagsFilterQuery(...))
+            ->indicateUsing(self::indicateTagsFilter(...));
+    }
 
-                return $query->when(
-                    $value,
-                    fn (Builder $query): Builder => $query->whereHas('tags', fn (BuilderContract $builder): BuilderContract => $builder->where('tags.id', (int) $value)),
-                );
-            })
-            ->indicateUsing(function (array $state): array {
-                $indicators = [];
-                $value = $state['value'] ?? null;
-                if ($value) {
-                    $indicators['tags'] = __(
-                        'capell-layout-builder::filter.tag',
-                        ['search' => Tag::query()->find($value)?->name],
-                    );
-                }
+    protected static function modifyTagsFilterQuery(Builder $query, HasTable $livewire): void
+    {
+        $siteId = $livewire instanceof ListRecords ? $livewire->activeTab : null;
 
-                return $indicators;
-            });
+        if (in_array($siteId, [null, '', '0'], true)) {
+            $query->with('site')->orderBy('site_id');
+        } else {
+            $query->where(fn (Builder $builder): Builder => $builder->where('site_id', $siteId)->orWhereNull('site_id'));
+            $query->whereHas('pages', fn (BuilderContract $builder): BuilderContract => $builder->where('site_id', $siteId));
+        }
+
+        $languageId = $livewire->getTableFilterState('filter')['language_id'] ?? null;
+        if ($languageId === null) {
+            return;
+        }
+
+        /** @var class-string<Language> $model */
+        $model = Language::class;
+
+        $code = $model::query()->find($languageId, 'code')?->code;
+        if ($code !== null && $code !== '') {
+            $query->whereRaw('JSON_EXTRACT(`tags`.`name`, ' . DB::getPdo()->quote('$.' . $code) . ') IS NOT NULL');
+        }
+    }
+
+    protected static function applyTagsFilterQuery(Builder $query, array $data): Builder
+    {
+        $value = $data['value'] ?? null;
+
+        if (! $value) {
+            return $query;
+        }
+
+        return $query->whereHas(
+            'tags',
+            fn (BuilderContract $builder): BuilderContract => $builder->where('tags.id', (int) $value),
+        );
+    }
+
+    protected static function indicateTagsFilter(array $state): array
+    {
+        $indicators = [];
+        $value = $state['value'] ?? null;
+
+        if ($value) {
+            $indicators['tags'] = __(
+                'capell-layout-builder::filter.tag',
+                ['search' => Tag::query()->find($value)?->name],
+            );
+        }
+
+        return $indicators;
     }
 }

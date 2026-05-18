@@ -1,14 +1,16 @@
 <div
-    class="capell-article-meta article-meta mb-4 mt-10 flex items-end justify-between border-t border-black/10 pt-8 dark:border-gray-700/50"
+    @class([
+        'capell-article-meta article-meta mt-10 flex flex-col gap-5 md:flex-row md:items-center md:justify-between',
+        'border-y border-slate-200 py-6' => $withAuthor && $author,
+        'pt-2' => ! ($withAuthor && $author) && $tags->isNotEmpty(),
+    ])
 >
     @if ($withAuthor && $author)
-        <x-capell-blog::page.author :author="$author" />
+        <x-capell-blog::page.author class="min-w-0" :author="$author" />
     @endif
 
     @if ($tags->isNotEmpty())
-        <div
-            class="article-tags flex flex-col items-center gap-x-10 gap-y-6 md:flex-row md:justify-between lg:flex-row-reverse"
-        >
+        <div class="article-tags flex flex-col gap-x-10 gap-y-4 md:items-end">
             <x-capell-blog::page.tags
                 :tagPage="$tagPage"
                 :tags="$tags"

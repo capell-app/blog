@@ -78,28 +78,12 @@ class TagLoader
 
         return $model::query()
             ->withCount([
-                'taggables' => fn (Builder $query): Builder => $query->whereHas(
-                    'taggable',
-                    fn (Builder $query): Builder => $query->where('site_id', $site->id)
-                        ->whereRelation('translation', 'language_id', $language->id),
-                ),
+                'taggables' => fn (Builder $query): Builder => self::applyTaggableSiteLanguageScope($query, $site, $language),
             ])
             ->where('type', TagTypeEnum::Page)
-            ->where(
-                fn (Builder $query): Builder => $query->where('site_id', $site->id)->orWhereNull('site_id'),
-            )
-            ->when(
-                $hasArticles,
-                fn (Builder $query) => $query->whereHas(
-                    'taggables',
-                    fn (BuilderContract $query): BuilderContract => $query->whereHas(
-                        'taggable',
-                        fn (BuilderContract $query): BuilderContract => $query->where('site_id', $site->id)
-                            ->whereRelation('translation', 'language_id', $language->id),
-                    ),
-                ),
-            )
-            ->tap(fn (Builder $query) => $query->whereNotNull($query->qualifyColumn('name->' . $language->code)))
+            ->where(fn (Builder $query): Builder => self::applySiteScope($query, $site))
+            ->when($hasArticles, fn (Builder $query): Builder => self::applyHasArticlesScope($query, $site, $language))
+            ->tap(fn (Builder $query): Builder => self::applyTranslatedNameScope($query, $language))
             ->ordered();
     }
 
@@ -187,6 +171,33 @@ class TagLoader
         }
 
         return $tag;
+    }
+
+    private static function applyTaggableSiteLanguageScope(BuilderContract $query, Site $site, Language $language): BuilderContract
+    {
+        return $query->whereHas(
+            'taggable',
+            fn (BuilderContract $query): BuilderContract => $query->where('site_id', $site->id)
+                ->whereRelation('translation', 'language_id', $language->id),
+        );
+    }
+
+    private static function applySiteScope(Builder $query, Site $site): Builder
+    {
+        return $query->where('site_id', $site->id)->orWhereNull('site_id');
+    }
+
+    private static function applyHasArticlesScope(Builder $query, Site $site, Language $language): Builder
+    {
+        return $query->whereHas(
+            'taggables',
+            fn (BuilderContract $query): BuilderContract => self::applyTaggableSiteLanguageScope($query, $site, $language),
+        );
+    }
+
+    private static function applyTranslatedNameScope(Builder $query, Language $language): Builder
+    {
+        return $query->whereNotNull($query->qualifyColumn('name->' . $language->code));
     }
 
     private static function trackCachedTags(Collection|LengthAwarePaginator $tags): void

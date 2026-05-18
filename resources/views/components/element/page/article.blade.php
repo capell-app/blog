@@ -124,6 +124,7 @@
                 :title="null"
                 :image-title="$pageTranslation?->title"
                 :heading-style="$element->getMeta('heading_style')"
+                width="content"
             />
         </div>
 
