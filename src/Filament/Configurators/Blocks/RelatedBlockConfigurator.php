@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Capell\Blog\Filament\Configurators\Elements;
+namespace Capell\Blog\Filament\Configurators\Blocks;
 
 use Capell\Admin\Filament\Components\Forms\CacheFrequencySelect;
 use Capell\Admin\Filament\Components\Forms\FixedWidthSidebar;
 use Capell\Core\Models\Blueprint;
-use Capell\LayoutBuilder\Filament\Components\Forms\Element\ComponentSection;
-use Capell\LayoutBuilder\Filament\Components\Forms\Element\CreateDetailsSchema;
-use Capell\LayoutBuilder\Filament\Components\Forms\Element\DisplaySection;
-use Capell\LayoutBuilder\Filament\Components\Forms\Element\ResultsSchema;
-use Capell\LayoutBuilder\Filament\Components\Forms\Element\SettingsSchema;
-use Capell\LayoutBuilder\Filament\Components\Forms\Element\Tab\ElementAdminTab;
-use Capell\LayoutBuilder\Filament\Components\Forms\Element\Tab\ElementDisplayTab;
-use Capell\LayoutBuilder\Filament\Components\Forms\Element\TranslationsRepeater;
-use Capell\LayoutBuilder\Filament\Configurators\Elements\DefaultElementConfigurator;
+use Capell\LayoutBuilder\Filament\Components\Forms\Block\ComponentSection;
+use Capell\LayoutBuilder\Filament\Components\Forms\Block\CreateDetailsSchema;
+use Capell\LayoutBuilder\Filament\Components\Forms\Block\DisplaySection;
+use Capell\LayoutBuilder\Filament\Components\Forms\Block\ResultsSchema;
+use Capell\LayoutBuilder\Filament\Components\Forms\Block\SettingsSchema;
+use Capell\LayoutBuilder\Filament\Components\Forms\Block\Tab\BlockAdminTab;
+use Capell\LayoutBuilder\Filament\Components\Forms\Block\Tab\BlockDisplayTab;
+use Capell\LayoutBuilder\Filament\Components\Forms\Block\TranslationsRepeater;
+use Capell\LayoutBuilder\Filament\Configurators\Blocks\DefaultBlockConfigurator;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -27,7 +27,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Override;
 
-class RelatedElementConfigurator extends DefaultElementConfigurator
+class RelatedBlockConfigurator extends DefaultBlockConfigurator
 {
     #[Override]
     public function make(Schema $configurator): array
@@ -72,7 +72,7 @@ class RelatedElementConfigurator extends DefaultElementConfigurator
                 ->visibleOn('edit')
                 ->columnSpanFull()
                 ->tabs([
-                    ElementDisplayTab::make([
+                    BlockDisplayTab::make([
                         DisplaySection::make([
                             Group::make([
                                 Checkbox::make('exclude_parent')
@@ -107,7 +107,7 @@ class RelatedElementConfigurator extends DefaultElementConfigurator
                         ComponentSection::make()
                             ->statePath('meta'),
                     ]),
-                    ElementAdminTab::make(),
+                    BlockAdminTab::make(),
                 ]),
         ];
     }

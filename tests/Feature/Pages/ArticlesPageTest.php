@@ -157,7 +157,7 @@ test('article page', function (): void {
     $archivesPage = $blogCreator->createArchivesPage($blogPage);
     $blogCreator->createArchivePage($archivesPage);
 
-    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createElements: true);
+    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createBlocks: true);
     $tagPage = $blogCreator->createTagPage($site, $tagsPage);
 
     $article = Article::factory()
@@ -187,7 +187,7 @@ test('article page list tags', function (): void {
 
     $blogPage = $blogCreator->createBlogPage($site);
 
-    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createElements: true);
+    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createBlocks: true);
     $tagPage = $blogCreator->createTagPage($site, $tagsPage);
 
     $archivesPage = $blogCreator->createArchivesPage($blogPage);

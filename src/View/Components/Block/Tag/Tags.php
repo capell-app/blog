@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Capell\Blog\View\Components\Element\Tag;
+namespace Capell\Blog\View\Components\Block\Tag;
 
 use Capell\Blog\Actions\BuildTagListingDataAction;
 use Capell\Blog\Data\TagListingData;
 use Capell\Core\Models\Page;
-use Capell\FoundationTheme\View\Components\Element\AbstractElement;
+use Capell\FoundationTheme\View\Components\Block\AbstractBlock;
 use Capell\Frontend\Facades\Frontend;
 use Closure;
 use Illuminate\Contracts\View\View;
@@ -15,7 +15,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Override;
 
-class Tags extends AbstractElement
+class Tags extends AbstractBlock
 {
     public ?Page $tagPage = null;
 
@@ -23,7 +23,7 @@ class Tags extends AbstractElement
 
     public ?TagListingData $tagListing = null;
 
-    protected static string $defaultView = 'capell-blog::components.element.tag.tags';
+    protected static string $defaultView = 'capell-blog::components.block.tag.tags';
 
     #[Override]
     public function render(array $data = []): View|string|Closure
@@ -35,14 +35,14 @@ class Tags extends AbstractElement
         ]);
     }
 
-    protected function mountElement(): void
+    protected function mountBlock(): void
     {
-        $limit = $this->element->meta['limit'] ?? null;
+        $limit = $this->block->meta['limit'] ?? null;
         $limit = is_numeric($limit) ? (int) $limit : null;
 
-        $withPagination = (bool) $this->element->getMeta('pagination');
-        $occurrence = is_numeric($this->elementData['occurrence'] ?? null) ? (int) $this->elementData['occurrence'] : $this->elementIndex + 1;
-        $paginationKey = sprintf('tags-%s-%s-%d', $this->containerKey, $this->element->getKey(), $occurrence);
+        $withPagination = (bool) $this->block->getMeta('pagination');
+        $occurrence = is_numeric($this->blockData['occurrence'] ?? null) ? (int) $this->blockData['occurrence'] : $this->blockIndex + 1;
+        $paginationKey = sprintf('tags-%s-%s-%d', $this->containerKey, $this->block->getKey(), $occurrence);
         $requestedPage = request()->query($paginationKey, 1);
         $paginationPage = $withPagination && is_numeric($requestedPage) ? (int) $requestedPage : null;
 
@@ -71,11 +71,11 @@ class Tags extends AbstractElement
             return;
         }
 
-        if (isset($this->elementData['meta']['hide_no_results']) && $this->elementData['meta']['hide_no_results']) {
+        if (isset($this->blockData['meta']['hide_no_results']) && $this->blockData['meta']['hide_no_results']) {
             $this->skipRender = true;
         }
 
-        if (config('capell-layout-builder.element.skip_render_empty') === true) {
+        if (config('capell-layout-builder.block.skip_render_empty') === true) {
             $this->skipRender = true;
         }
     }

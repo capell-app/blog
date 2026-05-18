@@ -4,29 +4,29 @@ declare(strict_types=1);
 
 use Capell\Blog\Support\Creator\BlogCreator;
 use Capell\Core\Models\Blueprint;
-use Capell\LayoutBuilder\Filament\Resources\Elements\Pages\EditElement;
-use Capell\LayoutBuilder\Models\Element;
+use Capell\LayoutBuilder\Filament\Resources\Blocks\Pages\EditBlock;
+use Capell\LayoutBuilder\Models\Block;
 use Capell\Tests\Support\Concerns\CreatesAdminUser;
 
 use function Pest\Livewire\livewire;
 
 uses(CreatesAdminUser::class)
-    ->group('element');
+    ->group('block');
 
 beforeEach(function (): void {
     test()->actingAsAdmin();
 });
 
-test('can edit related element', function (): void {
+test('can edit related block', function (): void {
     $typeCreator = new BlogCreator;
-    $element = $typeCreator->relatedArticlesElement();
+    $block = $typeCreator->relatedArticlesBlock();
 
-    $newData = Element::factory()->make();
+    $newData = Block::factory()->make();
 
     Blueprint::factory()->page()->state(['key' => 'home'])->create();
 
-    livewire(EditElement::class, [
-        'record' => $element->getRouteKey(),
+    livewire(EditBlock::class, [
+        'record' => $block->getRouteKey(),
     ])
         ->assertSuccessful()
         ->fillForm([
@@ -42,7 +42,7 @@ test('can edit related element', function (): void {
         ->call('save')
         ->assertHasNoFormErrors();
 
-    expect($element->refresh())
+    expect($block->refresh())
         ->name->toBe($newData->name)
         ->key->toBe($newData->key);
 });

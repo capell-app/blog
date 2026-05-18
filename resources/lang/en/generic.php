@@ -9,7 +9,7 @@ return [
     'article_archives' => 'Article Archives',
     'article_navigation' => 'Article navigation',
     'articles' => 'Articles',
-    'articles_info' => 'Blog adds article publishing, archives, tags, elements, and Site Discovery sitemap contributions.',
+    'articles_info' => 'Blog adds article publishing, archives, tags, blocks, and Site Discovery sitemap contributions.',
     'blog' => 'Blog',
     'blog_archive_page' => 'Archive Page',
     'blog_archive_title' => 'Articles from :archive_month :archive_year.',

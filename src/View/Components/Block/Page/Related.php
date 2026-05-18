@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Capell\Blog\View\Components\Element\Page;
+namespace Capell\Blog\View\Components\Block\Page;
 
 use Capell\Blog\Support\Loader\TagLoader;
 use Capell\Core\Models\Page;
-use Capell\FoundationTheme\View\Components\Element\Page\AbstractPagesElement;
+use Capell\FoundationTheme\View\Components\Block\Page\AbstractPagesBlock;
 use Capell\Frontend\Facades\Frontend;
 use Capell\Frontend\Support\Loader\PageLoader;
 use Illuminate\Contracts\Database\Eloquent\Builder as BuilderContract;
@@ -14,13 +14,13 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
-class Related extends AbstractPagesElement
+class Related extends AbstractPagesBlock
 {
-    protected static string $defaultView = 'capell-layout-builder::components.element.asset.pages';
+    protected static string $defaultView = 'capell-layout-builder::components.block.asset.pages';
 
-    protected function mountElement(): void
+    protected function mountBlock(): void
     {
-        $limit = $this->element->meta['limit'] ?? config('capell-frontend.pagination_limit', 12);
+        $limit = $this->block->meta['limit'] ?? config('capell-frontend.pagination_limit', 12);
 
         $page = Frontend::page();
 
@@ -28,9 +28,9 @@ class Related extends AbstractPagesElement
 
         $tagIds = $tags->pluck('id')->toArray();
 
-        $excludeParent = $page->hasPageHierarchy() && (bool) ($this->element->meta['exclude_parent'] ?? false);
+        $excludeParent = $page->hasPageHierarchy() && (bool) ($this->block->meta['exclude_parent'] ?? false);
 
-        $morphModel = $this->element->getMeta('page_model');
+        $morphModel = $this->block->getMeta('page_model');
 
         $modelClass = null;
 
@@ -43,9 +43,9 @@ class Related extends AbstractPagesElement
             site: Frontend::site(),
             limit: $limit,
             withChildrenCount: $page->type->meta['with_children_count'] ?? true,
-            withImage: $this->element->meta['with_image'] ?? false,
-            withParent: $this->element->meta['with_parent'] ?? false,
-            withDate: $this->element->meta['with_date'] ?? false,
+            withImage: $this->block->meta['with_image'] ?? false,
+            withParent: $this->block->meta['with_parent'] ?? false,
+            withDate: $this->block->meta['with_date'] ?? false,
             cacheKeyPrepend: 'tags-' . implode('-', $tagIds),
             morphModel: $modelClass,
             /**
@@ -63,10 +63,10 @@ class Related extends AbstractPagesElement
                         ->listable()
                         ->accessible()
                         ->when(
-                            $this->element->meta['exclude_types'] ?? false,
+                            $this->block->meta['exclude_types'] ?? false,
                             fn (BuilderContract $query): BuilderContract => $query->whereNotIn(
                                 'blueprints.key',
-                                $this->element->meta['exclude_types'] ?? [],
+                                $this->block->meta['exclude_types'] ?? [],
                             ),
                         ),
                 )

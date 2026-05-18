@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Capell\Blog\Filament\Configurators\Elements;
+namespace Capell\Blog\Filament\Configurators\Blocks;
 
-use Capell\LayoutBuilder\Filament\Components\Forms\Element\AdminSchema;
-use Capell\LayoutBuilder\Filament\Components\Forms\Element\SettingsSchema;
-use Capell\LayoutBuilder\Filament\Components\Forms\Element\Tab\ElementDisplayTab;
-use Capell\LayoutBuilder\Filament\Configurators\Elements\DefaultElementConfigurator;
+use Capell\LayoutBuilder\Filament\Components\Forms\Block\AdminSchema;
+use Capell\LayoutBuilder\Filament\Components\Forms\Block\SettingsSchema;
+use Capell\LayoutBuilder\Filament\Components\Forms\Block\Tab\BlockDisplayTab;
+use Capell\LayoutBuilder\Filament\Configurators\Blocks\DefaultBlockConfigurator;
 use Filament\Forms\Components\Checkbox;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Section;
@@ -17,7 +17,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Override;
 
-class ArticleElementConfigurator extends DefaultElementConfigurator
+class ArticleBlockConfigurator extends DefaultBlockConfigurator
 {
     #[Override]
     protected function getFormSchema(Schema $configurator): array
@@ -44,7 +44,7 @@ class ArticleElementConfigurator extends DefaultElementConfigurator
                     ->visibleOn(['edit', 'editOption'])
                     ->columnSpanFull()
                     ->tabs([
-                        ElementDisplayTab::make([
+                        BlockDisplayTab::make([
                             ...SettingsSchema::make($configurator),
                             $this->articleSettingsSchema(),
                         ]),

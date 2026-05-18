@@ -13,7 +13,7 @@ use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\Site;
 use Capell\Core\Support\Creator\BlueprintCreator;
-use Capell\LayoutBuilder\Support\Creator\ElementCreator;
+use Capell\LayoutBuilder\Support\Creator\BlockCreator;
 use Capell\LayoutBuilder\Support\Creator\TypeCreator as LayoutTypeCreator;
 use Capell\Navigation\Enums\NavigationHandle;
 use Illuminate\Support\Collection;
@@ -22,20 +22,20 @@ use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 /**
- * @method static BlogPublishingSurfaceData run(Site $site, ?Collection $languages = null, bool $createElements = true)
+ * @method static BlogPublishingSurfaceData run(Site $site, ?Collection $languages = null, bool $createBlocks = true)
  */
 class EnsureBlogPublishingSurfaceAction
 {
     use AsFake;
     use AsObject;
 
-    public function handle(Site $site, ?Collection $languages = null, bool $createElements = true): BlogPublishingSurfaceData
+    public function handle(Site $site, ?Collection $languages = null, bool $createBlocks = true): BlogPublishingSurfaceData
     {
         $blogCreator = resolve(BlogCreator::class);
         $languages ??= $site->getAllLanguages();
 
-        if ($createElements) {
-            $this->ensureSurfaceElements($blogCreator, $languages);
+        if ($createBlocks) {
+            $this->ensureSurfaceBlocks($blogCreator, $languages);
         }
 
         $blogPage = $blogCreator->createBlogPage(
@@ -91,16 +91,16 @@ class EnsureBlogPublishingSurfaceAction
         );
     }
 
-    private function ensureSurfaceElements(BlogCreator $blogCreator, Collection $languages): void
+    private function ensureSurfaceBlocks(BlogCreator $blogCreator, Collection $languages): void
     {
-        $resultsElementType = resolve(LayoutTypeCreator::class)->resultsElementType();
+        $resultsBlockType = resolve(LayoutTypeCreator::class)->resultsBlockType();
 
-        $blogCreator->createLatestArticlesElement($languages);
-        $blogCreator->createArchivesElement($languages);
-        $blogCreator->createTagsElement($languages);
-        $blogCreator->relatedArticlesElement($resultsElementType, $languages);
+        $blogCreator->createLatestArticlesBlock($languages);
+        $blogCreator->createArchivesBlock($languages);
+        $blogCreator->createTagsBlock($languages);
+        $blogCreator->relatedArticlesBlock($resultsBlockType, $languages);
 
-        resolve(ElementCreator::class)->latestPagesElement($resultsElementType, $languages);
+        resolve(BlockCreator::class)->latestPagesBlock($resultsBlockType, $languages);
     }
 
     private function getPageType(BlogCreator $blogCreator, string $key): Blueprint

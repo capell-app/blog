@@ -3,57 +3,57 @@
 declare(strict_types=1);
 
 use Capell\Blog\Support\Creator\BlogCreator;
-use Capell\LayoutBuilder\Filament\Resources\Elements\Pages\EditElement;
-use Capell\LayoutBuilder\Filament\Resources\Elements\Pages\ListElements;
-use Capell\LayoutBuilder\Models\Element;
+use Capell\LayoutBuilder\Filament\Resources\Blocks\Pages\EditBlock;
+use Capell\LayoutBuilder\Filament\Resources\Blocks\Pages\ListBlocks;
+use Capell\LayoutBuilder\Models\Block;
 use Capell\Tests\Support\Concerns\CreatesAdminUser;
 
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Livewire\livewire;
 
 uses(CreatesAdminUser::class)
-    ->group('element');
+    ->group('block');
 
 beforeEach(function (): void {
     test()->actingAsAdmin();
 });
 
-test('can create article element type', function (): void {
-    $newData = Element::factory()->make();
+test('can create article block type', function (): void {
+    $newData = Block::factory()->make();
 
     $typeCreator = new BlogCreator;
 
-    $type = $typeCreator->createArticleElementType();
+    $type = $typeCreator->createArticleBlockType();
 
-    livewire(ListElements::class)
+    livewire(ListBlocks::class)
         ->assertSuccessful()
         ->assertCountTableRecords(0);
 
-    Element::query()->create([
+    Block::query()->create([
         'name' => $newData->name,
         'key' => str($newData->name)->slug()->toString(),
         'blueprint_id' => $type->id,
         'status' => true,
     ]);
 
-    assertDatabaseHas(Element::class, [
+    assertDatabaseHas(Block::class, [
         'name' => $newData->name,
         'key' => str($newData->name)->slug()->toString(),
         'blueprint_id' => $type->id,
     ]);
 });
 
-test('can edit article element', function (): void {
+test('can edit article block', function (): void {
     $typeCreator = new BlogCreator;
 
-    $type = $typeCreator->createArticleElementType();
+    $type = $typeCreator->createArticleBlockType();
 
-    $newData = Element::factory()->make();
+    $newData = Block::factory()->make();
 
-    $element = Element::factory()->for($type)->create();
+    $block = Block::factory()->for($type)->create();
 
-    livewire(EditElement::class, [
-        'record' => $element->getRouteKey(),
+    livewire(EditBlock::class, [
+        'record' => $block->getRouteKey(),
     ])
         ->assertSuccessful()
         ->fillForm([
@@ -69,7 +69,7 @@ test('can edit article element', function (): void {
         ->call('save')
         ->assertHasNoFormErrors();
 
-    expect($element->refresh())
+    expect($block->refresh())
         ->name->toBe($newData->name)
         ->key->toBe($newData->key);
 });

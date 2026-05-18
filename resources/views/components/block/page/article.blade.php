@@ -12,11 +12,11 @@
     'containerKey',
     'containerWidth' => null,
     'loop',
-    'element',
-    'headingSize' => $element->getMeta('heading_size', 'h1'),
-    'withAuthor' => (bool) $element->getMeta('with_author'),
-    'withDate' => (bool) $element->getMeta('with_date'),
-    'withNextPrev' => (bool) $element->getMeta('with_next_prev'),
+    'block',
+    'headingSize' => $block->getMeta('heading_size', 'h1'),
+    'withAuthor' => (bool) $block->getMeta('with_author'),
+    'withDate' => (bool) $block->getMeta('with_date'),
+    'withNextPrev' => (bool) $block->getMeta('with_next_prev'),
 ])
 @php
     $nextPage ??= null;
@@ -70,13 +70,13 @@
     $hasTagMeta = $articleMetaData?->tags->isNotEmpty() ?? false;
 @endphp
 
-<x-capell-layout-builder::widget.wrapper
-    class="capell-page-article element element-{{ $element->key }}"
+<x-capell-foundation-theme::block.wrapper
+    class="capell-page-article block block-{{ $block->key }}"
     :$container
     :$containerKey
     :$containerWidth
     :index="$loop->index"
-    :widget="$element"
+    :widget="$block"
     container-class="capell-blog-article flex flex-col gap-10"
 >
     <article class="grid gap-10">
@@ -120,10 +120,10 @@
                 :content="$pageTranslation?->content"
                 :content-type="$pageType?->content_structure"
                 :muted="in_array($containerKey, $secondaryContainers)"
-                :text-align="$element->getMeta('align')"
+                :text-align="$block->getMeta('align')"
                 :title="null"
                 :image-title="$pageTranslation?->title"
-                :heading-style="$element->getMeta('heading_style')"
+                :heading-style="$block->getMeta('heading_style')"
                 width="content"
             />
         </div>
@@ -223,4 +223,4 @@
             </nav>
         @endif
     </article>
-</x-capell-layout-builder::widget.wrapper>
+</x-capell-foundation-theme::block.wrapper>

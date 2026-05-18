@@ -9,8 +9,8 @@ use Capell\Admin\Enums\ConfiguratorTypeEnum;
 use Capell\Admin\Enums\ResourceEnum as AdminResourceEnum;
 use Capell\Admin\Facades\CapellAdmin;
 use Capell\Blog\Actions\EnsureBlogPublishingSurfaceAction;
-use Capell\Blog\Enums\ElementComponentEnum;
-use Capell\Blog\Enums\ElementConfiguratorEnum;
+use Capell\Blog\Enums\BlockComponentEnum;
+use Capell\Blog\Enums\BlockConfiguratorEnum;
 use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Filament\Configurators\Articles\ArticlePageConfigurator;
 use Capell\Blog\Listeners\AddBlogPagesToNavigation;
@@ -42,7 +42,7 @@ final class AdminServiceProvider extends ServiceProvider
         }
 
         $this->registerResources();
-        $this->registerElementComponents();
+        $this->registerBlockComponents();
         $this->registerConfigurators();
         $this->registerDefaultPages();
         $this->registerNavigationListener();
@@ -62,13 +62,13 @@ final class AdminServiceProvider extends ServiceProvider
         ));
     }
 
-    private function registerElementComponents(): void
+    private function registerBlockComponents(): void
     {
         if (! enum_exists(self::LAYOUT_BUILDER_COMPONENT_TYPE_ENUM)) {
             return;
         }
 
-        CapellCore::registerComponents(self::LAYOUT_BUILDER_COMPONENT_TYPE_ENUM::Element->name, ElementComponentEnum::cases());
+        CapellCore::registerComponents(self::LAYOUT_BUILDER_COMPONENT_TYPE_ENUM::Block->name, BlockComponentEnum::cases());
     }
 
     private function registerConfigurators(): void
@@ -83,7 +83,7 @@ final class AdminServiceProvider extends ServiceProvider
             return;
         }
 
-        foreach (ElementConfiguratorEnum::cases() as $configurator) {
+        foreach (BlockConfiguratorEnum::cases() as $configurator) {
             $configuratorClass = $configurator->value;
 
             if (! class_exists($configuratorClass)) {
@@ -92,7 +92,7 @@ final class AdminServiceProvider extends ServiceProvider
 
             CapellAdmin::contributeToAdminSurface(AdminSurfaceContributionData::configurator(
                 class: $configuratorClass,
-                group: self::LAYOUT_BUILDER_CONFIGURATOR_TYPE_ENUM::Element->value,
+                group: self::LAYOUT_BUILDER_CONFIGURATOR_TYPE_ENUM::Block->value,
                 name: $configuratorClass::getKey(),
             ));
         }

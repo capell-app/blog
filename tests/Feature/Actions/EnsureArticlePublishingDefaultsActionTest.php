@@ -12,13 +12,13 @@ it('keeps latest pages in default sidebars when adding latest articles', functio
         'key' => LayoutEnum::Default->value,
         'containers' => [
             'sidebar' => [
-                'elements' => [
-                    ['element_key' => 'siblings'],
-                    ['element_key' => 'latest-pages'],
+                'blocks' => [
+                    ['block_key' => 'siblings'],
+                    ['block_key' => 'latest-pages'],
                 ],
             ],
         ],
-        'elements' => ['siblings', 'latest-pages'],
+        'blocks' => ['siblings', 'latest-pages'],
     ]);
 
     Layout::query()->create([
@@ -26,21 +26,21 @@ it('keeps latest pages in default sidebars when adding latest articles', functio
         'key' => LayoutEnum::Results->value,
         'containers' => [
             'sidebar' => [
-                'elements' => [
-                    ['element_key' => 'latest-pages'],
+                'blocks' => [
+                    ['block_key' => 'latest-pages'],
                 ],
             ],
         ],
-        'elements' => ['latest-pages'],
+        'blocks' => ['latest-pages'],
     ]);
 
     EnsureArticlePublishingDefaultsAction::run();
 
-    $sidebarElementKeys = collect($layout->refresh()->containers['sidebar']['elements'])
-        ->pluck('element_key')
+    $sidebarBlockKeys = collect($layout->refresh()->containers['sidebar']['blocks'])
+        ->pluck('block_key')
         ->all();
 
-    expect($sidebarElementKeys)
+    expect($sidebarBlockKeys)
         ->toContain('latest-pages')
         ->toContain('latest-articles');
 });

@@ -6,7 +6,7 @@
     "kind": "package",
     "capellApiVersion": "^4.0",
     "version": "4.x-dev",
-    "description": "Blog adds article publishing, archive pages, tag pages, article elements, Site Discovery sitemap contributions, and frontend Livewire page components to Capell.",
+    "description": "Blog adds article publishing, archive pages, tag pages, article blocks, Site Discovery sitemap contributions, and frontend Livewire page components to Capell.",
     "product": {
         "group": "Capell Foundation",
         "tier": "free",
@@ -84,7 +84,7 @@
         },
         {
             "key": "blog.author-related-rendering",
-            "label": "Article elements can render author and related article metadata",
+            "label": "Article blocks can render author and related article metadata",
             "class": "Capell\\Blog\\Health\\BlogHealthCheck",
             "severity": "warning",
             "surface": "frontend"
@@ -104,7 +104,7 @@
         "privateDocsRequested": false
     },
     "marketplace": {
-        "summary": "Blog adds article publishing, archive pages, tag pages, article elements, Site Discovery sitemap contributions, and frontend Livewire page components to Capell.",
+        "summary": "Blog adds article publishing, archive pages, tag pages, article blocks, Site Discovery sitemap contributions, and frontend Livewire page components to Capell.",
         "screenshots": [],
         "categories": ["admin", "console", "foundation", "frontend"]
     },

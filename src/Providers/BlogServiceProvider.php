@@ -8,13 +8,13 @@ use Capell\Admin\Data\AdminSurfaceContributionData;
 use Capell\Admin\Enums\ResourceEnum as AdminResourceEnum;
 use Capell\Admin\Facades\CapellAdmin;
 use Capell\Blog\Actions\ClearBlogTagCacheAction;
-use Capell\Blog\Enums\ElementComponentEnum;
+use Capell\Blog\Enums\BlockComponentEnum;
 use Capell\Blog\Enums\LivewirePageComponentEnum;
 use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Listeners\ArticleTranslationSavedListener;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\BlogModelRegistrar;
-use Capell\Blog\Support\BlogSidebarElementContributor;
+use Capell\Blog\Support\BlogSidebarBlockContributor;
 use Capell\ContentSections\Models\Section;
 use Capell\Core\Actions\RegisterBlazeOptimizedViewsAction;
 use Capell\Core\Data\PageTypeData;
@@ -27,7 +27,7 @@ use Capell\Core\Models\Site;
 use Capell\Core\Models\Translation;
 use Capell\Core\Support\Packages\AbstractPackageServiceProvider;
 use Capell\Core\Support\Renderables\RenderableRegistry;
-use Capell\LayoutBuilder\Contracts\LayoutSidebarElementContributor;
+use Capell\LayoutBuilder\Contracts\LayoutSidebarBlockContributor;
 use Capell\PublishingStudio\WorkspaceRegistry;
 use Capell\Tags\Models\Tag;
 use Composer\InstalledVersions;
@@ -41,7 +41,7 @@ use Spatie\LaravelPackageTools\Package;
 
 class BlogServiceProvider extends AbstractPackageServiceProvider
 {
-    private const string LAYOUT_SIDEBAR_ELEMENT_CONTRIBUTOR = LayoutSidebarElementContributor::class;
+    private const string LAYOUT_SIDEBAR_ELEMENT_CONTRIBUTOR = LayoutSidebarBlockContributor::class;
 
     public static string $name = 'capell-blog';
 
@@ -61,7 +61,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
         $this->app->register(ConsoleServiceProvider::class);
 
         if (interface_exists(self::LAYOUT_SIDEBAR_ELEMENT_CONTRIBUTOR)) {
-            $this->app->tag([BlogSidebarElementContributor::class], self::LAYOUT_SIDEBAR_ELEMENT_CONTRIBUTOR::TAG);
+            $this->app->tag([BlogSidebarBlockContributor::class], self::LAYOUT_SIDEBAR_ELEMENT_CONTRIBUTOR::TAG);
         }
 
         $this->app->booting(function (): void {
@@ -96,7 +96,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
             ->registerBlazeComponents()
             ->registerBladeComponents()
             ->registerPageRenderables()
-            ->registerElementRenderables()
+            ->registerBlockRenderables()
             ->registerLivewireComponents()
             ->registerTypes()
             ->registerTranslationEvents()
@@ -218,15 +218,15 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
         return $this;
     }
 
-    private function registerElementRenderables(): self
+    private function registerBlockRenderables(): self
     {
         $registry = resolve(RenderableRegistry::class);
 
-        foreach (ElementComponentEnum::cases() as $elementComponent) {
+        foreach (BlockComponentEnum::cases() as $blockComponent) {
             $registry->register(new RenderableDefinitionData(
-                key: $elementComponent->value,
-                type: RenderableTypeEnum::Element,
-                blade: $elementComponent->value,
+                key: $blockComponent->value,
+                type: RenderableTypeEnum::Block,
+                blade: $blockComponent->value,
             ));
         }
 

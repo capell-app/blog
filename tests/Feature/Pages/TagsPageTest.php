@@ -35,7 +35,7 @@ test('tags page list tags', function (): void {
         ->hasAttached($tags->slice(0, 2))
         ->create();
     $blogPage = $blogCreator->createBlogPage($site);
-    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createElements: true);
+    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createBlocks: true);
     $tagPage = $blogCreator->createTagPage($site, $tagsPage);
 
     expect($tagsPage)

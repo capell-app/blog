@@ -9,35 +9,35 @@ use Capell\Core\Enums\LayoutEnum;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Layout;
 use Capell\Core\Support\Creator\LayoutCreator;
-use Capell\LayoutBuilder\Actions\ApplyLayoutSidebarElementContributionsAction;
+use Capell\LayoutBuilder\Actions\ApplyLayoutSidebarBlockContributionsAction;
 use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 /**
- * @method static void run(bool $createElements = true)
+ * @method static void run(bool $createBlocks = true)
  */
 class EnsureArticlePublishingDefaultsAction
 {
     use AsFake;
     use AsObject;
 
-    public function handle(bool $createElements = true): void
+    public function handle(bool $createBlocks = true): void
     {
         $blogCreator = resolve(BlogCreator::class);
 
-        if ($createElements) {
-            $articleElementType = $blogCreator->createArticleElementType();
-            $blogCreator->createArticleElement($articleElementType);
+        if ($createBlocks) {
+            $articleBlockType = $blogCreator->createArticleBlockType();
+            $blogCreator->createArticleBlock($articleBlockType);
 
-            $blogCreator->createLatestArticlesElement();
-            $blogCreator->createArchivesElement();
-            $blogCreator->createTagsElement(Language::all());
-            $blogCreator->relatedArticlesElement();
+            $blogCreator->createLatestArticlesBlock();
+            $blogCreator->createArchivesBlock();
+            $blogCreator->createTagsBlock(Language::all());
+            $blogCreator->relatedArticlesBlock();
 
             $this->updateLayoutSidebars();
         }
 
-        $blogCreator->createArticleLayout(createElements: $createElements);
+        $blogCreator->createArticleLayout(createBlocks: $createBlocks);
         $blogCreator->createArchivesLayout();
         $blogCreator->createBlogPageLayout();
         $blogCreator->createTagResultsLayout();
@@ -60,7 +60,7 @@ class EnsureArticlePublishingDefaultsAction
             $layout = Layout::query()->firstWhere('key', $layoutKey->value)
                 ?? resolve(LayoutCreator::class)->create($layoutKey);
 
-            ApplyLayoutSidebarElementContributionsAction::run($layout);
+            ApplyLayoutSidebarBlockContributionsAction::run($layout);
         }
     }
 }
