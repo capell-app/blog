@@ -70,7 +70,6 @@
             :content="$showContent ? ($element->translation->content ?: ($showPageContent ? $page->translation->content : null)) : null"
             :content-type="$element->type->content_structure"
             :divider="$element->getMeta('content_divider')"
-            @mdmkixNCOfrsTvB2Df97aV67NLI3iR3vCCg114aOujNGzdWQ5DkCuyf1JH8CB
             :text-align="$element->getMeta('align')"
             :title="$showTitle ? ($element->translation->title ?: ($showPageTitle ? $page->translation->title : null)) : null"
             :heading-style="$element->getMeta('heading_style')"

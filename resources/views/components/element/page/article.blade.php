@@ -66,6 +66,8 @@
         : null;
     $hasPreviousArticleLink = $previousPage && $previousPageUrl && $previousPageTranslation;
     $hasNextArticleLink = $nextPage && $nextPageUrl && $nextPageTranslation;
+    $hasAuthorMeta = $withAuthor && $articleMetaData?->author;
+    $hasTagMeta = $articleMetaData?->tags->isNotEmpty() ?? false;
 @endphp
 
 <x-capell-layout-builder::widget.wrapper
@@ -129,16 +131,20 @@
             {!! $articleMeta !!}
         @elseif ($hasDefaultArticleMeta)
             <div
-                class="article-meta flex flex-col gap-5 border-y border-slate-200 py-6 md:flex-row md:items-center md:justify-between"
+                @class([
+                    'article-meta flex flex-col gap-5 md:flex-row md:items-center md:justify-between',
+                    'border-y border-slate-200 py-6' => $hasAuthorMeta,
+                    'pt-2' => ! $hasAuthorMeta && $hasTagMeta,
+                ])
             >
-                @if ($withAuthor && $articleMetaData?->author)
+                @if ($hasAuthorMeta)
                     <x-capell-blog::page.author
                         class="min-w-0"
                         :author="$articleMetaData->author"
                     />
                 @endif
 
-                @if ($articleMetaData->tags->isNotEmpty())
+                @if ($hasTagMeta)
                     <div
                         class="article-tags flex flex-col gap-x-10 gap-y-4 md:items-end"
                     >

@@ -132,14 +132,7 @@ class ArticlePagesTable implements TableConfigurator
                 ->sortable()
                 ->children(false)
                 ->ancestors(false)
-                ->searchable(
-                    query: fn (Builder $query, string $search): Builder => $query->where('name', 'like', sprintf('%%%s%%', $search))
-                        ->orWhereHas(
-                            'translations',
-                            fn (BuilderContract $query): BuilderContract => $query->where('title', 'like', sprintf('%%%s%%', $search)),
-                        )
-                        ->orderByRaw("CAST(IFNULL(NULLIF(POSITION(? IN pages.name), 0), 'void') AS UNSIGNED)", [$search]),
-                )
+                ->searchable(query: self::applyNameSearch(...))
                 ->toggleable(),
             TextColumn::make('translation.title')
                 ->label(__('capell-admin::table.title'))
@@ -157,37 +150,7 @@ class ArticlePagesTable implements TableConfigurator
                 ->color('primary')
                 ->disabledClick()
                 ->html()
-                ->searchable(
-                    query: fn (Builder $query, string $search): Builder => $query->whereHas(
-                        'pageUrl',
-                        fn (BuilderContract $query): BuilderContract => $query->where('url', 'like', sprintf('%%%s%%', $search))
-                            ->orWhereHas(
-                                'site',
-                                fn (BuilderContract $query): BuilderContract => $query->whereHas(
-                                    'siteDomain',
-                                    fn (BuilderContract $query): BuilderContract => $query->whereColumn(
-                                        'site_domains.language_id',
-                                        'page_urls.language_id',
-                                    )
-                                        ->when(
-                                            DB::getDriverName() === 'sqlite',
-                                            fn (Builder $query) => $query->whereRaw(
-                                                "site_domains.scheme || '://' || site_domains.domain || site_domains.path || page_urls.url like ?",
-                                                [sprintf('%%%s%%', $search)],
-                                            ),
-                                            fn (Builder $query) => $query->whereRaw(
-                                                "CONCAT(site_domains.scheme, '://', site_domains.domain, COALESCE(site_domains.path, ''), page_urls.url) like ?",
-                                                [sprintf('%%%s%%', $search)],
-                                            ),
-                                        ),
-                                ),
-                            )
-                            ->orWhereHas(
-                                'pageable',
-                                fn (BuilderContract $query): BuilderContract => $query->where('name', 'like', sprintf('%%%s%%', $search)),
-                            ),
-                    ),
-                )
+                ->searchable(query: self::applyUrlSearch(...))
                 ->getStateUsing(function (Pageable $record, HasTable $livewire): ?HtmlString {
                     $pageUrl = null;
                     $languageId = $livewire->getTableFilterState('filter')['language_id'] ?? null;
@@ -231,6 +194,52 @@ class ArticlePagesTable implements TableConfigurator
             DateColumn::make('updated_at'),
             DateColumn::make('deleted_at'),
         ];
+    }
+
+    protected static function applyNameSearch(Builder $query, string $search): Builder
+    {
+        return $query->where('name', 'like', sprintf('%%%s%%', $search))
+            ->orWhereHas(
+                'translations',
+                fn (BuilderContract $query): BuilderContract => $query->where('title', 'like', sprintf('%%%s%%', $search)),
+            )
+            ->orderByRaw("CAST(IFNULL(NULLIF(POSITION(? IN pages.name), 0), 'void') AS UNSIGNED)", [$search]);
+    }
+
+    protected static function applyUrlSearch(Builder $query, string $search): Builder
+    {
+        return $query->whereHas(
+            'pageUrl',
+            fn (BuilderContract $query): BuilderContract => $query->where('url', 'like', sprintf('%%%s%%', $search))
+                ->orWhereHas(
+                    'site',
+                    fn (BuilderContract $query): BuilderContract => $query->whereHas(
+                        'siteDomain',
+                        fn (BuilderContract $query): BuilderContract => self::applyFullUrlSearch($query, $search),
+                    ),
+                )
+                ->orWhereHas(
+                    'pageable',
+                    fn (BuilderContract $query): BuilderContract => $query->where('name', 'like', sprintf('%%%s%%', $search)),
+                ),
+        );
+    }
+
+    protected static function applyFullUrlSearch(BuilderContract $query, string $search): BuilderContract
+    {
+        $query->whereColumn('site_domains.language_id', 'page_urls.language_id');
+
+        if (DB::getDriverName() === 'sqlite') {
+            return $query->whereRaw(
+                "site_domains.scheme || '://' || site_domains.domain || site_domains.path || page_urls.url like ?",
+                [sprintf('%%%s%%', $search)],
+            );
+        }
+
+        return $query->whereRaw(
+            "CONCAT(site_domains.scheme, '://', site_domains.domain, COALESCE(site_domains.path, ''), page_urls.url) like ?",
+            [sprintf('%%%s%%', $search)],
+        );
     }
 
     protected static function getTableFilters(): array
