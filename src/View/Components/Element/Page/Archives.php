@@ -14,6 +14,7 @@ use Closure;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
+use Override;
 
 class Archives extends AbstractElement
 {
@@ -23,6 +24,7 @@ class Archives extends AbstractElement
 
     protected static string $defaultView = 'capell-blog::components.element.page.archives';
 
+    #[Override]
     public function render(array $data = []): View|string|Closure
     {
         return parent::render([

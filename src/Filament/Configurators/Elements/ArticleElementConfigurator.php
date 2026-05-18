@@ -15,9 +15,11 @@ use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Override;
 
 class ArticleElementConfigurator extends DefaultElementConfigurator
 {
+    #[Override]
     protected function getFormSchema(Schema $configurator): array
     {
         $operation = $configurator->getOperation();

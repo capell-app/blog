@@ -10,15 +10,18 @@ use Capell\Admin\Support\AdminSurfaceLookup;
 use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Filament\Resources\Articles\ArticleResource;
 use Illuminate\Contracts\Support\Htmlable;
+use Override;
 
 class ListArticles extends ListPages
 {
+    #[Override]
     public static function getResource(): string
     {
         return AdminSurfaceLookup::resourceIfRegistered(AdminResourceEnum::Page, strtolower(ResourceEnum::Article->name))
             ?? ArticleResource::class;
     }
 
+    #[Override]
     public function getSubheading(): string|Htmlable|null
     {
         return __('capell-blog::generic.articles_info');

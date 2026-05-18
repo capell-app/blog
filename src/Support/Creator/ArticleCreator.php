@@ -16,6 +16,7 @@ use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
 use Capell\Core\Support\Creator\PageCreator;
 use Illuminate\Support\Collection;
+use Override;
 
 class ArticleCreator extends PageCreator
 {
@@ -26,6 +27,7 @@ class ArticleCreator extends PageCreator
         $this->pageModel = Article::class;
     }
 
+    #[Override]
     public function createPage(array $data, Site $site, Collection $languages): Pageable
     {
         $defaults = [

@@ -36,7 +36,7 @@ class DemoCommand extends Command
 {
     use HasSitesOption;
 
-    private const DemoArticleMetaKey = 'capell_blog_demo';
+    private const string DemoArticleMetaKey = 'capell_blog_demo';
 
     protected $signature = 'capell:blog-demo {--sites=} {--user=} {--limit=}';
 

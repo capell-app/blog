@@ -15,6 +15,7 @@ use Capell\Tags\Models\Tag;
 use Filament\Widgets\Widget;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Override;
 
 final class ArticleHealthWidgetAbstract extends Widget implements CapellWidgetContract
 {
@@ -35,6 +36,7 @@ final class ArticleHealthWidgetAbstract extends Widget implements CapellWidgetCo
     /**
      * @return array<string, mixed>
      */
+    #[Override]
     protected function getViewData(): array
     {
         return [

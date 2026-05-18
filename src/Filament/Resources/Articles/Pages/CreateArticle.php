@@ -12,15 +12,18 @@ use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Filament\Resources\Articles\ArticleResource;
 use Capell\Core\Models\Blueprint;
+use Override;
 
 class CreateArticle extends CreatePage
 {
+    #[Override]
     public static function getResource(): string
     {
         return AdminSurfaceLookup::resourceIfRegistered(AdminResourceEnum::Page, strtolower(ResourceEnum::Article->name))
             ?? ArticleResource::class;
     }
 
+    #[Override]
     protected function beforeFill(): void
     {
         parent::beforeFill();

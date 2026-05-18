@@ -41,7 +41,7 @@ use Spatie\LaravelPackageTools\Package;
 
 class BlogServiceProvider extends AbstractPackageServiceProvider
 {
-    private const LAYOUT_SIDEBAR_ELEMENT_CONTRIBUTOR = LayoutSidebarElementContributor::class;
+    private const string LAYOUT_SIDEBAR_ELEMENT_CONTRIBUTOR = LayoutSidebarElementContributor::class;
 
     public static string $name = 'capell-blog';
 

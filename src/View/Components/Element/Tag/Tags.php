@@ -13,6 +13,7 @@ use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Override;
 
 class Tags extends AbstractElement
 {
@@ -24,6 +25,7 @@ class Tags extends AbstractElement
 
     protected static string $defaultView = 'capell-blog::components.element.tag.tags';
 
+    #[Override]
     public function render(array $data = []): View|string|Closure
     {
         return parent::render([

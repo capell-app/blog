@@ -21,13 +21,15 @@ use Capell\Navigation\Events\NavigationCreating;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use Override;
 
 final class AdminServiceProvider extends ServiceProvider
 {
-    private const LAYOUT_BUILDER_COMPONENT_TYPE_ENUM = ComponentTypeEnum::class;
+    private const string LAYOUT_BUILDER_COMPONENT_TYPE_ENUM = ComponentTypeEnum::class;
 
-    private const LAYOUT_BUILDER_CONFIGURATOR_TYPE_ENUM = \Capell\LayoutBuilder\Enums\ConfiguratorTypeEnum::class;
+    private const string LAYOUT_BUILDER_CONFIGURATOR_TYPE_ENUM = \Capell\LayoutBuilder\Enums\ConfiguratorTypeEnum::class;
 
+    #[Override]
     public function register(): void
     {
         //

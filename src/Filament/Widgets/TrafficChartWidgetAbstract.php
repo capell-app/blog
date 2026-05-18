@@ -14,6 +14,7 @@ use Capell\Insights\Models\InsightsEvent;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Override;
 
 final class TrafficChartWidgetAbstract extends Widget implements CapellWidgetContract
 {
@@ -33,6 +34,7 @@ final class TrafficChartWidgetAbstract extends Widget implements CapellWidgetCon
     /**
      * @return array<string, mixed>
      */
+    #[Override]
     protected function getViewData(): array
     {
         return ['data' => $this->getData()];

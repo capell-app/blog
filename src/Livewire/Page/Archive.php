@@ -12,6 +12,7 @@ use Capell\Frontend\Support\State\FrontendState;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Override;
 
 class Archive extends AbstractPage
 {
@@ -123,6 +124,7 @@ class Archive extends AbstractPage
         return [$year, $month];
     }
 
+    #[Override]
     protected function getViewData(): array
     {
         $date = Date::create()->day(1)->month($this->month)->year($this->year);

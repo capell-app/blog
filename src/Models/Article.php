@@ -53,6 +53,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Override;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\MediaLibrary\HasMedia;
@@ -338,6 +339,7 @@ class Article extends Model implements HasMedia, Pageable, Publishable, Translat
             ->orderBy('id', 'desc');
     }
 
+    #[Override]
     protected static function booted(): void
     {
         static::creating(function (self $article): void {
@@ -353,6 +355,7 @@ class Article extends Model implements HasMedia, Pageable, Publishable, Translat
         return $this->type->meta['url_params'] ?? null;
     }
 
+    #[Override]
     protected function casts(): array
     {
         return [

@@ -32,6 +32,7 @@ class ArticlePageConfigurator extends DefaultPageConfigurator
 {
     protected bool $hasCreatePageSchema = false;
 
+    #[Override]
     public static function relationManagers(Model $record): array
     {
         return [
@@ -86,6 +87,7 @@ class ArticlePageConfigurator extends DefaultPageConfigurator
         ];
     }
 
+    #[Override]
     protected function getTabs(Schema $configurator): array
     {
         return resolve(PageSchemaExtenderResolverInterface::class)->resolveTabs($configurator, [

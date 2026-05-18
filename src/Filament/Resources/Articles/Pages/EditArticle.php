@@ -10,11 +10,13 @@ use Capell\Admin\Support\AdminSurfaceLookup;
 use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Filament\Resources\Articles\ArticleResource;
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
+use Override;
 
 class EditArticle extends EditPage
 {
     use InteractsWithRecord { resolveRecord as baseResolveRecord; }
 
+    #[Override]
     public static function getResource(): string
     {
         return AdminSurfaceLookup::resourceIfRegistered(AdminResourceEnum::Page, strtolower(ResourceEnum::Article->name))

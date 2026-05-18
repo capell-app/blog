@@ -28,6 +28,7 @@ use Illuminate\Contracts\Database\Eloquent\Builder as BuilderContract;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Override;
 
 class ArticleResource extends PageResource
 {
@@ -44,6 +45,7 @@ class ArticleResource extends PageResource
     /**
      * @return class-string<Article>
      */
+    #[Override]
     public static function getModel(): string
     {
         return Article::class;
@@ -59,36 +61,43 @@ class ArticleResource extends PageResource
         return BlogLoader::getBlogPageUrl($site, $language, fullUrl: false) . '/';
     }
 
+    #[Override]
     public static function getLabel(): string
     {
         return __('capell-blog::generic.article');
     }
 
+    #[Override]
     public static function getNavigationIcon(): string|BackedEnum|Htmlable|null
     {
         return Heroicon::OutlinedNewspaper;
     }
 
+    #[Override]
     public static function getActiveNavigationIcon(): string|BackedEnum|Htmlable|null
     {
         return Heroicon::Newspaper;
     }
 
+    #[Override]
     public static function getNavigationLabel(): string
     {
         return (string) (__('capell-blog::generic.articles'));
     }
 
+    #[Override]
     public static function getNavigationParentItem(): ?string
     {
         return null;
     }
 
+    #[Override]
     public static function shouldRegisterNavigation(): bool
     {
         return CapellCore::getPackage(BlogServiceProvider::$packageName)->isInstalled();
     }
 
+    #[Override]
     public static function getPages(): array
     {
         return [
@@ -98,11 +107,13 @@ class ArticleResource extends PageResource
         ];
     }
 
+    #[Override]
     public static function getPluralModelLabel(): string
     {
         return __('capell-blog::generic.articles');
     }
 
+    #[Override]
     public static function getGlobalSearchEloquentQuery(): Builder
     {
         return static::getEloquentQuery()
@@ -112,6 +123,7 @@ class ArticleResource extends PageResource
             ]);
     }
 
+    #[Override]
     public static function getGlobalSearchResultDetails(Model $record): array
     {
         if ($record->site->default) {
@@ -121,6 +133,7 @@ class ArticleResource extends PageResource
         return [$record->site->name];
     }
 
+    #[Override]
     public static function mutateFormDataBeforeCreate(array &$data, array $formData = []): void
     {
         $data['layout_id'] = GetArticleLayoutAction::run()?->id;
@@ -153,6 +166,7 @@ class ArticleResource extends PageResource
         }
     }
 
+    #[Override]
     public static function applyTypeAdminResourceConstraint(BuilderContract $query, ?bool $hideSystemPages = false): void
     {
         $query->where('group', BlogTypeGroupEnum::Article);

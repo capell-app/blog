@@ -13,6 +13,7 @@ use Capell\Frontend\Support\Loader\PageLoader;
 use Closure;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\View\View;
+use Override;
 
 class Article extends AbstractElement
 {
@@ -26,6 +27,7 @@ class Article extends AbstractElement
 
     protected static string $defaultView = 'capell-blog::components.element.page.article';
 
+    #[Override]
     public function render(array $data = []): View|string|Closure
     {
         return parent::render([
