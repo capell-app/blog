@@ -225,7 +225,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
         foreach (BlockComponentEnum::cases() as $blockComponent) {
             $registry->register(new RenderableDefinitionData(
                 key: $blockComponent->value,
-                type: RenderableTypeEnum::Block,
+                type: 'layout-block',
                 blade: $blockComponent->value,
             ));
         }
