@@ -340,8 +340,11 @@ class DemoCommand extends Command
     {
         foreach ($languages as $language) {
             $languageCode = $language->getAttribute('code');
+            if (! is_string($languageCode)) {
+                continue;
+            }
 
-            if (! is_string($languageCode) || $languageCode === '') {
+            if ($languageCode === '') {
                 continue;
             }
 

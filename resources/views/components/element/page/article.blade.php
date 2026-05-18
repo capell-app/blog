@@ -69,7 +69,7 @@
 @endphp
 
 <x-capell-layout-builder::widget.wrapper
-    class="element element-{{ $element->key }}"
+    class="capell-page-article element element-{{ $element->key }}"
     :$container
     :$containerKey
     :$containerWidth

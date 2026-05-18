@@ -24,7 +24,7 @@
     );
 @endphp
 
-<div class="capell-blog-page">
+<div class="capell-page-results capell-blog-page">
     <x-capell::layout
         class="layout-results capell-blog-results-shell"
         main-class="capell-blog-results-main"

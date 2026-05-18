@@ -22,7 +22,7 @@
 @endphp
 
 <x-capell-layout-builder::widget.wrapper
-    class="element element-{{ $element->key }} element-tags"
+    class="capell-tag-tags element element-{{ $element->key }} element-tags"
     :$container
     :$containerKey
     :$containerWidth
