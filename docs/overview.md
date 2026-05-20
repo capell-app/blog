@@ -45,9 +45,11 @@ Gives editors a dedicated article workflow that still fits the same structured p
 
 - Articles admin index.
 - Create/edit article form.
+- Blog dashboard widgets.
 - Blog page frontend output.
 - Archive page frontend output.
 - Tag page frontend output.
+- Article and tag block frontend output.
 
 ## Screenshots
 
