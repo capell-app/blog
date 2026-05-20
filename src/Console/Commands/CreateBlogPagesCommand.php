@@ -33,7 +33,7 @@ class CreateBlogPagesCommand extends Command
         /** @var Site|null $site */
         $site = Site::query()->find($siteId);
 
-        if (! $site) {
+        if ($site === null) {
             $this->error('Site not found with ID: ' . $siteId);
 
             return self::FAILURE;

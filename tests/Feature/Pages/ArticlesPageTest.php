@@ -6,6 +6,7 @@ use Capell\Blog\Actions\GenerateArchiveUrl;
 use Capell\Blog\Data\ArchiveMonthData;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Creator\BlogCreator;
+use Capell\Blog\Support\Sitemap\ArticlesSitemap;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
@@ -97,6 +98,33 @@ test('blog page lists articles', function (): void {
         );
 });
 
+test('articles sitemap nests published articles below the blog page', function (): void {
+    $blogCreator = resolve(BlogCreator::class);
+
+    $siteDomain = SiteDomain::factory()->default()->create();
+    $site = $siteDomain->site;
+
+    $blogPage = $blogCreator->createBlogPage($site);
+    $articleType = $blogCreator->createArticlePageType();
+    $articleLayout = $blogCreator->createArticleLayout();
+
+    $article = Article::factory()
+        ->site($site)
+        ->layout($articleLayout)
+        ->type($articleType)
+        ->withTranslations($site->languages)
+        ->create();
+
+    $sitemapPages = (new ArticlesSitemap($site, $siteDomain, $siteDomain->language))->fetch();
+    $blogNode = $sitemapPages->first();
+
+    expect($sitemapPages)->toHaveCount(1)
+        ->and($blogNode->pageId)->toBe($blogPage->id)
+        ->and($blogNode->children)->toHaveCount(1)
+        ->and($blogNode->children->first()->pageId)->toBe($article->id)
+        ->and($blogNode->children->first()->url)->toBe($article->pageUrl->full_url);
+});
+
 test('visit blogs page with no articles and see appropriate message', function (): void {
     $blogCreator = resolve(BlogCreator::class);
 
@@ -129,7 +157,7 @@ test('article page', function (): void {
     $archivesPage = $blogCreator->createArchivesPage($blogPage);
     $blogCreator->createArchivePage($archivesPage);
 
-    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createWidgets: true);
+    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createBlocks: true);
     $tagPage = $blogCreator->createTagPage($site, $tagsPage);
 
     $article = Article::factory()
@@ -159,7 +187,7 @@ test('article page list tags', function (): void {
 
     $blogPage = $blogCreator->createBlogPage($site);
 
-    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createWidgets: true);
+    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createBlocks: true);
     $tagPage = $blogCreator->createTagPage($site, $tagsPage);
 
     $archivesPage = $blogCreator->createArchivesPage($blogPage);
@@ -223,7 +251,11 @@ test('articles pagination', function (): void {
         ->sequence(fn ($sequence): array => ['visible_from' => CarbonImmutable::now()->subDays($sequence->index)])
         ->create();
 
-    $orderedArticles = Article::query()->with(['translation'])->whereKey($articles->pluck('id'))->publishedLatest()->get();
+    $orderedArticles = Article::query()
+        ->with('translation')
+        ->whereKey($articles->pluck('id'))
+        ->publishedLatest()
+        ->get();
 
     $this->shownArticles = 0;
 

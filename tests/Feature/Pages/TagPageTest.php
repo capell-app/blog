@@ -9,6 +9,7 @@ use Capell\Core\Models\Site;
 use Capell\Tags\Enums\TagTypeEnum;
 use Capell\Tags\Models\Tag;
 use Capell\Tests\Support\Concerns\TestingFrontend;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
 
 use function Pest\Laravel\get;
 
@@ -24,7 +25,7 @@ test('tag page list articles by tag', function (): void {
     $site = Site::factory()->recycle($language)->withTranslations()->create();
 
     $blogPage = $blogCreator->createBlogPage($site);
-    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createWidgets: true);
+    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createBlocks: true);
     $tagPage = $blogCreator->createTagPage($site, $tagsPage);
 
     $tag = Tag::factory()->translate($language)->type(TagTypeEnum::Page)->create();
@@ -50,15 +51,15 @@ test('tag page list articles by tag', function (): void {
 
     $title = trans($tagPage->translation->title, ['tag_name' => $tag->translate('name', $language->code)]);
 
-    $containers = $tagPage->layout->containers;
-    $containerWidgets = collect($containers)->pluck('widgets.*.widget_key')->flatten()->filter()->toArray();
+    $containers = $tagPage->layout->getAttribute('containers');
+    $containerBlocks = collect($containers)->pluck('blocks.*.block_key')->flatten()->filter()->toArray();
 
     expect($tagPage)
         ->translation->title->toBe(':Tag_name Articles')
-        ->and($containerWidgets)->toContain('breadcrumbs')
+        ->and($containerBlocks)->toContain('breadcrumbs')
         ->and($articles)->toHaveCount(5);
 
-    get($tag->getUrl($tagPage, $language))
+    $response = get($tag->getUrl($tagPage, $language))
         ->assertOk()
         ->assertDontSeeText(':Tag_name Articles')
         ->assertElementExists(
@@ -89,6 +90,27 @@ test('tag page list articles by tag', function (): void {
                     },
                 ),
         );
+
+    $document = new DOMDocument;
+    @$document->loadHTML($response->getContent());
+
+    $breadcrumbText = trim((string) (new DOMXPath($document))
+        ->query('//nav[contains(concat(" ", normalize-space(@class), " "), " breadcrumbs ")]')
+        ?->item(0)
+        ?->textContent);
+
+    expect(preg_replace('/\s+/', ' ', $breadcrumbText))
+        ->toContain('Blog')
+        ->toContain('Tags')
+        ->not->toContain($title);
+
+    $headingClasses = collect((new DOMXPath($document))->query('//*[self::h1 or self::h2 or self::h3 or self::h4][contains(concat(" ", normalize-space(@class), " "), " not-prose ")]'))
+        ->map(fn (DOMElement $heading): string => $heading->getAttribute('class'));
+
+    $headingClasses->each(function (string $class): void {
+        expect(preg_match_all('/(?:^|\s)(?:\\S+:)?text-(?:base|lg|xl|2xl|3xl|4xl)(?:\s|$)/', $class))
+            ->toBe(1);
+    });
 });
 
 test('tag page resolves site tag before global tag with same slug', function (): void {
@@ -98,7 +120,7 @@ test('tag page resolves site tag before global tag with same slug', function ():
     $site = Site::factory()->recycle($language)->withTranslations()->create();
 
     $blogPage = $blogCreator->createBlogPage($site);
-    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createWidgets: true);
+    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createBlocks: true);
     $tagPage = $blogCreator->createTagPage($site, $tagsPage);
 
     $slug = 'shared-topic';
@@ -134,7 +156,50 @@ test('tag page resolves site tag before global tag with same slug', function ():
     get($siteTag->getUrl($tagPage, $language))
         ->assertOk()
         ->assertSeeText('Site Topic Articles')
-        ->assertSeeText($siteArticle->translation->title)
         ->assertDontSeeText('Global Topic Articles')
-        ->assertDontSeeText($globalArticle->translation->title);
+        ->assertElementExists(
+            '.results',
+            fn (AssertElement $block): BaseAssert => $block
+                ->containsText($siteArticle->translation->title)
+                ->doesntContainText($globalArticle->translation->title),
+        );
+});
+
+test('tag page renders results without lazy-loading page translation data', function (): void {
+    $blogCreator = resolve(BlogCreator::class);
+
+    $language = Language::factory()->create();
+    $site = Site::factory()->recycle($language)->withTranslations()->create();
+
+    $blogPage = $blogCreator->createBlogPage($site);
+    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createBlocks: true);
+    $tagPage = $blogCreator->createTagPage($site, $tagsPage);
+
+    $tag = Tag::factory()
+        ->translate($language)
+        ->type(TagTypeEnum::Page)
+        ->site($site)
+        ->create();
+
+    $article = Article::factory()
+        ->site($site)
+        ->withTranslations($site->languages, ['title' => 'Lazy Load Guard Article'])
+        ->hasAttached($tag)
+        ->create(['visible_from' => '2023-02-01']);
+
+    $url = $tag->getUrl($tagPage, $language);
+    $title = trans($tagPage->translation->title, ['tag_name' => $tag->translate('name', $language->code)]);
+    $articleTitle = $article->translation->title;
+
+    $previous = EloquentModel::preventsLazyLoading();
+    EloquentModel::preventLazyLoading();
+
+    try {
+        get($url)
+            ->assertOk()
+            ->assertSeeText($title)
+            ->assertSeeText($articleTitle);
+    } finally {
+        EloquentModel::preventLazyLoading($previous);
+    }
 });

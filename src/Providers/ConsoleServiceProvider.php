@@ -7,22 +7,24 @@ namespace Capell\Blog\Providers;
 use Capell\Blog\Console\Commands\CreateBlogPagesCommand;
 use Capell\Blog\Console\Commands\DemoCommand;
 use Capell\Blog\Console\Commands\FakerCommand;
+use Capell\Blog\Console\Commands\HeroDemoCommand;
 use Capell\Blog\Console\Commands\InstallCommand;
 use Capell\Blog\Console\Commands\SetupCommand;
 use Illuminate\Support\ServiceProvider;
+use Override;
 
 final class ConsoleServiceProvider extends ServiceProvider
 {
+    #[Override]
     public function register(): void
     {
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                CreateBlogPagesCommand::class,
-                DemoCommand::class,
-                FakerCommand::class,
-                InstallCommand::class,
-                SetupCommand::class,
-            ]);
-        }
+        $this->commands([
+            CreateBlogPagesCommand::class,
+            DemoCommand::class,
+            FakerCommand::class,
+            HeroDemoCommand::class,
+            InstallCommand::class,
+            SetupCommand::class,
+        ]);
     }
 }

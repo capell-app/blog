@@ -18,14 +18,18 @@
         }
     ],
     "require": {
-        "php": "^8.2",
+        "php": "^8.3",
         "capell-app/admin": "*",
-        "capell-app/analytics": "*",
+        "capell-app/content-sections": "*",
+        "capell-app/demo-kit": "*",
+        "capell-app/insights": "*",
         "capell-app/frontend": "*",
-        "capell-app/mosaic": "*",
+        "capell-app/html-cache": "*",
+        "capell-app/layout-builder": "*",
         "capell-app/navigation": "*",
+        "capell-app/site-discovery": "*",
         "capell-app/tags": "*",
-        "capell-app/workspaces": "*"
+        "capell-app/publishing-studio": "*"
     },
     "autoload": {
         "psr-4": {

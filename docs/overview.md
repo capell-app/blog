@@ -6,17 +6,17 @@ This page is the consolidated implementation overview for the Blog package. It i
 
 ## What This Plugin Adds
 
-Blog adds article publishing, archive pages, tag pages, article widgets, sitemaps, and frontend Livewire page components to Capell.
+Blog adds article publishing, archive pages, tag pages, article blocks, Site Discovery sitemap contributions, and frontend Livewire page components to Capell.
 
 - Article Filament resource.
 - Blog, archive, and tag frontend Livewire components.
-- Article widgets and configurators for Mosaic.
-- Sitemap extensions for articles, archives, and tags.
+- Article blocks and configurators for layout builder.
+- Site Discovery sitemap contributions for articles, archives, and tags.
 - Commands to install and create blog pages.
 
 ## Developer Notes
 
-Builds on core pages, layouts, translations, page URLs, Mosaic widgets, and tags while keeping article-specific logic in actions and loaders.
+Builds on core pages, layouts, translations, page URLs, core layout builder blocks, and tags while keeping article-specific logic in actions and loaders.
 
 - BlogServiceProvider, AdminServiceProvider, ConsoleServiceProvider, and FrontendServiceProvider register package surfaces.
 - Migration creates articles.
@@ -30,32 +30,38 @@ Builds on core pages, layouts, translations, page URLs, Mosaic widgets, and tags
 Gives editors a dedicated article workflow that still fits the same structured publishing foundation as pages.
 
 - Adds articles table and article admin resource.
-- Adds blog frontend components and sitemap extensions.
+- Adds blog frontend components and Site Discovery sitemap contributions.
 - Adds console commands for setup, install, demo, faker, and page creation.
-- Requires Mosaic package first.
 - May add blog pages to navigation through listener behaviour.
 
 ## Data And Retention
 
 - articles stores uuid, workspace, type, layout, site, meta, visible_from, and visible_until.
-- Articles connect to sites, types, layouts, page URLs, translations, Mosaic widget assets, and tags.
-- Blog requires Mosaic before install.
+- Articles connect to sites, types, layouts, page URLs, translations, core layout builder block assets, and tags.
+- Blog uses the layout builder APIs provided by the admin/frontend core packages.
 - Deletion and retention behaviour should be verified against the host application policy.
 
 ## Screenshot Plan
 
 - Articles admin index.
 - Create/edit article form.
+- Blog dashboard widgets.
 - Blog page frontend output.
 - Archive page frontend output.
 - Tag page frontend output.
+- Article and tag block frontend output.
+
+## Screenshots
+
+![Articles admin index](../../../public/docs/screenshots/packages/blog/articles-admin-index.png)
+
+The frontend screenshots need seeded blog pages and articles before they are useful. Keep them in the manifest, but do not use the current blank captures as documentation assets.
 
 ## Pitfalls
 
-- Install Mosaic first.
 - Run the package setup before expecting archive/tag pages.
 - Check layouts before creating article records.
-- Cache and sitemap output may need regeneration after setup.
+- Cache and Site Discovery sitemap output may need regeneration after setup.
 
 ## Verification
 
@@ -71,7 +77,6 @@ Gives editors a dedicated article workflow that still fits the same structured p
 - Tier: free
 - Bundle: foundation
 - Contexts: `admin`, `frontend`, `console`
-- Requires: `capell-app/core`, `capell-app/admin`, `capell-app/frontend`, `capell-app/mosaic`, `capell-app/tags`
 - Optional dependencies: None listed.
 
 ## Admin Surfaces
@@ -95,13 +100,13 @@ Gives editors a dedicated article workflow that still fits the same structured p
 
 ## Permissions And Gates
 
-- Gate: ArticleHealthWidgetAbstract: `developer`, `admin`, `super_admin`
-- Gate: TopPagesWidgetAbstract: `admin`, `super_admin`
-- Gate: TrafficChartWidgetAbstract: `admin`, `super_admin`
+- Gate: ArticleHealthBlockAbstract: `developer`, `admin`, `super_admin`
+- Gate: TopPagesBlockAbstract: `admin`, `super_admin`
+- Gate: TrafficChartBlockAbstract: `admin`, `super_admin`
 
 ## Migrations
 
-- Migration: create_articles_table.php
+- Migration: 2026_05_10_190842_01_create_articles_table.php
 
 ## ERD Excerpt
 
@@ -119,7 +124,7 @@ erDiagram
         bigint id PK
         uuid uuid
         bigint workspace_id
-        bigint type_id FK
+        bigint blueprint_id FK
         bigint layout_id FK
         bigint site_id FK
         json meta

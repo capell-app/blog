@@ -8,9 +8,9 @@ use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Support\Loader\TagLoader;
 use Capell\Core\Contracts\Pageable;
 use Capell\Core\Models\Page;
-use Capell\SeoTools\Data\SitemapPageData;
-use Capell\SeoTools\Support\Sitemap\AbstractSitemapPages;
-use Capell\SeoTools\Support\Sitemap\SitemapChainBuilder;
+use Capell\SiteDiscovery\Data\SitemapPageData;
+use Capell\SiteDiscovery\Support\Sitemap\AbstractSitemapPages;
+use Capell\SiteDiscovery\Support\Sitemap\SitemapChainBuilder;
 use Capell\Tags\Filament\Resources\Tags\TagResource;
 use Capell\Tags\Models\Tag;
 use Illuminate\Support\Collection;
@@ -64,7 +64,7 @@ class TagsSitemap extends AbstractSitemapPages
 
     private function getTagPages(Page $tagPage): Collection
     {
-        return TagLoader::getTags(site: $this->site, language: $this->language, limit: 100)
+        return TagLoader::getTags(site: $this->site, language: $this->language)
             ->map(fn (Tag $tag): SitemapPageData => $this->format($tagPage, $tag))
             ->values();
     }

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use Capell\Admin\Filament\Resources\Pages\Pages\ListPages;
 use Capell\Blog\Models\Article;
+use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Page;
-use Capell\Core\Models\Type;
 use Capell\Tests\Support\Concerns\CreatesAdminUser;
 
 use function Pest\Livewire\livewire;
@@ -18,7 +18,7 @@ beforeEach(function (): void {
 });
 
 test('can list pages', function (): void {
-    Type::factory()->page()->create();
+    Blueprint::factory()->page()->create();
 
     Article::factory()->create();
 

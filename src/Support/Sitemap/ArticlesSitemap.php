@@ -10,8 +10,8 @@ use Capell\Core\Contracts\Pageable;
 use Capell\Core\Enums\PageOrderEnum;
 use Capell\Core\Models\Page;
 use Capell\Frontend\Support\Loader\PageLoader;
-use Capell\SeoTools\Data\SitemapPageData;
-use Capell\SeoTools\Support\Sitemap\AbstractSitemapPages;
+use Capell\SiteDiscovery\Data\SitemapPageData;
+use Capell\SiteDiscovery\Support\Sitemap\AbstractSitemapPages;
 use Illuminate\Support\Collection;
 
 class ArticlesSitemap extends AbstractSitemapPages
@@ -30,7 +30,7 @@ class ArticlesSitemap extends AbstractSitemapPages
         $articles = PageLoader::getPages(
             language: $this->language,
             site: $this->site,
-            limit: 100,
+            limit: null,
             ordering: PageOrderEnum::Latest,
             pageGroup: BlogTypeGroupEnum::Article->value,
             morphModel: 'article',

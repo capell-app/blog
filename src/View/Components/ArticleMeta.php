@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Capell\Blog\View\Components;
 
-use Capell\Blog\Support\Loader\TagLoader;
+use Capell\Blog\Actions\BuildArticleMetaDataAction;
+use Capell\Blog\Data\ArticleMetaData;
 use Capell\Core\Models\Page;
 use Capell\Frontend\Facades\Frontend;
-use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\View\Component;
@@ -19,28 +19,28 @@ class ArticleMeta extends Component
 
     public Collection $tags;
 
-    public function __construct(public bool $withAuthor = false, public ?Model $author = null)
-    {
-        $this->tags = TagLoader::getPageTags(Frontend::page());
+    public function __construct(
+        public bool $withAuthor = false,
+        public ?Model $author = null,
+        ?ArticleMetaData $articleMetaData = null,
+    ) {
+        $data = $articleMetaData ?? BuildArticleMetaDataAction::run(
+            page: Frontend::page(),
+            site: Frontend::site(),
+            language: Frontend::language(),
+            withAuthor: $this->withAuthor,
+            author: $this->author,
+        );
 
-        if ($this->tags->isNotEmpty()) {
-            $site = Frontend::site();
-            $language = Frontend::language();
-
-            $this->tagPage = TagLoader::getTagResultsPage($site, $language);
-
-            throw_unless(
-                $this->tagPage,
-                Exception::class,
-                'Tag results page not found for the current site ' . $site->id . ' and language ' . $language->id,
-            );
-        }
+        $this->tags = $data->tags;
+        $this->tagPage = $data->tagPage;
+        $this->author = $data->author;
     }
 
-    public function render(): ?View
+    public function render(): string|View
     {
-        if ($this->tags->isEmpty() && ($this->withAuthor && ! $this->author)) {
-            return null;
+        if ($this->tags->isEmpty() && (! $this->withAuthor || ! $this->author instanceof Model)) {
+            return '';
         }
 
         return view('capell-blog::components.article-meta', [
@@ -48,6 +48,6 @@ class ArticleMeta extends Component
             'tags' => $this->tags,
             'author' => $this->author,
             'withAuthor' => $this->withAuthor,
-        ]);
+        ])->render();
     }
 }

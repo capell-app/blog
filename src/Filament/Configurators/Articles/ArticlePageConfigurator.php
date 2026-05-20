@@ -16,6 +16,7 @@ use Capell\Admin\Filament\Configurators\Pages\DefaultPageConfigurator;
 use Capell\Admin\Filament\Resources\Pages\RelationManagers\UrlsRelationManager;
 use Capell\Blog\Filament\Components\Forms\Article\Tab\SettingsTab;
 use Capell\Blog\Filament\Components\Forms\Article\TagsInput;
+use Capell\Blog\Filament\Resources\Articles\ArticleResource;
 use Capell\Blog\Support\Loader\BlogLoader;
 use Capell\Core\Models\Site;
 use Closure;
@@ -31,6 +32,7 @@ class ArticlePageConfigurator extends DefaultPageConfigurator
 {
     protected bool $hasCreatePageSchema = false;
 
+    #[Override]
     public static function relationManagers(Model $record): array
     {
         return [
@@ -46,10 +48,10 @@ class ArticlePageConfigurator extends DefaultPageConfigurator
 
             $site = $model::query()->find($configurator->getRawState()['site_id']);
 
-            $blogPage = $site ? BlogLoader::getBlogPage($site) : null;
+            $blogPage = $site !== null ? BlogLoader::getBlogPage($site) : null;
 
             return $query->adminResource(
-                $configurator->getLivewire()->getResource()::getResourceName(),
+                ArticleResource::getResourceName(),
             )
                 ->when(
                     $blogPage,
@@ -72,7 +74,7 @@ class ArticlePageConfigurator extends DefaultPageConfigurator
                         components: [
                             TagsInput::make('tags'),
                         ],
-                        pageGroup: $configurator->getLivewire()->getResource()::getResourceName(),
+                        pageGroup: ArticleResource::getResourceName(),
                         modifyParentQueryUsing: static::modifyParentQueryUsing($configurator),
                         withParent: false,
                         withType: false,
@@ -85,6 +87,7 @@ class ArticlePageConfigurator extends DefaultPageConfigurator
         ];
     }
 
+    #[Override]
     protected function getTabs(Schema $configurator): array
     {
         return resolve(PageSchemaExtenderResolverInterface::class)->resolveTabs($configurator, [
@@ -107,7 +110,7 @@ class ArticlePageConfigurator extends DefaultPageConfigurator
                             TagsInput::make('tags'),
                             MediaLibraryFileUpload::make('image'),
                         ],
-                        pageGroup: $configurator->getLivewire()->getResource()::getResourceName(),
+                        pageGroup: ArticleResource::getResourceName(),
                         modifyParentQueryUsing: static::modifyParentQueryUsing($configurator),
                         withParent: false,
                         withType: false,

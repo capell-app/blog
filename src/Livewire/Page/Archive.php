@@ -12,6 +12,7 @@ use Capell\Frontend\Support\State\FrontendState;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Override;
 
 class Archive extends AbstractPage
 {
@@ -19,7 +20,7 @@ class Archive extends AbstractPage
 
     public ?int $year = null;
 
-    protected static string $defaultView = 'capell::livewire.page.results';
+    protected static string $defaultView = 'capell-blog::livewire.page.results';
 
     protected function setup(): void
     {
@@ -45,7 +46,7 @@ class Archive extends AbstractPage
             paginationKey: 'article-archives',
             cacheKeyPrepend: sprintf('year-%s-month-%s', $this->year, $this->month),
             morphModel: 'article',
-            modifyQuery: function (Builder $query) {
+            modifyQuery: function (Builder $query): Builder {
                 if (DB::getDriverName() === 'sqlite') {
                     return $query
                         ->when(
@@ -110,19 +111,20 @@ class Archive extends AbstractPage
 
         $date = isset($parts[1]) ? (int) $parts[1] : 1;
 
-        if (isset($dates[0]) && mb_strlen($dates[0]) === 4) {
+        if (isset($dates[0]) && mb_strlen($dates[0]) === 4 && is_numeric($dates[0])) {
             $year = (int) $dates[0];
         }
 
-        if (isset($dates[1]) && $dates[1] >= 0 && $dates[1] <= 12) {
+        if (isset($dates[1]) && is_numeric($dates[1]) && (int) $dates[1] >= 1 && (int) $dates[1] <= 12) {
             $month = (int) $dates[1];
         }
 
-        abort_if(! is_numeric($date) && ($year === 0 || $year === null), 404);
+        abort_if(! is_numeric($date) || $year === 0 || $year === null, 404);
 
         return [$year, $month];
     }
 
+    #[Override]
     protected function getViewData(): array
     {
         $date = Date::create()->day(1)->month($this->month)->year($this->year);

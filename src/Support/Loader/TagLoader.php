@@ -11,13 +11,14 @@ use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
-use Capell\Frontend\Support\ModelServing\RetrievedModelStore;
+use Capell\Frontend\Contracts\RenderedModelTracker;
 use Capell\Tags\Enums\TagTypeEnum;
 use Capell\Tags\Models\Tag;
 use Illuminate\Contracts\Database\Eloquent\Builder as BuilderContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Cache;
 
 class TagLoader
 {
@@ -35,7 +36,7 @@ class TagLoader
 
         if ($fromCache) {
             $tags->each(function (Tag $tag): void {
-                resolve(RetrievedModelStore::class)->track($tag);
+                resolve(RenderedModelTracker::class)->track($tag);
             });
         }
 
@@ -58,7 +59,7 @@ class TagLoader
         });
 
         if ($fromCache && $page instanceof Pageable) {
-            resolve(RetrievedModelStore::class)->track($page);
+            resolve(RenderedModelTracker::class)->track($page);
         }
 
         return $page;
@@ -77,28 +78,12 @@ class TagLoader
 
         return $model::query()
             ->withCount([
-                'taggables' => fn (Builder $query): Builder => $query->whereHas(
-                    'taggable',
-                    fn (Builder $query): Builder => $query->where('site_id', $site->id)
-                        ->whereRelation('translation', 'language_id', $language->id),
-                ),
+                'taggables' => fn (Builder $query): Builder => self::applyTaggableSiteLanguageScope($query, $site, $language),
             ])
             ->where('type', TagTypeEnum::Page)
-            ->where(
-                fn (Builder $query): Builder => $query->where('site_id', $site->id)->orWhereNull('site_id'),
-            )
-            ->when(
-                $hasArticles,
-                fn (Builder $query) => $query->whereHas(
-                    'taggables',
-                    fn (BuilderContract $query): BuilderContract => $query->whereHas(
-                        'taggable',
-                        fn (BuilderContract $query): BuilderContract => $query->where('site_id', $site->id)
-                            ->whereRelation('translation', 'language_id', $language->id),
-                    ),
-                ),
-            )
-            ->tap(fn (Builder $query) => $query->whereNotNull($query->qualifyColumn('name->' . $language->code)))
+            ->where(fn (Builder $query): Builder => self::applySiteScope($query, $site))
+            ->when($hasArticles, fn (Builder $query): Builder => self::applyHasArticlesScope($query, $site, $language))
+            ->tap(fn (Builder $query): Builder => self::applyTranslatedNameScope($query, $language))
             ->ordered();
     }
 
@@ -118,7 +103,11 @@ class TagLoader
             $limit = config('capell-frontend.pagination_limit', 10);
         }
 
-        $cacheKey = CacheEnum::siteTags($site->id, $language->id, $hasArticles, $limit, $paginationPage);
+        $paginationPage = $withPagination ? max(1, $paginationPage ?? 1) : $paginationPage;
+        $version = Cache::store()->get(CacheEnum::siteTagsVersion($site->id, $language->id), 0);
+        $version = is_numeric($version) ? (int) $version : 0;
+
+        $cacheKey = CacheEnum::siteTags($site->id, $language->id, $hasArticles, $limit, $paginationPage, $paginationKey, $version);
 
         $fromCache = true;
 
@@ -126,6 +115,7 @@ class TagLoader
             $language,
             $hasArticles,
             $limit,
+            $paginationPage,
             $paginationKey,
             $site,
             $withPagination,
@@ -134,20 +124,22 @@ class TagLoader
             $fromCache = false;
             $query = self::getTagsQuery($site, $language, $hasArticles);
             if ($withPagination) {
-                return $query->paginate($limit, ['*'], $paginationKey);
+                return $query->paginate($limit, ['*'], $paginationKey, $paginationPage);
             }
 
-            if ($limit) {
+            if ($limit !== null) {
                 $query->limit($limit);
             }
 
             return $query->get();
         });
 
-        if ($fromCache && $tags instanceof Collection) {
-            $tags->each(function (Tag $tag): void {
-                resolve(RetrievedModelStore::class)->track($tag);
-            });
+        if ($fromCache) {
+            self::trackCachedTags($tags);
+        }
+
+        if ($tags instanceof LengthAwarePaginator) {
+            $tags->withPath(request()->url());
         }
 
         return $tags;
@@ -175,9 +167,45 @@ class TagLoader
         });
 
         if ($fromCache && $tag instanceof Tag) {
-            resolve(RetrievedModelStore::class)->track($tag);
+            resolve(RenderedModelTracker::class)->track($tag);
         }
 
         return $tag;
+    }
+
+    private static function applyTaggableSiteLanguageScope(BuilderContract $query, Site $site, Language $language): BuilderContract
+    {
+        return $query->whereHas(
+            'taggable',
+            fn (BuilderContract $query): BuilderContract => $query->where('site_id', $site->id)
+                ->whereRelation('translation', 'language_id', $language->id),
+        );
+    }
+
+    private static function applySiteScope(Builder $query, Site $site): Builder
+    {
+        return $query->where('site_id', $site->id)->orWhereNull('site_id');
+    }
+
+    private static function applyHasArticlesScope(Builder $query, Site $site, Language $language): Builder
+    {
+        return $query->whereHas(
+            'taggables',
+            fn (BuilderContract $query): BuilderContract => self::applyTaggableSiteLanguageScope($query, $site, $language),
+        );
+    }
+
+    private static function applyTranslatedNameScope(Builder $query, Language $language): Builder
+    {
+        return $query->whereNotNull($query->qualifyColumn('name->' . $language->code));
+    }
+
+    private static function trackCachedTags(Collection|LengthAwarePaginator $tags): void
+    {
+        $collection = $tags instanceof LengthAwarePaginator ? $tags->getCollection() : $tags;
+
+        $collection->each(function (Tag $tag): void {
+            resolve(RenderedModelTracker::class)->track($tag);
+        });
     }
 }

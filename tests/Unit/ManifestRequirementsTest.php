@@ -16,7 +16,7 @@ describe('blog capell.json manifest', function (): void {
     it('declares requires using full composer package names', function () use ($blogManifest): void {
         $manifest = $blogManifest();
 
-        $requires = $manifest['requires'] ?? [];
+        $requires = $manifest['dependencies']['requires'] ?? [];
 
         foreach ($requires as $requirement) {
             expect($requirement)->toContain('/');
@@ -26,16 +26,23 @@ describe('blog capell.json manifest', function (): void {
     it('requires capell-app/core as a dependency', function () use ($blogManifest): void {
         $manifest = $blogManifest();
 
-        expect($manifest['requires'])->toContain('capell-app/core');
+        expect($manifest['dependencies']['requires'])->toContain('capell-app/core');
     });
 
-    it('requires mosaic in both package manifests', function () use ($blogManifest, $blogComposerManifest): void {
+    it('requires the layout-builder package for article blocks and layout defaults', function () use ($blogManifest, $blogComposerManifest): void {
         $manifest = $blogManifest();
         $composerManifest = $blogComposerManifest();
 
-        expect($manifest['requires'])
-            ->toContain('capell-app/mosaic')
+        expect($manifest['dependencies']['requires'])
+            ->toContain('capell-app/layout-builder')
             ->and($composerManifest['require'])
-            ->toHaveKey('capell-app/mosaic');
+            ->toHaveKey('capell-app/layout-builder');
+    });
+
+    it('passes install context into the demo command', function () use ($blogManifest): void {
+        $manifest = $blogManifest();
+
+        expect($manifest['commands']['demo'])->toBe('capell:blog-demo')
+            ->and($manifest['commands']['demoParams'])->toBe(['sites', 'user']);
     });
 });

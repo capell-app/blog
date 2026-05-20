@@ -9,22 +9,27 @@ use Capell\Admin\Enums\ConfiguratorTypeEnum;
 use Capell\Admin\Enums\ResourceEnum as AdminResourceEnum;
 use Capell\Admin\Facades\CapellAdmin;
 use Capell\Blog\Actions\EnsureBlogPublishingSurfaceAction;
+use Capell\Blog\Enums\BlockComponentEnum;
+use Capell\Blog\Enums\BlockConfiguratorEnum;
 use Capell\Blog\Enums\ResourceEnum;
-use Capell\Blog\Enums\WidgetComponentEnum;
-use Capell\Blog\Enums\WidgetConfiguratorEnum;
 use Capell\Blog\Filament\Configurators\Articles\ArticlePageConfigurator;
 use Capell\Blog\Listeners\AddBlogPagesToNavigation;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Site;
-use Capell\Mosaic\Enums\ComponentTypeEnum;
-use Capell\Mosaic\Enums\ConfiguratorTypeEnum as LayoutSchemaEnum;
+use Capell\LayoutBuilder\Enums\ComponentTypeEnum;
 use Capell\Navigation\Events\NavigationCreating;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use Override;
 
 final class AdminServiceProvider extends ServiceProvider
 {
+    private const string LAYOUT_BUILDER_COMPONENT_TYPE_ENUM = ComponentTypeEnum::class;
+
+    private const string LAYOUT_BUILDER_CONFIGURATOR_TYPE_ENUM = \Capell\LayoutBuilder\Enums\ConfiguratorTypeEnum::class;
+
+    #[Override]
     public function register(): void
     {
         //
@@ -37,7 +42,7 @@ final class AdminServiceProvider extends ServiceProvider
         }
 
         $this->registerResources();
-        $this->registerWidgetComponents();
+        $this->registerBlockComponents();
         $this->registerConfigurators();
         $this->registerDefaultPages();
         $this->registerNavigationListener();
@@ -57,9 +62,13 @@ final class AdminServiceProvider extends ServiceProvider
         ));
     }
 
-    private function registerWidgetComponents(): void
+    private function registerBlockComponents(): void
     {
-        CapellCore::registerComponents(ComponentTypeEnum::Widget->name, WidgetComponentEnum::cases());
+        if (! enum_exists(self::LAYOUT_BUILDER_COMPONENT_TYPE_ENUM)) {
+            return;
+        }
+
+        CapellCore::registerComponents(self::LAYOUT_BUILDER_COMPONENT_TYPE_ENUM::Block->name, BlockComponentEnum::cases());
     }
 
     private function registerConfigurators(): void
@@ -70,12 +79,20 @@ final class AdminServiceProvider extends ServiceProvider
             name: ArticlePageConfigurator::getKey(),
         ));
 
-        foreach (WidgetConfiguratorEnum::cases() as $configurator) {
+        if (! enum_exists(self::LAYOUT_BUILDER_CONFIGURATOR_TYPE_ENUM)) {
+            return;
+        }
+
+        foreach (BlockConfiguratorEnum::cases() as $configurator) {
             $configuratorClass = $configurator->value;
+
+            if (! class_exists($configuratorClass)) {
+                continue;
+            }
 
             CapellAdmin::contributeToAdminSurface(AdminSurfaceContributionData::configurator(
                 class: $configuratorClass,
-                group: LayoutSchemaEnum::Widget->value,
+                group: self::LAYOUT_BUILDER_CONFIGURATOR_TYPE_ENUM::Block->value,
                 name: $configuratorClass::getKey(),
             ));
         }

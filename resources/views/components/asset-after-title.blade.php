@@ -1,4 +1,6 @@
-<div class="@sm:flex-nowrap flex justify-between gap-x-4 gap-y-2">
+<div
+    class="capell-asset-after-title @sm:flex-nowrap flex justify-between gap-x-4 gap-y-2"
+>
     @if ($tags?->isNotEmpty())
         <x-capell-blog::page.tags
             :tags="$tags"

@@ -46,7 +46,7 @@ test('archives page list articles archives by month/year', function (): void {
 
     expect($archivesPage)
         ->toBeInstanceOf(Page::class)
-        ->type->name->toBe('System')
+        ->type->name->toBe('capell::generic.system')
         ->layout->name->toBe('Archives')
         ->parent->name->toBe('Blog');
 
@@ -61,10 +61,10 @@ test('archives page list articles archives by month/year', function (): void {
             fn (AssertElement $elm): BaseAssert => $elm->containsText($archivesPage->translation->title),
         )
         ->assertElementExists(
-            '.widget-archives',
-            fn (AssertElement $elm): BaseAssert => $elm->contains('.widget-archives-month', count: 3)
+            '.block-archives',
+            fn (AssertElement $elm): BaseAssert => $elm->contains('.block-archives-month', count: 3)
                 ->each(
-                    '.widget-archives-month',
+                    '.block-archives-month',
                     fn (AssertElement $month, int $index): BaseAssert => $month->find(
                         'a',
                         fn (AssertElement $link): BaseAssert => $link->has(

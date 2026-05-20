@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Models;
 
+use ArrayAccess;
 use Bkwld\Cloner\Cloneable;
+use Capell\Blog\Actions\ClearBlogContentCacheAction;
 use Capell\Blog\Database\Factories\ArticleFactory;
 use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Observers\ArticleObserver;
 use Capell\Blog\Support\Loader\BlogLoader;
 use Capell\Core\Concerns\HasCapellMedia;
 use Capell\Core\Contracts\Pageable;
-use Capell\Core\Contracts\PageCacheable;
+use Capell\Core\Enums\BlueprintGroupEnum;
+use Capell\Core\Enums\BlueprintSubjectEnum;
 use Capell\Core\Enums\MediaCollectionEnum;
 use Capell\Core\Enums\PageOrderEnum;
+use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Concerns\CloneableExcept;
 use Capell\Core\Models\Concerns\HasAssets;
 use Capell\Core\Models\Concerns\HasMetaData;
@@ -32,9 +36,9 @@ use Capell\Core\Models\Language;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\PageUrl;
 use Capell\Core\Models\Site;
-use Capell\Core\Models\Type;
+use Capell\Core\Models\Translation;
+use Capell\PublishingStudio\BelongsToWorkspace;
 use Capell\Tags\Models\Concerns\HasTags;
-use Capell\Workspaces\BelongsToWorkspace;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
@@ -42,19 +46,25 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Override;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\MediaLibrary\HasMedia;
 use Staudenmeir\EloquentJsonRelations\HasJsonRelationships;
 use Staudenmeir\EloquentJsonRelations\Relations\BelongsToJson;
 
+/**
+ * @method HasOne|MorphOne translation()
+ */
 #[ObservedBy(ArticleObserver::class)]
-class Article extends Model implements HasMedia, Pageable, PageCacheable, Publishable, Translatable, Typeable, Userstampable
+class Article extends Model implements HasMedia, Pageable, Publishable, Translatable, Typeable, Userstampable
 {
     use BelongsToWorkspace;
     use Cloneable;
@@ -81,7 +91,7 @@ class Article extends Model implements HasMedia, Pageable, PageCacheable, Publis
     protected $table = 'articles';
 
     /**
-     * @var array<string>
+     * @var list<string>
      */
     protected $fillable = [
         'layout_id',
@@ -92,7 +102,7 @@ class Article extends Model implements HasMedia, Pageable, PageCacheable, Publis
         'visible_from',
         'visible_until',
         'site_id',
-        'type_id',
+        'blueprint_id',
     ];
 
     protected array $clone_exempt_attributes = [
@@ -101,13 +111,27 @@ class Article extends Model implements HasMedia, Pageable, PageCacheable, Publis
 
     protected static string $factory = ArticleFactory::class;
 
-    public static function getDefaultType(?string $group): ?Type
+    public static function getDefaultType(?string $group): ?Blueprint
     {
-        return Type::query()
-            ->pageType()
-            ->when($group !== null, fn (Builder $query): Builder => $query->adminResource($group))
+        return Blueprint::query()
+            ->where('type', BlueprintSubjectEnum::Page)
+            ->when(
+                $group !== null,
+                fn (Builder $query): Builder => in_array($group, ['page', 'default'], true)
+                    ? $query->where(
+                        fn (Builder $query): Builder => $query
+                            ->whereNull('group')
+                            ->orWhereIn('group', [
+                                BlueprintGroupEnum::Default->value,
+                                BlueprintGroupEnum::System->value,
+                            ]),
+                    )
+                    : $query->where('group', $group),
+            )
             ->where('key', BlogPageTypeEnum::Article->value)
-            ->ordered()
+            ->orderBy('order')
+            ->orderBy('default', 'desc')
+            ->orderBy('name')
             ->first();
     }
 
@@ -169,18 +193,30 @@ class Article extends Model implements HasMedia, Pageable, PageCacheable, Publis
         return $this->belongsTo(Layout::class);
     }
 
+    public function translation(): HasOne|MorphOne
+    {
+        $relation = $this->morphOne(Translation::class, 'translatable');
+
+        if (method_exists($relation, 'chaperone')) {
+            $relation->chaperone('translatable');
+        }
+
+        return $relation;
+    }
+
+    /** @return BelongsTo<Site, $this> */
     public function site(): BelongsTo
     {
         return $this->belongsTo(Site::class);
     }
 
-    /** @return MorphOne<PageUrl, self> */
+    /** @return MorphOne<PageUrl, $this> */
     public function pageUrl(): MorphOne
     {
         return $this->morphOne(PageUrl::class, 'pageable')->withDefault(['site_id' => $this->site_id]);
     }
 
-    /** @return MorphMany<PageUrl, self> */
+    /** @return MorphMany<PageUrl, $this> */
     public function pageUrls(): MorphMany
     {
         $model = $this->morphMany(PageUrl::class, 'pageable');
@@ -192,7 +228,7 @@ class Article extends Model implements HasMedia, Pageable, PageCacheable, Publis
         return $model;
     }
 
-    /** @return MorphMany<Article, self> */
+    /** @return MorphMany<Article, $this> */
     public function canonicalPages(): MorphMany
     {
         return $this->morphMany(
@@ -208,8 +244,45 @@ class Article extends Model implements HasMedia, Pageable, PageCacheable, Publis
         return $this->morphOneMedia(MediaCollectionEnum::Image->value);
     }
 
+    public function syncTags(string|array|ArrayAccess $tags): static
+    {
+        if (is_string($tags)) {
+            $tags = Arr::wrap($tags);
+        }
+
+        $className = static::getTagClassName();
+        $tagRecords = collect($className::findOrCreate($tags));
+
+        $this->tags()->sync($tagRecords->pluck('id')->toArray());
+        $this->clearBlogContentCache();
+
+        return $this;
+    }
+
+    public function syncTagsWithType(array|ArrayAccess $tags, ?string $type = null): static
+    {
+        $className = static::getTagClassName();
+
+        if ($this->languages->isNotEmpty()) {
+            $tagRecords = collect();
+
+            $this->languages->each(function (Language $language) use (&$tagRecords, &$tags, $className, $type): void {
+                $tagRecords->push($className::findOrCreate($tags, $type, $language->code));
+            });
+
+            $tags = $tagRecords->flatten();
+        } else {
+            $tags = collect($className::findOrCreate($tags, $type));
+        }
+
+        $this->syncTagIds($tags->pluck('id')->toArray(), $type);
+        $this->clearBlogContentCache();
+
+        return $this;
+    }
+
     /**
-     * @return BelongsToJson<Article, self>
+     * @return BelongsToJson<Article, $this>
      */
     public function related(): BelongsToJson
     {
@@ -266,6 +339,7 @@ class Article extends Model implements HasMedia, Pageable, PageCacheable, Publis
             ->orderBy('id', 'desc');
     }
 
+    #[Override]
     protected static function booted(): void
     {
         static::creating(function (self $article): void {
@@ -281,6 +355,7 @@ class Article extends Model implements HasMedia, Pageable, PageCacheable, Publis
         return $this->type->meta['url_params'] ?? null;
     }
 
+    #[Override]
     protected function casts(): array
     {
         return [
@@ -293,5 +368,12 @@ class Article extends Model implements HasMedia, Pageable, PageCacheable, Publis
     private function effectivePublishDateExpression(): string
     {
         return sprintf('COALESCE(%s, %s)', $this->qualifyColumn('visible_from'), $this->qualifyColumn('created_at'));
+    }
+
+    private function clearBlogContentCache(): void
+    {
+        if ($this->exists) {
+            ClearBlogContentCacheAction::run($this);
+        }
     }
 }

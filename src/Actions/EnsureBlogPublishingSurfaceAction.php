@@ -7,35 +7,35 @@ namespace Capell\Blog\Actions;
 use Capell\Blog\Data\BlogPublishingSurfaceData;
 use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Support\Creator\BlogCreator;
-use Capell\Core\Enums\LayoutEnum;
+use Capell\Core\Actions\GetOrCreateResultsLayoutAction;
 use Capell\Core\Enums\PageTypeEnum;
+use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\Site;
-use Capell\Core\Models\Type;
-use Capell\Core\Support\Creator\LayoutCreator;
-use Capell\Core\Support\Creator\TypeCreator;
-use Capell\Mosaic\Support\Creator\TypeCreator as LayoutTypeCreator;
-use Capell\Mosaic\Support\Creator\WidgetCreator;
+use Capell\Core\Support\Creator\BlueprintCreator;
+use Capell\LayoutBuilder\Support\Creator\BlockCreator;
+use Capell\LayoutBuilder\Support\Creator\TypeCreator as LayoutTypeCreator;
 use Capell\Navigation\Enums\NavigationHandle;
 use Illuminate\Support\Collection;
+use LogicException;
 use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 /**
- * @method static BlogPublishingSurfaceData run(Site $site, ?Collection $languages = null, bool $createWidgets = true)
+ * @method static BlogPublishingSurfaceData run(Site $site, ?Collection $languages = null, bool $createBlocks = true)
  */
 class EnsureBlogPublishingSurfaceAction
 {
     use AsFake;
     use AsObject;
 
-    public function handle(Site $site, ?Collection $languages = null, bool $createWidgets = true): BlogPublishingSurfaceData
+    public function handle(Site $site, ?Collection $languages = null, bool $createBlocks = true): BlogPublishingSurfaceData
     {
         $blogCreator = resolve(BlogCreator::class);
         $languages ??= $site->getAllLanguages();
 
-        if ($createWidgets) {
-            $this->ensureSurfaceWidgets($blogCreator, $languages);
+        if ($createBlocks) {
+            $this->ensureSurfaceBlocks($blogCreator, $languages);
         }
 
         $blogPage = $blogCreator->createBlogPage(
@@ -72,7 +72,7 @@ class EnsureBlogPublishingSurfaceAction
             $tagsPage,
             languages: $languages,
             type: $this->getPageType($blogCreator, BlogPageTypeEnum::Tag->value),
-            layout: $this->getResultsLayout(),
+            layout: $blogCreator->createTagResultsLayout(),
         );
 
         $blogCreator->addPagesToNavigations(
@@ -91,43 +91,43 @@ class EnsureBlogPublishingSurfaceAction
         );
     }
 
-    private function ensureSurfaceWidgets(BlogCreator $blogCreator, Collection $languages): void
+    private function ensureSurfaceBlocks(BlogCreator $blogCreator, Collection $languages): void
     {
-        $resultsWidgetType = resolve(LayoutTypeCreator::class)->resultsWidgetType();
+        $resultsBlockType = resolve(LayoutTypeCreator::class)->resultsBlockType();
 
-        $blogCreator->createLatestArticlesWidget($languages);
-        $blogCreator->createArchivesWidget($languages);
-        $blogCreator->createTagsWidget($languages);
-        $blogCreator->relatedArticlesWidget($resultsWidgetType, $languages);
+        $blogCreator->createLatestArticlesBlock($languages);
+        $blogCreator->createArchivesBlock($languages);
+        $blogCreator->createTagsBlock($languages);
+        $blogCreator->relatedArticlesBlock($resultsBlockType, $languages);
 
-        resolve(WidgetCreator::class)->latestPagesWidget($resultsWidgetType, $languages);
+        resolve(BlockCreator::class)->latestPagesBlock($resultsBlockType, $languages);
     }
 
-    private function getPageType(BlogCreator $blogCreator, string $key): Type
+    private function getPageType(BlogCreator $blogCreator, string $key): Blueprint
     {
-        $type = Type::query()->where('key', $key)->pageType()->first();
+        $type = Blueprint::query()->where('key', $key)->pageType()->first();
 
-        if ($type instanceof Type) {
+        if ($type instanceof Blueprint) {
             return $type;
         }
 
-        return match ($key) {
+        $createdType = match ($key) {
             BlogPageTypeEnum::Archive->value => $blogCreator->createArchivePageType(),
             BlogPageTypeEnum::Blog->value => $blogCreator->createBlogPageType(),
             BlogPageTypeEnum::Tag->value => $blogCreator->createTagPageType(),
-            PageTypeEnum::System->value => resolve(TypeCreator::class)->systemPageType(),
-            default => resolve(TypeCreator::class)->createPageType($key),
+            PageTypeEnum::System->value => resolve(BlueprintCreator::class)->systemPageType(),
+            default => resolve(BlueprintCreator::class)->createPageType($key),
         };
+
+        if ($createdType instanceof Blueprint) {
+            return $createdType;
+        }
+
+        throw new LogicException('Expected page type creator to return a Blueprint model.');
     }
 
     private function getResultsLayout(): Layout
     {
-        $layout = Layout::query()->firstWhere('key', LayoutEnum::Results->value);
-
-        if ($layout instanceof Layout) {
-            return $layout;
-        }
-
-        return resolve(LayoutCreator::class)->create(LayoutEnum::Results);
+        return GetOrCreateResultsLayoutAction::run();
     }
 }

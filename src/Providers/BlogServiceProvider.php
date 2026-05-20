@@ -7,22 +7,29 @@ namespace Capell\Blog\Providers;
 use Capell\Admin\Data\AdminSurfaceContributionData;
 use Capell\Admin\Enums\ResourceEnum as AdminResourceEnum;
 use Capell\Admin\Facades\CapellAdmin;
+use Capell\Blog\Actions\ClearBlogTagCacheAction;
+use Capell\Blog\Enums\BlockComponentEnum;
 use Capell\Blog\Enums\LivewirePageComponentEnum;
 use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Listeners\ArticleTranslationSavedListener;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\BlogModelRegistrar;
+use Capell\Blog\Support\BlogSidebarBlockContributor;
+use Capell\ContentSections\Models\Section;
 use Capell\Core\Actions\RegisterBlazeOptimizedViewsAction;
 use Capell\Core\Data\PageTypeData;
+use Capell\Core\Data\RenderableDefinitionData;
 use Capell\Core\Data\VendorAssetData;
+use Capell\Core\Enums\RenderableTypeEnum;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\Translation;
 use Capell\Core\Support\Packages\AbstractPackageServiceProvider;
-use Capell\Mosaic\Models\Section;
+use Capell\Core\Support\Renderables\RenderableRegistry;
+use Capell\LayoutBuilder\Contracts\LayoutSidebarBlockContributor;
+use Capell\PublishingStudio\WorkspaceRegistry;
 use Capell\Tags\Models\Tag;
-use Capell\Workspaces\WorkspaceRegistry;
 use Composer\InstalledVersions;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
@@ -34,6 +41,8 @@ use Spatie\LaravelPackageTools\Package;
 
 class BlogServiceProvider extends AbstractPackageServiceProvider
 {
+    private const string LAYOUT_SIDEBAR_ELEMENT_CONTRIBUTOR = LayoutSidebarBlockContributor::class;
+
     public static string $name = 'capell-blog';
 
     public static string $packageName = 'capell-app/blog';
@@ -49,9 +58,17 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
     public function registeringPackage(): void
     {
         $this->app->register(AdminServiceProvider::class);
+        $this->app->register(ConsoleServiceProvider::class);
 
-        $this
-            ->registerPackageMetadata();
+        if (interface_exists(self::LAYOUT_SIDEBAR_ELEMENT_CONTRIBUTOR)) {
+            $this->app->tag([BlogSidebarBlockContributor::class], self::LAYOUT_SIDEBAR_ELEMENT_CONTRIBUTOR::TAG);
+        }
+
+        $this->app->booting(function (): void {
+            if ($this->isPackageInstalled()) {
+                $this->registerAdminResources();
+            }
+        });
 
         $this->app->booted(function (): void {
             if (! $this->isPackageInstalled()) {
@@ -78,25 +95,13 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
             ->registerPackageAssets()
             ->registerBlazeComponents()
             ->registerBladeComponents()
+            ->registerPageRenderables()
+            ->registerBlockRenderables()
             ->registerLivewireComponents()
             ->registerTypes()
             ->registerTranslationEvents()
-            ->registerWorkspaces();
-    }
-
-    private function registerPackageMetadata(): self
-    {
-        CapellCore::registerPackage(
-            static::$packageName,
-            type: static::getType(),
-            serviceProviderClass: static::class,
-            path: realpath(__DIR__ . '/../..'),
-            version: $this->getVersion(),
-            permissions: $this->getPackagePermissions(),
-            description: fn (): string => __('capell-blog::package.description'),
-        );
-
-        return $this;
+            ->registerTagCacheEvents()
+            ->registerPublishingStudio();
     }
 
     private function registerPackageAssets(): self
@@ -106,33 +111,6 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
         );
 
         return $this;
-    }
-
-    private function getVersion(): string
-    {
-        if (! class_exists(InstalledVersions::class)) {
-            return 'dev';
-        }
-
-        if (! InstalledVersions::isInstalled(static::$packageName)) {
-            return 'dev';
-        }
-
-        return InstalledVersions::getPrettyVersion(static::$packageName) ?? 'dev';
-    }
-
-    private function getPackagePermissions(): array
-    {
-        return [
-            'create_article',
-            'replicate_article',
-            'reorder_article',
-            'restore_any_article',
-            'restore_article',
-            'update_article',
-            'view_any_article',
-            'view_article',
-        ];
     }
 
     private function registerModels(): self
@@ -181,7 +159,15 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
 
     private function registerBlazeComponents(): self
     {
-        RegisterBlazeOptimizedViewsAction::run(__DIR__ . '/../../resources/views/components');
+        foreach ([
+            __DIR__ . '/../../resources/views/components/article-meta.blade.php',
+            __DIR__ . '/../../resources/views/components/asset-after-title.blade.php',
+            __DIR__ . '/../../resources/views/components/footer',
+            __DIR__ . '/../../resources/views/components/page',
+            __DIR__ . '/../../resources/views/components/tag.blade.php',
+        ] as $path) {
+            RegisterBlazeOptimizedViewsAction::run($path);
+        }
 
         return $this;
     }
@@ -203,6 +189,45 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
                 classPath: __DIR__ . '/../Livewire',
                 classViewPath: __DIR__ . '/../../resources/views/livewire',
             );
+        }
+
+        return $this;
+    }
+
+    private function registerPageRenderables(): self
+    {
+        $registry = resolve(RenderableRegistry::class);
+
+        foreach (LivewirePageComponentEnum::cases() as $pageComponent) {
+            $livewireComponent = $pageComponent->getComponent();
+            if ($livewireComponent === null) {
+                continue;
+            }
+
+            if ($livewireComponent === '') {
+                continue;
+            }
+
+            $registry->register(new RenderableDefinitionData(
+                key: $pageComponent->value,
+                type: RenderableTypeEnum::Page,
+                livewire: $pageComponent->value,
+            ));
+        }
+
+        return $this;
+    }
+
+    private function registerBlockRenderables(): self
+    {
+        $registry = resolve(RenderableRegistry::class);
+
+        foreach (BlockComponentEnum::cases() as $blockComponent) {
+            $registry->register(new RenderableDefinitionData(
+                key: $blockComponent->value,
+                type: 'layout-block',
+                blade: $blockComponent->value,
+            ));
         }
 
         return $this;
@@ -264,6 +289,21 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
         return $this;
     }
 
+    private function registerTagCacheEvents(): self
+    {
+        Tag::created(function (Tag $tag): void {
+            ClearBlogTagCacheAction::run($tag);
+        });
+        Tag::updating(function (Tag $tag): void {
+            ClearBlogTagCacheAction::run($tag);
+        });
+        Tag::deleting(function (Tag $tag): void {
+            ClearBlogTagCacheAction::run($tag);
+        });
+
+        return $this;
+    }
+
     private function registerTypes(): self
     {
         CapellCore::registerPageType(
@@ -277,7 +317,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
         return $this;
     }
 
-    private function registerWorkspaces(): self
+    private function registerPublishingStudio(): self
     {
         WorkspaceRegistry::register(Article::class);
 

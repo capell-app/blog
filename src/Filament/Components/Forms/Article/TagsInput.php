@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Filament\Components\Forms\Article;
 
-use Capell\Core\Enums\TypeEnum;
+use Capell\Core\Enums\BlueprintSubjectEnum;
 use Capell\Tags\Filament\Components\Forms\TagsInput as BaseTagsInput;
 
 class TagsInput extends BaseTagsInput
@@ -13,6 +13,6 @@ class TagsInput extends BaseTagsInput
     {
         parent::setUp();
 
-        $this->type(TypeEnum::Page->value);
+        $this->type(BlueprintSubjectEnum::Page->value);
     }
 }

@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 use Capell\Blog\Actions\InstallPackageAction;
 use Capell\Blog\Enums\BlogPageTypeEnum;
+use Capell\Blog\Enums\CacheEnum;
 use Capell\Blog\Models\Article;
 use Capell\Core\Enums\PageOrderEnum;
-use Capell\Core\Models\Type;
-use Capell\Mosaic\Actions\InstallPackageAction as MosaicInstallPackageAction;
+use Capell\Core\Facades\CapellCore;
+use Capell\Core\Models\Blueprint;
+use Capell\LayoutBuilder\Actions\InstallPackageAction as LayoutBuilderInstallPackageAction;
 
 beforeEach(function (): void {
-    MosaicInstallPackageAction::run();
+    LayoutBuilderInstallPackageAction::run();
     InstallPackageAction::run();
 });
 
@@ -30,7 +32,7 @@ it('returns the article page type for getDefaultType', function (): void {
 });
 
 it('returns null for getDefaultType when the article type does not exist', function (): void {
-    Type::query()->where('key', BlogPageTypeEnum::Article->value)->delete();
+    Blueprint::query()->where('key', BlogPageTypeEnum::Article->value)->delete();
 
     expect(Article::getDefaultType(null))->toBeNull();
 });
@@ -63,22 +65,39 @@ it('returns an empty collection for draftRevisions', function (): void {
 });
 
 it('shouldLogVisit returns true when disable_visit_logs is set to true in type meta', function (): void {
-    $type = Type::factory()->page()->create(['meta' => ['disable_visit_logs' => true]]);
+    $type = Blueprint::factory()->page()->create(['meta' => ['disable_visit_logs' => true]]);
     $article = Article::factory()->type($type)->create();
 
     expect($article->shouldLogVisit())->toBeTrue();
 });
 
 it('shouldLogVisit returns true when disable_visit_logs is absent from type meta', function (): void {
-    $type = Type::factory()->page()->create(['meta' => []]);
+    $type = Blueprint::factory()->page()->create(['meta' => []]);
     $article = Article::factory()->type($type)->create();
 
     expect($article->shouldLogVisit())->toBeTrue();
 });
 
 it('shouldLogVisit returns false when disable_visit_logs is set to false in type meta', function (): void {
-    $type = Type::factory()->page()->create(['meta' => ['disable_visit_logs' => false]]);
+    $type = Blueprint::factory()->page()->create(['meta' => ['disable_visit_logs' => false]]);
     $article = Article::factory()->type($type)->create();
 
     expect($article->shouldLogVisit())->toBeFalse();
+});
+
+it('clears cached blog content when articles are saved', function (): void {
+    $article = Article::factory()->create(['name' => 'Original article']);
+    $cacheKey = CacheEnum::blogPage((int) $article->site_id, 'null', BlogPageTypeEnum::Blog->value);
+    $unrelatedCacheKey = 'capell-blog-unrelated-content-test';
+
+    CapellCore::setToCache($cacheKey, 'stale');
+    CapellCore::setToCache($unrelatedCacheKey, 'fresh');
+
+    expect(CapellCore::cacheExists($cacheKey))->toBeTrue()
+        ->and(CapellCore::cacheExists($unrelatedCacheKey))->toBeTrue();
+
+    $article->forceFill(['name' => 'Updated article'])->save();
+
+    expect(CapellCore::cacheExists($cacheKey))->toBeFalse()
+        ->and(CapellCore::cacheExists($unrelatedCacheKey))->toBeTrue();
 });

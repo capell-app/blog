@@ -26,13 +26,14 @@ use Illuminate\Contracts\Database\Eloquent\Builder as BuilderContract;
 use Illuminate\Contracts\Pagination\CursorPaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Override;
 
 class ListArticlesWidget extends BaseWidget
 {
     use HasWidgetShield;
 
-    /** @var int|string|array<string, int|string|null> */
-    protected int|string|array $columnSpan = ['default' => 'full', 'md' => 1];
+    /** @var int|string|array<string, int|null> */
+    protected int|string|array $columnSpan = ['md' => 1];
 
     protected static ?int $sort = 5;
 
@@ -59,6 +60,7 @@ class ListArticlesWidget extends BaseWidget
         ]);
     }
 
+    #[Override]
     public function table(Table $table): Table
     {
         return $table
@@ -143,6 +145,7 @@ class ListArticlesWidget extends BaseWidget
         ];
     }
 
+    #[Override]
     protected function getTableHeading(): string
     {
         return __('capell-admin::heading.latest_pages');

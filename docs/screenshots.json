@@ -13,7 +13,9 @@
             "targetType": "admin-surface",
             "target": "ArticleResource",
             "required": true,
-            "notes": "Resolved by the deployment screenshot runner after the package is installed and demo data is prepared."
+            "notes": "Requires Blog plus its required Capell extensions installed, package migrations, and seeded draft/published articles with sites, layouts, URLs, translations, and tags.",
+            "useCase": "An editor reviews the article queue, publish windows, language coverage, and article status before editing content.",
+            "screenshotPath": "public/docs/screenshots/packages/blog/articles-admin-index.png"
         },
         {
             "id": "create-edit-article-form",
@@ -21,9 +23,47 @@
             "package": "blog",
             "surface": "admin",
             "targetType": "admin-surface",
-            "target": "ArticleResource",
+            "target": "ArticleResource.create",
             "required": true,
-            "notes": "Resolved by the deployment screenshot runner after the package is installed and demo data is prepared."
+            "notes": "Requires seeded sites, article type, layouts, and tags so relationship fields are populated. The batch harness could not complete extension install until required dependency extensions were marked installed.",
+            "useCase": "An editor creates or updates an article with publishing windows, metadata, layout selection, media, and taxonomy.",
+            "screenshotPath": "public/docs/screenshots/packages/blog/create-edit-article-form.png"
+        },
+        {
+            "id": "article-health-widget",
+            "title": "Article health dashboard widget.",
+            "package": "blog",
+            "surface": "admin",
+            "targetType": "admin-surface",
+            "target": "ArticleHealthWidgetAbstract",
+            "required": true,
+            "notes": "Capture when the host dashboard registers the Blog widget implementation and seeded articles include complete/incomplete metadata states.",
+            "useCase": "An editor sees whether articles are missing metadata, tags, media, translations, or publish settings.",
+            "screenshotPath": "public/docs/screenshots/packages/blog/article-health-widget.png"
+        },
+        {
+            "id": "top-pages-widget",
+            "title": "Top pages dashboard widget.",
+            "package": "blog",
+            "surface": "admin",
+            "targetType": "admin-surface",
+            "target": "TopPagesWidgetAbstract",
+            "required": true,
+            "notes": "Requires the host dashboard to register the widget and seeded article/page traffic data from the analytics package used by the host.",
+            "useCase": "An editor identifies which articles or blog pages are drawing the most visits.",
+            "screenshotPath": "public/docs/screenshots/packages/blog/top-pages-widget.png"
+        },
+        {
+            "id": "traffic-chart-widget",
+            "title": "Traffic chart dashboard widget.",
+            "package": "blog",
+            "surface": "admin",
+            "targetType": "admin-surface",
+            "target": "TrafficChartWidgetAbstract",
+            "required": true,
+            "notes": "Requires the host dashboard to register the widget and seeded time-series traffic data.",
+            "useCase": "An editor reviews recent traffic trends for blog content from the dashboard.",
+            "screenshotPath": "public/docs/screenshots/packages/blog/traffic-chart-widget.png"
         },
         {
             "id": "blog-page-frontend-output",
@@ -33,7 +73,9 @@
             "targetType": "frontend-url",
             "target": null,
             "required": true,
-            "notes": "Resolved by the deployment screenshot runner after the package is installed and demo data is prepared."
+            "notes": "Requires seeded blog landing page, published articles, layout content, URLs, and navigation. Verify public output contains no authoring markers or admin/editor URLs.",
+            "useCase": "A visitor browses the public blog landing page and sees published article listings.",
+            "screenshotPath": "public/docs/screenshots/packages/blog/blog-page-frontend-output.png"
         },
         {
             "id": "archive-page-frontend-output",
@@ -43,7 +85,9 @@
             "targetType": "frontend-url",
             "target": null,
             "required": true,
-            "notes": "Resolved by the deployment screenshot runner after the package is installed and demo data is prepared."
+            "notes": "Requires archive pages created by setup/demo commands and articles with visible dates across at least two months.",
+            "useCase": "A visitor opens a monthly archive and sees articles filtered to that archive period.",
+            "screenshotPath": "public/docs/screenshots/packages/blog/archive-page-frontend-output.png"
         },
         {
             "id": "tag-page-frontend-output",
@@ -53,7 +97,33 @@
             "targetType": "frontend-url",
             "target": null,
             "required": true,
-            "notes": "Resolved by the deployment screenshot runner after the package is installed and demo data is prepared."
+            "notes": "Requires seeded tags attached to published articles and tag page URLs from the blog setup flow.",
+            "useCase": "A visitor opens a tag page and sees published articles associated with that tag.",
+            "screenshotPath": "public/docs/screenshots/packages/blog/tag-page-frontend-output.png"
+        },
+        {
+            "id": "article-page-block-output",
+            "title": "Article page block output.",
+            "package": "blog",
+            "surface": "frontend",
+            "targetType": "frontend-view",
+            "target": "capell-blog::components.block.page.article",
+            "required": true,
+            "notes": "Requires a seeded article page with author, date, tag, media, and related metadata. Capture as anonymous public output.",
+            "useCase": "A visitor reads a public article block with the article metadata needed for scanning and navigation.",
+            "screenshotPath": "public/docs/screenshots/packages/blog/article-page-block-output.png"
+        },
+        {
+            "id": "article-tags-block-output",
+            "title": "Article tags block output.",
+            "package": "blog",
+            "surface": "frontend",
+            "targetType": "frontend-view",
+            "target": "capell-blog::components.block.tag.tags",
+            "required": true,
+            "notes": "Requires seeded tags with at least one published article per tag. Capture as anonymous public output.",
+            "useCase": "A visitor uses the tag block to navigate between related article topics.",
+            "screenshotPath": "public/docs/screenshots/packages/blog/article-tags-block-output.png"
         }
     ]
 }

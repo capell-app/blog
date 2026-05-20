@@ -3,5 +3,5 @@
 declare(strict_types=1);
 
 return [
-    'description' => 'Article pages with tags, archives, and blog listing pages. Fully integrated into your editorial pipeline.',
+    'description' => 'Blog adds article publishing, archive pages, tag pages, article blocks, Site Discovery sitemap contributions, and frontend Livewire page components to Capell.',
 ];

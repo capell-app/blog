@@ -20,7 +20,7 @@ use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Livewire\livewire;
 
 uses(CreatesAdminUser::class)
-    ->group('widget');
+    ->group('block');
 
 beforeEach(function (): void {
     test()->actingAsAdmin();
@@ -41,7 +41,7 @@ describe('from edit article', function (): void {
             ->mountAction('create')
             ->fillForm([
                 'name' => $newData->name,
-                'type_id' => $newData->type_id,
+                'blueprint_id' => $newData->blueprint_id,
                 'site_id' => $newData->site_id,
             ])
             ->set('mountedActions.0.data.translations', [
@@ -57,7 +57,7 @@ describe('from edit article', function (): void {
 
         assertDatabaseHas(Article::class, [
             'name' => $newData->name,
-            'type_id' => $newData->type_id,
+            'blueprint_id' => $newData->blueprint_id,
             'layout_id' => $article->layout_id,
         ]);
 
@@ -109,7 +109,7 @@ describe('from list article', function (): void {
 
         $newData = Article::factory()->recycle($site)->type($type)->make();
 
-        $blogCreator->createArticleLayout(createWidgets: false);
+        $blogCreator->createArticleLayout(createBlocks: false);
 
         livewire(ListArticles::class)
             ->assertSuccessful()
@@ -132,7 +132,7 @@ describe('from list article', function (): void {
             )
             ->assertSchemaStateSet([
                 'name' => $newData->name,
-                'type_id' => $type->id,
+                'blueprint_id' => $type->id,
                 'site_id' => $site->id,
             ])
             ->callMountedAction()
@@ -147,7 +147,7 @@ describe('from list article', function (): void {
         $blogCreator = resolve(BlogCreator::class);
 
         $type = $blogCreator->createArticlePageType();
-        $layout = $blogCreator->createArticleLayout(createWidgets: false);
+        $layout = $blogCreator->createArticleLayout(createBlocks: false);
 
         $language = Language::factory()->create();
         $site = Site::factory()->recycle($language)->hasSiteDomains()->create();
@@ -157,7 +157,7 @@ describe('from list article', function (): void {
         livewire(ListArticles::class)
             ->assertSuccessful()
             ->mountAction('create')
-            ->assertSchemaComponentDoesNotExist('type_id')
+            ->assertSchemaComponentDoesNotExist('blueprint_id')
             ->set('mountedActions.0.data.translations', [])
             ->fillForm([
                 'name' => $newData->name,

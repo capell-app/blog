@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class Blog extends AbstractPage
 {
-    protected static string $defaultView = 'capell::livewire.page.results';
+    protected static string $defaultView = 'capell-blog::livewire.page.results';
 
     protected function setup(): void
     {
@@ -34,7 +34,7 @@ class Blog extends AbstractPage
             withDate: $page->type->meta['with_date'] ?? false,
             paginationKey: 'articles',
             morphModel: 'article',
-            modifyQuery: fn (Builder $query) => $query->with(['tags']),
+            modifyQuery: fn (Builder $query): Builder => $query->with(['tags']),
         );
     }
 }

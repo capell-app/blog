@@ -11,27 +11,29 @@ use Capell\Blog\Actions\GetArticleLayoutAction;
 use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Filament\Resources\Articles\ArticleResource;
-use Capell\Core\Models\Type;
+use Capell\Core\Models\Blueprint;
+use Override;
 
 class CreateArticle extends CreatePage
 {
-    /** @return class-string<ArticleResource> */
+    #[Override]
     public static function getResource(): string
     {
         return AdminSurfaceLookup::resourceIfRegistered(AdminResourceEnum::Page, strtolower(ResourceEnum::Article->name))
             ?? ArticleResource::class;
     }
 
+    #[Override]
     protected function beforeFill(): void
     {
         parent::beforeFill();
 
         $this->data['layout_id'] = GetArticleLayoutAction::run()?->id;
 
-        /** @var class-string<Type> $model */
-        $model = Type::class;
+        /** @var class-string<Blueprint> $model */
+        $model = Blueprint::class;
 
-        $this->data['type_id'] = $model::query()
+        $this->data['blueprint_id'] = $model::query()
             ->pageType()
             ->where('key', BlogPageTypeEnum::Article->value)
             ->value('id');

@@ -34,11 +34,11 @@ it('runs blog install command successfully without publishing files', function (
     );
 
     // Ensure migrate command is a no-op
-    $fakeMigrator = Mockery::mock(Migrator::class);
+    $fakeMigrationAssistant = Mockery::mock(Migrator::class);
     $fakeDispatcher = Mockery::mock(Dispatcher::class);
     test()->instance(
         MigrateCommand::class,
-        Mockery::mock(new MigrateCommand($fakeMigrator, $fakeDispatcher))
+        Mockery::mock(new MigrateCommand($fakeMigrationAssistant, $fakeDispatcher))
             ->makePartial()
             ->shouldReceive('run')->once()->andReturn(0)->getMock(),
     );
