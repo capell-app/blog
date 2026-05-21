@@ -64,18 +64,13 @@ class BlogLoader
             );
         }
 
-        $cacheKey = CacheEnum::archives($site->id, $language->id, $group, $limit, $paginationPage);
-
-        $archives = CapellCore::rememberCache(
-            $cacheKey,
-            fn (): Collection|LengthAwarePaginator => resolve(PageArchiveService::class)->getArchivedCountsByMonth(
-                site: $site,
-                language: $language,
-                group: $group,
-                paginate: $pagination,
-                perPage: $limit,
-                paginationKey: $paginationKey,
-            ),
+        $archives = resolve(PageArchiveService::class)->getArchivedCountsByMonth(
+            site: $site,
+            language: $language,
+            group: $group,
+            paginate: $pagination,
+            perPage: $limit,
+            paginationKey: $paginationKey,
         );
 
         return collect($archives)

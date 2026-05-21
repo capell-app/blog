@@ -61,6 +61,7 @@ final class ClearBlogContentCacheAction
 
         CapellCore::removeCacheKey(CacheEnum::archivePage($siteId, $languageId));
         CapellCore::removeCacheKey(CacheEnum::tagResultsPage($siteId, $languageId));
+        $this->incrementArchivesVersion($siteId, $languageId);
         $this->incrementSiteTagsVersion($siteId, $languageId);
     }
 
@@ -78,6 +79,17 @@ final class ClearBlogContentCacheAction
     private function incrementSiteTagsVersion(int $siteId, int $languageId): void
     {
         $key = CacheEnum::siteTagsVersion($siteId, $languageId);
+        $this->incrementCacheVersion($key);
+    }
+
+    private function incrementArchivesVersion(int $siteId, int $languageId): void
+    {
+        $key = CacheEnum::archivesVersion($siteId, $languageId);
+        $this->incrementCacheVersion($key);
+    }
+
+    private function incrementCacheVersion(string $key): void
+    {
         $cache = Cache::store();
         $cache->add($key, 0);
 

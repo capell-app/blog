@@ -41,9 +41,20 @@ enum CacheEnum: string
      * @param  int|null  $paginationPage  The pagination page (optional)
      * @return string The cache key
      */
-    public static function archives(int $siteId, int $languageId, string $group, ?int $limit, ?int $paginationPage): string
+    public static function archives(
+        int $siteId,
+        int $languageId,
+        string $group,
+        ?int $limit,
+        ?int $paginationPage,
+        int $version = 0,
+    ): string {
+        return sprintf('site-%d-%d-%s-v-%d-%s-page-%s', $siteId, $languageId, $group, $version, $limit, $paginationPage);
+    }
+
+    public static function archivesVersion(int $siteId, int $languageId): string
     {
-        return sprintf('site-%d-%d-%s-%s-page-%s', $siteId, $languageId, $group, $limit, $paginationPage);
+        return sprintf('site-%d-%d-archives-version', $siteId, $languageId);
     }
 
     /**

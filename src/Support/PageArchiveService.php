@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Capell\Blog\Support;
 
 use Capell\Blog\Data\ArchiveMonthData;
+use Capell\Blog\Enums\CacheEnum;
 use Capell\Blog\Models\Article;
+use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Site;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use stdClass;
 
@@ -31,6 +34,31 @@ class PageArchiveService
         ?int $perPage = null,
         ?string $paginationKey = null,
     ) {
+        if (! $paginate) {
+            $version = Cache::store()->get(CacheEnum::archivesVersion($site->id, $language->id), 0);
+            $version = is_numeric($version) ? (int) $version : 0;
+            $cacheKey = CacheEnum::archives($site->id, $language->id, $group, $perPage, null, $version);
+
+            $archives = CapellCore::rememberCache(
+                $cacheKey,
+                fn (): Collection => $this->queryArchivedCountsByMonth($site, $language, $group, false, $perPage, $paginationKey),
+            );
+
+            return collect($archives)
+                ->map(fn (ArchiveMonthData|array $archive): ArchiveMonthData => ArchiveMonthData::from($archive));
+        }
+
+        return $this->queryArchivedCountsByMonth($site, $language, $group, $paginate, $perPage, $paginationKey);
+    }
+
+    private function queryArchivedCountsByMonth(
+        Site $site,
+        Language $language,
+        string $group,
+        bool $paginate,
+        ?int $perPage,
+        ?string $paginationKey,
+    ): LengthAwarePaginator|Collection {
         $query = Article::query()
             ->selectRaw('COUNT(*) as `total`')
             ->when(
