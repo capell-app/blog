@@ -30,7 +30,7 @@ class InstallCommand extends Command
 
         $this->publishMigrations();
 
-        $this->call('migrate');
+        $this->call('migrate', ['--force' => true]);
 
         if (! app()->runningUnitTests()) {
             $this->callSilent('filament:assets');
