@@ -13,6 +13,7 @@ use Capell\Blog\Enums\LivewirePageComponentEnum;
 use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Listeners\ArticleTranslationSavedListener;
 use Capell\Blog\Models\Article;
+use Capell\Blog\Policies\ArticlePolicy;
 use Capell\Blog\Support\BlogModelRegistrar;
 use Capell\Blog\Support\BlogSidebarBlockContributor;
 use Capell\ContentSections\Models\Section;
@@ -36,6 +37,7 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Livewire;
 use Spatie\LaravelPackageTools\Package;
 
@@ -89,6 +91,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
         return $this
             ->registerRelationships()
             ->registerModels()
+            ->registerPolicies()
             ->registerModelRelations()
             ->registerAdminResources()
             ->registerAboutCommand()
@@ -116,6 +119,13 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
     private function registerModels(): self
     {
         BlogModelRegistrar::register();
+
+        return $this;
+    }
+
+    private function registerPolicies(): self
+    {
+        Gate::policy(Article::class, ArticlePolicy::class);
 
         return $this;
     }
