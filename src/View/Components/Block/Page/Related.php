@@ -51,32 +51,33 @@ class Related extends AbstractPagesBlock
             /**
              * @param  Builder<Page>  $query
              */
-            modifyQuery: fn (Builder $query) => $query
-                ->where('pages.id', '!=', $page->id)
-                ->when(
-                    $excludeParent && $page->parent_id !== null,
-                    fn (BuilderContract $query): BuilderContract => $query->where('pages.id', '!=', $page->parent_id),
-                )
-                ->whereHas(
-                    'type',
-                    fn (Builder $query): Builder => $query->enabled()
-                        ->listable()
-                        ->accessible()
-                        ->when(
-                            $this->block->meta['exclude_types'] ?? false,
-                            fn (BuilderContract $query): BuilderContract => $query->whereNotIn(
-                                'blueprints.key',
-                                $this->block->meta['exclude_types'] ?? [],
+            modifyQuery: function (Builder $query) use ($excludeParent, $page, $tagIds, $tags): void {
+                $query->where('pages.id', '!=', $page->id)
+                    ->when(
+                        $excludeParent && $page->parent_id !== null,
+                        fn (BuilderContract $query): BuilderContract => $query->where('pages.id', '!=', $page->parent_id),
+                    )
+                    ->whereHas(
+                        'type',
+                        fn (Builder $query): Builder => $query->enabled()
+                            ->listable()
+                            ->accessible()
+                            ->when(
+                                $this->block->meta['exclude_types'] ?? false,
+                                fn (BuilderContract $query): BuilderContract => $query->whereNotIn(
+                                    'blueprints.key',
+                                    $this->block->meta['exclude_types'] ?? [],
+                                ),
                             ),
+                    )
+                    ->when(
+                        $tags instanceof Collection && $tags->isNotEmpty(),
+                        fn (Builder $query): Builder => $query->whereHas(
+                            'tags',
+                            fn (BuilderContract $query): BuilderContract => $query->whereIn('taggables.tag_id', $tagIds),
                         ),
-                )
-                ->when(
-                    $tags instanceof Collection && $tags->isNotEmpty(),
-                    fn (Builder $query): Builder => $query->whereHas(
-                        'tags',
-                        fn (BuilderContract $query): BuilderContract => $query->whereIn('taggables.tag_id', $tagIds),
-                    ),
-                ),
+                    );
+            },
         );
 
         $this->skipRender = $this->pages->isEmpty();
