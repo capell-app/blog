@@ -65,9 +65,11 @@ function loadArticlesForOrderingTest(
         language: $language,
         site: $site,
         ordering: $ordering,
-        morphModel: 'article',
+        morphModel: Article::class,
         useCache: false,
-        modifyQuery: fn (Builder $query) => $query->whereIn('id', $articleIds),
+        modifyQuery: function (Builder $query) use ($articleIds): void {
+            $query->whereIn('id', $articleIds);
+        },
     );
 }
 

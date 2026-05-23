@@ -26,7 +26,7 @@ class InstallCommand extends Command
         Filament::getDefaultPanel()
             ->resources(array_map(fn (ResourceEnum $resourceEnum) => $resourceEnum->value, ResourceEnum::cases()));
 
-        AssignPermissionsToRole::run(resources: ResourceEnum::cases());
+        AssignPermissionsToRole::run(resources: array_map(fn (ResourceEnum $resourceEnum): string => $resourceEnum->value, ResourceEnum::cases()));
 
         $this->publishMigrations();
 

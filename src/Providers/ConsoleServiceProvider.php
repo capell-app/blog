@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Capell\Blog\Providers;
 
 use Capell\Blog\Console\Commands\CreateBlogPagesCommand;
-use Capell\Blog\Console\Commands\DemoCommand;
 use Capell\Blog\Console\Commands\FakerCommand;
 use Capell\Blog\Console\Commands\HeroDemoCommand;
 use Capell\Blog\Console\Commands\InstallCommand;
@@ -20,7 +19,6 @@ final class ConsoleServiceProvider extends ServiceProvider
     {
         $this->commands([
             CreateBlogPagesCommand::class,
-            DemoCommand::class,
             FakerCommand::class,
             HeroDemoCommand::class,
             InstallCommand::class,

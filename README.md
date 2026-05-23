@@ -8,7 +8,19 @@ Blog adds article publishing, archive pages, tag pages, article blocks, Site Dis
 - Namespace: `Capell\Blog\`
 - Surfaces: Filament admin, Livewire, console, database
 - Service providers: `packages/blog/src/Providers/AdminServiceProvider.php`, `packages/blog/src/Providers/BlogServiceProvider.php`, `packages/blog/src/Providers/ConsoleServiceProvider.php`, `packages/blog/src/Providers/FrontendServiceProvider.php`
-- Capell dependencies: `capell-app/admin`, `capell-app/content-sections`, `capell-app/demo-kit`, `capell-app/frontend`, `capell-app/html-cache`, `capell-app/insights`, `capell-app/navigation`, `capell-app/publishing-studio`, `capell-app/site-discovery`, `capell-app/tags`
+- Capell dependencies: `capell-app/admin`, `capell-app/content-sections`, `capell-app/frontend`, `capell-app/html-cache`, `capell-app/insights`, `capell-app/navigation`, `capell-app/publishing-studio`, `capell-app/site-discovery`, `capell-app/tags`
+
+## Why It Helps Your Capell Workflow
+
+- Adds the editorial publishing layer most Capell sites need: articles, archives, tag pages, related blocks, and sitemap contributions.
+- Lets editors manage content marketing inside Capell instead of building one-off article page types for every project.
+- Gives developers package-owned loaders, Actions, Livewire pages, and tests for article ordering, tags, media, and public rendering.
+
+## Best Used With
+
+- [Tags](../tags/README.md)
+- [Site Discovery](../site-discovery/README.md)
+- [SEO Suite](../seo-suite/README.md)
 
 ## What It Adds
 
@@ -92,7 +104,6 @@ Screenshots are generated from [docs/screenshots.json](docs/screenshots.json) du
 ## Commands
 
 - `capell:blog-create-pages {site : The ID of the site to create blog pages for}` (packages/blog/src/Console/Commands/CreateBlogPagesCommand.php)
-- `capell:blog-demo {--sites=} {--user=} {--limit=}` (packages/blog/src/Console/Commands/DemoCommand.php)
 - `capell:blog-faker {--count=25} {--sites=} {--languages=} {--force}` (packages/blog/src/Console/Commands/FakerCommand.php)
 - `capell:blog-install` (packages/blog/src/Console/Commands/InstallCommand.php)
 - `capell:blog-setup {--user= : Ignored - accepted for compatibility with capell:install} {--sites= : Ignored - accepted for compatibility with capell:install} {--languages= : Ignored - accepted for compatibility with capell:install} {--url= : Ignored - accepted for compatibility with capell:install}` (packages/blog/src/Console/Commands/SetupCommand.php)
@@ -146,6 +157,7 @@ Screenshots are generated from [docs/screenshots.json](docs/screenshots.json) du
 
 ## Docs
 
+- [docs index](docs/README.md)
 - [blog-api.md](docs/blog-api.md)
 - [blog-database.md](docs/blog-database.md)
 - [credits-and-acknowledgements.md](docs/credits-and-acknowledgements.md)

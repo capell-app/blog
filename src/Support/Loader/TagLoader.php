@@ -78,7 +78,7 @@ class TagLoader
 
         return $model::query()
             ->withCount([
-                'taggables' => fn (Builder $query): Builder => self::applyTaggableSiteLanguageScope($query, $site, $language),
+                'taggables' => fn (Builder $query): BuilderContract => self::applyTaggableSiteLanguageScope($query, $site, $language),
             ])
             ->where('type', TagTypeEnum::Page)
             ->where(fn (Builder $query): Builder => self::applySiteScope($query, $site))

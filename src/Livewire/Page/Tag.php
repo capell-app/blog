@@ -58,10 +58,12 @@ class Tag extends AbstractPage
             paginationKey: 'tag-pages',
             cacheKeyPrepend: 'tagged-' . $this->tag->id,
             morphModel: $model,
-            modifyQuery: fn (Builder $query): Builder => $query->whereHas(
-                'tags',
-                fn (Builder $query): Builder => $query->whereKey($this->tag->id),
-            ),
+            modifyQuery: function (Builder $query): void {
+                $query->whereHas(
+                    'tags',
+                    fn (Builder $query): Builder => $query->whereKey($this->tag->id),
+                );
+            },
         );
 
         $this->params = $this->getViewData();

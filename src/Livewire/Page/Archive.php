@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Capell\Blog\Livewire\Page;
 
 use Capell\Blog\Enums\ResourceEnum;
+use Capell\Blog\Models\Article;
 use Capell\Frontend\Facades\Frontend;
 use Capell\Frontend\Livewire\Page\AbstractPage;
 use Capell\Frontend\Support\Loader\PageLoader;
@@ -45,10 +46,10 @@ class Archive extends AbstractPage
             withDate: $page->type->meta['with_date'] ?? false,
             paginationKey: 'article-archives',
             cacheKeyPrepend: sprintf('year-%s-month-%s', $this->year, $this->month),
-            morphModel: 'article',
-            modifyQuery: function (Builder $query): Builder {
+            morphModel: Article::class,
+            modifyQuery: function (Builder $query): void {
                 if (DB::getDriverName() === 'sqlite') {
-                    return $query
+                    $query
                         ->when(
                             $this->year,
                             fn (Builder $query): Builder => $query->whereRaw(
@@ -67,9 +68,11 @@ class Archive extends AbstractPage
                                 );
                             },
                         );
+
+                    return;
                 }
 
-                return $query
+                $query
                     ->when(
                         $this->year,
                         fn (Builder $query): Builder => $query->whereRaw(
