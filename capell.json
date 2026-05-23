@@ -13,13 +13,16 @@
         "bundle": "foundation"
     },
     "namespace": "Capell\\Blog",
-    "surfaces": ["admin", "frontend", "console"],
+    "surfaces": [
+        "admin",
+        "frontend",
+        "console"
+    ],
     "dependencies": {
         "requires": [
             "capell-app/admin",
             "capell-app/content-sections",
             "capell-app/core",
-            "capell-app/demo-kit",
             "capell-app/frontend",
             "capell-app/html-cache",
             "capell-app/insights",
@@ -34,10 +37,18 @@
     },
     "providers": {
         "metadata": [],
-        "install": ["Capell\\Blog\\Providers\\ConsoleServiceProvider"],
-        "runtime": ["Capell\\Blog\\Providers\\BlogServiceProvider"],
-        "admin": ["Capell\\Blog\\Providers\\AdminServiceProvider"],
-        "frontend": ["Capell\\Blog\\Providers\\FrontendServiceProvider"]
+        "install": [
+            "Capell\\Blog\\Providers\\ConsoleServiceProvider"
+        ],
+        "runtime": [
+            "Capell\\Blog\\Providers\\BlogServiceProvider"
+        ],
+        "admin": [
+            "Capell\\Blog\\Providers\\AdminServiceProvider"
+        ],
+        "frontend": [
+            "Capell\\Blog\\Providers\\FrontendServiceProvider"
+        ]
     },
     "contributes": [],
     "database": {
@@ -48,8 +59,8 @@
     "commands": {
         "install": "capell:blog-install",
         "setup": "capell:blog-setup",
-        "demo": "capell:blog-demo",
-        "demoParams": ["sites", "user"],
+        "demo": null,
+        "demoParams": [],
         "doctor": null
     },
     "settings": [],
@@ -58,10 +69,15 @@
     "performance": {
         "frontendRenderBudgetMs": 20,
         "adminQueryBudget": 40,
-        "cacheTags": ["blog"],
+        "cacheTags": [
+            "blog"
+        ],
         "cacheSafety": {
             "cacheable": false,
-            "variesBy": ["site", "locale"],
+            "variesBy": [
+                "site",
+                "locale"
+            ],
             "sensitiveOutput": false,
             "invalidationSources": [],
             "queueInvalidation": true
@@ -105,8 +121,19 @@
     },
     "marketplace": {
         "summary": "Blog adds article publishing, archive pages, tag pages, article blocks, Site Discovery sitemap contributions, and frontend Livewire page components to Capell.",
-        "screenshots": [],
-        "categories": ["admin", "console", "foundation", "frontend"]
+        "screenshots": [
+            {
+                "path": "docs/assets/marketplace/extension-card.jpg",
+                "alt": "Blog extension preview image",
+                "caption": "Blog extension preview"
+            }
+        ],
+        "categories": [
+            "admin",
+            "console",
+            "foundation",
+            "frontend"
+        ]
     },
     "contributionTraceability": {
         "deferredContributions": [
