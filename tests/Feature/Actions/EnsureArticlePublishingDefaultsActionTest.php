@@ -36,7 +36,7 @@ it('keeps latest pages in default sidebars when adding latest articles', functio
 
     EnsureArticlePublishingDefaultsAction::run();
 
-    $sidebarBlockKeys = collect($layout->refresh()->containers['sidebar']['blocks'])
+    $sidebarBlockKeys = capell_test_collect($layout->refresh()->containers['sidebar']['blocks'])
         ->pluck('block_key')
         ->all();
 
