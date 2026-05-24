@@ -14,6 +14,7 @@ use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
+use Capell\Core\Models\Translation;
 use Capell\Core\Support\Creator\PageCreator;
 use Illuminate\Support\Collection;
 use Override;
@@ -76,6 +77,8 @@ class ArticleCreator extends PageCreator
             ];
 
             $translation = $page->translations()->firstOrNew(['language_id' => $language->id]);
+
+            throw_unless($translation instanceof Translation);
 
             $translation->fill($attributes);
 

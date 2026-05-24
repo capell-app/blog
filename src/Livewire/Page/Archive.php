@@ -103,7 +103,7 @@ class Archive extends AbstractPage
     protected function getArchiveDateFromUrl(): array
     {
         $params = Frontend::params();
-        $date = is_array($params) ? ($params['date'] ?? '') : '';
+        $date = $params['date'] ?? '';
 
         $month = null;
         $year = null;
@@ -122,7 +122,7 @@ class Archive extends AbstractPage
             $month = (int) $dates[1];
         }
 
-        abort_if(! is_numeric($date) || $year === 0 || $year === null, 404);
+        abort_if($year === 0 || $year === null, 404);
 
         return [$year, $month];
     }

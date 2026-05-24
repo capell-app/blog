@@ -31,7 +31,10 @@ final class ArticleHealthWidgetAbstract extends Widget implements CapellWidgetCo
     /** @var int|string|array<string, int|null> */
     protected int|string|array $columnSpan = ['md' => 1];
 
-    private static ?string $heading = 'Article health';
+    public function getHeading(): string
+    {
+        return __('capell-blog::form.article_health');
+    }
 
     /**
      * @return array<string, mixed>
@@ -96,7 +99,7 @@ final class ArticleHealthWidgetAbstract extends Widget implements CapellWidgetCo
             ->limit(5)
             ->get()
             ->map(fn (Tag $tag): TagCountData => new TagCountData(
-                name: $tag->name,
+                name: $tag->getTranslation('name', app()->getLocale()),
                 articleCount: $tag->taggables_count ?? 0,
             ));
 

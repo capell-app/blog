@@ -81,9 +81,16 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
         });
     }
 
-    private function isPackageInstalled(): bool
+    protected function isPackageInstalled(): bool
     {
         return CapellCore::getPackage(static::$packageName)->isInstalled();
+    }
+
+    protected function isLivewireV3(): bool
+    {
+        $version = InstalledVersions::getVersion('livewire/livewire');
+
+        return version_compare($version, '4.0.0', '<');
     }
 
     private function bootInstalledPackage(): self
@@ -241,13 +248,6 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
         }
 
         return $this;
-    }
-
-    private function isLivewireV3(): bool
-    {
-        $version = InstalledVersions::getVersion('livewire/livewire');
-
-        return version_compare($version, '4.0.0', '<');
     }
 
     private function registerAboutCommand(): self

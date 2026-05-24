@@ -124,7 +124,7 @@ class BlogCreator
         $page = $pageModel::query()->firstOrNew([
             'site_id' => $site->id,
             'blueprint_id' => $type->id,
-            'parent_id' => $parent?->getKey(),
+            'parent_id' => $parent->getKey(),
         ], [
             'name' => __('capell-blog::generic.tag_page'),
         ]);

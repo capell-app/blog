@@ -28,7 +28,7 @@ class AssetAfterTitle extends Component
             return '';
         }
 
-        return view('capell-blog::hooks.asset-after-title', [
+        return view('capell-blog::components.asset-after-title', [
             'publishDate' => $this->publishDate,
             'publishDatePosition' => $this->publishDatePosition,
             'tags' => $this->tags,

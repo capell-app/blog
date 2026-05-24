@@ -26,7 +26,7 @@ final class BuildArticleMetaDataAction
         bool $withAuthor = false,
         ?Model $author = null,
     ): ArticleMetaData {
-        if ($withAuthor && ! $author instanceof Model && $page instanceof Model && method_exists($page, 'creator')) {
+        if ($withAuthor && ! $author instanceof Model && $page instanceof Model) {
             $creator = $page->relationLoaded('creator')
                 ? $page->getRelation('creator')
                 : $page->creator()->first();

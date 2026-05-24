@@ -28,7 +28,7 @@ enum LivewirePageComponentEnum: string implements EnumAttributeInterface
     {
         $attributes = self::getAllCaseAttributes(Component::class);
 
-        return array_map(fn (?Component $attribute): ?string => $attribute?->class ?? null, $attributes);
+        return array_map(fn (?Component $attribute): ?string => $attribute->class ?? null, $attributes);
     }
 
     public function getComponent(): ?string

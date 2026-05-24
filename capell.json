@@ -13,11 +13,7 @@
         "bundle": "foundation"
     },
     "namespace": "Capell\\Blog",
-    "surfaces": [
-        "admin",
-        "frontend",
-        "console"
-    ],
+    "surfaces": ["admin", "frontend", "console"],
     "dependencies": {
         "requires": [
             "capell-app/admin",
@@ -32,23 +28,15 @@
             "capell-app/site-discovery",
             "capell-app/tags"
         ],
-        "optional": [],
+        "supports": [],
         "conflicts": []
     },
     "providers": {
         "metadata": [],
-        "install": [
-            "Capell\\Blog\\Providers\\ConsoleServiceProvider"
-        ],
-        "runtime": [
-            "Capell\\Blog\\Providers\\BlogServiceProvider"
-        ],
-        "admin": [
-            "Capell\\Blog\\Providers\\AdminServiceProvider"
-        ],
-        "frontend": [
-            "Capell\\Blog\\Providers\\FrontendServiceProvider"
-        ]
+        "install": ["Capell\\Blog\\Providers\\ConsoleServiceProvider"],
+        "runtime": ["Capell\\Blog\\Providers\\BlogServiceProvider"],
+        "admin": ["Capell\\Blog\\Providers\\AdminServiceProvider"],
+        "frontend": ["Capell\\Blog\\Providers\\FrontendServiceProvider"]
     },
     "contributes": [],
     "database": {
@@ -69,15 +57,10 @@
     "performance": {
         "frontendRenderBudgetMs": 20,
         "adminQueryBudget": 40,
-        "cacheTags": [
-            "blog"
-        ],
+        "cacheTags": ["blog"],
         "cacheSafety": {
             "cacheable": false,
-            "variesBy": [
-                "site",
-                "locale"
-            ],
+            "variesBy": ["site", "locale"],
             "sensitiveOutput": false,
             "invalidationSources": [],
             "queueInvalidation": true
@@ -128,12 +111,7 @@
                 "caption": "Blog extension preview"
             }
         ],
-        "categories": [
-            "admin",
-            "console",
-            "foundation",
-            "frontend"
-        ]
+        "categories": ["admin", "console", "foundation", "frontend"]
     },
     "contributionTraceability": {
         "deferredContributions": [

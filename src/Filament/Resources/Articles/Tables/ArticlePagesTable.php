@@ -42,6 +42,7 @@ use Filament\Tables\Table;
 use Illuminate\Contracts\Database\Eloquent\Builder as BuilderContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\HtmlString;
@@ -118,7 +119,7 @@ class ArticlePagesTable implements TableConfigurator
 
     protected static function beforeBulkDelete(HasTable&ValidatesDelete $livewire, DeleteBulkAction $action, EloquentCollection|Collection|LazyCollection $records): void
     {
-        $records->each(function (Pageable $record) use ($livewire, $action): void {
+        $records->each(function (Model $record) use ($livewire, $action): void {
             if (! $livewire->validateDelete($record)) {
                 $action->cancel();
             }
@@ -378,7 +379,7 @@ class ArticlePagesTable implements TableConfigurator
     {
         $indicators = [];
 
-        if (isset($data['language_id']) && $data['language_id'] !== null && $data['language_id'] !== '') {
+        if (isset($data['language_id']) && $data['language_id'] !== '') {
             /** @var class-string<Language> $model */
             $model = Language::class;
 
@@ -388,7 +389,7 @@ class ArticlePagesTable implements TableConfigurator
             );
         }
 
-        if (isset($data['canonical_page_id']) && $data['canonical_page_id'] !== null && $data['canonical_page_id'] !== '') {
+        if (isset($data['canonical_page_id']) && $data['canonical_page_id'] !== '') {
             /** @var class-string<Article> $model */
             $model = Article::class;
 
@@ -492,7 +493,7 @@ class ArticlePagesTable implements TableConfigurator
         if ($value) {
             $indicators['tags'] = __(
                 'capell-layout-builder::filter.tag',
-                ['search' => Tag::query()->find($value)?->name],
+                ['search' => Tag::query()->find($value)?->getTranslation('name', app()->getLocale())],
             );
         }
 

@@ -102,10 +102,6 @@ final class ArticlePolicy
             return true;
         }
 
-        if (! method_exists($user, 'checkPermissionTo')) {
-            return false;
-        }
-
         try {
             return $user->checkPermissionTo(self::permission($ability, self::SUBJECT));
         } catch (Throwable) {
@@ -119,10 +115,7 @@ final class ArticlePolicy
             return true;
         }
 
-        if (method_exists($user, 'getAssignedSiteIds')) {
-            return $user->getAssignedSiteIds()->contains($article->site_id);
-        }
+        return $user->getAssignedSiteIds()->contains($article->site_id);
 
-        return true;
     }
 }

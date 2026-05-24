@@ -17,6 +17,7 @@ use Capell\Tags\Models\Tag;
 use Illuminate\Contracts\Database\Eloquent\Builder as BuilderContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
 
@@ -58,7 +59,7 @@ class TagLoader
             return $model::getFirstPageByTypeForSite(BlogPageTypeEnum::Tag->value, site: $site, language: $language);
         });
 
-        if ($fromCache && $page instanceof Pageable) {
+        if ($fromCache && $page instanceof Pageable && $page instanceof Model) {
             resolve(RenderedModelTracker::class)->track($page);
         }
 

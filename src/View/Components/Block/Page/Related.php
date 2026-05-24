@@ -11,7 +11,6 @@ use Capell\Frontend\Facades\Frontend;
 use Capell\Frontend\Support\Loader\PageLoader;
 use Illuminate\Contracts\Database\Eloquent\Builder as BuilderContract;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
 class Related extends AbstractPagesBlock
@@ -71,7 +70,7 @@ class Related extends AbstractPagesBlock
                             ),
                     )
                     ->when(
-                        $tags instanceof Collection && $tags->isNotEmpty(),
+                        $tags->isNotEmpty(),
                         fn (Builder $query): Builder => $query->whereHas(
                             'tags',
                             fn (BuilderContract $query): BuilderContract => $query->whereIn('taggables.tag_id', $tagIds),

@@ -14,6 +14,7 @@ use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
 use Capell\Frontend\Contracts\RenderedModelTracker;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
@@ -34,7 +35,7 @@ class BlogLoader
             return $model::getFirstPageByTypeForSite(BlogPageTypeEnum::Archive->value, site: $site, language: $language);
         });
 
-        if ($fromCache && $page instanceof Pageable) {
+        if ($fromCache && $page instanceof Pageable && $page instanceof Model) {
             resolve(RenderedModelTracker::class)->track($page);
         }
 
@@ -82,7 +83,7 @@ class BlogLoader
         string $type = BlogPageTypeEnum::Blog->value,
         ?Language $language = null,
     ): ?Page {
-        $cacheKey = CacheEnum::blogPage($site->id, $language?->id ?? 'null', $type);
+        $cacheKey = CacheEnum::blogPage($site->id, $language->id ?? 'null', $type);
 
         $fromCache = true;
 
@@ -95,7 +96,7 @@ class BlogLoader
             return $model::getFirstPageByTypeForSite($type, site: $site, language: $language);
         });
 
-        if ($fromCache && $page instanceof Pageable) {
+        if ($fromCache && $page instanceof Pageable && $page instanceof Model) {
             resolve(RenderedModelTracker::class)->track($page);
         }
 
@@ -106,6 +107,6 @@ class BlogLoader
     {
         $page = self::getBlogPage($site, language: $language);
 
-        return $fullUrl ? ($page?->pageUrl?->full_url ?? '') : ($page?->pageUrl?->url ?? '');
+        return $fullUrl ? ($page->pageUrl->full_url ?? '') : ($page->pageUrl->url ?? '');
     }
 }

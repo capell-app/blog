@@ -96,7 +96,7 @@ test('tag page list articles by tag', function (): void {
 
     $breadcrumbText = trim((string) (new DOMXPath($document))
         ->query('//nav[contains(concat(" ", normalize-space(@class), " "), " breadcrumbs ")]')
-        ?->item(0)
+        ->item(0)
         ?->textContent);
 
     expect(preg_replace('/\s+/', ' ', $breadcrumbText))

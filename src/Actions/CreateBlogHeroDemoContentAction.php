@@ -14,6 +14,7 @@ use Capell\LayoutBuilder\Actions\AddHeroBlockToLayoutAction;
 use Capell\LayoutBuilder\Actions\CreateHeroBlockAction;
 use Capell\LayoutBuilder\Support\Creator\DemoCreator;
 use Capell\LayoutBuilder\Support\Creator\TypeCreator;
+use Illuminate\Database\Eloquent\Model;
 use Lorisleiva\Actions\Concerns\AsAction;
 
 final class CreateBlogHeroDemoContentAction
@@ -53,7 +54,11 @@ final class CreateBlogHeroDemoContentAction
     {
         $hero = '<h1>' . __('capell-blog::generic.latest_articles') . '</h1><p>' . __('capell-blog::generic.blog_intro') . '</p>';
 
-        $page->translations->each(fn (Translation $translation): bool => $this->mergeTranslationHero($translation, $hero));
+        $page->translations->each(function (Model $translation) use ($hero): void {
+            if ($translation instanceof Translation) {
+                $this->mergeTranslationHero($translation, $hero);
+            }
+        });
     }
 
     private function applyArticleHeroMeta(Site $site): void
@@ -63,7 +68,11 @@ final class CreateBlogHeroDemoContentAction
             ->where('site_id', $site->id)
             ->get()
             ->each(function (Article $article): void {
-                $article->translations->each(fn (Translation $translation): bool => $this->mergeTranslationHero($translation, '<h1>' . $translation->title . '</h1>'));
+                $article->translations->each(function (Model $translation): void {
+                    if ($translation instanceof Translation) {
+                        $this->mergeTranslationHero($translation, '<h1>' . $translation->title . '</h1>');
+                    }
+                });
             });
     }
 
