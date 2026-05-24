@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Support\Creator;
 
+use Capell\Admin\Filament\Configurators\Blueprints\PageBlueprintConfigurator;
 use Capell\Admin\Filament\Configurators\Pages\ResultsPageConfigurator;
-use Capell\Admin\Filament\Configurators\Types\PageTypeConfigurator;
 use Capell\Blog\Actions\EnsureArticlePublishingDefaultsAction;
 use Capell\Blog\Actions\EnsureBlogPublishingSurfaceAction;
 use Capell\Blog\Enums\BlockComponentEnum as BlogBlockComponentEnum;
@@ -67,7 +67,7 @@ class BlogCreator
             'name' => __('capell-blog::generic.tag_page'),
             'group' => BlueprintGroupEnum::System->value,
             'admin' => [
-                'type_configurator' => PageTypeConfigurator::getKey(),
+                'type_configurator' => PageBlueprintConfigurator::getKey(),
                 'configurator' => ResultsPageConfigurator::getKey(),
                 'icon' => 'heroicon-' . Heroicon::OutlinedTag->value,
                 'required_fields' => ['title'],
@@ -292,7 +292,7 @@ class BlogCreator
             'name' => __('capell-blog::generic.blog_archive_page'),
             'group' => BlueprintGroupEnum::System->value,
             'admin' => [
-                'type_configurator' => PageTypeConfigurator::getKey(),
+                'type_configurator' => PageBlueprintConfigurator::getKey(),
                 'configurator' => ResultsPageConfigurator::getKey(),
                 'icon' => 'heroicon-o-archive-box',
                 'required_fields' => ['title'],
@@ -319,7 +319,7 @@ class BlogCreator
             'group' => BlueprintGroupEnum::System->value,
             'is_livewire' => true,
             'admin' => [
-                'type_configurator' => PageTypeConfigurator::getKey(),
+                'type_configurator' => PageBlueprintConfigurator::getKey(),
                 'configurator' => ResultsPageConfigurator::getKey(),
                 'icon' => 'heroicon-o-archive-box',
                 'required_fields' => ['title'],
@@ -704,7 +704,7 @@ class BlogCreator
             'group' => BlogTypeGroupEnum::Article->value,
             'admin' => [
                 'icon' => 'heroicon-o-newspaper',
-                'type_configurator' => PageTypeConfigurator::getKey(),
+                'type_configurator' => PageBlueprintConfigurator::getKey(),
                 'configurator' => ArticlePageConfigurator::getKey(),
                 'resource' => strtolower(ResourceEnum::Article->name),
                 'required_fields' => ['title'],
@@ -811,7 +811,7 @@ class BlogCreator
             'name' => __('capell-blog::generic.article'),
             'group' => BlueprintGroupEnum::System->value,
             'admin' => [
-                'type_configurator' => PageTypeConfigurator::getKey(),
+                'type_configurator' => PageBlueprintConfigurator::getKey(),
                 'configurator' => ArticleBlockConfigurator::getKey(),
                 'icon' => 'heroicon-o-newspaper',
             ],
@@ -893,7 +893,7 @@ class BlogCreator
             'name' => __('capell-blog::generic.blog'),
             'group' => BlueprintGroupEnum::Results->value,
             'admin' => [
-                'type_configurator' => PageTypeConfigurator::getKey(),
+                'type_configurator' => PageBlueprintConfigurator::getKey(),
                 'configurator' => ResultsPageConfigurator::getKey(),
                 'icon' => 'heroicon-o-newspaper',
                 'exclude_parent' => true,
