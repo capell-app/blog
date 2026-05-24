@@ -12,6 +12,9 @@ use Capell\Navigation\Events\NavigationCreating;
 
 class AddBlogPagesToNavigation
 {
+    /**
+     * @var array<array-key, mixed>
+     */
     private array $keys = [
         NavigationHandle::Main->value,
         NavigationHandle::Footer->value,

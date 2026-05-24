@@ -71,6 +71,9 @@ class Tag extends AbstractPage
         resolve(FrontendState::class)->withParams($this->params);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     #[Override]
     protected function getViewData(): array
     {

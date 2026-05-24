@@ -10,6 +10,7 @@ use Capell\Blog\Support\Creator\BlogCreator;
 use Capell\Core\Actions\GetOrCreateResultsLayoutAction;
 use Capell\Core\Enums\PageTypeEnum;
 use Capell\Core\Models\Blueprint;
+use Capell\Core\Models\Language;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\Site;
 use Capell\Core\Support\Creator\BlueprintCreator;
@@ -22,13 +23,16 @@ use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 /**
- * @method static BlogPublishingSurfaceData run(Site $site, ?Collection $languages = null, bool $createBlocks = true)
+ * @method static BlogPublishingSurfaceData run(Site $site, ?Collection<int, Language> $languages = null, bool $createBlocks = true)
  */
 class EnsureBlogPublishingSurfaceAction
 {
     use AsFake;
     use AsObject;
 
+    /**
+     * @param  Collection<array-key, mixed>  $languages
+     */
     public function handle(Site $site, ?Collection $languages = null, bool $createBlocks = true): BlogPublishingSurfaceData
     {
         $blogCreator = resolve(BlogCreator::class);
@@ -91,6 +95,9 @@ class EnsureBlogPublishingSurfaceAction
         );
     }
 
+    /**
+     * @param  Collection<array-key, mixed>  $languages
+     */
     private function ensureSurfaceBlocks(BlogCreator $blogCreator, Collection $languages): void
     {
         $resultsBlockType = resolve(LayoutTypeCreator::class)->resultsBlockType();

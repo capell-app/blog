@@ -12,6 +12,7 @@ use Capell\Tests\Support\Concerns\TestingFrontend;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 
 uses(TestingFrontend::class);
 
@@ -54,13 +55,17 @@ beforeEach(function (): void {
     $this->expectedAlphabeticalOrder = [$articleAlpha->id, $articleBravo->id, $articleCharlie->id];
 });
 
+/**
+ * @param  array<array-key, mixed>  $articleIds
+ * @return Collection<int, Model>
+ */
 function loadArticlesForOrderingTest(
     Language $language,
     Site $site,
     array $articleIds,
     ?PageOrderEnum $ordering,
 ): Collection {
-    /** @var Collection<int, Article> */
+    /** @var Illuminate\Support\Collection<int, Article> */
     return PageLoader::getPages(
         language: $language,
         site: $site,

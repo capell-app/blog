@@ -28,6 +28,7 @@ use Illuminate\Contracts\Database\Eloquent\Builder as BuilderContract;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Override;
 
 class ArticleResource extends PageResource
@@ -162,7 +163,7 @@ class ArticleResource extends PageResource
         }
 
         if ((! isset($data['name']) || blank($data['name'])) && isset($formData['translations'])) {
-            $data['name'] = GetNameFromTranslationsAction::run(collect($formData['translations']), $site);
+            $data['name'] = GetNameFromTranslationsAction::run(new Collection($formData['translations']), $site);
         }
     }
 

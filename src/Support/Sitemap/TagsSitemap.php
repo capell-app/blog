@@ -13,11 +13,13 @@ use Capell\SiteDiscovery\Support\Sitemap\AbstractSitemapPages;
 use Capell\SiteDiscovery\Support\Sitemap\SitemapChainBuilder;
 use Capell\Tags\Filament\Resources\Tags\TagResource;
 use Capell\Tags\Models\Tag;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
 class TagsSitemap extends AbstractSitemapPages
 {
+    /**
+     * @return Collection<array-key, mixed>
+     */
     public function fetch(): Collection
     {
         $tagPage = Page::getFirstPageByTypeForSite(BlogPageTypeEnum::Tag->value, site: $this->site, language: $this->language);
@@ -63,14 +65,13 @@ class TagsSitemap extends AbstractSitemapPages
         );
     }
 
+    /**
+     * @return Collection<array-key, mixed>
+     */
     private function getTagPages(Page $tagPage): Collection
     {
         return TagLoader::getTags(site: $this->site, language: $this->language)
-            ->map(function (Model $tag) use ($tagPage): SitemapPageData {
-                throw_unless($tag instanceof Tag);
-
-                return $this->format($tagPage, $tag);
-            })
+            ->map(fn (Tag $tag): SitemapPageData => $this->format($tagPage, $tag))
             ->values();
     }
 }

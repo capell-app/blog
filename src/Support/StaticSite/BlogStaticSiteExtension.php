@@ -12,7 +12,6 @@ use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\SiteDomain;
 use Capell\Tags\Models\Tag;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
 class BlogStaticSiteExtension
@@ -44,11 +43,7 @@ class BlogStaticSiteExtension
 
         $tagsQuery = TagLoader::getTagsQuery($site, $domain->language);
         $tagsQuery->chunk(100, function (Collection $tags) use ($tagPage, $language, $visit): void {
-            $tags->each(function (Model $tag) use ($tagPage, $language, $visit): void {
-                if (! $tag instanceof Tag) {
-                    return;
-                }
-
+            $tags->each(function (Tag $tag) use ($tagPage, $language, $visit): void {
                 $base = rtrim($tagPage->pageUrl->url, '/*');
                 $slug = $tag->getTranslation('slug', $language->code);
                 $url = $base . '/' . $slug;

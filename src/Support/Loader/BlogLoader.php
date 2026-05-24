@@ -43,7 +43,7 @@ class BlogLoader
     }
 
     /**
-     * @return Collection<ArchiveMonthData>
+     * @return Collection<int, ArchiveMonthData>|LengthAwarePaginator<int, ArchiveMonthData>
      */
     public static function getArchives(
         Site $site,

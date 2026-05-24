@@ -15,8 +15,14 @@ use Illuminate\View\Component;
 
 class Pages extends Component
 {
+    /**
+     * @var Collection<array-key, mixed>
+     */
     public Collection $pages;
 
+    /**
+     * @param  array<array-key, mixed>  $item
+     */
     public function __construct(public array $item)
     {
         $this->pages = PageLoader::getPages(

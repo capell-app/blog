@@ -12,6 +12,9 @@ use Illuminate\View\View;
 
 class AssetAfterTitle extends Component
 {
+    /**
+     * @param  Collection<array-key, mixed>  $tags
+     */
     public function __construct(
         public ?DateTimeImmutable $publishDate = null,
         public ?string $publishDatePosition = null,

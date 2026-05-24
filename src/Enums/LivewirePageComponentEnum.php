@@ -11,6 +11,9 @@ use Capell\Core\Enums\Attribute\Component;
 use Capell\Core\Enums\Attribute\EnumAttributeHelper;
 use Capell\Core\Enums\Attribute\EnumAttributeInterface;
 
+/**
+ * @implements EnumAttributeInterface<Component>
+ */
 enum LivewirePageComponentEnum: string implements EnumAttributeInterface
 {
     use EnumAttributeHelper;
@@ -24,6 +27,9 @@ enum LivewirePageComponentEnum: string implements EnumAttributeInterface
     #[Component(Tag::class)]
     case TagPage = 'capell-blog::page.tag';
 
+    /**
+     * @return array<array-key, mixed>
+     */
     public static function getComponents(): array
     {
         $attributes = self::getAllCaseAttributes(Component::class);

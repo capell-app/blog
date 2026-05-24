@@ -16,8 +16,14 @@ class Tags extends Component
 {
     public ?Page $tagPage = null;
 
+    /**
+     * @var Collection<array-key, mixed>
+     */
     public Collection $tags;
 
+    /**
+     * @param  array<array-key, mixed>  $item
+     */
     public function __construct(public array $item)
     {
         $language = Frontend::language();

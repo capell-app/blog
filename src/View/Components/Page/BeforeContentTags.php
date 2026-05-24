@@ -11,6 +11,9 @@ use Illuminate\View\View;
 
 class BeforeContentTags extends Component
 {
+    /**
+     * @param  Collection<array-key, mixed>  $tags
+     */
     public function __construct(public ?Model $item, public Collection $tags) {}
 
     public function render(): View|string

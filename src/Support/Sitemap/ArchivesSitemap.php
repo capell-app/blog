@@ -17,6 +17,9 @@ use Illuminate\Support\Collection;
 
 class ArchivesSitemap extends AbstractSitemapPages
 {
+    /**
+     * @return Collection<array-key, mixed>
+     */
     public function fetch(): Collection
     {
         /** @var class-string<Page> $model */
@@ -47,6 +50,9 @@ class ArchivesSitemap extends AbstractSitemapPages
         );
     }
 
+    /**
+     * @return Collection<array-key, mixed>
+     */
     private function getArchiveMonths(Page $archivePage): Collection
     {
         $archives = BlogLoader::getArchives(

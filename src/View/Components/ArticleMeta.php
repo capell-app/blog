@@ -17,6 +17,9 @@ class ArticleMeta extends Component
 {
     public ?Page $tagPage = null;
 
+    /**
+     * @var Collection<array-key, mixed>
+     */
     public Collection $tags;
 
     public function __construct(

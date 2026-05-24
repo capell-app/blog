@@ -24,7 +24,7 @@ class PageArchiveService
      *
      * @param  bool  $paginate  Whether to paginate the results
      * @param  int|null  $perPage  Number of items per page if paginating
-     * @return LengthAwarePaginator<ArchiveMonthData>|Collection<int, ArchiveMonthData>
+     * @return LengthAwarePaginator<int, ArchiveMonthData>|Collection<int, ArchiveMonthData>
      */
     public function getArchivedCountsByMonth(
         Site $site,
@@ -33,7 +33,7 @@ class PageArchiveService
         bool $paginate = false,
         ?int $perPage = null,
         ?string $paginationKey = null,
-    ) {
+    ): LengthAwarePaginator|Collection {
         if (! $paginate) {
             $version = Cache::store()->get(CacheEnum::archivesVersion($site->id, $language->id), 0);
             $version = is_numeric($version) ? (int) $version : 0;
@@ -44,13 +44,16 @@ class PageArchiveService
                 fn (): Collection => $this->queryArchivedCountsByMonth($site, $language, $group, false, $perPage, $paginationKey),
             );
 
-            return collect($archives)
+            return $archives
                 ->map(fn (ArchiveMonthData|array $archive): ArchiveMonthData => ArchiveMonthData::from($archive));
         }
 
         return $this->queryArchivedCountsByMonth($site, $language, $group, $paginate, $perPage, $paginationKey);
     }
 
+    /**
+     * @return LengthAwarePaginator<int, ArchiveMonthData>|Collection<int, ArchiveMonthData>
+     */
     private function queryArchivedCountsByMonth(
         Site $site,
         Language $language,

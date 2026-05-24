@@ -109,6 +109,9 @@ class BlogCreator
         return $blueprint;
     }
 
+    /**
+     * @param  Collection<array-key, mixed>  $languages
+     */
     public function createTagPage(Site $site, ?Page $parent = null, ?Collection $languages = null, ?Blueprint $type = null, ?Layout $layout = null): Page
     {
         $site->unsetRelation('siteDomains');
@@ -152,6 +155,9 @@ class BlogCreator
         return $page;
     }
 
+    /**
+     * @param  Collection<array-key, mixed>  $languages
+     */
     public function createTagsPage(Site $site, ?Page $parent, ?Collection $languages = null, ?Blueprint $type = null, ?Layout $layout = null, bool $createBlocks = false): Page
     {
         $site->unsetRelation('siteDomains');
@@ -198,6 +204,11 @@ class BlogCreator
         return $page;
     }
 
+    /**
+     * @param  array<array-key, mixed>  $keys
+     * @param  Collection<int, Page>|array<array-key, mixed>  $pages
+     * @param  Collection<int, Language>  $languages
+     */
     public function addPagesToNavigations(array $keys, Site $site, Collection|array $pages, Collection $languages): void
     {
         Navigation::query()
@@ -218,6 +229,9 @@ class BlogCreator
             });
     }
 
+    /**
+     * @param  Collection<array-key, mixed>  $languages
+     */
     public function createArchivePage(
         Page $parent,
         ?Blueprint $type = null,
@@ -458,6 +472,9 @@ class BlogCreator
         ]);
     }
 
+    /**
+     * @param  Collection<array-key, mixed>  $languages
+     */
     public function createArchivesBlock(?Collection $languages = null): Block
     {
         if (! $languages instanceof Collection) {
@@ -503,6 +520,9 @@ class BlogCreator
         return $block;
     }
 
+    /**
+     * @param  Collection<array-key, mixed>  $languages
+     */
     public function createTagsBlock(Collection $languages): void
     {
         $blockModel = Block::class;
@@ -542,6 +562,9 @@ class BlogCreator
         });
     }
 
+    /**
+     * @param  Collection<array-key, mixed>  $languages
+     */
     public function createArchivesPage(
         Page $parent,
         ?Blueprint $type = null,
@@ -725,6 +748,9 @@ class BlogCreator
         return $block;
     }
 
+    /**
+     * @param  Collection<array-key, mixed>  $languages
+     */
     public function relatedArticlesBlock(?Blueprint $type = null, ?Collection $languages = null): Block
     {
         if (! $type instanceof Blueprint) {
@@ -796,6 +822,10 @@ class BlogCreator
         ]);
     }
 
+    /**
+     * @param  Collection<array-key, mixed>  $languages
+     * @param  array<array-key, mixed>  $meta
+     */
     public function createBlogPage(
         Site $site,
         ?Blueprint $type = null,
@@ -910,6 +940,9 @@ class BlogCreator
         return $blueprint;
     }
 
+    /**
+     * @param  Collection<array-key, mixed>  $languages
+     */
     public function createLatestArticlesBlock(?Collection $languages = null): Block
     {
         if (! $languages instanceof Collection) {
@@ -997,9 +1030,9 @@ class BlogCreator
     }
 
     /**
-     * @param  array<string, array<string, mixed>>|null  $currentContainers
-     * @param  array<string, array<string, mixed>>  $defaultContainers
-     * @return array<string, array<string, mixed>>
+     * @param  array<string, array<array-key, mixed>>|null  $currentContainers
+     * @param  array<string, array<array-key, mixed>>  $defaultContainers
+     * @return array<string, array<array-key, mixed>>
      */
     private function withArticleLatestArticlesContainer(?array $currentContainers, array $defaultContainers): array
     {
@@ -1019,6 +1052,10 @@ class BlogCreator
         return $containers;
     }
 
+    /**
+     * @param  array<array-key, mixed>  $containers
+     * @return array<array-key, mixed>
+     */
     private function blockKeys(array $containers): array
     {
         return collect($containers)

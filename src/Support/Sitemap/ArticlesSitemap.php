@@ -16,6 +16,9 @@ use Illuminate\Support\Collection;
 
 class ArticlesSitemap extends AbstractSitemapPages
 {
+    /**
+     * @return Collection<array-key, mixed>
+     */
     public function fetch(): Collection
     {
         // Locate the Blog page for the site & language

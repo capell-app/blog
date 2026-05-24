@@ -127,6 +127,9 @@ class Archive extends AbstractPage
         return [$year, $month];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     #[Override]
     protected function getViewData(): array
     {

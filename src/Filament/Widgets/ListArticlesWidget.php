@@ -25,6 +25,7 @@ use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Contracts\Database\Eloquent\Builder as BuilderContract;
 use Illuminate\Contracts\Pagination\CursorPaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Override;
 
@@ -37,6 +38,9 @@ class ListArticlesWidget extends BaseWidget
 
     protected static ?int $sort = 5;
 
+    /**
+     * @return Builder<Model>
+     */
     public function getFilteredTableQuery(): Builder
     {
         $query = parent::getFilteredTableQuery();
@@ -151,6 +155,10 @@ class ListArticlesWidget extends BaseWidget
         return __('capell-admin::heading.latest_pages');
     }
 
+    /**
+     * @param  Builder<Model>  $query
+     * @return CursorPaginator<array-key, mixed>
+     */
     protected function paginateTableQuery(Builder $query): CursorPaginator
     {
         return $query->cursorPaginate(
