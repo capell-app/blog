@@ -28,7 +28,7 @@
             "capell-app/site-discovery",
             "capell-app/tags"
         ],
-        "supports": [],
+        "supports": ["capell-app/comments"],
         "conflicts": []
     },
     "providers": {
@@ -47,8 +47,8 @@
     "commands": {
         "install": "capell:blog-install",
         "setup": "capell:blog-setup",
-        "demo": null,
-        "demoParams": [],
+        "demo": "capell:blog-demo",
+        "demoParams": ["sites", "languages", "force"],
         "doctor": null
     },
     "settings": [],

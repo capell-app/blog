@@ -36,7 +36,7 @@ use Capell\Frontend\Enums\RenderingStrategyEnum;
 use Capell\LayoutBuilder\Enums\BlockComponentEnum as LayoutBlockComponentEnum;
 use Capell\LayoutBuilder\Enums\LayoutTypeEnum;
 use Capell\LayoutBuilder\Filament\Configurators\Types\BlockTypeConfigurator;
-use Capell\LayoutBuilder\Models\Block;
+use Capell\LayoutBuilder\Models\Widget as Block;
 use Capell\LayoutBuilder\Support\Creator\BlockCreator;
 use Capell\LayoutBuilder\Support\Creator\TypeCreator as LayoutTypeCreator;
 use Capell\Navigation\Actions\AddPageToNavigationAction;
@@ -351,9 +351,9 @@ class BlogCreator
                 'meta' => [
                     'colspan' => 9,
                 ],
-                'blocks' => [
-                    ['block_key' => 'breadcrumbs'],
-                    ['block_key' => 'archives', 'meta' => ['show_page_content' => true, 'show_page_title' => true]],
+                'widgets' => [
+                    ['widget_key' => 'breadcrumbs'],
+                    ['widget_key' => 'archives', 'meta' => ['show_page_content' => true, 'show_page_title' => true]],
                 ],
             ],
             'sidebar' => [
@@ -364,9 +364,9 @@ class BlogCreator
                     'padding' => ['md'],
                     'html_class' => 'sidebar-sticky space-y-8',
                 ],
-                'blocks' => [
-                    ['block_key' => 'latest-articles', 'meta' => ['hide_no_results' => true]],
-                    ['block_key' => 'tags', 'meta' => ['hide_no_results' => true]],
+                'widgets' => [
+                    ['widget_key' => 'latest-articles', 'meta' => ['hide_no_results' => true]],
+                    ['widget_key' => 'tags', 'meta' => ['hide_no_results' => true]],
                 ],
             ],
         ];
@@ -375,7 +375,7 @@ class BlogCreator
             'name' => __('capell-blog::generic.archives'),
             'group' => LayoutGroupEnum::System->value,
             'containers' => $containers,
-            'blocks' => $this->blockKeys($containers),
+            'widgets' => $this->blockKeys($containers),
         ]);
     }
 
@@ -386,10 +386,10 @@ class BlogCreator
                 'meta' => [
                     'colspan' => 9,
                 ],
-                'blocks' => [
-                    ['block_key' => 'breadcrumbs'],
-                    ['block_key' => 'page-content', 'meta' => ['show_page_title' => true]],
-                    ['block_key' => 'page-slot'],
+                'widgets' => [
+                    ['widget_key' => 'breadcrumbs'],
+                    ['widget_key' => 'page-content', 'meta' => ['show_page_title' => true]],
+                    ['widget_key' => 'page-slot'],
                 ],
             ],
             'sidebar' => [
@@ -400,9 +400,9 @@ class BlogCreator
                     'padding' => ['md'],
                     'html_class' => 'sidebar-sticky space-y-8',
                 ],
-                'blocks' => [
-                    ['block_key' => 'tags', 'meta' => ['hide_no_results' => true]],
-                    ['block_key' => 'archives', 'meta' => ['hide_no_results' => true]],
+                'widgets' => [
+                    ['widget_key' => 'tags', 'meta' => ['hide_no_results' => true]],
+                    ['widget_key' => 'archives', 'meta' => ['hide_no_results' => true]],
                 ],
             ],
         ];
@@ -411,7 +411,7 @@ class BlogCreator
             'name' => __('capell-blog::generic.blog_page'),
             'group' => LayoutGroupEnum::System->value,
             'containers' => $containers,
-            'blocks' => $this->blockKeys($containers),
+            'widgets' => $this->blockKeys($containers),
         ]);
     }
 
@@ -422,9 +422,9 @@ class BlogCreator
                 'meta' => [
                     'colspan' => 9,
                 ],
-                'blocks' => [
-                    ['block_key' => 'breadcrumbs'],
-                    ['block_key' => 'tags', 'meta' => ['show_page_title' => true, 'show_page_content' => true]],
+                'widgets' => [
+                    ['widget_key' => 'breadcrumbs'],
+                    ['widget_key' => 'tags', 'meta' => ['show_page_title' => true, 'show_page_content' => true]],
                 ],
             ],
             'sidebar' => [
@@ -435,8 +435,8 @@ class BlogCreator
                     'padding' => ['md'],
                     'html_class' => 'sidebar-sticky space-y-8',
                 ],
-                'blocks' => [
-                    ['block_key' => 'latest-pages', 'meta' => ['hide_no_results' => true]],
+                'widgets' => [
+                    ['widget_key' => 'latest-pages', 'meta' => ['hide_no_results' => true]],
                 ],
             ],
         ];
@@ -445,7 +445,7 @@ class BlogCreator
             'name' => __('capell-blog::generic.tags'),
             'group' => LayoutGroupEnum::System->value,
             'containers' => $containers,
-            'blocks' => $this->blockKeys($containers),
+            'widgets' => $this->blockKeys($containers),
         ]);
     }
 
@@ -456,10 +456,10 @@ class BlogCreator
                 'meta' => [
                     'colspan' => 12,
                 ],
-                'blocks' => [
-                    ['block_key' => 'breadcrumbs'],
-                    ['block_key' => 'page-content'],
-                    ['block_key' => 'page-slot'],
+                'widgets' => [
+                    ['widget_key' => 'breadcrumbs'],
+                    ['widget_key' => 'page-content'],
+                    ['widget_key' => 'page-slot'],
                 ],
             ],
         ];
@@ -468,7 +468,7 @@ class BlogCreator
             'name' => __('capell-blog::generic.tag_results'),
             'group' => LayoutGroupEnum::System->value,
             'containers' => $containers,
-            'blocks' => $this->blockKeys($containers),
+            'widgets' => $this->blockKeys($containers),
         ]);
     }
 
@@ -645,9 +645,9 @@ class BlogCreator
                 'meta' => [
                     'colspan' => 9,
                 ],
-                'blocks' => [
-                    ['block_key' => 'breadcrumbs'],
-                    ['block_key' => 'article'],
+                'widgets' => [
+                    ['widget_key' => 'breadcrumbs'],
+                    ['widget_key' => 'article'],
                 ],
             ],
             'sidebar' => [
@@ -658,9 +658,9 @@ class BlogCreator
                     'padding' => ['md'],
                     'html_class' => 'sidebar-sticky space-y-8',
                 ],
-                'blocks' => [
-                    ['block_key' => 'tags', 'meta' => ['hide_no_results' => true]],
-                    ['block_key' => 'archives', 'meta' => ['hide_no_results' => true]],
+                'widgets' => [
+                    ['widget_key' => 'tags', 'meta' => ['hide_no_results' => true]],
+                    ['widget_key' => 'archives', 'meta' => ['hide_no_results' => true]],
                 ],
             ],
             'latest' => [
@@ -671,8 +671,8 @@ class BlogCreator
                     'padding' => ['t-lg', 'b-xl'],
                     'html_class' => 'blog-latest-articles',
                 ],
-                'blocks' => [
-                    ['block_key' => 'latest-articles', 'meta' => ['hide_no_results' => true]],
+                'widgets' => [
+                    ['widget_key' => 'latest-articles', 'meta' => ['hide_no_results' => true]],
                 ],
             ],
         ];
@@ -681,14 +681,14 @@ class BlogCreator
             'name' => __('capell-blog::generic.article'),
             'group' => LayoutGroupEnum::Default->value,
             'containers' => $containers,
-            'blocks' => $this->blockKeys($containers),
+            'widgets' => $this->blockKeys($containers),
         ]);
 
         $mergedContainers = $this->withArticleLatestArticlesContainer($layout->containers, $containers);
 
         $layout->forceFill([
             'containers' => $mergedContainers,
-            'blocks' => $this->blockKeys($mergedContainers),
+            'widgets' => $this->blockKeys($mergedContainers),
         ])->save();
 
         return $layout;
@@ -806,7 +806,7 @@ class BlogCreator
     {
         return Blueprint::query()->firstOrCreate([
             'key' => 'article',
-            'type' => LayoutTypeEnum::Block,
+            'type' => LayoutTypeEnum::Widget,
         ], [
             'name' => __('capell-blog::generic.article'),
             'group' => BlueprintGroupEnum::System->value,
@@ -1040,9 +1040,9 @@ class BlogCreator
             ? $currentContainers
             : $defaultContainers;
 
-        if (isset($containers['sidebar']['blocks']) && is_array($containers['sidebar']['blocks'])) {
-            $containers['sidebar']['blocks'] = collect($containers['sidebar']['blocks'])
-                ->reject(fn (array $block): bool => ($block['block_key'] ?? null) === 'latest-articles')
+        if (isset($containers['sidebar']['widgets']) && is_array($containers['sidebar']['widgets'])) {
+            $containers['sidebar']['widgets'] = collect($containers['sidebar']['widgets'])
+                ->reject(fn (array $block): bool => ($block['widget_key'] ?? null) === 'latest-articles')
                 ->values()
                 ->all();
         }
@@ -1059,9 +1059,9 @@ class BlogCreator
     private function blockKeys(array $containers): array
     {
         return collect($containers)
-            ->flatMap(fn (array $container): array => $container['blocks'] ?? [])
-            ->unique('block_key')
-            ->pluck('block_key')
+            ->flatMap(fn (array $container): array => $container['widgets'] ?? [])
+            ->unique('widget_key')
+            ->pluck('widget_key')
             ->values()
             ->all();
     }

@@ -14,7 +14,7 @@ class BlogSidebarBlockContributor implements LayoutSidebarBlockContributor
     {
         return [
             new LayoutSidebarBlockData(
-                blockKey: 'latest-articles',
+                widgetKey: 'latest-articles',
                 layoutKeys: [
                     LayoutEnum::Default->value,
                     LayoutEnum::Results->value,
@@ -22,7 +22,7 @@ class BlogSidebarBlockContributor implements LayoutSidebarBlockContributor
                 meta: ['hide_no_results' => true],
             ),
             new LayoutSidebarBlockData(
-                blockKey: 'tags',
+                widgetKey: 'tags',
                 layoutKeys: [
                     LayoutEnum::Default->value,
                     LayoutEnum::Results->value,
@@ -30,7 +30,7 @@ class BlogSidebarBlockContributor implements LayoutSidebarBlockContributor
                 meta: ['hide_no_results' => true],
             ),
             new LayoutSidebarBlockData(
-                blockKey: 'archives',
+                widgetKey: 'archives',
                 layoutKeys: [
                     LayoutEnum::Results->value,
                 ],

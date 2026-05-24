@@ -18,7 +18,10 @@
                 'results' => $results,
                 'component' => $component,
                 'componentItem' => $componentItem,
+                'latestArticles' => $latestArticles ?? null,
                 'noResultsText' => $noResultsText,
+                'sidebarTags' => $sidebarTags ?? null,
+                'tagPage' => $tagPage ?? null,
             ],
         )->render(),
     );

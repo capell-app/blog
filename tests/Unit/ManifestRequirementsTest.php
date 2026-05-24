@@ -39,10 +39,10 @@ describe('blog capell.json manifest', function (): void {
             ->toHaveKey('capell-app/layout-builder');
     });
 
-    it('does not register a demo command', function () use ($blogManifest): void {
+    it('registers the full blog demo command', function () use ($blogManifest): void {
         $manifest = $blogManifest();
 
-        expect($manifest['commands']['demo'])->toBeNull()
-            ->and($manifest['commands']['demoParams'])->toBe([]);
+        expect($manifest['commands']['demo'])->toBe('capell:blog-demo')
+            ->and($manifest['commands']['demoParams'])->toBe(['sites', 'languages', 'force']);
     });
 });
