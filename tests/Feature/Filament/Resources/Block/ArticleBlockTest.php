@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use Capell\Blog\Support\Creator\BlogCreator;
-use Capell\LayoutBuilder\Filament\Resources\Blocks\Pages\EditBlock;
-use Capell\LayoutBuilder\Filament\Resources\Blocks\Pages\ListBlocks;
-use Capell\LayoutBuilder\Models\Block;
+use Capell\LayoutBuilder\Filament\Resources\Widgets\Pages\EditWidget;
+use Capell\LayoutBuilder\Filament\Resources\Widgets\Pages\ListWidgets;
+use Capell\LayoutBuilder\Models\Widget;
 use Capell\Tests\Support\Concerns\CreatesAdminUser;
 
 use function Pest\Laravel\assertDatabaseHas;
@@ -19,24 +19,24 @@ beforeEach(function (): void {
 });
 
 test('can create article block type', function (): void {
-    $newData = Block::factory()->make();
+    $newData = Widget::factory()->make();
 
     $typeCreator = new BlogCreator;
 
     $type = $typeCreator->createArticleBlockType();
 
-    livewire(ListBlocks::class)
+    livewire(ListWidgets::class)
         ->assertSuccessful()
         ->assertCountTableRecords(0);
 
-    Block::query()->create([
+    Widget::query()->create([
         'name' => $newData->name,
         'key' => str($newData->name)->slug()->toString(),
         'blueprint_id' => $type->id,
         'status' => true,
     ]);
 
-    assertDatabaseHas(Block::class, [
+    assertDatabaseHas(Widget::class, [
         'name' => $newData->name,
         'key' => str($newData->name)->slug()->toString(),
         'blueprint_id' => $type->id,
@@ -48,11 +48,11 @@ test('can edit article block', function (): void {
 
     $type = $typeCreator->createArticleBlockType();
 
-    $newData = Block::factory()->make();
+    $newData = Widget::factory()->make();
 
-    $block = Block::factory()->for($type)->create();
+    $block = Widget::factory()->for($type)->create();
 
-    livewire(EditBlock::class, [
+    livewire(EditWidget::class, [
         'record' => $block->getRouteKey(),
     ])
         ->assertSuccessful()

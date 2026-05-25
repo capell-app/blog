@@ -157,20 +157,20 @@
     >
         <div class="grid gap-4">
             <p
-                class="text-xs font-extrabold uppercase tracking-[0.08em] text-[#0f766e]"
+                class="text-xs font-extrabold tracking-[0.08em] text-[#0f766e] uppercase"
             >
                 {{ __('capell-blog::generic.article_archives') }}
             </p>
 
             <h2
                 id="capell-blog-results-heading"
-                class="max-w-3xl text-balance font-[Manrope] text-3xl font-extrabold leading-[1.06] tracking-normal text-slate-950 md:text-5xl"
+                class="max-w-3xl font-[Manrope] text-3xl leading-[1.06] font-extrabold tracking-normal text-balance text-slate-950 md:text-5xl"
             >
                 {{ $total === 0 ? __('capell-blog::messages.no_articles_found') : $summary }}
             </h2>
 
             <p
-                class="max-w-3xl text-pretty text-base leading-8 text-slate-600 md:text-lg"
+                class="max-w-3xl text-base leading-8 text-pretty text-slate-600 md:text-lg"
             >
                 {{ __('capell-blog::messages.blog_listing_intro') }}
             </p>
@@ -182,7 +182,7 @@
         >
             <div>
                 <dt
-                    class="text-xs font-extrabold uppercase tracking-[0.08em] text-[#0f766e]"
+                    class="text-xs font-extrabold tracking-[0.08em] text-[#0f766e] uppercase"
                 >
                     {{ __('capell-blog::messages.showing_articles') }}
                 </dt>
@@ -192,7 +192,7 @@
             </div>
             <div>
                 <dt
-                    class="text-xs font-extrabold uppercase tracking-[0.08em] text-[#0f766e]"
+                    class="text-xs font-extrabold tracking-[0.08em] text-[#0f766e] uppercase"
                 >
                     {{ __('capell-blog::messages.total_articles') }}
                 </dt>
@@ -202,7 +202,7 @@
             </div>
             <div>
                 <dt
-                    class="text-xs font-extrabold uppercase tracking-[0.08em] text-[#0f766e]"
+                    class="text-xs font-extrabold tracking-[0.08em] text-[#0f766e] uppercase"
                 >
                     {{ __('capell-blog::messages.article_page') }}
                 </dt>
@@ -232,7 +232,7 @@
                 </div>
             @else
                 <div
-                    class="grid w-full min-w-0 max-w-full gap-5 overflow-hidden"
+                    class="grid w-full max-w-full min-w-0 gap-5 overflow-hidden"
                     role="list"
                 >
                     @foreach ($results as $item)
@@ -274,7 +274,7 @@
                 class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
             >
                 <h2
-                    class="text-lg font-extrabold leading-tight tracking-normal text-slate-950"
+                    class="text-lg leading-tight font-extrabold tracking-normal text-slate-950"
                 >
                     {{ __('capell-blog::generic.tags') }}
                 </h2>
@@ -315,7 +315,7 @@
                 class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
             >
                 <h2
-                    class="text-lg font-extrabold leading-tight tracking-normal text-slate-950"
+                    class="text-lg leading-tight font-extrabold tracking-normal text-slate-950"
                 >
                     {{ __('capell-blog::generic.latest_articles') }}
                 </h2>
@@ -335,7 +335,7 @@
                             >
                                 @if ($article->getPublishDate())
                                     <time
-                                        class="text-xs font-bold uppercase tracking-[0.08em] text-slate-500"
+                                        class="text-xs font-bold tracking-[0.08em] text-slate-500 uppercase"
                                         datetime="{{ $article->getPublishDate()?->toW3cString() }}"
                                     >
                                         {{ $article->getPublishDate()?->format(config('capell-frontend.date_format')) }}
@@ -343,7 +343,7 @@
                                 @endif
 
                                 <strong
-                                    class="mt-1 block text-base font-extrabold leading-snug"
+                                    class="mt-1 block text-base leading-snug font-extrabold"
                                 >
                                     {{ $articleTranslation?->title }}
                                 </strong>

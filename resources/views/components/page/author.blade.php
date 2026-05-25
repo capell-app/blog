@@ -46,7 +46,7 @@ $theme = Frontend::theme();
             @if ($author->bio)
                 <div
                     @class([
-                        'prose text-sm font-light leading-tight text-gray-500 [&>:first-child]:mt-0 [&>:last-child]:mb-0',
+                        'prose text-sm leading-tight font-light text-gray-500 [&>:first-child]:mt-0 [&>:last-child]:mb-0',
                         'dark:prose-invert' => $theme->withDarkMode,
                     ])
                 >

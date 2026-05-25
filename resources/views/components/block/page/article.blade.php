@@ -84,21 +84,21 @@
             <div class="max-w-4xl">
                 <div class="mb-5 flex flex-wrap items-center gap-x-4 gap-y-2">
                     <span
-                        class="text-primary text-xs font-semibold uppercase tracking-[0.12em]"
+                        class="text-primary text-xs font-semibold tracking-[0.12em] uppercase"
                     >
                         {{ __('capell-blog::generic.article') }}
                     </span>
 
                     @if ($withDate && $publishedDate)
                         <x-capell-blog::page.published-date
-                            class="whitespace-nowrap text-sm text-slate-500"
+                            class="text-sm whitespace-nowrap text-slate-500"
                             :date="$publishedDate"
                         />
                     @endif
                 </div>
 
                 <{{ $headingTag }}
-                    class="max-w-3xl text-balance text-4xl font-semibold leading-tight text-slate-950 md:text-5xl"
+                    class="max-w-3xl text-4xl leading-tight font-semibold text-balance text-slate-950 md:text-5xl"
                 >
                     {{ $pageTranslation?->title }}
                 </{{ $headingTag }}>
@@ -172,12 +172,12 @@
                         @wireNavigate
                     >
                         <span
-                            class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500"
+                            class="text-xs font-semibold tracking-[0.12em] text-slate-500 uppercase"
                         >
                             {{ __('capell-blog::generic.previous_article') }}
                         </span>
                         <span
-                            class="group-hover:text-primary group-focus:text-primary mt-4 text-lg font-semibold leading-snug text-slate-950"
+                            class="group-hover:text-primary group-focus:text-primary mt-4 text-lg leading-snug font-semibold text-slate-950"
                         >
                             {{ strip_tags((string) $previousPageTranslation?->label) }}
                         </span>
@@ -202,12 +202,12 @@
                         @wireNavigate
                     >
                         <span
-                            class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500"
+                            class="text-xs font-semibold tracking-[0.12em] text-slate-500 uppercase"
                         >
                             {{ __('capell-blog::generic.next_article') }}
                         </span>
                         <span
-                            class="group-hover:text-primary group-focus:text-primary mt-4 text-lg font-semibold leading-snug text-slate-950"
+                            class="group-hover:text-primary group-focus:text-primary mt-4 text-lg leading-snug font-semibold text-slate-950"
                         >
                             {{ strip_tags((string) $nextPageTranslation?->label) }}
                         </span>

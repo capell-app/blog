@@ -134,7 +134,7 @@ final class FrontendServiceProvider extends ServiceProvider
             );
 
             $exists = $archives->contains(
-                fn (mixed $archive): bool => (int) $archive->year === $year && (int) $archive->month === $month,
+                fn (mixed $archive): bool => $archive->year === $year && $archive->month === $month,
             );
 
             abort_if(! $exists, 404);

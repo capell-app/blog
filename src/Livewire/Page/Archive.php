@@ -112,8 +112,6 @@ class Archive extends AbstractPage
         $parts = explode('/', (string) $date);
         $dates = explode('-', $parts[0]);
 
-        $date = isset($parts[1]) ? (int) $parts[1] : 1;
-
         if (isset($dates[0]) && mb_strlen($dates[0]) === 4 && is_numeric($dates[0])) {
             $year = (int) $dates[0];
         }

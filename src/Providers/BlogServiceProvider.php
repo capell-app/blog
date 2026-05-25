@@ -39,6 +39,7 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Livewire;
+use Override;
 use Spatie\LaravelPackageTools\Package;
 
 class BlogServiceProvider extends AbstractPackageServiceProvider
@@ -81,11 +82,13 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
         });
     }
 
+    #[Override]
     protected function isPackageInstalled(): bool
     {
         return CapellCore::getPackage(static::$packageName)->isInstalled();
     }
 
+    #[Override]
     protected function isLivewireV3(): bool
     {
         $version = InstalledVersions::getVersion('livewire/livewire');

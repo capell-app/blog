@@ -13,13 +13,16 @@ use Capell\Frontend\Livewire\Page\AbstractPage;
 use Capell\Frontend\Support\Loader\PageLoader;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Override;
 
 class Blog extends AbstractPage
 {
     protected static string $defaultView = 'capell-blog::livewire.page.results';
 
+    /** @var Collection<array-key, mixed>|null */
     protected ?Collection $latestArticles = null;
 
+    /** @var Collection<array-key, mixed>|null */
     protected ?Collection $sidebarTags = null;
 
     protected ?Page $tagPage = null;
@@ -79,6 +82,7 @@ class Blog extends AbstractPage
      *     tagPage: Page|null
      * }
      */
+    #[Override]
     protected function getViewData(): array
     {
         return [

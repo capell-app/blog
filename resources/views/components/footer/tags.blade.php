@@ -1,6 +1,6 @@
 @props([
     'headingClass' => null,
-    'linkClass' => 'focus:bg-primary inline-flex items-center rounded-full bg-gray-600/75 px-3 py-2 text-sm font-medium leading-none tracking-wide text-[var(--color-footer)] no-underline hover:text-gray-400 focus:text-white',
+    'linkClass' => 'focus:bg-primary inline-flex items-center rounded-full bg-gray-600/75 px-3 py-2 text-sm leading-none font-medium tracking-wide text-[var(--color-footer)] no-underline hover:text-gray-400 focus:text-white',
 ])
 
 <div {{ $attributes->class(['footer-tags xl:w-[20%]']) }}>

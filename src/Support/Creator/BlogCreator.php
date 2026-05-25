@@ -36,7 +36,7 @@ use Capell\Frontend\Enums\RenderingStrategyEnum;
 use Capell\LayoutBuilder\Enums\BlockComponentEnum as LayoutBlockComponentEnum;
 use Capell\LayoutBuilder\Enums\LayoutTypeEnum;
 use Capell\LayoutBuilder\Filament\Configurators\Types\BlockTypeConfigurator;
-use Capell\LayoutBuilder\Models\Widget as Block;
+use Capell\LayoutBuilder\Models\Widget;
 use Capell\LayoutBuilder\Support\Creator\BlockCreator;
 use Capell\LayoutBuilder\Support\Creator\TypeCreator as LayoutTypeCreator;
 use Capell\Navigation\Actions\AddPageToNavigationAction;
@@ -475,7 +475,7 @@ class BlogCreator
     /**
      * @param  Collection<array-key, mixed>  $languages
      */
-    public function createArchivesBlock(?Collection $languages = null): Block
+    public function createArchivesBlock(?Collection $languages = null): Widget
     {
         if (! $languages instanceof Collection) {
             $languages = Language::all();
@@ -484,7 +484,7 @@ class BlogCreator
         $typeCreator = resolve(LayoutTypeCreator::class);
         $type = $typeCreator->resultsBlockType();
 
-        $block = Block::query()->firstOrCreate([
+        $block = Widget::query()->firstOrCreate([
             'key' => 'archives',
         ], [
             'name' => __('capell-blog::generic.article_archives'),
@@ -525,7 +525,7 @@ class BlogCreator
      */
     public function createTagsBlock(Collection $languages): void
     {
-        $blockModel = Block::class;
+        $blockModel = Widget::class;
 
         $typeCreator = resolve(LayoutTypeCreator::class);
         $type = $typeCreator->resultsBlockType();
@@ -726,9 +726,9 @@ class BlogCreator
         return $blueprint;
     }
 
-    public function createArticleBlock(Blueprint $type): Block
+    public function createArticleBlock(Blueprint $type): Widget
     {
-        $block = Block::query()->firstOrCreate([
+        $block = Widget::query()->firstOrCreate([
             'key' => 'article',
         ], [
             'name' => __('capell-blog::generic.article'),
@@ -751,7 +751,7 @@ class BlogCreator
     /**
      * @param  Collection<array-key, mixed>  $languages
      */
-    public function relatedArticlesBlock(?Blueprint $type = null, ?Collection $languages = null): Block
+    public function relatedArticlesBlock(?Blueprint $type = null, ?Collection $languages = null): Widget
     {
         if (! $type instanceof Blueprint) {
             $typeCreator = resolve(LayoutTypeCreator::class);
@@ -762,7 +762,7 @@ class BlogCreator
             $languages = Language::all();
         }
 
-        $block = Block::query()->firstOrCreate([
+        $block = Widget::query()->firstOrCreate([
             'key' => 'related-pages',
         ], [
             'name' => __('capell-admin::generic.related_pages'),
@@ -943,7 +943,7 @@ class BlogCreator
     /**
      * @param  Collection<array-key, mixed>  $languages
      */
-    public function createLatestArticlesBlock(?Collection $languages = null): Block
+    public function createLatestArticlesBlock(?Collection $languages = null): Widget
     {
         if (! $languages instanceof Collection) {
             $languages = Language::all();
@@ -952,7 +952,7 @@ class BlogCreator
         $typeCreator = resolve(LayoutTypeCreator::class);
         $type = $typeCreator->resultsBlockType();
 
-        $block = Block::query()->firstOrCreate([
+        $block = Widget::query()->firstOrCreate([
             'key' => 'latest-articles',
         ], [
             'name' => __('capell-blog::generic.latest_articles'),

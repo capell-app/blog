@@ -10,7 +10,7 @@ use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Layout;
 use Capell\LayoutBuilder\Actions\InstallPackageAction as LayoutBuilderInstallPackageAction;
 use Capell\LayoutBuilder\Enums\BlockComponentEnum;
-use Capell\LayoutBuilder\Models\Block;
+use Capell\LayoutBuilder\Models\Widget;
 
 beforeEach(function (): void {
     LayoutBuilderInstallPackageAction::run();
@@ -28,15 +28,15 @@ it('installs article publishing page types layouts and blocks', function (): voi
         ->and(Layout::query()->where('key', BlogLayoutEnum::Archives->value)->exists())->toBeTrue()
         ->and(Layout::query()->where('key', BlogLayoutEnum::TagResults->value)->exists())->toBeTrue()
         ->and(Layout::query()->where('key', BlogLayoutEnum::Tags->value)->exists())->toBeTrue()
-        ->and(Block::query()->where('key', 'article')->exists())->toBeTrue()
-        ->and(Block::query()->where('key', 'latest-articles')->exists())->toBeTrue()
-        ->and(Block::query()->where('key', 'archives')->exists())->toBeTrue()
-        ->and(Block::query()->where('key', 'tags')->exists())->toBeTrue()
-        ->and(Block::query()->where('key', 'related-pages')->exists())->toBeTrue();
+        ->and(Widget::query()->where('key', 'article')->exists())->toBeTrue()
+        ->and(Widget::query()->where('key', 'latest-articles')->exists())->toBeTrue()
+        ->and(Widget::query()->where('key', 'archives')->exists())->toBeTrue()
+        ->and(Widget::query()->where('key', 'tags')->exists())->toBeTrue()
+        ->and(Widget::query()->where('key', 'related-pages')->exists())->toBeTrue();
 
     $articleType = Blueprint::query()->pageType()->where('key', BlogPageTypeEnum::Article->value)->firstOrFail();
     $articleLayout = Layout::query()->where('key', BlogLayoutEnum::Article->value)->firstOrFail();
-    $latestArticlesBlock = Block::query()->where('key', 'latest-articles')->firstOrFail();
+    $latestArticlesBlock = Widget::query()->where('key', 'latest-articles')->firstOrFail();
 
     expect($articleType->getMeta('with_next_prev'))->toBeTrue()
         ->and($articleType->getMeta('suppress_layout_neighbor_links'))->toBeTrue()
