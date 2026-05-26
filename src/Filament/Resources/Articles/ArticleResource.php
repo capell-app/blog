@@ -137,6 +137,10 @@ class ArticleResource extends PageResource
     #[Override]
     public static function mutateFormDataBeforeCreate(array &$data, array $formData = []): void
     {
+        if (! isset($data['order'])) {
+            $data['order'] = 0;
+        }
+
         $data['layout_id'] = GetArticleLayoutAction::run()?->id;
 
         /* @var class-string<\Capell\Core\Models\Blueprint> $model */

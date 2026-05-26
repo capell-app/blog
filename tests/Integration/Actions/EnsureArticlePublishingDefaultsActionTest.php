@@ -43,8 +43,8 @@ it('installs article publishing page types layouts and blocks', function (): voi
         ->and($latestArticlesBlock->component)->toBe(BlockComponentEnum::PageLatest->value)
         ->and($latestArticlesBlock->is_livewire)->toBeFalse()
         ->and($articleLayout->containers)->toHaveKey('latest')
-        ->and(array_column($articleLayout->containers['sidebar']['blocks'], 'block_key'))->not->toContain('latest-articles')
-        ->and(array_column($articleLayout->containers['latest']['blocks'], 'block_key'))->toContain('latest-articles');
+        ->and(array_column($articleLayout->containers['sidebar']['widgets'], 'widget_key'))->not->toContain('latest-articles')
+        ->and(array_column($articleLayout->containers['latest']['widgets'], 'widget_key'))->toContain('latest-articles');
 });
 
 it('updates default and results sidebars with article publishing blocks', function (): void {
@@ -59,8 +59,8 @@ it('updates default and results sidebars with article publishing blocks', functi
     expect($defaultContainers)->toBeArray()
         ->and($resultsContainers)->toBeArray();
 
-    $defaultSidebarBlockKeys = array_column($defaultContainers['sidebar']['blocks'], 'block_key');
-    $resultsSidebarBlockKeys = array_column($resultsContainers['sidebar']['blocks'], 'block_key');
+    $defaultSidebarBlockKeys = array_column($defaultContainers['sidebar']['widgets'], 'widget_key');
+    $resultsSidebarBlockKeys = array_column($resultsContainers['sidebar']['widgets'], 'widget_key');
 
     expect($defaultSidebarBlockKeys)->toContain('latest-articles')
         ->and($defaultSidebarBlockKeys)->not->toContain('latest-pages')

@@ -46,7 +46,7 @@ test('archives page list articles archives by month/year', function (): void {
 
     expect($archivesPage)
         ->toBeInstanceOf(Page::class)
-        ->type->name->toBe('capell::generic.system')
+        ->type->key->toBe('system')
         ->layout->name->toBe('Archives')
         ->parent->name->toBe('Blog');
 

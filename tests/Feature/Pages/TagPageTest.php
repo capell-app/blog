@@ -52,7 +52,7 @@ test('tag page list articles by tag', function (): void {
     $title = trans($tagPage->translation->title, ['tag_name' => $tag->translate('name', $language->code)]);
 
     $containers = $tagPage->layout->getAttribute('containers');
-    $containerBlocks = capell_test_collect($containers)->pluck('blocks.*.block_key')->flatten()->filter()->toArray();
+    $containerBlocks = capell_test_collect($containers)->pluck('widgets.*.widget_key')->flatten()->filter()->toArray();
 
     expect($tagPage)
         ->translation->title->toBe(':Tag_name Articles')

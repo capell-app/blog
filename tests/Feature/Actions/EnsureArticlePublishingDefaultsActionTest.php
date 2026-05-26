@@ -12,13 +12,13 @@ it('keeps latest pages in default sidebars when adding latest articles', functio
         'key' => LayoutEnum::Default->value,
         'containers' => [
             'sidebar' => [
-                'blocks' => [
-                    ['block_key' => 'siblings'],
-                    ['block_key' => 'latest-pages'],
+                'widgets' => [
+                    ['widget_key' => 'siblings'],
+                    ['widget_key' => 'latest-pages'],
                 ],
             ],
         ],
-        'blocks' => ['siblings', 'latest-pages'],
+        'widgets' => ['siblings', 'latest-pages'],
     ]);
 
     Layout::query()->create([
@@ -26,18 +26,18 @@ it('keeps latest pages in default sidebars when adding latest articles', functio
         'key' => LayoutEnum::Results->value,
         'containers' => [
             'sidebar' => [
-                'blocks' => [
-                    ['block_key' => 'latest-pages'],
+                'widgets' => [
+                    ['widget_key' => 'latest-pages'],
                 ],
             ],
         ],
-        'blocks' => ['latest-pages'],
+        'widgets' => ['latest-pages'],
     ]);
 
     EnsureArticlePublishingDefaultsAction::run();
 
-    $sidebarBlockKeys = capell_test_collect($layout->refresh()->containers['sidebar']['blocks'])
-        ->pluck('block_key')
+    $sidebarBlockKeys = capell_test_collect($layout->refresh()->containers['sidebar']['widgets'])
+        ->pluck('widget_key')
         ->all();
 
     expect($sidebarBlockKeys)

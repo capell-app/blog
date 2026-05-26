@@ -10,6 +10,7 @@ use Capell\Core\Models\Layout;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
 use Capell\LayoutBuilder\Actions\InstallPackageAction as LayoutBuilderInstallPackageAction;
+use Illuminate\Database\Eloquent\Builder;
 
 beforeEach(function (): void {
     LayoutBuilderInstallPackageAction::run();
@@ -36,7 +37,7 @@ it('adds the archives block to the results layout sidebar during install', funct
 
     expect($containers)->toBeArray();
 
-    $sidebarBlockKeys = array_column($containers['sidebar']['blocks'], 'block_key');
+    $sidebarBlockKeys = array_column($containers['sidebar']['widgets'], 'widget_key');
 
     expect($sidebarBlockKeys)->toContain('archives');
 });
@@ -48,7 +49,7 @@ it('creates an archive placeholder page under the archives parent', function ():
 
     $archivePage = Page::query()
         ->where('site_id', $site->id)
-        ->whereHas('type', fn ($query) => $query->where('key', BlogPageTypeEnum::Archive->value))
+        ->whereHas('type', fn (Builder $query): Builder => $query->where('key', BlogPageTypeEnum::Archive->value))
         ->first();
 
     expect($archivePage)->not()->toBeNull();
@@ -61,7 +62,7 @@ it('creates a tags page under the blog parent', function (): void {
 
     $tagPage = Page::query()
         ->where('site_id', $site->id)
-        ->whereHas('type', fn ($query) => $query->where('key', BlogPageTypeEnum::Tag->value))
+        ->whereHas('type', fn (Builder $query): Builder => $query->where('key', BlogPageTypeEnum::Tag->value))
         ->first();
 
     expect($tagPage)->not()->toBeNull();
@@ -75,7 +76,7 @@ it('is safe to run twice for the same site without duplicating the blog root pag
 
     $blogPageCount = Page::query()
         ->where('site_id', $site->id)
-        ->whereHas('type', fn ($query) => $query->where('key', BlogPageTypeEnum::Blog->value))
+        ->whereHas('type', fn (Builder $query): Builder => $query->where('key', BlogPageTypeEnum::Blog->value))
         ->count();
 
     expect($blogPageCount)->toBe(1);

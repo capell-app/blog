@@ -55,9 +55,7 @@ final class CreateBlogHeroDemoContentAction
         $hero = '<h1>' . __('capell-blog::generic.latest_articles') . '</h1><p>' . __('capell-blog::generic.blog_intro') . '</p>';
 
         $page->translations->each(function (Model $translation) use ($hero): void {
-            if ($translation instanceof Translation) {
-                $this->mergeTranslationHero($translation, $hero);
-            }
+            $this->mergeTranslationHero($translation, $hero);
         });
     }
 
@@ -69,15 +67,26 @@ final class CreateBlogHeroDemoContentAction
             ->get()
             ->each(function (Article $article): void {
                 $article->translations->each(function (Model $translation): void {
-                    if ($translation instanceof Translation) {
-                        $this->mergeTranslationHero($translation, '<h1>' . $translation->title . '</h1>');
-                    }
+                    $this->mergeArticleTranslationHero($translation);
                 });
             });
     }
 
-    private function mergeTranslationHero(Translation $translation, string $hero): bool
+    private function mergeArticleTranslationHero(Model $translation): bool
     {
+        if (! $translation instanceof Translation) {
+            return false;
+        }
+
+        return $this->mergeTranslationHero($translation, '<h1>' . $translation->title . '</h1>');
+    }
+
+    private function mergeTranslationHero(Model $translation, string $hero): bool
+    {
+        if (! $translation instanceof Translation) {
+            return false;
+        }
+
         $translation->forceFill([
             'meta' => [
                 ...($translation->meta ?? []),
