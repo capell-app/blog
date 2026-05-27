@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Console\Commands;
 
+use Capell\Blog\Actions\AssignExampleArticleImageAction;
 use Capell\Blog\Models\Article;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Site;
@@ -50,8 +51,11 @@ class FakerCommand extends Command
                 ->count($count)
                 ->site($site)
                 ->withTranslations($languages)
+                ->withExampleImages()
                 ->withTags()
                 ->create();
+
+            $this->backfillExampleImages($site);
 
             $totalArticles += $count;
             $this->info(sprintf('Seeded %d articles in site "%s".', $count, $site->name));
@@ -64,6 +68,16 @@ class FakerCommand extends Command
         $this->info(sprintf('Total fake articles created: %d', $totalArticles));
 
         return Command::SUCCESS;
+    }
+
+    private function backfillExampleImages(Site $site): void
+    {
+        Article::query()
+            ->where('site_id', $site->id)
+            ->get()
+            ->each(function (Article $article): void {
+                AssignExampleArticleImageAction::run($article);
+            });
     }
 
     /**

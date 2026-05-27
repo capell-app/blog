@@ -51,6 +51,9 @@
         "demoParams": ["sites", "languages", "force"],
         "doctor": null
     },
+    "actions": {
+        "install": "Capell\\Blog\\Actions\\InstallBlogPackageAction"
+    },
     "settings": [],
     "permissions": [],
     "capabilities": [],

@@ -52,6 +52,7 @@ test('blog page lists articles', function (): void {
         ->layout($articleLayout)
         ->type($articleType)
         ->withTranslations($site->languages)
+        ->withExampleImages()
         ->forEachSequence(
             ['visible_from' => '2023-01-01'],
             ['visible_from' => '2023-02-01'],
@@ -73,9 +74,13 @@ test('blog page lists articles', function (): void {
             fn (AssertElement $elm): BaseAssert => $elm->containsText($blogPage->title . ' | ' . $site->title),
         )
         ->assertElementExists(
-            'h1',
-            fn (AssertElement $elm): BaseAssert => $elm->containsText($blogPage->translation->title),
+            'body',
+            fn (AssertElement $elm): BaseAssert => $elm
+                ->contains('h1', count: 1)
+                ->containsText($blogPage->translation->title)
+                ->doesntContain('Article Archives'),
         )
+        ->assertSee('https://images.unsplash.com', false)
         ->assertElementExists(
             '.results',
             fn (AssertElement $elm): BaseAssert => $elm->doesntContain('.no-results')
@@ -292,10 +297,12 @@ test('articles pagination', function (): void {
                 '.pagination-info',
                 fn (AssertElement $elm): BaseAssert => $elm->has('aria-label', 'Showing 1 to 5 of 12 results'),
             )
-                ->contains('.wire-pagination-links button', count: 3)
+                ->contains('.wire-pagination-links a', count: 3)
                 ->find(
-                    '.wire-pagination-links button[rel="next"]',
-                    fn (AssertElement $elm): BaseAssert => $elm->has('wire:click', "nextPage('articles')"),
+                    '.wire-pagination-links a[rel="next"]',
+                    fn (AssertElement $elm): BaseAssert => $elm
+                        ->has('href', $blogUrl->full_url . '/page/2')
+                        ->has('wire:navigate'),
                 ),
         );
 
@@ -319,14 +326,18 @@ test('articles pagination', function (): void {
                 '.pagination-info',
                 fn (AssertElement $elm): BaseAssert => $elm->has('aria-label', 'Showing 6 to 10 of 12 results'),
             )
-                ->contains('.wire-pagination-links button', count: 4)
+                ->contains('.wire-pagination-links a', count: 4)
                 ->find(
-                    '.wire-pagination-links button[rel="prev"]',
-                    fn (AssertElement $elm): BaseAssert => $elm->has('wire:click', "previousPage('articles')"),
+                    '.wire-pagination-links a[rel="prev"]',
+                    fn (AssertElement $elm): BaseAssert => $elm
+                        ->has('href', $blogUrl->full_url)
+                        ->has('wire:navigate'),
                 )
                 ->find(
-                    '.wire-pagination-links button[rel="next"]',
-                    fn (AssertElement $elm): BaseAssert => $elm->has('wire:click', "nextPage('articles')"),
+                    '.wire-pagination-links a[rel="next"]',
+                    fn (AssertElement $elm): BaseAssert => $elm
+                        ->has('href', $blogUrl->full_url . '/page/3')
+                        ->has('wire:navigate'),
                 ),
         );
 
@@ -351,11 +362,13 @@ test('articles pagination', function (): void {
                 '.pagination-info',
                 fn (AssertElement $elm): BaseAssert => $elm->has('aria-label', 'Showing 11 to 12 of 12 results'),
             )
-                ->contains('.wire-pagination-links button', count: 3)
+                ->contains('.wire-pagination-links a', count: 3)
                 ->find(
-                    '.wire-pagination-links button[rel="prev"]',
-                    fn (AssertElement $elm): BaseAssert => $elm->has('wire:click', "previousPage('articles')"),
+                    '.wire-pagination-links a[rel="prev"]',
+                    fn (AssertElement $elm): BaseAssert => $elm
+                        ->has('href', $blogUrl->full_url . '/page/2')
+                        ->has('wire:navigate'),
                 )
-                ->doesntContain('.wire-pagination-links button[rel="next"]'),
+                ->doesntContain('.wire-pagination-links a[rel="next"]'),
         );
 });

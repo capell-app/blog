@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Capell\Blog\Models\Article;
+use Capell\Core\Models\SiteDomain;
 use Illuminate\Console\Command;
 
 use function Pest\Laravel\artisan;
@@ -26,5 +27,19 @@ describe('capell:blog-faker command', function (): void {
             ->assertExitCode(Command::SUCCESS);
 
         expect(Article::query()->count())->toBe(0);
+    });
+
+    it('seeds articles with example image source URLs', function (): void {
+        SiteDomain::factory()->default()->create();
+
+        artisan('capell:blog-faker', [
+            '--count' => 3,
+        ])
+            ->expectsOutputToContain('Total fake articles created: 3')
+            ->assertExitCode(Command::SUCCESS);
+
+        expect(Article::query()->count())->toBe(3)
+            ->and(Article::query()->get()->map(fn (Article $article): mixed => $article->getMeta('image_source.url')))
+            ->each->toStartWith('https://images.unsplash.com/');
     });
 });

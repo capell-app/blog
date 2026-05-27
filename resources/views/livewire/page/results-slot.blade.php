@@ -56,6 +56,7 @@
                         @php
                             $author = method_exists($item, 'relationLoaded') && $item->relationLoaded('creator') ? $item->creator : null;
                             $image = method_exists($item, 'relationLoaded') && $item->relationLoaded('image') ? $item->image : null;
+                            $image ??= PublicModelMeta::get($item, 'image_source');
                             $pageUrl = method_exists($item, 'relationLoaded') && $item->relationLoaded('pageUrl') ? $item->pageUrl : null;
                             $translation = method_exists($item, 'relationLoaded') && $item->relationLoaded('translation') ? $item->translation : null;
                             $squareImage = (bool) PublicModelMeta::get($item, 'square_image', false);

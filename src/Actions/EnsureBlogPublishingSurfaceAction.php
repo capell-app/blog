@@ -103,6 +103,7 @@ class EnsureBlogPublishingSurfaceAction
         $resultsBlockType = resolve(LayoutTypeCreator::class)->resultsBlockType();
 
         $blogCreator->createLatestArticlesBlock($languages);
+        $blogCreator->createPopularArticlesBlock($languages);
         $blogCreator->createArchivesBlock($languages);
         $blogCreator->createTagsBlock($languages);
         $blogCreator->relatedArticlesBlock($resultsBlockType, $languages);
