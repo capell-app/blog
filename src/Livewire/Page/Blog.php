@@ -54,6 +54,8 @@ class Blog extends AbstractPage
             },
         );
 
+        Frontend::setFrontendData('pagination_results', $this->results);
+
         $this->latestArticles = PageLoader::getPages(
             language: $language,
             site: $site,
@@ -61,7 +63,7 @@ class Blog extends AbstractPage
             ordering: $page->type->meta['ordering'] ?? PageOrderEnum::Latest,
             pageGroup: $page->type->meta['page_group'] ?? null,
             typeKey: $page->type->meta['page_type'] ?? null,
-            withImage: false,
+            withImage: true,
             withPagination: false,
             withParent: false,
             withDate: true,

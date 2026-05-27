@@ -22,15 +22,15 @@
     $nextPage ??= null;
     $previousPage ??= null;
     $articleMetaData ??= null;
+    $language = Frontend::language();
+    $site = Frontend::site();
+    $siteDomain = $site !== null && method_exists($site, 'relationLoaded') && $site->relationLoaded('siteDomain') ? $site->siteDomain : null;
     $author ??= $articleMetaData?->author;
     $pageTranslation = method_exists($page, 'relationLoaded') && $page->relationLoaded('translation')
         ? $page->getRelation('translation')
         : null;
     $pageType = method_exists($page, 'relationLoaded') && $page->relationLoaded('type')
         ? $page->getRelation('type')
-        : null;
-    $pageImage = method_exists($page, 'relationLoaded') && $page->relationLoaded('image')
-        ? $page->getRelation('image')
         : null;
     $secondaryContainers = $theme?->secondary_containers ?? ['sidebar'];
     $publishedDate = $page->visible_from ?: $page->created_at;
@@ -68,6 +68,8 @@
     $hasNextArticleLink = $nextPage && $nextPageUrl && $nextPageTranslation;
     $hasAuthorMeta = $withAuthor && $articleMetaData?->author;
     $hasTagMeta = $articleMetaData?->tags->isNotEmpty() ?? false;
+    $blogUrl = $language !== null && method_exists($page, 'getParentUrl') ? $page->getParentUrl($language, true) : null;
+    $homeUrl = $siteDomain?->url;
 @endphp
 
 <x-capell-foundation-theme::block.wrapper
@@ -77,12 +79,53 @@
     :$containerWidth
     :index="$loop->index"
     :widget="$block"
-    container-class="capell-blog-article flex flex-col gap-10"
+    container-class="capell-blog-article mx-auto flex max-w-5xl flex-col gap-12"
 >
-    <article class="grid gap-10">
-        <header class="border-b border-slate-200 pb-8">
+    <article class="grid gap-12">
+        @if ($blogUrl || $homeUrl)
+            <nav
+                class="breadcrumbs text-sm text-slate-500"
+                aria-label="{{ __('capell-frontend::generic.breadcrumbs') }}"
+            >
+                <ol class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    @if ($homeUrl)
+                        <li>
+                            <a
+                                href="{{ $homeUrl }}"
+                                class="hover:text-primary focus:text-primary transition"
+                                @wireNavigate
+                            >
+                                {{ __('capell-frontend::generic.home') }}
+                            </a>
+                        </li>
+                    @endif
+
+                    @if ($blogUrl)
+                        <li aria-hidden="true" class="text-slate-300">/</li>
+                        <li>
+                            <a
+                                href="{{ $blogUrl }}"
+                                class="hover:text-primary focus:text-primary transition"
+                                @wireNavigate
+                            >
+                                {{ __('capell-blog::generic.blog') }}
+                            </a>
+                        </li>
+                    @endif
+
+                    <li aria-hidden="true" class="text-slate-300">/</li>
+                    <li aria-current="page" class="line-clamp-1 text-slate-600">
+                        {{ $pageTranslation?->title }}
+                    </li>
+                </ol>
+            </nav>
+        @endif
+
+        <header>
             <div class="max-w-4xl">
-                <div class="mb-5 flex flex-wrap items-center gap-x-4 gap-y-2">
+                <div
+                    class="mb-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-500"
+                >
                     <span
                         class="text-primary text-xs font-semibold tracking-[0.12em] uppercase"
                     >
@@ -91,31 +134,31 @@
 
                     @if ($withDate && $publishedDate)
                         <x-capell-blog::page.published-date
-                            class="text-sm whitespace-nowrap text-slate-500"
+                            class="whitespace-nowrap"
                             :date="$publishedDate"
                         />
                     @endif
                 </div>
 
                 <{{ $headingTag }}
-                    class="max-w-3xl text-4xl leading-tight font-semibold text-balance text-slate-950 md:text-5xl"
+                    class="max-w-4xl text-4xl leading-[1.05] font-semibold text-balance text-slate-950 md:text-6xl"
                 >
                     {{ $pageTranslation?->title }}
                 </{{ $headingTag }}>
 
                 @if ($summary)
-                    <p class="mt-5 max-w-3xl text-lg leading-8 text-slate-600">
+                    <p class="mt-6 max-w-3xl text-xl leading-9 text-slate-600">
                         {{ $summary }}
                     </p>
                 @endif
             </div>
         </header>
 
-        <div class="grid">
+        <div class="grid max-w-3xl">
             <x-capell::content
-                class="capell-blog-article-content prose-headings:text-slate-950 prose-a:text-primary prose-p:leading-8 max-w-3xl text-slate-700"
+                class="capell-blog-article-content prose-headings:text-slate-950 prose-a:text-primary prose-p:leading-8 text-lg text-slate-700"
                 :$containerKey
-                :image="$pageImage"
+                :image="null"
                 :heading-size="$headingSize"
                 :content="$pageTranslation?->content"
                 :content-type="$pageType?->content_structure"
@@ -133,8 +176,8 @@
         @elseif ($hasDefaultArticleMeta)
             <div
                 @class([
-                    'article-meta flex flex-col gap-5 md:flex-row md:items-center md:justify-between',
-                    'border-y border-slate-200 py-6' => $hasAuthorMeta,
+                    'article-meta flex max-w-3xl flex-col gap-5 rounded-lg bg-slate-50/80 p-5 md:flex-row md:items-center md:justify-between dark:bg-slate-900/60',
+                    'py-6' => $hasAuthorMeta,
                     'pt-2' => ! $hasAuthorMeta && $hasTagMeta,
                 ])
             >
@@ -161,14 +204,14 @@
 
         @if ($withNextPrev && ($hasPreviousArticleLink || $hasNextArticleLink))
             <nav
-                class="neighbor-links grid gap-4 border-t border-slate-200 pt-8 md:grid-cols-2"
+                class="neighbor-links grid max-w-4xl gap-8 border-t border-slate-200 pt-8 md:grid-cols-2"
                 aria-label="{{ __('capell-blog::generic.article_navigation') }}"
             >
                 @if ($hasPreviousArticleLink)
                     <a
                         href="{{ $previousPageUrl }}"
                         title="{{ strip_tags((string) $previousPageTranslation?->title) }}"
-                        class="hover:border-primary/40 focus:border-primary/40 group flex min-h-36 flex-col justify-between rounded-lg border border-slate-200 bg-white p-5 text-left transition"
+                        class="group flex flex-col text-left"
                         @wireNavigate
                     >
                         <span
@@ -177,7 +220,7 @@
                             {{ __('capell-blog::generic.previous_article') }}
                         </span>
                         <span
-                            class="group-hover:text-primary group-focus:text-primary mt-4 text-lg leading-snug font-semibold text-slate-950"
+                            class="group-hover:text-primary group-focus:text-primary mt-3 text-lg leading-snug font-semibold text-slate-950 transition"
                         >
                             {{ strip_tags((string) $previousPageTranslation?->label) }}
                         </span>
@@ -196,7 +239,7 @@
                         href="{{ $nextPageUrl }}"
                         title="{{ strip_tags((string) $nextPageTranslation?->title) }}"
                         @class([
-                            'hover:border-primary/40 focus:border-primary/40 group flex min-h-36 flex-col justify-between rounded-lg border border-slate-200 bg-white p-5 text-left transition md:text-right',
+                            'group flex flex-col text-left md:text-right',
                             'md:col-start-2' => ! $hasPreviousArticleLink,
                         ])
                         @wireNavigate
@@ -207,7 +250,7 @@
                             {{ __('capell-blog::generic.next_article') }}
                         </span>
                         <span
-                            class="group-hover:text-primary group-focus:text-primary mt-4 text-lg leading-snug font-semibold text-slate-950"
+                            class="group-hover:text-primary group-focus:text-primary mt-3 text-lg leading-snug font-semibold text-slate-950 transition"
                         >
                             {{ strip_tags((string) $nextPageTranslation?->label) }}
                         </span>

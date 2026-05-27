@@ -16,7 +16,7 @@ return [
     'blog_archives_description' => 'Explore our collection of past articles organized by month and year.',
     'blog_archives_page' => 'Archives',
     'blog_archives_title' => 'Browse our archives of articles.',
-    'blog_intro' => 'Read recent articles, release notes, and implementation guides from the CMS team.',
+    'blog_intro' => 'See our latest articles, browse with clear pagination and stable reading flow.',
     'blog_page' => 'Blog Posts',
     'latest_articles' => 'Latest Articles',
     'next_article' => 'Next article',

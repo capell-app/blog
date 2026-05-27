@@ -381,6 +381,37 @@ class BlogCreator
 
     public function createBlogPageLayout(): Layout
     {
+        $heroWidget = Widget::query()
+            ->where('key', 'hero')
+            ->first();
+        $blogHeroWidget = null;
+
+        if ($heroWidget instanceof Widget) {
+            $blogHeroWidget = Widget::query()->firstOrNew(['key' => 'blog-hero']);
+            $blogHeroWidget->forceFill([
+                'name' => __('capell-blog::generic.blog_page'),
+                'blueprint_id' => $heroWidget->blueprint_id,
+                'component' => $heroWidget->component,
+                'component_item' => $heroWidget->component_item,
+                'is_livewire' => $heroWidget->is_livewire,
+                'meta' => [
+                    ...($heroWidget->meta ?? []),
+                    'height' => 'small',
+                    'content_align' => 'center',
+                    'content_width' => 'balanced',
+                    'media_position' => 'right',
+                ],
+                'status' => true,
+            ])->save();
+
+            $blogHeroWidget->assets()->delete();
+        }
+
+        $hasHeroWidget = $blogHeroWidget instanceof Widget;
+        $pageContentWidget = $hasHeroWidget
+            ? ['widget_key' => 'page-content', 'meta' => ['page_content' => ['content'], 'show_page_title' => false]]
+            : ['widget_key' => 'page-content'];
+
         $containers = [
             'main' => [
                 'meta' => [
@@ -388,7 +419,7 @@ class BlogCreator
                 ],
                 'widgets' => [
                     ['widget_key' => 'breadcrumbs'],
-                    ['widget_key' => 'page-content', 'meta' => ['show_page_title' => true]],
+                    $pageContentWidget,
                     ['widget_key' => 'page-slot'],
                 ],
             ],
@@ -401,18 +432,38 @@ class BlogCreator
                     'html_class' => 'sidebar-sticky space-y-8',
                 ],
                 'widgets' => [
+                    ['widget_key' => 'latest-articles', 'meta' => ['hide_no_results' => true]],
                     ['widget_key' => 'tags', 'meta' => ['hide_no_results' => true]],
                     ['widget_key' => 'archives', 'meta' => ['hide_no_results' => true]],
                 ],
             ],
         ];
 
-        return Layout::query()->firstOrCreate(['key' => BlogLayoutEnum::BlogPage->value], [
+        if ($hasHeroWidget) {
+            $containers = [
+                'hero' => [
+                    'meta' => [
+                        'colspan' => 12,
+                        'container' => 'full',
+                    ],
+                    'widgets' => [
+                        ['widget_key' => $blogHeroWidget->key],
+                    ],
+                ],
+                ...$containers,
+            ];
+        }
+
+        $layout = Layout::query()->firstOrNew(['key' => BlogLayoutEnum::BlogPage->value]);
+
+        $layout->forceFill([
             'name' => __('capell-blog::generic.blog_page'),
             'group' => LayoutGroupEnum::System->value,
             'containers' => $containers,
             'widgets' => $this->blockKeys($containers),
-        ]);
+        ])->save();
+
+        return $layout;
     }
 
     public function createTagsLayout(): Layout
@@ -687,6 +738,8 @@ class BlogCreator
         $mergedContainers = $this->withArticleLatestArticlesContainer($layout->containers, $containers);
 
         $layout->forceFill([
+            'name' => __('capell-blog::generic.article'),
+            'group' => LayoutGroupEnum::Default->value,
             'containers' => $mergedContainers,
             'widgets' => $this->blockKeys($mergedContainers),
         ])->save();
@@ -867,16 +920,20 @@ class BlogCreator
         $page->save();
 
         $languages->each(function (Language $language) use ($page): void {
-            $page->translations()->firstOrCreate([
+            $translation = $page->translations()->firstOrNew([
                 'language_id' => $language->id,
-            ], [
+            ]);
+
+            $translation->forceFill([
                 'title' => __('capell-blog::generic.latest_articles'),
+                'content' => sprintf('<p>%s</p>', __('capell-blog::generic.blog_intro')),
                 'meta' => [
+                    ...($translation->meta ?? []),
                     'label' => __('capell-blog::generic.blog'),
                     'no_results' => __('capell-blog::messages.no_articles_found'),
                     'slug' => 'blog',
                 ],
-            ]);
+            ])->save();
         });
 
         SetupPageUrlsAction::run($page);
@@ -904,6 +961,7 @@ class BlogCreator
                 'livewire' => true,
                 'exclude_parent' => true,
                 'limit' => 10,
+                'columns' => 3,
                 'listable' => false,
                 'page_group' => strtolower(ResourceEnum::Article->name),
                 'pagination' => true,
@@ -925,6 +983,7 @@ class BlogCreator
                 'livewire' => true,
                 'exclude_parent' => true,
                 'limit' => 10,
+                'columns' => 3,
                 'listable' => false,
                 'page_group' => strtolower(ResourceEnum::Article->name),
                 'pagination' => true,
@@ -965,7 +1024,7 @@ class BlogCreator
                 'page_group' => strtolower(ResourceEnum::Article->name),
                 'pagination' => false,
                 'with_date' => true,
-                'with_image' => false,
+                'with_image' => true,
                 'with_summary' => true,
                 'with_link_text' => true,
                 'margin' => ['b-lg'],
@@ -988,7 +1047,7 @@ class BlogCreator
                 'page_group' => strtolower(ResourceEnum::Article->name),
                 'pagination' => false,
                 'with_date' => true,
-                'with_image' => false,
+                'with_image' => true,
                 'with_summary' => true,
                 'with_link_text' => true,
                 'margin' => ['b-lg'],
@@ -1039,6 +1098,8 @@ class BlogCreator
         $containers = $currentContainers !== null && $currentContainers !== []
             ? $currentContainers
             : $defaultContainers;
+
+        $containers['main'] = $defaultContainers['main'];
 
         if (isset($containers['sidebar']['widgets']) && is_array($containers['sidebar']['widgets'])) {
             $containers['sidebar']['widgets'] = collect($containers['sidebar']['widgets'])

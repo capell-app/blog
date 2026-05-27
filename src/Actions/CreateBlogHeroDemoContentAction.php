@@ -52,10 +52,8 @@ final class CreateBlogHeroDemoContentAction
 
     private function applyBlogHeroMeta(Page $page): void
     {
-        $hero = '<h1>' . __('capell-blog::generic.latest_articles') . '</h1><p>' . __('capell-blog::generic.blog_intro') . '</p>';
-
-        $page->translations->each(function (Model $translation) use ($hero): void {
-            $this->mergeTranslationHero($translation, $hero);
+        $page->translations->each(function (Model $translation): void {
+            $this->mergeTranslationHero($translation, '', __('capell-blog::generic.latest_articles'));
         });
     }
 
@@ -81,17 +79,23 @@ final class CreateBlogHeroDemoContentAction
         return $this->mergeTranslationHero($translation, '<h1>' . $translation->title . '</h1>');
     }
 
-    private function mergeTranslationHero(Model $translation, string $hero): bool
+    private function mergeTranslationHero(Model $translation, string $hero, ?string $heroTitle = null): bool
     {
         if (! $translation instanceof Translation) {
             return false;
         }
 
+        $meta = [
+            ...($translation->meta ?? []),
+            'hero' => $hero,
+        ];
+
+        if ($heroTitle !== null) {
+            $meta['hero_title'] = $heroTitle;
+        }
+
         $translation->forceFill([
-            'meta' => [
-                ...($translation->meta ?? []),
-                'hero' => $hero,
-            ],
+            'meta' => $meta,
         ])->save();
 
         return true;
