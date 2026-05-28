@@ -18,7 +18,6 @@ it('keeps latest pages in default sidebars when adding latest articles', functio
                 ],
             ],
         ],
-        'widgets' => ['siblings', 'latest-pages'],
     ]);
 
     Layout::query()->create([
@@ -31,7 +30,6 @@ it('keeps latest pages in default sidebars when adding latest articles', functio
                 ],
             ],
         ],
-        'widgets' => ['latest-pages'],
     ]);
 
     EnsureArticlePublishingDefaultsAction::run();

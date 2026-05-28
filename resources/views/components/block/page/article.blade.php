@@ -70,6 +70,9 @@
     $hasTagMeta = $articleMetaData?->tags->isNotEmpty() ?? false;
     $blogUrl = $language !== null && method_exists($page, 'getParentUrl') ? $page->getParentUrl($language, true) : null;
     $homeUrl = $siteDomain?->url;
+    $articleImage = method_exists($page, 'relationLoaded') && $page->relationLoaded('image')
+        ? $page->getRelation('image')
+        : null;
 @endphp
 
 <x-capell-foundation-theme::block.wrapper
@@ -150,6 +153,18 @@
                     <p class="mt-6 max-w-3xl text-xl leading-9 text-slate-600">
                         {{ $summary }}
                     </p>
+                @endif
+
+                @if ($articleImage)
+                    <figure
+                        class="mt-10 overflow-hidden rounded-lg border border-slate-200 bg-slate-100 shadow-[0_24px_70px_rgb(15_23_42_/_0.12)]"
+                    >
+                        <img
+                            src="{{ $articleImage->getUrl() }}"
+                            alt="{{ $pageTranslation?->title }}"
+                            class="aspect-[16/9] w-full object-cover"
+                        />
+                    </figure>
                 @endif
             </div>
         </header>

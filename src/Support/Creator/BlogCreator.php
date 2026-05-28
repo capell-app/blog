@@ -371,12 +371,15 @@ class BlogCreator
             ],
         ];
 
-        return Layout::query()->firstOrCreate(['key' => BlogLayoutEnum::Archives->value], [
+        $layout = Layout::query()->firstOrNew(['key' => BlogLayoutEnum::Archives->value]);
+
+        $layout->forceFill([
             'name' => __('capell-blog::generic.archives'),
             'group' => LayoutGroupEnum::System->value,
             'containers' => $containers,
-            'widgets' => $this->blockKeys($containers),
-        ]);
+        ])->save();
+
+        return $layout;
     }
 
     public function createBlogPageLayout(): Layout
@@ -492,7 +495,6 @@ class BlogCreator
             'name' => __('capell-blog::generic.blog_page'),
             'group' => LayoutGroupEnum::System->value,
             'containers' => $containers,
-            'widgets' => $this->blockKeys($containers),
         ])->save();
 
         return $layout;
@@ -528,7 +530,6 @@ class BlogCreator
             'name' => __('capell-blog::generic.tags'),
             'group' => LayoutGroupEnum::System->value,
             'containers' => $containers,
-            'widgets' => $this->blockKeys($containers),
         ]);
     }
 
@@ -537,7 +538,7 @@ class BlogCreator
         $containers = [
             'main' => [
                 'meta' => [
-                    'colspan' => 12,
+                    'colspan' => 9,
                 ],
                 'widgets' => [
                     ['widget_key' => 'breadcrumbs'],
@@ -545,14 +546,43 @@ class BlogCreator
                     ['widget_key' => 'page-slot'],
                 ],
             ],
+            'sidebar' => [
+                'meta' => [
+                    'colspan' => 3,
+                    'override_columns' => 1,
+                    'container' => 'full',
+                    'padding' => ['md'],
+                    'html_class' => 'sidebar-sticky space-y-8',
+                ],
+                'widgets' => [
+                    ['widget_key' => 'latest-articles', 'meta' => ['hide_no_results' => true]],
+                    ['widget_key' => 'tags', 'meta' => ['hide_no_results' => true]],
+                    ['widget_key' => 'archives', 'meta' => ['hide_no_results' => true]],
+                ],
+            ],
+            'footer' => [
+                'meta' => [
+                    'colspan' => 12,
+                    'container' => 'lg',
+                    'margin' => ['t-xl'],
+                    'padding' => ['t-lg', 'b-xl'],
+                    'html_class' => 'blog-tag-footer',
+                ],
+                'widgets' => [
+                    ['widget_key' => 'latest-articles', 'meta' => ['hide_no_results' => true]],
+                ],
+            ],
         ];
 
-        return Layout::query()->firstOrCreate(['key' => BlogLayoutEnum::TagResults->value], [
+        $layout = Layout::query()->firstOrNew(['key' => BlogLayoutEnum::TagResults->value]);
+
+        $layout->forceFill([
             'name' => __('capell-blog::generic.tag_results'),
             'group' => LayoutGroupEnum::System->value,
             'containers' => $containers,
-            'widgets' => $this->blockKeys($containers),
-        ]);
+        ])->save();
+
+        return $layout;
     }
 
     /**
@@ -764,7 +794,6 @@ class BlogCreator
             'name' => __('capell-blog::generic.article'),
             'group' => LayoutGroupEnum::Default->value,
             'containers' => $containers,
-            'widgets' => $this->blockKeys($containers),
         ]);
 
         $mergedContainers = $this->withArticleLatestArticlesContainer($layout->containers, $containers);
@@ -773,7 +802,6 @@ class BlogCreator
             'name' => __('capell-blog::generic.article'),
             'group' => LayoutGroupEnum::Default->value,
             'containers' => $mergedContainers,
-            'widgets' => $this->blockKeys($mergedContainers),
         ])->save();
 
         return $layout;
@@ -1047,6 +1075,9 @@ class BlogCreator
         );
     }
 
+    /**
+     * @param  Collection<array-key, mixed>  $languages
+     */
     public function createPopularArticlesBlock(?Collection $languages = null): Widget
     {
         return $this->createArticlesListBlock(
@@ -1176,19 +1207,5 @@ class BlogCreator
         $containers['latest'] = $defaultContainers['latest'];
 
         return $containers;
-    }
-
-    /**
-     * @param  array<array-key, mixed>  $containers
-     * @return array<array-key, mixed>
-     */
-    private function blockKeys(array $containers): array
-    {
-        return collect($containers)
-            ->flatMap(fn (array $container): array => $container['widgets'] ?? [])
-            ->unique('widget_key')
-            ->pluck('widget_key')
-            ->values()
-            ->all();
     }
 }

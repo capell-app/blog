@@ -67,6 +67,11 @@ test('article page with layout', function (): void {
                 ->containsText($article->translation->title),
         )
         ->assertElementExists(
+            '.capell-page-article figure img',
+            fn (AssertElement $elm): BaseAssert => $elm
+                ->has('alt', $article->translation->title),
+        )
+        ->assertElementExists(
             '.capell-blog-article-content',
             fn (AssertElement $elm): BaseAssert => $elm->doesntContain('img'),
         )

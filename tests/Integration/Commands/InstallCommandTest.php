@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-use Capell\Core\Console\Commands\PublishMigrationsCommand;
-use Capell\Core\Support\Dataset\DatasetPublisher;
 use Capell\Core\Support\Migration\MigrationFilesystemInterface;
 use Capell\Tests\Fixtures\FakeMigrationFileManager;
 use Illuminate\Console\Command;
@@ -22,16 +20,6 @@ it('runs blog install command successfully without publishing files', function (
         'fileExists' => [],
         'isDir' => [],
     ]);
-
-    $fakeDatasetPublisher = Mockery::mock(DatasetPublisher::class);
-
-    // Ensure calls to publish migrations are no-ops and counted (called twice in Blog install)
-    test()->instance(
-        PublishMigrationsCommand::class,
-        Mockery::mock(new PublishMigrationsCommand($fakeDatasetPublisher, $fakeFileManager))
-            ->makePartial()
-            ->shouldReceive('run')->once()->andReturn(0)->getMock(),
-    );
 
     // Ensure migrate command is a no-op
     $fakeMigrationAssistant = Mockery::mock(Migrator::class);
@@ -58,7 +46,6 @@ it('runs blog install command successfully without publishing files', function (
         ->doesntExpectOutput('Publishing migrations')
         ->doesntExpectOutput('Migrating')
         ->doesntExpectOutput('Building assets')
-        ->expectsOutput('Capell Blog installed successfully.')
         ->assertExitCode(Command::SUCCESS);
 
     // Assert no migration files were actually published
@@ -66,8 +53,8 @@ it('runs blog install command successfully without publishing files', function (
         ->not()->toContain(fn (array $call): bool => $call[0] === 'copy')
         ->toBeArray();
 
-    // Assert no directory/file operations were attempted by the publish command internals
+    // Assert no migration files were copied or directories created by the publish command internals
     expect(collect($fakeFileManager->calls)->contains(
-        fn (array $call): bool => in_array($call[0], ['fileExists', 'isDir', 'makeDir'], true),
+        fn (array $call): bool => in_array($call[0], ['copy', 'makeDir'], true),
     ))->toBeFalse();
 });

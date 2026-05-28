@@ -61,7 +61,7 @@ final class CreateBlogHeroDemoContentAction
             if (CapellCore::hasAsset('Section')) {
                 resolve(TypeCreator::class)->createDefaultContentType();
                 resolve(DemoCreator::class)->createContentsBlock($blogHeroBlock, $blogPage, 'hero');
-                $this->customizeBlogHeroSlide($blogHeroBlock, $blogPage);
+                $this->customizeBlogHeroSlide($blogHeroBlock);
             }
 
             $this->applyBlogHeroMeta($blogPage);
@@ -86,7 +86,7 @@ final class CreateBlogHeroDemoContentAction
         });
     }
 
-    private function customizeBlogHeroSlide(Widget $block, Page $page): void
+    private function customizeBlogHeroSlide(Widget $block): void
     {
         $block->loadMissing(['assets.asset.translations', 'assets.asset.media']);
 
@@ -101,10 +101,10 @@ final class CreateBlogHeroDemoContentAction
             ->skip(1)
             ->each(fn (WidgetAsset $asset): ?bool => $asset->delete());
 
-        $this->customizeHeroAsset($slide, $page);
+        $this->customizeHeroAsset($slide);
     }
 
-    private function customizeHeroAsset(WidgetAsset $slide, Page $page): void
+    private function customizeHeroAsset(WidgetAsset $slide): void
     {
         $asset = $slide->asset;
 
