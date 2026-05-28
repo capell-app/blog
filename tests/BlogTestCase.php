@@ -94,7 +94,7 @@ class BlogTestCase extends AbstractTestCase
         CapellCore::forcePackageInstalled(AdminServiceProvider::$packageName);
         CapellCore::registerPackage(
             InsightsServiceProvider::$packageName,
-            path: realpath(__DIR__ . '/../../insights'),
+            path: realpath(__DIR__ . '/../../insights') ?: null,
         );
         CapellCore::forcePackageInstalled(InsightsServiceProvider::$packageName);
         CapellCore::forcePackageInstalled(LayoutBuilderServiceProvider::$packageName);
@@ -105,7 +105,7 @@ class BlogTestCase extends AbstractTestCase
 
         CapellCore::registerPackage(
             TagsServiceProvider::$packageName,
-            path: realpath(__DIR__ . '/../../tags'),
+            path: realpath(__DIR__ . '/../../tags') ?: null,
         );
         CapellCore::forcePackageInstalled(TagsServiceProvider::$packageName);
 

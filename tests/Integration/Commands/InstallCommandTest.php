@@ -9,8 +9,6 @@ use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Console\Migrations\MigrateCommand;
 use Illuminate\Database\Migrations\Migrator;
 
-use function Pest\Laravel\artisan;
-
 afterEach(function (): void {
     Mockery::close();
 });
@@ -42,7 +40,7 @@ it('runs blog install command successfully without publishing files', function (
 
     app()->instance(MigrationFilesystemInterface::class, $fakeFileManager);
 
-    artisan('capell:blog-install')
+    $this->artisan('capell:blog-install')
         ->doesntExpectOutput('Publishing migrations')
         ->doesntExpectOutput('Migrating')
         ->doesntExpectOutput('Building assets')
