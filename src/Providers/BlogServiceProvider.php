@@ -7,6 +7,7 @@ namespace Capell\Blog\Providers;
 use Capell\Admin\Data\AdminSurfaceContributionData;
 use Capell\Admin\Enums\ResourceEnum as AdminResourceEnum;
 use Capell\Admin\Facades\CapellAdmin;
+use Capell\Blog\Actions\ClearBlogContentCacheAction;
 use Capell\Blog\Actions\ClearBlogTagCacheAction;
 use Capell\Blog\Enums\BlockComponentEnum;
 use Capell\Blog\Enums\LivewirePageComponentEnum;
@@ -41,6 +42,7 @@ use Illuminate\Support\Facades\Gate;
 use Livewire\Livewire;
 use Override;
 use Spatie\LaravelPackageTools\Package;
+use Spatie\MediaLibrary\MediaCollections\Events\MediaHasBeenAddedEvent;
 
 class BlogServiceProvider extends AbstractPackageServiceProvider
 {
@@ -114,6 +116,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
             ->registerTypes()
             ->registerTranslationEvents()
             ->registerTagCacheEvents()
+            ->registerArticleMediaCacheEvents()
             ->registerPublishingStudio();
     }
 
@@ -312,6 +315,21 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
         });
         Tag::deleting(function (Tag $tag): void {
             ClearBlogTagCacheAction::run($tag);
+        });
+
+        return $this;
+    }
+
+    private function registerArticleMediaCacheEvents(): self
+    {
+        Event::listen(MediaHasBeenAddedEvent::class, function (MediaHasBeenAddedEvent $event): void {
+            $model = $event->media->model;
+
+            if (! $model instanceof Article) {
+                return;
+            }
+
+            ClearBlogContentCacheAction::run($model);
         });
 
         return $this;
