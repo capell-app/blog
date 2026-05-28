@@ -151,6 +151,7 @@ class BlogCreator
         });
 
         SetupPageUrlsAction::run($page);
+        $page->load('pageUrl.siteDomain');
 
         return $page;
     }
