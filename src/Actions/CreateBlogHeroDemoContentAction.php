@@ -141,9 +141,9 @@ final class CreateBlogHeroDemoContentAction
             return;
         }
 
-        $spanielImage = '/Users/ben/Sites/packages/capell/capell-packages-4/packages/demo-kit/demo/img/springer-spaniel.jpg';
+        $spanielImage = $this->demoKitPath('demo/img/springer-spaniel.jpg');
 
-        if (! File::exists($spanielImage)) {
+        if ($spanielImage === null || ! File::exists($spanielImage)) {
             return;
         }
 
@@ -151,6 +151,21 @@ final class CreateBlogHeroDemoContentAction
         $asset->addMedia($spanielImage)
             ->preservingOriginal()
             ->toMediaCollection(MediaCollectionEnum::Image->value);
+    }
+
+    private function demoKitPath(string $path): ?string
+    {
+        $packageName = 'capell-app/demo-kit';
+
+        if (! CapellCore::hasPackage($packageName)) {
+            return null;
+        }
+
+        $packagePath = CapellCore::getPackage($packageName)->path;
+
+        return is_string($packagePath) && $packagePath !== ''
+            ? rtrim($packagePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . ltrim($path, DIRECTORY_SEPARATOR)
+            : null;
     }
 
     private function applyArticleHeroMeta(Site $site): void
