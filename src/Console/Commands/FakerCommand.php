@@ -118,7 +118,7 @@ class FakerCommand extends Command
         });
 
         $bar->finish();
-        $this->newLine();
+        $this->newLine(2);
     }
 
     /**
