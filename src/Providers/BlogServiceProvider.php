@@ -69,6 +69,9 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
             $this->app->tag([BlogSidebarBlockContributor::class], self::LAYOUT_SIDEBAR_ELEMENT_CONTRIBUTOR::TAG);
         }
 
+        BlogModelRegistrar::register();
+        $this->registerTypes();
+
         $this->app->booting(function (): void {
             if ($this->isPackageInstalled()) {
                 $this->registerAdminResources();
