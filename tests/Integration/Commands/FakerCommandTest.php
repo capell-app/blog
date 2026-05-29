@@ -33,6 +33,9 @@ describe('capell:blog-faker command', function (): void {
         $this->artisan('capell:blog-faker', [
             '--count' => 3,
         ])
+            ->expectsOutput('Generating 3 fake blog articles across 1 site.')
+            ->expectsOutputToContain('[1/1] Creating 3 blog articles')
+            ->expectsOutput('Backfilling example images for 3 articles.')
             ->expectsOutputToContain('Total fake articles created: 3')
             ->assertExitCode(Command::SUCCESS);
 

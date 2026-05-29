@@ -14,6 +14,8 @@ final class DemoCommand extends Command
 
     public function handle(): int
     {
+        $this->info('Starting blog demo content.');
+
         $fakerExitCode = $this->call('capell:blog-faker', array_filter([
             '--sites' => $this->option('sites'),
             '--languages' => $this->option('languages'),
@@ -24,8 +26,16 @@ final class DemoCommand extends Command
             return $fakerExitCode;
         }
 
-        return $this->call('capell:hero-demo', array_filter([
+        $this->info('Starting blog hero demo content.');
+
+        $heroExitCode = $this->call('capell:hero-demo', array_filter([
             '--sites' => $this->option('sites'),
         ], static fn (mixed $value): bool => $value !== null && $value !== ''));
+
+        if ($heroExitCode === self::SUCCESS) {
+            $this->info('Blog demo content complete.');
+        }
+
+        return $heroExitCode;
     }
 }
