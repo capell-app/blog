@@ -7,12 +7,14 @@ namespace Capell\Blog\Providers;
 use Capell\Admin\Data\AdminSurfaceContributionData;
 use Capell\Admin\Enums\ResourceEnum as AdminResourceEnum;
 use Capell\Admin\Facades\CapellAdmin;
+use Capell\Blog\Actions\ClearBlogContentCacheAction;
 use Capell\Blog\Actions\ClearBlogTagCacheAction;
 use Capell\Blog\Enums\BlockComponentEnum;
 use Capell\Blog\Enums\LivewirePageComponentEnum;
 use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Listeners\ArticleTranslationSavedListener;
 use Capell\Blog\Models\Article;
+use Capell\Blog\Policies\ArticlePolicy;
 use Capell\Blog\Support\BlogModelRegistrar;
 use Capell\Blog\Support\BlogSidebarBlockContributor;
 use Capell\ContentSections\Models\Section;
@@ -36,8 +38,11 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Livewire;
+use Override;
 use Spatie\LaravelPackageTools\Package;
+use Spatie\MediaLibrary\MediaCollections\Events\MediaHasBeenAddedEvent;
 
 class BlogServiceProvider extends AbstractPackageServiceProvider
 {
@@ -79,9 +84,18 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
         });
     }
 
-    private function isPackageInstalled(): bool
+    #[Override]
+    protected function isPackageInstalled(): bool
     {
         return CapellCore::getPackage(static::$packageName)->isInstalled();
+    }
+
+    #[Override]
+    protected function isLivewireV3(): bool
+    {
+        $version = InstalledVersions::getVersion('livewire/livewire');
+
+        return version_compare($version, '4.0.0', '<');
     }
 
     private function bootInstalledPackage(): self
@@ -89,6 +103,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
         return $this
             ->registerRelationships()
             ->registerModels()
+            ->registerPolicies()
             ->registerModelRelations()
             ->registerAdminResources()
             ->registerAboutCommand()
@@ -101,6 +116,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
             ->registerTypes()
             ->registerTranslationEvents()
             ->registerTagCacheEvents()
+            ->registerArticleMediaCacheEvents()
             ->registerPublishingStudio();
     }
 
@@ -116,6 +132,13 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
     private function registerModels(): self
     {
         BlogModelRegistrar::register();
+
+        return $this;
+    }
+
+    private function registerPolicies(): self
+    {
+        Gate::policy(Article::class, ArticlePolicy::class);
 
         return $this;
     }
@@ -233,13 +256,6 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
         return $this;
     }
 
-    private function isLivewireV3(): bool
-    {
-        $version = InstalledVersions::getVersion('livewire/livewire');
-
-        return version_compare($version, '4.0.0', '<');
-    }
-
     private function registerAboutCommand(): self
     {
         if ($this->app->runningInConsole() && (class_exists(AboutCommand::class) && class_exists(InstalledVersions::class))) {
@@ -299,6 +315,21 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
         });
         Tag::deleting(function (Tag $tag): void {
             ClearBlogTagCacheAction::run($tag);
+        });
+
+        return $this;
+    }
+
+    private function registerArticleMediaCacheEvents(): self
+    {
+        Event::listen(MediaHasBeenAddedEvent::class, function (MediaHasBeenAddedEvent $event): void {
+            $model = $event->media->model;
+
+            if (! $model instanceof Article) {
+                return;
+            }
+
+            ClearBlogContentCacheAction::run($model);
         });
 
         return $this;

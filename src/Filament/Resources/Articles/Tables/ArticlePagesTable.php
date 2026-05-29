@@ -23,7 +23,7 @@ use Capell\Blog\Models\Article;
 use Capell\Core\Actions\GetEditPageResourceUrlAction;
 use Capell\Core\Actions\PageDeletedAction;
 use Capell\Core\Contracts\Pageable;
-use Capell\Core\Models\Language; // adjust if different namespace
+use Capell\Core\Models\Language;
 use Capell\Tags\Models\Tag;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
@@ -42,6 +42,7 @@ use Filament\Tables\Table;
 use Illuminate\Contracts\Database\Eloquent\Builder as BuilderContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\HtmlString;
@@ -83,6 +84,10 @@ class ArticlePagesTable implements TableConfigurator
             ->recordUrl(self::getRecordUrl(...));
     }
 
+    /**
+     * @param  Builder<Model>  $query
+     * @return Builder<Model>
+     */
     protected static function getTableQuery(Builder $query, HasTable $livewire): Builder
     {
         return $query
@@ -116,15 +121,21 @@ class ArticlePagesTable implements TableConfigurator
         PageDeletedAction::run($record);
     }
 
+    /**
+     * @param  EloquentCollection<int, Model>|Collection<int, Model>|LazyCollection<int, Model>  $records
+     */
     protected static function beforeBulkDelete(HasTable&ValidatesDelete $livewire, DeleteBulkAction $action, EloquentCollection|Collection|LazyCollection $records): void
     {
-        $records->each(function (Pageable $record) use ($livewire, $action): void {
+        $records->each(function (Model $record) use ($livewire, $action): void {
             if (! $livewire->validateDelete($record)) {
                 $action->cancel();
             }
         });
     }
 
+    /**
+     * @param  Collection<array-key, mixed>  $records
+     */
     protected static function afterBulkDelete(DeleteBulkAction $action, Collection $records): void
     {
         $records->each(self::afterRecordDeleted(...));
@@ -150,6 +161,9 @@ class ArticlePagesTable implements TableConfigurator
         return $query->with('siteDomain')->ordered();
     }
 
+    /**
+     * @return array<array-key, mixed>
+     */
     protected static function getTableColumns(): array
     {
         return [
@@ -229,6 +243,10 @@ class ArticlePagesTable implements TableConfigurator
         return new HtmlString("<a href='" . $pageUrl->full_url . "' target='_blank'>" . $shortUrl . '</a>');
     }
 
+    /**
+     * @param  Builder<Model>  $query
+     * @return Builder<Model>
+     */
     protected static function applyNameSearch(Builder $query, string $search): Builder
     {
         return $query->where('name', 'like', sprintf('%%%s%%', $search))
@@ -239,6 +257,10 @@ class ArticlePagesTable implements TableConfigurator
             ->orderByRaw("CAST(IFNULL(NULLIF(POSITION(? IN pages.name), 0), 'void') AS UNSIGNED)", [$search]);
     }
 
+    /**
+     * @param  Builder<Model>  $query
+     * @return Builder<Model>
+     */
     protected static function applyUrlSearch(Builder $query, string $search): Builder
     {
         return $query->whereHas(
@@ -275,6 +297,9 @@ class ArticlePagesTable implements TableConfigurator
         );
     }
 
+    /**
+     * @return array<array-key, mixed>
+     */
     protected static function getTableFilters(): array
     {
         return [
@@ -332,16 +357,28 @@ class ArticlePagesTable implements TableConfigurator
         ];
     }
 
+    /**
+     * @param  Builder<Model>  $query
+     * @return Builder<Model>
+     */
     protected static function applyOrderedQuery(Builder $query): Builder
     {
         return $query->ordered();
     }
 
+    /**
+     * @param  Builder<Model>  $query
+     * @return Builder<Model>
+     */
     protected static function applyEnabledOrderedQuery(Builder $query): Builder
     {
         return $query->enabled()->ordered();
     }
 
+    /**
+     * @param  Builder<Model>  $query
+     * @return Builder<Model>
+     */
     protected static function applyBlueprintFilterQuery(Builder $query, ResourcePage|HasPageResource $livewire): Builder
     {
         return $query->enabled()
@@ -349,6 +386,9 @@ class ArticlePagesTable implements TableConfigurator
             ->adminResource($livewire::getResource()::getResourceName());
     }
 
+    /**
+     * @return array<array-key, mixed>
+     */
     protected static function getLanguageOptions(HasTable $livewire): array
     {
         if (! $livewire->isTableLoaded()) {
@@ -358,6 +398,10 @@ class ArticlePagesTable implements TableConfigurator
         return self::getLanguageSearchResults($livewire);
     }
 
+    /**
+     * @param  Builder<Model>  $query
+     * @param  array<array-key, mixed>  $data
+     */
     protected static function applyFilterQuery(Builder $query, array $data): void
     {
         $languageId = $data['language_id'] ?? null;
@@ -374,11 +418,15 @@ class ArticlePagesTable implements TableConfigurator
         }
     }
 
+    /**
+     * @param  array<array-key, mixed>  $data
+     * @return array<array-key, mixed>
+     */
     protected static function indicateFilter(array $data): array
     {
         $indicators = [];
 
-        if (isset($data['language_id']) && $data['language_id'] !== null && $data['language_id'] !== '') {
+        if (isset($data['language_id']) && $data['language_id'] !== '') {
             /** @var class-string<Language> $model */
             $model = Language::class;
 
@@ -388,7 +436,7 @@ class ArticlePagesTable implements TableConfigurator
             );
         }
 
-        if (isset($data['canonical_page_id']) && $data['canonical_page_id'] !== null && $data['canonical_page_id'] !== '') {
+        if (isset($data['canonical_page_id']) && $data['canonical_page_id'] !== '') {
             /** @var class-string<Article> $model */
             $model = Article::class;
 
@@ -401,6 +449,9 @@ class ArticlePagesTable implements TableConfigurator
         return $indicators;
     }
 
+    /**
+     * @return array<array-key, mixed>
+     */
     protected static function getLanguageSearchResults(HasTable $livewire, ?string $search = null): array
     {
         /* @var class-string<Language> $model */
@@ -445,6 +496,9 @@ class ArticlePagesTable implements TableConfigurator
             ->indicateUsing(self::indicateTagsFilter(...));
     }
 
+    /**
+     * @param  Builder<Model>  $query
+     */
     protected static function modifyTagsFilterQuery(Builder $query, HasTable $livewire): void
     {
         $siteId = $livewire instanceof ListRecords ? $livewire->activeTab : null;
@@ -470,6 +524,11 @@ class ArticlePagesTable implements TableConfigurator
         }
     }
 
+    /**
+     * @param  Builder<Model>  $query
+     * @param  array<array-key, mixed>  $data
+     * @return Builder<Model>
+     */
     protected static function applyTagsFilterQuery(Builder $query, array $data): Builder
     {
         $value = $data['value'] ?? null;
@@ -484,6 +543,10 @@ class ArticlePagesTable implements TableConfigurator
         );
     }
 
+    /**
+     * @param  array<array-key, mixed>  $state
+     * @return array<array-key, mixed>
+     */
     protected static function indicateTagsFilter(array $state): array
     {
         $indicators = [];
@@ -492,7 +555,7 @@ class ArticlePagesTable implements TableConfigurator
         if ($value) {
             $indicators['tags'] = __(
                 'capell-layout-builder::filter.tag',
-                ['search' => Tag::query()->find($value)?->name],
+                ['search' => Tag::query()->find($value)?->getTranslation('name', app()->getLocale())],
             );
         }
 

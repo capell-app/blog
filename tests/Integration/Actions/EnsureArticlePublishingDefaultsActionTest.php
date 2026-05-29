@@ -10,7 +10,7 @@ use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Layout;
 use Capell\LayoutBuilder\Actions\InstallPackageAction as LayoutBuilderInstallPackageAction;
 use Capell\LayoutBuilder\Enums\BlockComponentEnum;
-use Capell\LayoutBuilder\Models\Block;
+use Capell\LayoutBuilder\Models\Widget;
 
 beforeEach(function (): void {
     LayoutBuilderInstallPackageAction::run();
@@ -28,23 +28,23 @@ it('installs article publishing page types layouts and blocks', function (): voi
         ->and(Layout::query()->where('key', BlogLayoutEnum::Archives->value)->exists())->toBeTrue()
         ->and(Layout::query()->where('key', BlogLayoutEnum::TagResults->value)->exists())->toBeTrue()
         ->and(Layout::query()->where('key', BlogLayoutEnum::Tags->value)->exists())->toBeTrue()
-        ->and(Block::query()->where('key', 'article')->exists())->toBeTrue()
-        ->and(Block::query()->where('key', 'latest-articles')->exists())->toBeTrue()
-        ->and(Block::query()->where('key', 'archives')->exists())->toBeTrue()
-        ->and(Block::query()->where('key', 'tags')->exists())->toBeTrue()
-        ->and(Block::query()->where('key', 'related-pages')->exists())->toBeTrue();
+        ->and(Widget::query()->where('key', 'article')->exists())->toBeTrue()
+        ->and(Widget::query()->where('key', 'latest-articles')->exists())->toBeTrue()
+        ->and(Widget::query()->where('key', 'archives')->exists())->toBeTrue()
+        ->and(Widget::query()->where('key', 'tags')->exists())->toBeTrue()
+        ->and(Widget::query()->where('key', 'related-pages')->exists())->toBeTrue();
 
     $articleType = Blueprint::query()->pageType()->where('key', BlogPageTypeEnum::Article->value)->firstOrFail();
     $articleLayout = Layout::query()->where('key', BlogLayoutEnum::Article->value)->firstOrFail();
-    $latestArticlesBlock = Block::query()->where('key', 'latest-articles')->firstOrFail();
+    $latestArticlesBlock = Widget::query()->where('key', 'latest-articles')->firstOrFail();
 
     expect($articleType->getMeta('with_next_prev'))->toBeTrue()
         ->and($articleType->getMeta('suppress_layout_neighbor_links'))->toBeTrue()
         ->and($latestArticlesBlock->component)->toBe(BlockComponentEnum::PageLatest->value)
         ->and($latestArticlesBlock->is_livewire)->toBeFalse()
         ->and($articleLayout->containers)->toHaveKey('latest')
-        ->and(array_column($articleLayout->containers['sidebar']['blocks'], 'block_key'))->not->toContain('latest-articles')
-        ->and(array_column($articleLayout->containers['latest']['blocks'], 'block_key'))->toContain('latest-articles');
+        ->and(array_column($articleLayout->containers['sidebar']['widgets'], 'widget_key'))->not->toContain('latest-articles')
+        ->and(array_column($articleLayout->containers['latest']['widgets'], 'widget_key'))->toContain('latest-articles');
 });
 
 it('updates default and results sidebars with article publishing blocks', function (): void {
@@ -59,8 +59,8 @@ it('updates default and results sidebars with article publishing blocks', functi
     expect($defaultContainers)->toBeArray()
         ->and($resultsContainers)->toBeArray();
 
-    $defaultSidebarBlockKeys = array_column($defaultContainers['sidebar']['blocks'], 'block_key');
-    $resultsSidebarBlockKeys = array_column($resultsContainers['sidebar']['blocks'], 'block_key');
+    $defaultSidebarBlockKeys = array_column($defaultContainers['sidebar']['widgets'], 'widget_key');
+    $resultsSidebarBlockKeys = array_column($resultsContainers['sidebar']['widgets'], 'widget_key');
 
     expect($defaultSidebarBlockKeys)->toContain('latest-articles')
         ->and($defaultSidebarBlockKeys)->not->toContain('latest-pages')

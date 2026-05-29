@@ -17,6 +17,9 @@ use Illuminate\Support\Collection;
 
 class TagsSitemap extends AbstractSitemapPages
 {
+    /**
+     * @return Collection<array-key, mixed>
+     */
     public function fetch(): Collection
     {
         $tagPage = Page::getFirstPageByTypeForSite(BlogPageTypeEnum::Tag->value, site: $this->site, language: $this->language);
@@ -62,6 +65,9 @@ class TagsSitemap extends AbstractSitemapPages
         );
     }
 
+    /**
+     * @return Collection<array-key, mixed>
+     */
     private function getTagPages(Page $tagPage): Collection
     {
         return TagLoader::getTags(site: $this->site, language: $this->language)

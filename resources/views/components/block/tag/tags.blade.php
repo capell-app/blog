@@ -39,7 +39,7 @@
 
     @if ($showTitle || $showContent)
         <x-capell::content
-            class="mb-6 mt-10"
+            class="mt-10 mb-6"
             :compact="true"
             :content="$showContent ? ($block->translation->content ?: ($showPageContent ? $page->translation->content : null)) : null"
             :content-type="$block->translation->content ? $block->type->content_structure : ($showPageContent ? $page->type->content_structure : null)"

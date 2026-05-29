@@ -6,6 +6,7 @@ namespace Capell\Blog\View\Components\Block\Page;
 
 use Capell\Blog\Actions\BuildArticleMetaDataAction;
 use Capell\Blog\Data\ArticleMetaData;
+use Capell\Blog\Models\Article as ArticleModel;
 use Capell\Core\Contracts\Pageable;
 use Capell\FoundationTheme\View\Components\Block\AbstractBlock;
 use Capell\Frontend\Facades\Frontend;
@@ -44,6 +45,10 @@ class Article extends AbstractBlock
         $page = Frontend::page();
         $language = Frontend::language();
         $site = Frontend::site();
+
+        if ($page instanceof ArticleModel) {
+            $page->loadMissing('image');
+        }
 
         if (! isset($page->type->meta['hidden']) && (bool) $this->block->getMeta('with_next_prev')) {
             $this->previousPage = PageLoader::getPreviousPage($page, $site, $language);

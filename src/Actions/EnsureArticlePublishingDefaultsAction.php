@@ -30,6 +30,7 @@ class EnsureArticlePublishingDefaultsAction
             $blogCreator->createArticleBlock($articleBlockType);
 
             $blogCreator->createLatestArticlesBlock();
+            $blogCreator->createPopularArticlesBlock();
             $blogCreator->createArchivesBlock();
             $blogCreator->createTagsBlock(Language::all());
             $blogCreator->relatedArticlesBlock();

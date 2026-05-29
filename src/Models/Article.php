@@ -52,16 +52,18 @@ use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Override;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Staudenmeir\EloquentJsonRelations\HasJsonRelationships;
 use Staudenmeir\EloquentJsonRelations\Relations\BelongsToJson;
 
 /**
- * @method HasOne|MorphOne translation()
+ * @method HasOne<Translation, $this>|MorphOne<Translation, $this> translation()
  */
 #[ObservedBy(ArticleObserver::class)]
 class Article extends Model implements HasMedia, Pageable, Publishable, Translatable, Typeable, Userstampable
@@ -78,7 +80,10 @@ class Article extends Model implements HasMedia, Pageable, Publishable, Translat
     use HasJsonRelationships;
     use HasMetaData;
     use HasMorphModelRelations;
+
+    /** @use HasPageOrdering<self> */
     use HasPageOrdering;
+
     use HasPublishDates;
     use HasTags;
     use HasTranslations;
@@ -105,6 +110,9 @@ class Article extends Model implements HasMedia, Pageable, Publishable, Translat
         'blueprint_id',
     ];
 
+    /**
+     * @var array<array-key, mixed>
+     */
     protected array $clone_exempt_attributes = [
         'hidden',
     ];
@@ -188,11 +196,15 @@ class Article extends Model implements HasMedia, Pageable, Publishable, Translat
         return $date !== null ? CarbonImmutable::make($date) : null;
     }
 
+    /**
+     * @return BelongsTo<Layout, $this>
+     */
     public function layout(): BelongsTo
     {
         return $this->belongsTo(Layout::class);
     }
 
+    /** @return HasOne<Translation, $this>|MorphOne<Translation, $this> */
     public function translation(): HasOne|MorphOne
     {
         $relation = $this->morphOne(Translation::class, 'translatable');
@@ -204,19 +216,19 @@ class Article extends Model implements HasMedia, Pageable, Publishable, Translat
         return $relation;
     }
 
-    /** @return BelongsTo<Site, $this> */
+    /** @return BelongsTo<Site, Model> */
     public function site(): BelongsTo
     {
         return $this->belongsTo(Site::class);
     }
 
-    /** @return MorphOne<PageUrl, $this> */
+    /** @return MorphOne<PageUrl, Model> */
     public function pageUrl(): MorphOne
     {
         return $this->morphOne(PageUrl::class, 'pageable')->withDefault(['site_id' => $this->site_id]);
     }
 
-    /** @return MorphMany<PageUrl, $this> */
+    /** @return MorphMany<PageUrl, Model> */
     public function pageUrls(): MorphMany
     {
         $model = $this->morphMany(PageUrl::class, 'pageable');
@@ -239,11 +251,15 @@ class Article extends Model implements HasMedia, Pageable, Publishable, Translat
         );
     }
 
+    /** @return MorphOne<Media, $this> */
     public function image(): MorphOne
     {
         return $this->morphOneMedia(MediaCollectionEnum::Image->value);
     }
 
+    /**
+     * @param  array<array-key, mixed>|ArrayAccess<array-key, mixed>|string  $tags
+     */
     public function syncTags(string|array|ArrayAccess $tags): static
     {
         if (is_string($tags)) {
@@ -251,7 +267,10 @@ class Article extends Model implements HasMedia, Pageable, Publishable, Translat
         }
 
         $className = static::getTagClassName();
-        $tagRecords = collect($className::findOrCreate($tags));
+        $foundTags = $className::findOrCreate($tags);
+        $tagRecords = $foundTags instanceof Collection
+            ? $foundTags
+            : new Collection([$foundTags]);
 
         $this->tags()->sync($tagRecords->pluck('id')->toArray());
         $this->clearBlogContentCache();
@@ -259,12 +278,15 @@ class Article extends Model implements HasMedia, Pageable, Publishable, Translat
         return $this;
     }
 
+    /**
+     * @param  array<array-key, mixed>|ArrayAccess<array-key, mixed>  $tags
+     */
     public function syncTagsWithType(array|ArrayAccess $tags, ?string $type = null): static
     {
         $className = static::getTagClassName();
 
         if ($this->languages->isNotEmpty()) {
-            $tagRecords = collect();
+            $tagRecords = new Collection;
 
             $this->languages->each(function (Language $language) use (&$tagRecords, &$tags, $className, $type): void {
                 $tagRecords->push($className::findOrCreate($tags, $type, $language->code));
@@ -272,7 +294,10 @@ class Article extends Model implements HasMedia, Pageable, Publishable, Translat
 
             $tags = $tagRecords->flatten();
         } else {
-            $tags = collect($className::findOrCreate($tags, $type));
+            $foundTags = $className::findOrCreate($tags, $type);
+            $tags = $foundTags instanceof Collection
+                ? $foundTags
+                : new Collection([$foundTags]);
         }
 
         $this->syncTagIds($tags->pluck('id')->toArray(), $type);
@@ -294,6 +319,9 @@ class Article extends Model implements HasMedia, Pageable, Publishable, Translat
         return $this->morphTo(type: 'meta->canonical_pageable_type', id: 'meta->canonical_pageable_id');
     }
 
+    /**
+     * @return HasMany<self, $this>
+     */
     public function draftRevisions(): HasMany
     {
         return $this->hasMany(self::class, 'id', 'id')->whereRaw('0=1');
@@ -349,7 +377,7 @@ class Article extends Model implements HasMedia, Pageable, Publishable, Translat
         });
     }
 
-    /** @return array<string, mixed>|null */
+    /** @return array<array-key, mixed>|null */
     protected function getUrlParamsAttribute(): ?array
     {
         return $this->type->meta['url_params'] ?? null;

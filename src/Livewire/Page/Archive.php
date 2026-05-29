@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Capell\Blog\Livewire\Page;
 
 use Capell\Blog\Enums\ResourceEnum;
+use Capell\Blog\Models\Article;
 use Capell\Frontend\Facades\Frontend;
 use Capell\Frontend\Livewire\Page\AbstractPage;
 use Capell\Frontend\Support\Loader\PageLoader;
@@ -45,10 +46,10 @@ class Archive extends AbstractPage
             withDate: $page->type->meta['with_date'] ?? false,
             paginationKey: 'article-archives',
             cacheKeyPrepend: sprintf('year-%s-month-%s', $this->year, $this->month),
-            morphModel: 'article',
-            modifyQuery: function (Builder $query): Builder {
+            morphModel: Article::class,
+            modifyQuery: function (Builder $query): void {
                 if (DB::getDriverName() === 'sqlite') {
-                    return $query
+                    $query
                         ->when(
                             $this->year,
                             fn (Builder $query): Builder => $query->whereRaw(
@@ -67,9 +68,11 @@ class Archive extends AbstractPage
                                 );
                             },
                         );
+
+                    return;
                 }
 
-                return $query
+                $query
                     ->when(
                         $this->year,
                         fn (Builder $query): Builder => $query->whereRaw(
@@ -100,7 +103,7 @@ class Archive extends AbstractPage
     protected function getArchiveDateFromUrl(): array
     {
         $params = Frontend::params();
-        $date = is_array($params) ? ($params['date'] ?? '') : '';
+        $date = $params['date'] ?? '';
 
         $month = null;
         $year = null;
@@ -108,8 +111,6 @@ class Archive extends AbstractPage
 
         $parts = explode('/', (string) $date);
         $dates = explode('-', $parts[0]);
-
-        $date = isset($parts[1]) ? (int) $parts[1] : 1;
 
         if (isset($dates[0]) && mb_strlen($dates[0]) === 4 && is_numeric($dates[0])) {
             $year = (int) $dates[0];
@@ -119,11 +120,14 @@ class Archive extends AbstractPage
             $month = (int) $dates[1];
         }
 
-        abort_if(! is_numeric($date) || $year === 0 || $year === null, 404);
+        abort_if($year === 0 || $year === null, 404);
 
         return [$year, $month];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     #[Override]
     protected function getViewData(): array
     {

@@ -52,7 +52,7 @@ test('tag page list articles by tag', function (): void {
     $title = trans($tagPage->translation->title, ['tag_name' => $tag->translate('name', $language->code)]);
 
     $containers = $tagPage->layout->getAttribute('containers');
-    $containerBlocks = collect($containers)->pluck('blocks.*.block_key')->flatten()->filter()->toArray();
+    $containerBlocks = capell_test_collect($containers)->pluck('widgets.*.widget_key')->flatten()->filter()->toArray();
 
     expect($tagPage)
         ->translation->title->toBe(':Tag_name Articles')
@@ -96,7 +96,7 @@ test('tag page list articles by tag', function (): void {
 
     $breadcrumbText = trim((string) (new DOMXPath($document))
         ->query('//nav[contains(concat(" ", normalize-space(@class), " "), " breadcrumbs ")]')
-        ?->item(0)
+        ->item(0)
         ?->textContent);
 
     expect(preg_replace('/\s+/', ' ', $breadcrumbText))
@@ -104,7 +104,7 @@ test('tag page list articles by tag', function (): void {
         ->toContain('Tags')
         ->not->toContain($title);
 
-    $headingClasses = collect((new DOMXPath($document))->query('//*[self::h1 or self::h2 or self::h3 or self::h4][contains(concat(" ", normalize-space(@class), " "), " not-prose ")]'))
+    $headingClasses = capell_test_collect((new DOMXPath($document))->query('//*[self::h1 or self::h2 or self::h3 or self::h4][contains(concat(" ", normalize-space(@class), " "), " not-prose ")]'))
         ->map(fn (DOMElement $heading): string => $heading->getAttribute('class'));
 
     $headingClasses->each(function (string $class): void {

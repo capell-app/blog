@@ -1,15 +1,16 @@
 <?php
 
 declare(strict_types=1);
+use Illuminate\Support\Facades\File;
 
 describe('blog capell.json manifest', function (): void {
     $blogManifest = fn (): array => json_decode(
-        file_get_contents(__DIR__ . '/../../capell.json'),
+        File::get(__DIR__ . '/../../capell.json'),
         associative: true,
     );
 
     $blogComposerManifest = fn (): array => json_decode(
-        file_get_contents(__DIR__ . '/../../composer.json'),
+        File::get(__DIR__ . '/../../composer.json'),
         associative: true,
     );
 
@@ -39,10 +40,10 @@ describe('blog capell.json manifest', function (): void {
             ->toHaveKey('capell-app/layout-builder');
     });
 
-    it('passes install context into the demo command', function () use ($blogManifest): void {
+    it('registers the full blog demo command', function () use ($blogManifest): void {
         $manifest = $blogManifest();
 
         expect($manifest['commands']['demo'])->toBe('capell:blog-demo')
-            ->and($manifest['commands']['demoParams'])->toBe(['sites', 'user']);
+            ->and($manifest['commands']['demoParams'])->toBe(['sites', 'languages', 'force']);
     });
 });

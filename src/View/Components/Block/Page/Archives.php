@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\Blog\View\Components\Block\Page;
 
+use Capell\Blog\Data\ArchiveMonthData;
 use Capell\Blog\Enums\BlogTypeGroupEnum;
 use Capell\Blog\Support\Loader\BlogLoader;
 use Capell\Core\Contracts\Pageable;
@@ -20,6 +21,9 @@ class Archives extends AbstractBlock
 {
     protected ?Page $archivePage = null;
 
+    /**
+     * @var Collection<int, ArchiveMonthData>|\Illuminate\Pagination\LengthAwarePaginator<int, ArchiveMonthData>|null
+     */
     protected null|Collection|LengthAwarePaginator $archives = null;
 
     protected static string $defaultView = 'capell-blog::components.block.page.archives';

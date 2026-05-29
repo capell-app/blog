@@ -19,6 +19,9 @@ use Illuminate\Database\Eloquent\Builder;
 
 class SettingsTab
 {
+    /**
+     * @param  array<array-key, mixed>  $components
+     */
     public static function make(Schema $configurator, array $components = []): Tab
     {
         return Tab::make(__('capell-admin::tab.settings'))

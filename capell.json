@@ -19,7 +19,6 @@
             "capell-app/admin",
             "capell-app/content-sections",
             "capell-app/core",
-            "capell-app/demo-kit",
             "capell-app/frontend",
             "capell-app/html-cache",
             "capell-app/insights",
@@ -29,7 +28,7 @@
             "capell-app/site-discovery",
             "capell-app/tags"
         ],
-        "optional": [],
+        "supports": ["capell-app/comments"],
         "conflicts": []
     },
     "providers": {
@@ -49,8 +48,11 @@
         "install": "capell:blog-install",
         "setup": "capell:blog-setup",
         "demo": "capell:blog-demo",
-        "demoParams": ["sites", "user"],
+        "demoParams": ["sites", "languages", "force"],
         "doctor": null
+    },
+    "actions": {
+        "install": "Capell\\Blog\\Actions\\InstallBlogPackageAction"
     },
     "settings": [],
     "permissions": [],
@@ -105,7 +107,13 @@
     },
     "marketplace": {
         "summary": "Blog adds article publishing, archive pages, tag pages, article blocks, Site Discovery sitemap contributions, and frontend Livewire page components to Capell.",
-        "screenshots": [],
+        "screenshots": [
+            {
+                "path": "docs/assets/marketplace/extension-card.jpg",
+                "alt": "Blog extension preview image",
+                "caption": "Blog extension preview"
+            }
+        ],
         "categories": ["admin", "console", "foundation", "frontend"]
     },
     "contributionTraceability": {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Database\Factories;
 
+use Capell\Blog\Actions\AssignExampleArticleImageAction;
 use Capell\Blog\Actions\EnsureArticlePublishingDefaultsAction;
 use Capell\Blog\Enums\BlogLayoutEnum;
 use Capell\Blog\Enums\BlogPageTypeEnum;
@@ -68,6 +69,13 @@ class ArticleFactory extends Factory
             $tags = Tag::query()->inRandomOrder()->limit(fake()->numberBetween(1, 3))->get();
 
             $article->tags()->attach($tags);
+        });
+    }
+
+    public function withExampleImages(): self
+    {
+        return $this->afterCreating(function (Article $article): void {
+            AssignExampleArticleImageAction::run($article);
         });
     }
 

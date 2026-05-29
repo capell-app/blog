@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Creator\BlogCreator;
+use Capell\Core\Enums\MediaCollectionEnum;
 use Capell\Core\Models\Site;
 use Capell\Tags\Enums\TagTypeEnum;
 use Capell\Tags\Models\Tag;
@@ -39,6 +40,10 @@ test('article page with layout', function (): void {
     /** @var Article $article */
     $article = $articles->get(1);
     $article->tags()->attach($tags);
+    $article
+        ->addMedia(__DIR__ . '/../../Fixtures/test-image.jpg')
+        ->preservingOriginal()
+        ->toMediaCollection(MediaCollectionEnum::Image->value);
     $articleTags = $article->tags()->ordered()->get();
 
     get($article->pageUrl->full_url)
@@ -54,6 +59,21 @@ test('article page with layout', function (): void {
         ->assertElementExists(
             'time.published-date',
             fn (AssertElement $elm): BaseAssert => $elm->has('datetime', $article->visible_from->toW3cString()),
+        )
+        ->assertElementExists(
+            '.capell-page-article .breadcrumbs',
+            fn (AssertElement $elm): BaseAssert => $elm
+                ->containsText(__('capell-blog::generic.blog'))
+                ->containsText($article->translation->title),
+        )
+        ->assertElementExists(
+            '.capell-page-article figure img',
+            fn (AssertElement $elm): BaseAssert => $elm
+                ->has('alt', $article->translation->title),
+        )
+        ->assertElementExists(
+            '.capell-blog-article-content',
+            fn (AssertElement $elm): BaseAssert => $elm->doesntContain('img'),
         )
         ->assertElementExists(
             '.article-meta',

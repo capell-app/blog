@@ -41,11 +41,11 @@ it('returns Article instances not Page instances when morphModel is Article clas
         ->each(fn ($item) => $item->toBeInstanceOf(Article::class)->not->toBeInstanceOf(Page::class));
 });
 
-it('returns Article instances not Page instances when morphModel is article morph alias', function (): void {
+it('returns Article instances not Page instances when morphModel is Article class consistently', function (): void {
     $results = PageLoader::getPages(
         language: $this->language,
         site: $this->site,
-        morphModel: 'article',
+        morphModel: Article::class,
         useCache: false,
     );
 

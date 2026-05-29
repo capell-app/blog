@@ -4,7 +4,7 @@ Status: **Available, schema-owning** · Kind: **package** · Tier: **free** · B
 
 This page is the consolidated implementation overview for the Blog package. It is extracted from the package README, service providers, migrations, config files, routes, resources, models, actions, and the shared Capell ERD notes where available.
 
-## What This Plugin Adds
+## What This Package Adds
 
 Blog adds article publishing, archive pages, tag pages, article blocks, Site Discovery sitemap contributions, and frontend Livewire page components to Capell.
 
@@ -89,7 +89,6 @@ The frontend screenshots need seeded blog pages and articles before they are use
 ## Commands
 
 - `capell:blog-create-pages {site : The ID of the site to create blog pages for}` (packages/blog/src/Console/Commands/CreateBlogPagesCommand.php)
-- `capell:blog-demo {--sites=} {--user=} {--limit=}` (packages/blog/src/Console/Commands/DemoCommand.php)
 - `capell:blog-faker {--count=25} {--sites=} {--languages=} {--force}` (packages/blog/src/Console/Commands/FakerCommand.php)
 - `capell:blog-install` (packages/blog/src/Console/Commands/InstallCommand.php)
 - `capell:blog-setup {--user= : Ignored — accepted for compatibility with capell:install} {--sites= : Ignored — accepted for compatibility with capell:install} {--languages= : Ignored — accepted for compatibility with capell:install} {--url= : Ignored — accepted for compatibility with capell:install}` (packages/blog/src/Console/Commands/SetupCommand.php)

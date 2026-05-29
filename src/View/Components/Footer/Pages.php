@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Capell\Blog\View\Components\Footer;
 
 use Capell\Blog\Enums\BlogTypeGroupEnum;
+use Capell\Blog\Models\Article;
 use Capell\Core\Enums\PageOrderEnum;
 use Capell\Frontend\Facades\Frontend;
 use Capell\Frontend\Support\Loader\PageLoader;
@@ -14,8 +15,14 @@ use Illuminate\View\Component;
 
 class Pages extends Component
 {
+    /**
+     * @var Collection<array-key, mixed>
+     */
     public Collection $pages;
 
+    /**
+     * @param  array<array-key, mixed>  $item
+     */
     public function __construct(public array $item)
     {
         $this->pages = PageLoader::getPages(
@@ -25,7 +32,7 @@ class Pages extends Component
             ordering: PageOrderEnum::Latest,
             pageGroup: BlogTypeGroupEnum::Article,
             withImage: true,
-            morphModel: 'article',
+            morphModel: Article::class,
         );
     }
 

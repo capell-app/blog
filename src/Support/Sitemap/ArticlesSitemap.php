@@ -16,6 +16,9 @@ use Illuminate\Support\Collection;
 
 class ArticlesSitemap extends AbstractSitemapPages
 {
+    /**
+     * @return Collection<array-key, mixed>
+     */
     public function fetch(): Collection
     {
         // Locate the Blog page for the site & language
@@ -33,11 +36,11 @@ class ArticlesSitemap extends AbstractSitemapPages
             limit: null,
             ordering: PageOrderEnum::Latest,
             pageGroup: BlogTypeGroupEnum::Article->value,
-            morphModel: 'article',
+            morphModel: Article::class,
         );
 
         $node->children = $articles->map(
-            fn (Article $child): SitemapPageData => SitemapPageData::fromPage($child, withEditUrl: $this->withEditUrl),
+            fn (Pageable $child): SitemapPageData => SitemapPageData::fromPage($child, withEditUrl: $this->withEditUrl),
         )
             ->values();
 

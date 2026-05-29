@@ -12,6 +12,9 @@ use Illuminate\View\View;
 
 class AssetAfterTitle extends Component
 {
+    /**
+     * @param  Collection<array-key, mixed>  $tags
+     */
     public function __construct(
         public ?DateTimeImmutable $publishDate = null,
         public ?string $publishDatePosition = null,
@@ -28,7 +31,7 @@ class AssetAfterTitle extends Component
             return '';
         }
 
-        return view('capell-blog::hooks.asset-after-title', [
+        return view('capell-blog::components.asset-after-title', [
             'publishDate' => $this->publishDate,
             'publishDatePosition' => $this->publishDatePosition,
             'tags' => $this->tags,

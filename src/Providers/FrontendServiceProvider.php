@@ -134,7 +134,7 @@ final class FrontendServiceProvider extends ServiceProvider
             );
 
             $exists = $archives->contains(
-                fn (mixed $archive): bool => (int) $archive->year === $year && (int) $archive->month === $month,
+                fn (mixed $archive): bool => $archive->year === $year && $archive->month === $month,
             );
 
             abort_if(! $exists, 404);
@@ -169,16 +169,16 @@ final class FrontendServiceProvider extends ServiceProvider
 
         resolve(RenderHookRegistry::class)->register(
             RenderHookLocation::Footer,
-            fn (RenderHookContext $context): ?View => resolve(Pages::class, [
+            fn (RenderHookContext $context): View => resolve(Pages::class, [
                 'item' => $context->item,
             ])
-                ?->render(),
+                ->render(),
             target: 'footer.index',
         );
 
         resolve(RenderHookRegistry::class)->register(
             RenderHookLocation::ArticleMeta,
-            function (RenderHookContext $context): string|View|null {
+            function (RenderHookContext $context): string|View {
                 $item = is_array($context->item) ? $context->item : [];
 
                 return resolve(ArticleMeta::class, [
@@ -187,28 +187,28 @@ final class FrontendServiceProvider extends ServiceProvider
                     'author' => $item['author'] ?? null,
                     'articleMetaData' => $item['articleMetaData'] ?? null,
                 ])
-                    ?->render();
+                    ->render();
             },
         );
 
         resolve(RenderHookRegistry::class)->register(
             RenderHookLocation::BeforeContent,
-            fn (RenderHookContext $context): ?View => resolve(BeforeContentTags::class, [
+            fn (RenderHookContext $context): View => resolve(BeforeContentTags::class, [
                 'item' => $context->item ?? null,
                 'tags' => $context->item['tags'] ?? null,
             ])
-                ?->render(),
+                ->render(),
         );
 
         resolve(RenderHookRegistry::class)->register(
             RenderHookLocation::AfterTitle,
-            fn (RenderHookContext $context): string|View|null => resolve(AssetAfterTitle::class, [
+            fn (RenderHookContext $context): string|View => resolve(AssetAfterTitle::class, [
                 'publishDate' => $context->item['publishDate'] ?? null,
                 'publishDatePosition' => $context->item['publishDatePosition'] ?? null,
                 'tags' => $context->item['tags'] ?? null,
                 'publishDateOutput' => $context->item['publishDateOutput'] ?? null,
             ])
-                ?->render(),
+                ->render(),
         );
     }
 

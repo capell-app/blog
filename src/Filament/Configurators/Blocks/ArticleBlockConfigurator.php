@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Filament\Configurators\Blocks;
 
-use Capell\LayoutBuilder\Filament\Components\Forms\Block\AdminSchema;
-use Capell\LayoutBuilder\Filament\Components\Forms\Block\SettingsSchema;
-use Capell\LayoutBuilder\Filament\Components\Forms\Block\Tab\BlockDisplayTab;
+use Capell\LayoutBuilder\Filament\Components\Forms\Widget\AdminSchema;
+use Capell\LayoutBuilder\Filament\Components\Forms\Widget\SettingsSchema;
+use Capell\LayoutBuilder\Filament\Components\Forms\Widget\Tab\BlockDisplayTab;
 use Capell\LayoutBuilder\Filament\Configurators\Blocks\DefaultBlockConfigurator;
 use Filament\Forms\Components\Checkbox;
 use Filament\Schemas\Components\Fieldset;

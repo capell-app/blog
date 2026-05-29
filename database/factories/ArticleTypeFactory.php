@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Database\Factories;
 
-use Capell\Admin\Filament\Configurators\Types\PageTypeConfigurator;
+use Capell\Admin\Filament\Configurators\Blueprints\PageBlueprintConfigurator;
 use Capell\Blog\Enums\BlogTypeGroupEnum;
 use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Filament\Configurators\Articles\ArticlePageConfigurator;
@@ -19,7 +19,7 @@ class ArticleTypeFactory extends BlueprintFactory
             ->set(
                 'admin',
                 [
-                    'type_configurator' => PageTypeConfigurator::getKey(),
+                    'type_configurator' => PageBlueprintConfigurator::getKey(),
                     'configurator' => ArticlePageConfigurator::getKey(),
                     'resource' => strtolower(ResourceEnum::Article->name),
                 ],

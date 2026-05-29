@@ -42,7 +42,7 @@
                         {{ $page->getTranslation('label') }}
                     </span>
                     <time
-                        class="float-right mt-0.5 whitespace-nowrap text-xs font-light leading-none tracking-wide opacity-80"
+                        class="float-right mt-0.5 text-xs leading-none font-light tracking-wide whitespace-nowrap opacity-80"
                         title="{{ __('capell-frontend::generic.visible_from', ['date' => $publishDate->format(config('capell-frontend.date_format'))]) }}"
                         datetime="{{ $publishDate->toW3cString() }}"
                     >

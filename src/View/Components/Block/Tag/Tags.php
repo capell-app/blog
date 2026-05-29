@@ -9,6 +9,7 @@ use Capell\Blog\Data\TagListingData;
 use Capell\Core\Models\Page;
 use Capell\FoundationTheme\View\Components\Block\AbstractBlock;
 use Capell\Frontend\Facades\Frontend;
+use Capell\Tags\Models\Tag;
 use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -19,6 +20,9 @@ class Tags extends AbstractBlock
 {
     public ?Page $tagPage = null;
 
+    /**
+     * @var LengthAwarePaginator<int, Tag>|Collection<int, Tag>|null
+     */
     public Collection|LengthAwarePaginator|null $tags = null;
 
     public ?TagListingData $tagListing = null;

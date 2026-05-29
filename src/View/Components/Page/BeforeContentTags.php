@@ -11,15 +11,18 @@ use Illuminate\View\View;
 
 class BeforeContentTags extends Component
 {
+    /**
+     * @param  Collection<array-key, mixed>  $tags
+     */
     public function __construct(public ?Model $item, public Collection $tags) {}
 
     public function render(): View|string
     {
-        if (! $this->tags?->isNotEmpty()) {
+        if (! $this->tags->isNotEmpty()) {
             return '';
         }
 
-        return view('capell-blog::page.tags', [
+        return view('capell-blog::components.page.tags', [
             'item' => $this->item,
             'tags' => $this->tags,
         ]);

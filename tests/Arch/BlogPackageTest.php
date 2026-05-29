@@ -45,6 +45,9 @@ it('declares site discovery as an explicit package dependency', function (): voi
 
 it('keeps blog package references inside the blog source package except intentional bridges', function (): void {
     $rootPath = dirname(__DIR__, 4);
+    $intentionalBridgePaths = [
+        'packages/comments/src/Actions/RegisterDefaultCommentablesAction.php',
+    ];
     $violations = [];
 
     $files = (new Finder)
@@ -58,6 +61,10 @@ it('keeps blog package references inside the blog source package except intentio
         $relativePath = str_replace($rootPath . '/', '', $file->getPathname());
 
         if (str_starts_with($relativePath, 'packages/blog/src/')) {
+            continue;
+        }
+
+        if (in_array($relativePath, $intentionalBridgePaths, true)) {
             continue;
         }
 

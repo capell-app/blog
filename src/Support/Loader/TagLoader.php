@@ -17,11 +17,15 @@ use Capell\Tags\Models\Tag;
 use Illuminate\Contracts\Database\Eloquent\Builder as BuilderContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
 
 class TagLoader
 {
+    /**
+     * @return Collection<int, Model>
+     */
     public static function getPageTags(Pageable $page): Collection
     {
         $key = CacheEnum::pageTags($page->id);
@@ -58,7 +62,7 @@ class TagLoader
             return $model::getFirstPageByTypeForSite(BlogPageTypeEnum::Tag->value, site: $site, language: $language);
         });
 
-        if ($fromCache && $page instanceof Pageable) {
+        if ($fromCache && $page instanceof Pageable && $page instanceof Model) {
             resolve(RenderedModelTracker::class)->track($page);
         }
 
@@ -67,6 +71,8 @@ class TagLoader
 
     /**
      * Returns a query builder for tags for use in chunked/large operations.
+     *
+     * @return Builder<Tag>
      */
     public static function getTagsQuery(
         Site $site,
@@ -78,7 +84,7 @@ class TagLoader
 
         return $model::query()
             ->withCount([
-                'taggables' => fn (Builder $query): Builder => self::applyTaggableSiteLanguageScope($query, $site, $language),
+                'taggables' => fn (Builder $query): BuilderContract => self::applyTaggableSiteLanguageScope($query, $site, $language),
             ])
             ->where('type', TagTypeEnum::Page)
             ->where(fn (Builder $query): Builder => self::applySiteScope($query, $site))
@@ -89,6 +95,8 @@ class TagLoader
 
     /**
      * Returns a collection or paginator of tags (cached, for UI use).
+     *
+     * @return Collection<int, Tag>|LengthAwarePaginator<int, Tag>
      */
     public static function getTags(
         Site $site,
@@ -182,11 +190,19 @@ class TagLoader
         );
     }
 
+    /**
+     * @param  Builder<Tag>  $query
+     * @return Builder<Tag>
+     */
     private static function applySiteScope(Builder $query, Site $site): Builder
     {
         return $query->where('site_id', $site->id)->orWhereNull('site_id');
     }
 
+    /**
+     * @param  Builder<Tag>  $query
+     * @return Builder<Tag>
+     */
     private static function applyHasArticlesScope(Builder $query, Site $site, Language $language): Builder
     {
         return $query->whereHas(
@@ -195,11 +211,18 @@ class TagLoader
         );
     }
 
+    /**
+     * @param  Builder<Tag>  $query
+     * @return Builder<Tag>
+     */
     private static function applyTranslatedNameScope(Builder $query, Language $language): Builder
     {
         return $query->whereNotNull($query->qualifyColumn('name->' . $language->code));
     }
 
+    /**
+     * @param  Collection<int, Tag>|LengthAwarePaginator<int, Tag>  $tags
+     */
     private static function trackCachedTags(Collection|LengthAwarePaginator $tags): void
     {
         $collection = $tags instanceof LengthAwarePaginator ? $tags->getCollection() : $tags;

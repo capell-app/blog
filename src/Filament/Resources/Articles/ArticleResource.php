@@ -28,6 +28,7 @@ use Illuminate\Contracts\Database\Eloquent\Builder as BuilderContract;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Override;
 
 class ArticleResource extends PageResource
@@ -136,6 +137,10 @@ class ArticleResource extends PageResource
     #[Override]
     public static function mutateFormDataBeforeCreate(array &$data, array $formData = []): void
     {
+        if (! isset($data['order'])) {
+            $data['order'] = 0;
+        }
+
         $data['layout_id'] = GetArticleLayoutAction::run()?->id;
 
         /* @var class-string<\Capell\Core\Models\Blueprint> $model */
@@ -162,7 +167,7 @@ class ArticleResource extends PageResource
         }
 
         if ((! isset($data['name']) || blank($data['name'])) && isset($formData['translations'])) {
-            $data['name'] = GetNameFromTranslationsAction::run(collect($formData['translations']), $site);
+            $data['name'] = GetNameFromTranslationsAction::run(new Collection($formData['translations']), $site);
         }
     }
 

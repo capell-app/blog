@@ -26,7 +26,12 @@ final class HeroDemoCommand extends Command
             return self::FAILURE;
         }
 
+        $siteTotal = $sites->count();
+        $siteNumber = 0;
+
         foreach ($sites as $site) {
+            $siteNumber++;
+            $this->info(sprintf('[%d/%d] Creating blog hero demo content for "%s".', $siteNumber, $siteTotal, $site->name));
             CreateBlogHeroDemoContentAction::run($site);
             $this->info(sprintf('Demo hero content has been successfully created for site: %s', $site->name));
         }

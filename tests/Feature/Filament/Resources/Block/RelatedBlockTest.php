@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use Capell\Blog\Support\Creator\BlogCreator;
 use Capell\Core\Models\Blueprint;
-use Capell\LayoutBuilder\Filament\Resources\Blocks\Pages\EditBlock;
-use Capell\LayoutBuilder\Models\Block;
+use Capell\LayoutBuilder\Filament\Resources\Widgets\Pages\EditWidget;
+use Capell\LayoutBuilder\Models\Widget;
 use Capell\Tests\Support\Concerns\CreatesAdminUser;
 
 use function Pest\Livewire\livewire;
@@ -21,11 +21,11 @@ test('can edit related block', function (): void {
     $typeCreator = new BlogCreator;
     $block = $typeCreator->relatedArticlesBlock();
 
-    $newData = Block::factory()->make();
+    $newData = Widget::factory()->make();
 
     Blueprint::factory()->page()->state(['key' => 'home'])->create();
 
-    livewire(EditBlock::class, [
+    livewire(EditWidget::class, [
         'record' => $block->getRouteKey(),
     ])
         ->assertSuccessful()

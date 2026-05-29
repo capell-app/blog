@@ -46,7 +46,7 @@ final class ClearBlogTagCacheAction
     }
 
     /**
-     * @return Collection<int, int>
+     * @return Collection<int, positive-int>
      */
     private function affectedSiteIds(Tag $tag): Collection
     {

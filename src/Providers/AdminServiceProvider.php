@@ -68,7 +68,7 @@ final class AdminServiceProvider extends ServiceProvider
             return;
         }
 
-        CapellCore::registerComponents(self::LAYOUT_BUILDER_COMPONENT_TYPE_ENUM::Block->name, BlockComponentEnum::cases());
+        CapellCore::registerComponents(self::LAYOUT_BUILDER_COMPONENT_TYPE_ENUM::Widget->name, BlockComponentEnum::cases());
     }
 
     private function registerConfigurators(): void
@@ -92,7 +92,7 @@ final class AdminServiceProvider extends ServiceProvider
 
             CapellAdmin::contributeToAdminSurface(AdminSurfaceContributionData::configurator(
                 class: $configuratorClass,
-                group: self::LAYOUT_BUILDER_CONFIGURATOR_TYPE_ENUM::Block->value,
+                group: self::LAYOUT_BUILDER_CONFIGURATOR_TYPE_ENUM::Widget->value,
                 name: $configuratorClass::getKey(),
             ));
         }

@@ -27,7 +27,7 @@ class Tag extends AbstractPage
     protected function setup(): void
     {
         $params = Frontend::params();
-        $this->tagSlug = is_array($params) ? ($params['tag'] ?? null) : null;
+        $this->tagSlug = $params['tag'] ?? null;
 
         abort_if(in_array($this->tagSlug, ['', '0', null], true), 404);
 
@@ -37,7 +37,7 @@ class Tag extends AbstractPage
 
         $tag = TagLoader::tagPage($this->tagSlug, $site, $language);
 
-        abort_unless($tag, 404);
+        abort_unless($tag instanceof TagModel, 404);
 
         $this->tag = $tag;
 
@@ -58,10 +58,12 @@ class Tag extends AbstractPage
             paginationKey: 'tag-pages',
             cacheKeyPrepend: 'tagged-' . $this->tag->id,
             morphModel: $model,
-            modifyQuery: fn (Builder $query): Builder => $query->whereHas(
-                'tags',
-                fn (Builder $query): Builder => $query->whereKey($this->tag->id),
-            ),
+            modifyQuery: function (Builder $query): void {
+                $query->whereHas(
+                    'tags',
+                    fn (Builder $query): Builder => $query->whereKey($this->tag->id),
+                );
+            },
         );
 
         $this->params = $this->getViewData();
@@ -69,6 +71,9 @@ class Tag extends AbstractPage
         resolve(FrontendState::class)->withParams($this->params);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     #[Override]
     protected function getViewData(): array
     {
