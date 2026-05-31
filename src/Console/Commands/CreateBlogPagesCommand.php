@@ -22,7 +22,8 @@ class CreateBlogPagesCommand extends Command
 
     public function handle(): int
     {
-        $siteId = $this->argument('site');
+        $siteArgument = $this->argument('site');
+        $siteId = is_scalar($siteArgument) ? (string) $siteArgument : '';
 
         if (blank($siteId)) {
             $this->error('Site argument is required.');

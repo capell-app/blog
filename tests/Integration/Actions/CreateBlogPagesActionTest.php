@@ -32,12 +32,12 @@ it('creates the blog, archives, archive, tags, and tag pages for the site', func
 });
 
 it('adds the archives block to the results layout sidebar during install', function (): void {
-    $resultsLayout = Layout::query()->firstWhere('key', LayoutEnum::Results->value);
-    $containers = $resultsLayout->getAttribute('containers');
+    $resultsLayout = blogTestLayout(Layout::query()->firstWhere('key', LayoutEnum::Results->value));
+    $containers = blogTestArray($resultsLayout->getAttribute('containers'));
 
     expect($containers)->toBeArray();
 
-    $sidebarBlockKeys = array_column($containers['sidebar']['widgets'], 'widget_key');
+    $sidebarBlockKeys = array_column(blogTestContainerWidgets($containers, 'sidebar'), 'widget_key');
 
     expect($sidebarBlockKeys)->toContain('archives');
 });

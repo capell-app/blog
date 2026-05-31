@@ -34,7 +34,7 @@ it('generates archive URLs for static site', function (): void {
 
     $archivesPage = $blogCreator->createArchivesPage($blogPage);
     $archivePage = $blogCreator->createArchivePage($archivesPage);
-    $archiveUrl = rtrim($archivePage->pageUrl->url, '/*') . '/';
+    $archiveUrl = rtrim(blogTestPageUrl($archivePage->pageUrl)->url, '/*') . '/';
 
     // Fake HTTP responses for all expected URLs
     $httpFakes = [];

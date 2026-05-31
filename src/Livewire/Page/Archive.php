@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Livewire\Page;
 
+use Capell\Blog\Actions\BuildBlogResultsViewDataAction;
+use Capell\Blog\Data\BlogResultsViewData;
 use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Models\Article;
+use Capell\Core\Models\Language;
+use Capell\Core\Models\Site;
 use Capell\Frontend\Facades\Frontend;
 use Capell\Frontend\Livewire\Page\AbstractPage;
 use Capell\Frontend\Support\Loader\PageLoader;
@@ -23,6 +27,8 @@ class Archive extends AbstractPage
 
     protected static string $defaultView = 'capell-blog::livewire.page.results';
 
+    protected ?BlogResultsViewData $blogResultsViewData = null;
+
     protected function setup(): void
     {
         if (($this->year === null || $this->year === 0) && ($this->month === null || $this->month === 0)) {
@@ -32,12 +38,16 @@ class Archive extends AbstractPage
         abort_if(($this->year === null || $this->year === 0) && ($this->month === null || $this->month === 0), 404);
 
         $page = Frontend::page();
+        $language = Frontend::language();
+        $site = Frontend::site();
+
+        abort_unless($language instanceof Language && $site instanceof Site, 404);
 
         $paginationPage = config('capell-admin.page_query', 'pageQuery');
 
         $this->results = PageLoader::getPages(
-            language: Frontend::language(),
-            site: Frontend::site(),
+            language: $language,
+            site: $site,
             limit: $page->meta['limit'] ?? $page->type->meta['limit'] ?? config('capell-frontend.pagination_limit', 12),
             paginationPage: (int) $this->getPage($paginationPage),
             typeKey: $page->type->meta['page_group'] ?? strtolower(ResourceEnum::Article->name),
@@ -92,13 +102,14 @@ class Archive extends AbstractPage
 
         abort_if($this->results->isEmpty(), 404);
 
-        $this->params = $this->getViewData();
+        $this->blogResultsViewData = BuildBlogResultsViewDataAction::run($this->results);
+        $this->params = $this->getReplacementData();
 
         resolve(FrontendState::class)->withParams($this->params);
     }
 
     /**
-     * @return array<int, int>
+     * @return array{0: int, 1: int|null}
      */
     protected function getArchiveDateFromUrl(): array
     {
@@ -131,12 +142,35 @@ class Archive extends AbstractPage
     #[Override]
     protected function getViewData(): array
     {
-        $date = Date::create()->day(1)->month($this->month)->year($this->year);
+        $year = $this->year;
+
+        abort_if($year === null, 404);
+
+        $date = Date::create()->day(1)->month($this->month ?? 1)->year($year);
 
         return [
             'archive_date' => $date,
             'archive_month' => $date->format('F'),
-            'archive_year' => $this->year,
+            'archive_year' => $year,
+            'blogResultsViewData' => $this->blogResultsViewData ?? BuildBlogResultsViewDataAction::run($this->results),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function getReplacementData(): array
+    {
+        $year = $this->year;
+
+        abort_if($year === null, 404);
+
+        $date = Date::create()->day(1)->month($this->month ?? 1)->year($year);
+
+        return [
+            'archive_date' => $date,
+            'archive_month' => $date->format('F'),
+            'archive_year' => $year,
         ];
     }
 }

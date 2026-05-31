@@ -54,6 +54,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use LogicException;
 use Override;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -184,9 +185,13 @@ class Article extends Model implements HasMedia, Pageable, Publishable, Translat
 
     public function getParentUrl(Language $language, bool $fullUrl = false): string
     {
-        $url = $fullUrl ? $this->site->getSiteDomainUrl($language) : '/';
+        $site = $this->site;
 
-        return $url . BlogLoader::getBlogPageUrl(site: $this->site, language: $language, fullUrl: $fullUrl);
+        throw_unless($site instanceof Site, LogicException::class, 'Article requires a site to build its parent URL.');
+
+        $url = $fullUrl ? $site->getSiteDomainUrl($language) : '/';
+
+        return $url . BlogLoader::getBlogPageUrl(site: $site, language: $language, fullUrl: $fullUrl);
     }
 
     public function getPublishDate(): ?CarbonImmutable

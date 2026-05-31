@@ -17,6 +17,7 @@ use Capell\Blog\Models\Article;
 use Capell\Blog\Policies\ArticlePolicy;
 use Capell\Blog\Support\BlogModelRegistrar;
 use Capell\Blog\Support\BlogSidebarBlockContributor;
+use Capell\Blog\Support\PublicUrls\BlogPublicUrlContributor;
 use Capell\ContentSections\Models\Section;
 use Capell\Core\Actions\RegisterBlazeOptimizedViewsAction;
 use Capell\Core\Data\PageTypeData;
@@ -31,6 +32,7 @@ use Capell\Core\Support\Packages\AbstractPackageServiceProvider;
 use Capell\Core\Support\Renderables\RenderableRegistry;
 use Capell\LayoutBuilder\Contracts\LayoutSidebarBlockContributor;
 use Capell\PublishingStudio\WorkspaceRegistry;
+use Capell\SiteDiscovery\Contracts\PublicUrlContributor;
 use Capell\Tags\Models\Tag;
 use Composer\InstalledVersions;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -98,7 +100,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
     {
         $version = InstalledVersions::getVersion('livewire/livewire');
 
-        return version_compare($version, '4.0.0', '<');
+        return is_string($version) && version_compare($version, '4.0.0', '<');
     }
 
     private function bootInstalledPackage(): self
@@ -117,6 +119,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
             ->registerBlockRenderables()
             ->registerLivewireComponents()
             ->registerTypes()
+            ->registerPublicUrlContributors()
             ->registerTranslationEvents()
             ->registerTagCacheEvents()
             ->registerArticleMediaCacheEvents()
@@ -296,6 +299,16 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
                 'sections',
                 fn (Tag $model): MorphToMany => $model->morphedByMany(Section::class, 'taggable', 'taggables'),
             );
+        }
+
+        return $this;
+    }
+
+    private function registerPublicUrlContributors(): self
+    {
+        if (interface_exists(PublicUrlContributor::class)) {
+            $this->app->singleton(BlogPublicUrlContributor::class);
+            $this->app->tag([BlogPublicUrlContributor::class], PublicUrlContributor::TAG);
         }
 
         return $this;

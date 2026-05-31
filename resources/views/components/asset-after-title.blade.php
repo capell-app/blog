@@ -3,7 +3,7 @@
 >
     @if ($tags?->isNotEmpty())
         <x-capell-blog::page.tags
-            :tags="$tags"
+            :$tagLinks
             class="mt-2 text-xs font-normal text-gray-500"
         />
     @endif

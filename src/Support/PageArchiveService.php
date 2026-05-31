@@ -41,7 +41,11 @@ class PageArchiveService
 
             $archives = CapellCore::rememberCache(
                 $cacheKey,
-                fn (): Collection => $this->queryArchivedCountsByMonth($site, $language, $group, false, $perPage, $paginationKey),
+                function () use ($site, $language, $group, $perPage, $paginationKey): Collection {
+                    $archives = $this->queryArchivedCountsByMonth($site, $language, $group, false, $perPage, $paginationKey);
+
+                    return $archives instanceof Collection ? $archives : new Collection($archives->items());
+                },
             );
 
             return $archives
@@ -97,7 +101,7 @@ class PageArchiveService
             ->orderByRaw('COALESCE(`visible_from`, `created_at`) DESC');
 
         if ($paginate) {
-            $paginator = $query->getQuery()->paginate($perPage ?? 15, pageName: $paginationKey);
+            $paginator = $query->getQuery()->paginate($perPage ?? 15, pageName: $paginationKey ?? 'page');
 
             $paginator->getCollection()->transform(fn (stdClass $row): ArchiveMonthData => new ArchiveMonthData(
                 (int) $row->year,

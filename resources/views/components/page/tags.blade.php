@@ -1,28 +1,28 @@
 @php
-    use Capell\Frontend\Facades\Frontend;
     use Filament\Support\Icons\Heroicon;
-
-    $language = Frontend::language();
 @endphp
 
 @props([
     'linkClass' => '',
-    'tagPage',
-    'tags',
+    'tagLinks' => [],
     'tagIcon' => 'heroicon-' . Heroicon::OutlinedTag->value,
+    'withDarkMode' => false,
 ])
 
-@if ($tags && $tagPage)
+@if ($tagLinks !== [])
     <div {{ $attributes->merge(['class' => 'flex items-center gap-2']) }}>
         @if ($tagIcon)
             @svg($tagIcon, 'inline-block h-6 w-6 shrink-0 text-gray-400')
         @endif
 
         <div class="flex flex-wrap gap-x-2 gap-y-1.5">
-            @foreach ($tags as $tag)
-                @php($url = $tag->getUrl($tagPage, $language))
-                <x-capell-blog::tag :$url wire:navigate>
-                    {{ $tag->getTranslation('name', $language->code) }}
+            @foreach ($tagLinks as $tagLink)
+                <x-capell-blog::tag
+                    :url="$tagLink->url"
+                    :$withDarkMode
+                    wire:navigate
+                >
+                    {{ $tagLink->name }}
                 </x-capell-blog::tag>
             @endforeach
         </div>

@@ -1,15 +1,14 @@
 @php
-    use Capell\Core\Enums\AssetComponentEnum;
-    use Capell\Frontend\Facades\Frontend;
     use Capell\Frontend\Support\View\DeferredHtmlable;
 
-    $page = Frontend::page();
-
-    $component = $page['meta']['component'] ?? AssetComponentEnum::Page->value;
-    $componentItem = $page['meta']['component_item'] ?? AssetComponentEnum::Card->value;
-    $pageTranslation = $page?->relationLoaded('translation') ? $page->translation : null;
-    $noResultsText = $pageTranslation?->meta['no_results'] ?? null;
     $results = $this->results;
+    $component = $blogResultsViewData->component;
+    $componentItem = $blogResultsViewData->componentItem;
+    $noResultsText = $blogResultsViewData->noResultsText;
+    $columns = $blogResultsViewData->columns;
+    $withImage = $blogResultsViewData->withImage;
+    $withPaginationSummary = $blogResultsViewData->withPaginationSummary;
+    $resultItems = $blogResultsViewData->resultItems;
 
     $pageSlot = new DeferredHtmlable(
         fn (): string => view(
@@ -20,6 +19,10 @@
                 'componentItem' => $componentItem,
                 'latestArticles' => $latestArticles ?? null,
                 'noResultsText' => $noResultsText,
+                'columns' => $columns,
+                'withImage' => $withImage,
+                'withPaginationSummary' => $withPaginationSummary,
+                'resultItems' => $resultItems,
                 'sidebarTags' => $sidebarTags ?? null,
                 'tagPage' => $tagPage ?? null,
             ],

@@ -58,7 +58,7 @@ final class TrafficChartWidgetAbstract extends Widget implements CapellWidgetCon
             ->get();
 
         $points = $rows->map(fn (object $row): TrafficPointData => new TrafficPointData(
-            date: $row->date,
+            date: (string) $row->date,
             views: (int) $row->views,
             visitors: (int) $row->visitors,
         ));

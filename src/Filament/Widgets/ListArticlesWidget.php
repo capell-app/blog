@@ -27,6 +27,7 @@ use Illuminate\Contracts\Pagination\CursorPaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use LogicException;
 use Override;
 
 class ListArticlesWidget extends BaseWidget
@@ -44,6 +45,8 @@ class ListArticlesWidget extends BaseWidget
     public function getFilteredTableQuery(): Builder
     {
         $query = parent::getFilteredTableQuery();
+
+        throw_unless($query instanceof Builder, LogicException::class, 'List articles widget requires a table query.');
 
         $languageId = $this->getTableFilterState('filter')['language_id'] ?? null;
         if ($languageId === null || $languageId === '') {
@@ -161,8 +164,10 @@ class ListArticlesWidget extends BaseWidget
      */
     protected function paginateTableQuery(Builder $query): CursorPaginator
     {
+        $recordsPerPage = $this->getTableRecordsPerPage();
+
         return $query->cursorPaginate(
-            perPage: ($this->getTableRecordsPerPage() === 'all') ? $query->count() : $this->getTableRecordsPerPage(),
+            perPage: $recordsPerPage === 'all' ? $query->count() : (int) $recordsPerPage,
             cursorName: (in_array($this->getTable()->getQueryStringIdentifier(), [null, '', '0'], true) ? 'list-articles' : $this->getTable()->getQueryStringIdentifier()) . '_cursor',
         );
     }

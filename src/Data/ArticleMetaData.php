@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Data;
 
+use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -13,10 +14,13 @@ final class ArticleMetaData extends Data
 {
     /**
      * @param  Collection<int, mixed>  $tags
+     * @param  list<BlogTagLinkData>  $tagLinks
      */
     public function __construct(
         public readonly Collection $tags,
+        public readonly array $tagLinks = [],
         public readonly ?Page $tagPage = null,
+        public readonly ?Language $language = null,
         public readonly ?Model $author = null,
         public readonly bool $withAuthor = false,
     ) {}

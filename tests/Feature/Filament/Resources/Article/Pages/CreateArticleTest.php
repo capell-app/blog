@@ -190,6 +190,7 @@ describe('from list article', function (): void {
         $article = Article::query()
             ->where('name', $newData->name)
             ->first();
+        $article = blogTestArticle($article);
 
         expect($article->type)
             ->key->toBe(BlogPageTypeEnum::Article->value)

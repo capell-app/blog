@@ -35,7 +35,7 @@ test('blog page lists articles', function (): void {
     $site = $siteDomain->site;
 
     $blogPage = $blogCreator->createBlogPage($site);
-    $blogUrl = $blogPage->pageUrl;
+    $blogUrl = blogTestPageUrl($blogPage->pageUrl);
 
     $articleType = $blogCreator->createArticlePageType();
     $articleLayout = $blogCreator->createArticleLayout();
@@ -77,7 +77,7 @@ test('blog page lists articles', function (): void {
             'body',
             fn (AssertElement $elm): BaseAssert => $elm
                 ->contains('h1', count: 1)
-                ->containsText($blogPage->translation->title)
+                ->containsText((string) blogTestTranslation($blogPage->translation)->title)
                 ->doesntContain('Article Archives'),
         )
         ->assertSee('https://images.unsplash.com', false)
@@ -88,14 +88,14 @@ test('blog page lists articles', function (): void {
                 ->each(
                     '.asset-index',
                     function (AssertElement $titleElm, int $index) use ($articles): BaseAssert {
-                        $article = $articles->get($index);
+                        $article = blogTestArticle($articles->get($index));
 
-                        return $titleElm->containsText($article->translation->title)
+                        return $titleElm->containsText((string) blogTestTranslation($article->translation)->title)
                             ->find(
                                 'a',
                                 fn (AssertElement $linkElm): BaseAssert => $linkElm->has(
                                     'href',
-                                    $article->pageUrl->full_url,
+                                    blogTestPageUrl($article->pageUrl)->full_url,
                                 ),
                             );
                     },
@@ -127,7 +127,7 @@ test('articles sitemap nests published articles below the blog page', function (
         ->and($blogNode->pageId)->toBe($blogPage->id)
         ->and($blogNode->children)->toHaveCount(1)
         ->and($blogNode->children->first()->pageId)->toBe($article->id)
-        ->and($blogNode->children->first()->url)->toBe($article->pageUrl->full_url);
+        ->and($blogNode->children->first()->url)->toBe(blogTestPageUrl($article->pageUrl)->full_url);
 });
 
 test('visit blogs page with no articles and see appropriate message', function (): void {
@@ -137,7 +137,7 @@ test('visit blogs page with no articles and see appropriate message', function (
     $site = $siteDomain->site;
 
     $blogPage = $blogCreator->createBlogPage($site);
-    $blogUrl = $blogPage->pageUrl;
+    $blogUrl = blogTestPageUrl($blogPage->pageUrl);
 
     expect($blogPage)
         ->toBeInstanceOf(Page::class)
@@ -177,7 +177,7 @@ test('article page', function (): void {
         ->type->name->toBe('Article')
         ->layout->name->toBe('Article');
 
-    get($article->pageUrl->full_url)
+    get(blogTestPageUrl($article->pageUrl)->full_url)
         ->assertOk()
         ->assertSeeHtml(e($article->title))
         ->assertSeeHtml(e($blogPage->label));
@@ -197,6 +197,7 @@ test('article page list tags', function (): void {
 
     $archivesPage = $blogCreator->createArchivesPage($blogPage);
     $archivePage = $blogCreator->createArchivePage($archivesPage);
+    $archivePageUrl = blogTestPageUrl($archivePage->pageUrl);
 
     $articleType = $blogCreator->createArticlePageType();
     $articleLayout = $blogCreator->createArticleLayout();
@@ -210,7 +211,7 @@ test('article page list tags', function (): void {
         ->create();
 
     $archiveUrl = GenerateArchiveUrl::run(
-        $archivePage->pageUrl,
+        $archivePageUrl,
         ArchiveMonthData::fromDate(
             ($article->visible_from ?? $article->created_at) instanceof CarbonImmutable
                 ? ($article->visible_from ?? $article->created_at)
@@ -226,7 +227,7 @@ test('article page list tags', function (): void {
         ->pageUrl->url->toBe('/blog/' . $article->translation->slug)
         ->tags->toHaveCount(3);
 
-    get($article->pageUrl->full_url)
+    get(blogTestPageUrl($article->pageUrl)->full_url)
         ->assertOk()
         ->assertSeeHtml(e($article->title))
         ->assertSeeHtml(e($blogPage->label))
@@ -242,7 +243,7 @@ test('articles pagination', function (): void {
     $site = $siteDomain->site;
 
     $blogPage = $blogCreator->createBlogPage($site, meta: ['limit' => 5]);
-    $blogUrl = $blogPage->pageUrl;
+    $blogUrl = blogTestPageUrl($blogPage->pageUrl);
 
     $articleType = $blogCreator->createArticlePageType();
     $articleLayout = $blogCreator->createArticleLayout();
@@ -273,11 +274,11 @@ test('articles pagination', function (): void {
         ->assertOk()
         ->assertElementExists(
             'title',
-            fn (AssertElement $elm): BaseAssert => $elm->containsText($blogPage->translation->title . ' | ' . $site->title),
+            fn (AssertElement $elm): BaseAssert => $elm->containsText(blogTestTranslation($blogPage->translation)->title . ' | ' . $site->title),
         )
         ->assertElementExists(
             'h1',
-            fn (AssertElement $elm): BaseAssert => $elm->containsText($blogPage->translation->title),
+            fn (AssertElement $elm): BaseAssert => $elm->containsText((string) blogTestTranslation($blogPage->translation)->title),
         )
         ->assertElementExists(
             '.results',
@@ -286,8 +287,9 @@ test('articles pagination', function (): void {
                     '.asset-item',
                     function (AssertElement $elm) use ($orderedArticles): BaseAssert {
                         $this->shownArticles++;
+                        $article = blogTestArticle($orderedArticles->get($this->shownArticles - 1));
 
-                        return $elm->containsText($orderedArticles[$this->shownArticles - 1]->title);
+                        return $elm->containsText((string) $article->title);
                     },
                 ),
         )
@@ -315,8 +317,9 @@ test('articles pagination', function (): void {
                     '.asset-item',
                     function (AssertElement $elm) use ($orderedArticles): BaseAssert {
                         $this->shownArticles++;
+                        $article = blogTestArticle($orderedArticles->get($this->shownArticles - 1));
 
-                        return $elm->containsText($orderedArticles[$this->shownArticles - 1]->title);
+                        return $elm->containsText((string) $article->title);
                     },
                 ),
         )
@@ -351,8 +354,9 @@ test('articles pagination', function (): void {
                     '.asset-item',
                     function (AssertElement $elm) use ($orderedArticles): BaseAssert {
                         $this->shownArticles++;
+                        $article = blogTestArticle($orderedArticles->get($this->shownArticles - 1));
 
-                        return $elm->containsText($orderedArticles[$this->shownArticles - 1]->title);
+                        return $elm->containsText((string) $article->title);
                     },
                 ),
         )

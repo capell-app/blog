@@ -8,6 +8,7 @@ use Capell\Blog\Data\ArchiveMonthData;
 use Capell\Blog\Enums\BlogTypeGroupEnum;
 use Capell\Blog\Support\Loader\BlogLoader;
 use Capell\Blog\Support\Loader\TagLoader;
+use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\SiteDomain;
@@ -30,7 +31,12 @@ class BlogStaticSiteExtension
      */
     private function visitTaggedPages(string $pageModel, Site $site, SiteDomain $domain, callable $visit): void
     {
-        $tagPage = $pageModel::getFirstPageByTypeForSite('tag', $site, $domain->language);
+        $language = $domain->language;
+        if (! $language instanceof Language) {
+            return;
+        }
+
+        $tagPage = $pageModel::getFirstPageByTypeForSite('tag', $site, $language);
         if ($tagPage === null) {
             return;
         }
@@ -39,9 +45,7 @@ class BlogStaticSiteExtension
             return;
         }
 
-        $language = $domain->language;
-
-        $tagsQuery = TagLoader::getTagsQuery($site, $domain->language);
+        $tagsQuery = TagLoader::getTagsQuery($site, $language);
         $tagsQuery->chunk(100, function (Collection $tags) use ($tagPage, $language, $visit): void {
             $tags->each(function (Tag $tag) use ($tagPage, $language, $visit): void {
                 $base = rtrim($tagPage->pageUrl->url, '/*');
@@ -57,14 +61,19 @@ class BlogStaticSiteExtension
      */
     private function visitArchivePages(string $pageModel, Site $site, SiteDomain $domain, callable $visit): void
     {
+        $language = $domain->language;
+        if (! $language instanceof Language) {
+            return;
+        }
+
         $archives = BlogLoader::getArchives(
             $site,
-            $domain->language,
+            $language,
             BlogTypeGroupEnum::Article->value,
         );
 
-        $archives->each(function (ArchiveMonthData $archive) use ($pageModel, $site, $domain, $visit): void {
-            $archivePage = $pageModel::getFirstPageByTypeForSite('archive', $site, $domain->language);
+        $archives->each(function (ArchiveMonthData $archive) use ($pageModel, $site, $language, $visit): void {
+            $archivePage = $pageModel::getFirstPageByTypeForSite('archive', $site, $language);
             if ($archivePage === null || $archivePage->pageUrl === null) {
                 return;
             }

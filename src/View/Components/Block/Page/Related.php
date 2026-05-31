@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace Capell\Blog\View\Components\Block\Page;
 
 use Capell\Blog\Support\Loader\TagLoader;
+use Capell\Core\Contracts\Pageable;
+use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
+use Capell\Core\Models\Site;
 use Capell\FoundationTheme\View\Components\Block\Page\AbstractPagesBlock;
 use Capell\Frontend\Facades\Frontend;
 use Capell\Frontend\Support\Loader\PageLoader;
 use Illuminate\Contracts\Database\Eloquent\Builder as BuilderContract;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
 class Related extends AbstractPagesBlock
@@ -22,6 +26,14 @@ class Related extends AbstractPagesBlock
         $limit = $this->block->meta['limit'] ?? config('capell-frontend.pagination_limit', 12);
 
         $page = Frontend::page();
+        $language = Frontend::language();
+        $site = Frontend::site();
+
+        if (! $page instanceof Pageable || ! $language instanceof Language || ! $site instanceof Site) {
+            $this->skipRender = true;
+
+            return;
+        }
 
         $tags = TagLoader::getPageTags($page);
 
@@ -34,14 +46,19 @@ class Related extends AbstractPagesBlock
         $modelClass = null;
 
         if ($morphModel !== null) {
-            $modelClass = Relation::getMorphedModel($morphModel);
+            $resolvedModelClass = Relation::getMorphedModel($morphModel);
+
+            if (is_string($resolvedModelClass) && is_subclass_of($resolvedModelClass, Pageable::class)) {
+                /** @var class-string<Pageable<Model>> $resolvedModelClass */
+                $modelClass = $resolvedModelClass;
+            }
         }
 
         $this->pages = PageLoader::getPages(
-            language: Frontend::language(),
-            site: Frontend::site(),
+            language: $language,
+            site: $site,
             limit: $limit,
-            withChildrenCount: $page->type->meta['with_children_count'] ?? true,
+            withChildrenCount: $page->hasPageHierarchy() && ($page->type->meta['with_children_count'] ?? true),
             withImage: $this->block->meta['with_image'] ?? false,
             withParent: $this->block->meta['with_parent'] ?? false,
             withDate: $this->block->meta['with_date'] ?? false,
@@ -51,10 +68,12 @@ class Related extends AbstractPagesBlock
              * @param  Builder<Page>  $query
              */
             modifyQuery: function (Builder $query) use ($excludeParent, $page, $tagIds, $tags): void {
-                $query->where('pages.id', '!=', $page->id)
+                $idColumn = $query->getModel()->qualifyColumn('id');
+
+                $query->where($idColumn, '!=', $page->id)
                     ->when(
                         $excludeParent && $page->parent_id !== null,
-                        fn (BuilderContract $query): BuilderContract => $query->where('pages.id', '!=', $page->parent_id),
+                        fn (BuilderContract $query): BuilderContract => $query->where($idColumn, '!=', $page->parent_id),
                     )
                     ->whereHas(
                         'type',

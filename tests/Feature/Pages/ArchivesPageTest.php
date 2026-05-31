@@ -32,6 +32,9 @@ test('archives page list articles archives by month/year', function (): void {
     $articleLayout = $blogCreator->createArticleLayout();
     $tagsPage = $blogCreator->createTagsPage($site, $blogPage);
     $blogCreator->createTagPage($site, $tagsPage);
+    $archivesPageUrl = blogTestPageUrl($archivesPage->pageUrl);
+    $archivesPageTranslation = blogTestTranslation($archivesPage->translation);
+    $archivePageUrl = blogTestPageUrl($archivePage->pageUrl);
 
     $articles = Article::factory()
         ->site($site)
@@ -50,15 +53,15 @@ test('archives page list articles archives by month/year', function (): void {
         ->layout->name->toBe('Archives')
         ->parent->name->toBe('Blog');
 
-    get($archivesPage->pageUrl->full_url)
+    get($archivesPageUrl->full_url)
         ->assertOk()
         ->assertElementExists(
             'title',
-            fn (AssertElement $elm): BaseAssert => $elm->containsText($archivesPage->translation->meta_title),
+            fn (AssertElement $elm): BaseAssert => $elm->containsText((string) $archivesPageTranslation->meta_title),
         )
         ->assertElementExists(
             'h1',
-            fn (AssertElement $elm): BaseAssert => $elm->containsText($archivesPage->translation->title),
+            fn (AssertElement $elm): BaseAssert => $elm->containsText((string) $archivesPageTranslation->title),
         )
         ->assertElementExists(
             '.block-archives',
@@ -70,7 +73,7 @@ test('archives page list articles archives by month/year', function (): void {
                         fn (AssertElement $link): BaseAssert => $link->has(
                             'href',
                             GenerateArchiveUrl::run(
-                                $archivePage->pageUrl,
+                                $archivePageUrl,
                                 new ArchiveMonthData(
                                     year: 2023,
                                     month: 3 - $index,
@@ -93,6 +96,7 @@ test('archive page list articles by month/year', function (): void {
     $archivePage = $blogCreator->createArchivePage($archivesPage);
     $blogCreator->createArticlePageType();
     $articleLayout = $blogCreator->createArticleLayout();
+    $archivePageUrl = blogTestPageUrl($archivePage->pageUrl);
 
     $publishDate = CarbonImmutable::now()->subMonth();
 
@@ -115,7 +119,7 @@ test('archive page list articles by month/year', function (): void {
         ->and($archivePage->getAncestors(['name'])->pluck('name')->sort()->values()->toArray())
         ->toEqual(['Archives', 'Blog']);
 
-    $archiveUrl = GenerateArchiveUrl::run($archivePage->pageUrl, ArchiveMonthData::fromDate($publishDate));
+    $archiveUrl = GenerateArchiveUrl::run($archivePageUrl, ArchiveMonthData::fromDate($publishDate));
 
     get($archiveUrl)
         ->assertOk()
@@ -137,13 +141,14 @@ test('archives sitemap formats archive page urls without wildcard', function ():
     $blogPage = $blogCreator->createBlogPage($site);
     $archivesPage = $blogCreator->createArchivesPage($blogPage);
     $archivePage = $blogCreator->createArchivePage($archivesPage);
+    $archivePageUrl = blogTestPageUrl($archivePage->pageUrl);
     $archiveMonth = new ArchiveMonthData(year: 2025, month: 3);
 
     $sitemap = new ArchivesSitemap($site, $siteDomain, $siteDomain->language);
     $sitemapPage = $sitemap->format($archiveMonth, $archivePage);
 
     expect($sitemapPage->url)
-        ->toBe(GenerateArchiveUrl::run($archivePage->pageUrl, $archiveMonth))
+        ->toBe(GenerateArchiveUrl::run($archivePageUrl, $archiveMonth))
         ->not->toContain('*');
 });
 
@@ -156,10 +161,9 @@ test('error page when no articles found for given month/year', function (string 
     $blogPage = $blogCreator->createBlogPage($site);
     $archivesPage = $blogCreator->createArchivesPage($blogPage);
     $archivePage = $blogCreator->createArchivePage($archivesPage);
+    $archivePageUrl = blogTestPageUrl($archivePage->pageUrl);
 
-    $archiveUrl = $archivePage->pageUrl;
-
-    $archiveUrl = $archiveUrl->full_url . $slug;
+    $archiveUrl = $archivePageUrl->full_url . $slug;
 
     get($archiveUrl)
         ->assertNotFound();

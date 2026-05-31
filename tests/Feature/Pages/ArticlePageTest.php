@@ -10,6 +10,7 @@ use Capell\Tags\Enums\TagTypeEnum;
 use Capell\Tags\Models\Tag;
 use Capell\Tests\Fixtures\Models\User;
 use Capell\Tests\Support\Concerns\TestingFrontend;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 
 use function Pest\Laravel\get;
@@ -21,7 +22,7 @@ uses(TestingFrontend::class);
 
 test('article page with layout', function (): void {
     $site = Site::factory()->withTranslations()->create();
-    $language = $site->language;
+    $language = blogTestLanguage($site->language);
     $user = User::factory()->create();
     $blogCreator = resolve(BlogCreator::class);
     $blogCreator->createTagPage($site);
@@ -45,31 +46,39 @@ test('article page with layout', function (): void {
         ->preservingOriginal()
         ->toMediaCollection(MediaCollectionEnum::Image->value);
     $articleTags = $article->tags()->ordered()->get();
+    $articlePageUrl = blogTestPageUrl($article->pageUrl);
+    $articleTranslation = blogTestTranslation($article->translation);
+    $articleTitle = (string) $articleTranslation->title;
+    $visibleFrom = $article->visible_from;
+    $previousArticle = blogTestArticle($articles->get(0));
+    $nextArticle = blogTestArticle($articles->get(2));
 
-    get($article->pageUrl->full_url)
+    throw_unless($visibleFrom instanceof CarbonInterface, RuntimeException::class, 'Expected article visible date.');
+
+    get($articlePageUrl->full_url)
         ->assertOk()
         ->assertElementExists(
             'title',
-            fn (AssertElement $elm): BaseAssert => $elm->containsText($article->translation->title . ' | ' . $site->title),
+            fn (AssertElement $elm): BaseAssert => $elm->containsText($articleTitle . ' | ' . $site->title),
         )
         ->assertElementExists(
             'h1',
-            fn (AssertElement $elm): BaseAssert => $elm->containsText($article->translation->title),
+            fn (AssertElement $elm): BaseAssert => $elm->containsText($articleTitle),
         )
         ->assertElementExists(
             'time.published-date',
-            fn (AssertElement $elm): BaseAssert => $elm->has('datetime', $article->visible_from->toW3cString()),
+            fn (AssertElement $elm): BaseAssert => $elm->has('datetime', $visibleFrom->toW3cString()),
         )
         ->assertElementExists(
             '.capell-page-article .breadcrumbs',
             fn (AssertElement $elm): BaseAssert => $elm
                 ->containsText(__('capell-blog::generic.blog'))
-                ->containsText($article->translation->title),
+                ->containsText($articleTitle),
         )
         ->assertElementExists(
             '.capell-page-article figure img',
             fn (AssertElement $elm): BaseAssert => $elm
-                ->has('alt', $article->translation->title),
+                ->has('alt', $articleTitle),
         )
         ->assertElementExists(
             '.capell-blog-article-content',
@@ -95,8 +104,8 @@ test('article page with layout', function (): void {
             fn (AssertElement $elm): BaseAssert => $elm
                 ->containsText(__('capell-blog::generic.previous_article'))
                 ->containsText(__('capell-blog::generic.next_article'))
-                ->containsText($articles->get(0)->translation->title)
-                ->containsText($articles->get(2)->translation->title),
+                ->containsText((string) blogTestTranslation($previousArticle->translation)->title)
+                ->containsText((string) blogTestTranslation($nextArticle->translation)->title),
         )
         ->assertElementExists(
             '#layout-container-latest.blog-latest-articles .widget-pages',
@@ -122,12 +131,15 @@ test('article neighbor navigation skips adjacent articles without urls', functio
         )
         ->create();
 
-    $articles->get(0)->pageUrls()->delete();
+    $previousArticle = blogTestArticle($articles->get(0));
+    $currentArticle = blogTestArticle($articles->get(1));
+    $nextArticle = blogTestArticle($articles->get(2));
+    $previousArticle->pageUrls()->delete();
 
-    get($articles->get(1)->pageUrl->full_url)
+    get(blogTestPageUrl($currentArticle->pageUrl)->full_url)
         ->assertOk()
-        ->assertDontSeeText($articles->get(0)->translation->title)
-        ->assertSeeText($articles->get(2)->translation->title);
+        ->assertDontSeeText((string) blogTestTranslation($previousArticle->translation)->title)
+        ->assertSeeText((string) blogTestTranslation($nextArticle->translation)->title);
 });
 
 test('article page renders without lazy-loading public blade relations', function (): void {
@@ -141,8 +153,8 @@ test('article page renders without lazy-loading public blade relations', functio
         ->state(['created_by' => $user->id])
         ->withTranslations()
         ->create(['visible_from' => now()->subDay()]);
-    $articleUrl = $article->pageUrl->full_url;
-    $articleTitle = $article->translation->title;
+    $articleUrl = blogTestPageUrl($article->pageUrl)->full_url;
+    $articleTitle = (string) blogTestTranslation($article->translation)->title;
 
     $previous = EloquentModel::preventsLazyLoading();
     EloquentModel::preventLazyLoading();

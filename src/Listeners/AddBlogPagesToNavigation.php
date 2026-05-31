@@ -6,6 +6,7 @@ namespace Capell\Blog\Listeners;
 
 use Capell\Blog\Support\Loader\BlogLoader;
 use Capell\Core\Contracts\Pageable;
+use Capell\Core\Models\Site;
 use Capell\Navigation\Actions\AddPageToNavigationAction;
 use Capell\Navigation\Enums\NavigationHandle;
 use Capell\Navigation\Events\NavigationCreating;
@@ -26,7 +27,12 @@ class AddBlogPagesToNavigation
             return;
         }
 
-        $blogPage = BlogLoader::getBlogPage($event->navigation->site);
+        $site = $event->navigation->site;
+        if (! $site instanceof Site) {
+            return;
+        }
+
+        $blogPage = BlogLoader::getBlogPage($site);
 
         if ($blogPage instanceof Pageable) {
             AddPageToNavigationAction::run($blogPage, $event->navigation);

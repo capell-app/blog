@@ -1,25 +1,10 @@
-@php
-    use Capell\Frontend\Facades\Frontend;
-
-    $language = Frontend::language();
-    $site = Frontend::site();
-    $theme = Frontend::theme();
-    $page = Frontend::page();
-@endphp
-
 @props([
     'container',
     'containerKey',
     'containerWidth' => null,
     'loop',
-    'showPageContent' => $blockData['meta']['show_page_content'] ?? false,
-    'showPageTitle' => $blockData['meta']['show_page_title'] ?? false,
     'block',
 ])
-@php
-    $tagPage ??= null;
-    $tags ??= collect();
-@endphp
 
 <x-capell-foundation-theme::block.wrapper
     class="capell-tag-tags block block-{{ $block->key }} block-tags"
@@ -30,42 +15,36 @@
     :index="$loop->index"
     :widget="$block"
 >
-    @php
-        $showTitle = $block->getMeta("container_options.{$containerKey}.hide_title") !== true
-            && ($block->translation?->title || ($showPageTitle && $page->translation->title));
-        $showContent = $block->getMeta("container_options.{$containerKey}.hide_content") !== true
-            && ($block->translation?->content || ($showPageContent && $page->translation->content));
-    @endphp
-
-    @if ($showTitle || $showContent)
+    @if ($contentData->show)
         <x-capell::content
             class="mt-10 mb-6"
             :compact="true"
-            :content="$showContent ? ($block->translation->content ?: ($showPageContent ? $page->translation->content : null)) : null"
-            :content-type="$block->translation->content ? $block->type->content_structure : ($showPageContent ? $page->type->content_structure : null)"
-            :divider="$block->getMeta('content_divider')"
-            :muted="in_array($containerKey, $theme->secondary_containers)"
-            :text-align="$block->getMeta('align')"
-            :title="$showTitle ? ($block->translation->title ?: ($showPageTitle ? $page->translation->title : null)) : null"
-            :heading-style="$block->getMeta('heading_style')"
-            :heading-tag="$showPageTitle ? 'h1' : null"
+            :content="$contentData->content"
+            :content-type="$contentData->contentType"
+            :divider="$contentData->divider"
+            :muted="$contentData->muted"
+            :text-align="$contentData->textAlign"
+            :title="$contentData->title"
+            :heading-style="$contentData->headingStyle"
+            :heading-tag="$contentData->headingTag"
         />
     @endif
 
-    @if (count($tags) === 0)
+    @if ($tagLinks === [])
         <x-capell::no-results>
-            {{ $block->translation->getMeta('no_results', __('capell-blog::messages.no_tags_found')) }}
+            {{ $noResultsText }}
         </x-capell::no-results>
     @else
         <ul class="flex flex-wrap gap-2">
-            @foreach ($tags as $tag)
-                @php($url = $tag->getUrl($tagPage, $language))
+            @foreach ($tagLinks as $tagLink)
                 <li>
-                    <x-capell-blog::tag :$url>
-                        {{ $tag->getTranslation('name', $language->code) }}
-                        <x-slot:count>
-                            ({{ $tag->taggables_count }})
-                        </x-slot>
+                    <x-capell-blog::tag :url="$tagLink->url" :$withDarkMode>
+                        {{ $tagLink->name }}
+                        @if ($tagLink->count !== null)
+                            <x-slot:count>
+                                ({{ $tagLink->count }})
+                            </x-slot>
+                        @endif
                     </x-capell-blog::tag>
                 </li>
             @endforeach

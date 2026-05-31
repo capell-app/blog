@@ -123,12 +123,18 @@ final class FrontendServiceProvider extends ServiceProvider
 
             $year = (int) $matches['year'];
             $month = (int) $matches['month'];
+            $site = $context->site;
+            $language = $context->language;
 
             abort_if($month < 1 || $month > 12, 404);
 
+            if (! $site instanceof Site || ! $language instanceof Language) {
+                return;
+            }
+
             $archives = BlogLoader::getArchives(
-                site: $context->site,
-                language: $context->language,
+                site: $site,
+                language: $language,
                 group: $page->type->meta['page_group'] ?? BlogTypeGroupEnum::Article->value,
                 pagination: false,
             );
@@ -193,7 +199,7 @@ final class FrontendServiceProvider extends ServiceProvider
 
         resolve(RenderHookRegistry::class)->register(
             RenderHookLocation::BeforeContent,
-            fn (RenderHookContext $context): View => resolve(BeforeContentTags::class, [
+            fn (RenderHookContext $context): string|View => resolve(BeforeContentTags::class, [
                 'item' => $context->item ?? null,
                 'tags' => $context->item['tags'] ?? null,
             ])

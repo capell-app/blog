@@ -17,6 +17,7 @@ use Capell\Core\Models\Site;
 use Capell\Core\Models\Translation;
 use Capell\Core\Support\Creator\PageCreator;
 use Illuminate\Support\Collection;
+use LogicException;
 use Override;
 
 class ArticleCreator extends PageCreator
@@ -91,7 +92,11 @@ class ArticleCreator extends PageCreator
 
             $translation->save();
 
-            UpdatePageUrlAction::run($page->site, $translation, $page->getParentUrl($language));
+            $site = $page->site;
+
+            throw_unless($site instanceof Site, LogicException::class, 'Article page requires a site before URL generation.');
+
+            UpdatePageUrlAction::run($site, $translation, $page->getParentUrl($language));
         });
 
         return $page;

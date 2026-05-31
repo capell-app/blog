@@ -1,21 +1,7 @@
-<?php
-use Capell\Frontend\Facades\Frontend;
-
-$page = Frontend::page();
-$theme = Frontend::theme();
-
-?>
-
 @props([
     'author',
+    'profileImage' => null,
 ])
-@php
-    use Illuminate\Database\Eloquent\Model;
-
-    $profileImage = $author instanceof Model && $author->relationLoaded('profileImage')
-        ? $author->getRelation('profileImage')
-        : null;
-@endphp
 
 @if ($author)
     <div {{ $attributes->class('page-author flex items-center gap-5') }}>

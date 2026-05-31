@@ -49,9 +49,9 @@ test('tag page list articles by tag', function (): void {
         ->publishedLatest()
         ->get();
 
-    $title = trans($tagPage->translation->title, ['tag_name' => $tag->translate('name', $language->code)]);
+    $title = trans((string) blogTestTranslation($tagPage->translation)->title, ['tag_name' => $tag->translate('name', $language->code)]);
 
-    $containers = $tagPage->layout->getAttribute('containers');
+    $containers = blogTestLayout($tagPage->layout)->getAttribute('containers');
     $containerBlocks = capell_test_collect($containers)->pluck('widgets.*.widget_key')->flatten()->filter()->toArray();
 
     expect($tagPage)
@@ -79,12 +79,14 @@ test('tag page list articles by tag', function (): void {
                     function (AssertElement $titleElm, int $index) use ($articles): BaseAssert {
                         $article = $articles->get($index);
 
-                        return $titleElm->containsText($article->translation->title)
+                        $article = blogTestArticle($article);
+
+                        return $titleElm->containsText((string) blogTestTranslation($article->translation)->title)
                             ->find(
                                 'a',
                                 fn (AssertElement $linkElm): BaseAssert => $linkElm->has(
                                     'href',
-                                    $article->pageUrl->full_url,
+                                    blogTestPageUrl($article->pageUrl)->full_url,
                                 ),
                             );
                     },
@@ -94,10 +96,10 @@ test('tag page list articles by tag', function (): void {
     $document = new DOMDocument;
     @$document->loadHTML($response->getContent());
 
-    $breadcrumbText = trim((string) (new DOMXPath($document))
-        ->query('//nav[contains(concat(" ", normalize-space(@class), " "), " breadcrumbs ")]')
-        ->item(0)
-        ?->textContent);
+    $breadcrumbNodeList = (new DOMXPath($document))
+        ->query('//nav[contains(concat(" ", normalize-space(@class), " "), " breadcrumbs ")]');
+    $breadcrumbNode = $breadcrumbNodeList === false ? null : $breadcrumbNodeList->item(0);
+    $breadcrumbText = $breadcrumbNode instanceof DOMElement ? trim($breadcrumbNode->textContent) : '';
 
     expect(preg_replace('/\s+/', ' ', $breadcrumbText))
         ->toContain('Blog')
@@ -160,8 +162,8 @@ test('tag page resolves site tag before global tag with same slug', function ():
         ->assertElementExists(
             '.results',
             fn (AssertElement $block): BaseAssert => $block
-                ->containsText($siteArticle->translation->title)
-                ->doesntContainText($globalArticle->translation->title),
+                ->containsText((string) blogTestTranslation($siteArticle->translation)->title)
+                ->doesntContainText((string) blogTestTranslation($globalArticle->translation)->title),
         );
 });
 
@@ -188,8 +190,8 @@ test('tag page renders results without lazy-loading page translation data', func
         ->create(['visible_from' => '2023-02-01']);
 
     $url = $tag->getUrl($tagPage, $language);
-    $title = trans($tagPage->translation->title, ['tag_name' => $tag->translate('name', $language->code)]);
-    $articleTitle = $article->translation->title;
+    $title = trans((string) blogTestTranslation($tagPage->translation)->title, ['tag_name' => $tag->translate('name', $language->code)]);
+    $articleTitle = (string) blogTestTranslation($article->translation)->title;
 
     $previous = EloquentModel::preventsLazyLoading();
     EloquentModel::preventLazyLoading();

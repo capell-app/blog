@@ -87,7 +87,7 @@ final class ClearBlogTagCacheAction
         $originalSlugs = $this->normalizeSlugTranslations($tag->getOriginal('slug'));
         $rawOriginalSlugs = $this->normalizeSlugTranslations($tag->getRawOriginal('slug'));
 
-        return collect([
+        return array_values(collect([
             $tag->getTranslation('slug', $languageCode, false),
             $currentSlugs[$languageCode] ?? null,
             $originalSlugs[$languageCode] ?? null,
@@ -96,7 +96,7 @@ final class ClearBlogTagCacheAction
             ->filter(fn (mixed $slug): bool => is_string($slug) && $slug !== '')
             ->unique()
             ->values()
-            ->all();
+            ->all());
     }
 
     /**

@@ -5,17 +5,16 @@
     use Capell\Frontend\Enums\RenderHookLocation;
     use Capell\Frontend\Facades\Frontend;
     use Capell\Frontend\Support\Render\RenderHookRegistry;
-    use Capell\Frontend\Support\View\PublicModelMeta;
     use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
-    $page = Frontend::page();
     $componentItem = ResolveRenderableComponentAction::run(RenderableTypeEnum::Asset, $componentItem ?? AssetComponentEnum::Card->value);
     $currentPageIsEmpty = ! $results || $results->isEmpty();
     $isPaginator = $results instanceof LengthAwarePaginator;
     $total = $isPaginator ? $results->total() : ($results ? $results->count() : 0);
-    $columns = (int) data_get($page?->meta, 'columns', data_get($page?->type?->meta, 'columns', 1));
-    $columns = min(3, max(1, $columns));
-    $withImage = (bool) data_get($page?->meta, 'with_image', data_get($page?->type?->meta, 'with_image', false));
+    $columns ??= 1;
+    $withImage ??= false;
+    $withPaginationSummary ??= true;
+    $resultItems ??= [];
 @endphp
 
 <div
@@ -54,13 +53,7 @@
                 >
                     @foreach ($results as $item)
                         @php
-                            $author = method_exists($item, 'relationLoaded') && $item->relationLoaded('creator') ? $item->creator : null;
-                            $image = method_exists($item, 'relationLoaded') && $item->relationLoaded('image') ? $item->image : null;
-                            $image ??= PublicModelMeta::get($item, 'image_source');
-                            $pageUrl = method_exists($item, 'relationLoaded') && $item->relationLoaded('pageUrl') ? $item->pageUrl : null;
-                            $translation = method_exists($item, 'relationLoaded') && $item->relationLoaded('translation') ? $item->translation : null;
-                            $squareImage = (bool) PublicModelMeta::get($item, 'square_image', false);
-                            $publishDatePosition = PublicModelMeta::get($translation, 'publish_date_position', 'top');
+                            $resultItem = $resultItems[$loop->index] ?? null;
                         @endphp
 
                         {!! app(RenderHookRegistry::class)->renderAll(RenderHookLocation::BeforeResult, $item) !!}
@@ -68,17 +61,17 @@
                             :component="$componentItem"
                             :$loop
                             :asset="$item"
-                            :author="$author"
-                            :image="$withImage ? $image : null"
+                            :author="$resultItem?->author"
+                            :image="$withImage ? $resultItem?->image : null"
                             :link-text="__('capell-blog::generic.read_article')"
                             :publish-date="$item->getPublishDate()"
-                            :summary="$translation?->summary"
-                            :title="$translation?->title"
-                            :url="$pageUrl?->full_url"
-                            :square-image="$squareImage"
+                            :summary="$resultItem?->translation?->summary"
+                            :title="$resultItem?->translation?->title"
+                            :url="$resultItem?->url"
+                            :square-image="$resultItem?->squareImage ?? false"
                             :with-summary="true"
                             :with-author="true"
-                            :publish-date-position="$publishDatePosition"
+                            :publish-date-position="$resultItem?->publishDatePosition ?? 'top'"
                             class="capell-blog-article-card"
                             role="listitem"
                         />
@@ -93,7 +86,7 @@
         <x-capell::pagination
             :$results
             :wire-links="true"
-            :with-summary="! Frontend::getFrontendData('has_pagination_summary')"
+            :with-summary="$withPaginationSummary"
             scroll-to-element="#capell-blog-results-top"
             class="my-6 mt-10 flex flex-col items-center justify-center gap-5 rounded-lg border border-slate-200 bg-white/95 p-4 shadow-sm ring-1 ring-slate-950/5 transition lg:mt-14 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
         />
