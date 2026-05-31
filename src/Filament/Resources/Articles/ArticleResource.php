@@ -87,6 +87,12 @@ class ArticleResource extends PageResource
     }
 
     #[Override]
+    public static function getResourceName(): string
+    {
+        return strtolower(ResourceEnum::Article->name);
+    }
+
+    #[Override]
     public static function getNavigationParentItem(): ?string
     {
         return null;

@@ -17,6 +17,7 @@ use Capell\Blog\Models\Article;
 use Capell\Blog\Policies\ArticlePolicy;
 use Capell\Blog\Support\BlogModelRegistrar;
 use Capell\Blog\Support\BlogSidebarBlockContributor;
+use Capell\Blog\Support\EditorialCalendar\BlogEditorialCalendarEventContributor;
 use Capell\Blog\Support\PublicUrls\BlogPublicUrlContributor;
 use Capell\ContentSections\Models\Section;
 use Capell\Core\Actions\RegisterBlazeOptimizedViewsAction;
@@ -31,6 +32,7 @@ use Capell\Core\Models\Translation;
 use Capell\Core\Support\Packages\AbstractPackageServiceProvider;
 use Capell\Core\Support\Renderables\RenderableRegistry;
 use Capell\LayoutBuilder\Contracts\LayoutSidebarBlockContributor;
+use Capell\PublishingStudio\Contracts\EditorialCalendarEventContributor;
 use Capell\PublishingStudio\WorkspaceRegistry;
 use Capell\SiteDiscovery\Contracts\PublicUrlContributor;
 use Capell\Tags\Models\Tag;
@@ -120,6 +122,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
             ->registerLivewireComponents()
             ->registerTypes()
             ->registerPublicUrlContributors()
+            ->registerEditorialCalendarContributors()
             ->registerTranslationEvents()
             ->registerTagCacheEvents()
             ->registerArticleMediaCacheEvents()
@@ -309,6 +312,16 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
         if (interface_exists(PublicUrlContributor::class)) {
             $this->app->singleton(BlogPublicUrlContributor::class);
             $this->app->tag([BlogPublicUrlContributor::class], PublicUrlContributor::TAG);
+        }
+
+        return $this;
+    }
+
+    private function registerEditorialCalendarContributors(): self
+    {
+        if (interface_exists(EditorialCalendarEventContributor::class)) {
+            $this->app->singleton(BlogEditorialCalendarEventContributor::class);
+            $this->app->tag([BlogEditorialCalendarEventContributor::class], EditorialCalendarEventContributor::TAG);
         }
 
         return $this;
