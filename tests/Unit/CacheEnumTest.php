@@ -6,6 +6,7 @@ use Capell\Blog\Actions\ClearBlogContentCacheAction;
 use Capell\Blog\Enums\CacheEnum;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Loader\TagLoader;
+use Capell\Blog\View\Components\Page\BeforeContentTags;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Site;
 use Capell\Frontend\Contracts\RenderedModelTracker;
@@ -23,6 +24,13 @@ it('keeps paginated tag cache keys isolated by paginator name', function (): voi
 it('keeps site tag cache keys isolated by invalidation version', function (): void {
     expect(CacheEnum::siteTags(1, 2, true, 50, null, 'tags-main', 1))
         ->not->toBe(CacheEnum::siteTags(1, 2, true, 50, null, 'tags-main', 2));
+});
+
+it('does not render blog before-content tags without frontend site language context', function (): void {
+    $component = new BeforeContentTags(new Article, collect([Tag::factory()->make()]));
+
+    expect($component->tagLinks)->toBe([])
+        ->and($component->render())->toBe('');
 });
 
 it('increments the site tag cache version when blog content changes', function (): void {
