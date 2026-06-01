@@ -45,9 +45,7 @@ it('contributes scheduled article publish and unpublish events to the editorial 
 
     $firstEvent = $events->first();
 
-    if (! $firstEvent instanceof EditorialCalendarEventData) {
-        throw new RuntimeException('Expected the blog contributor to return an editorial calendar event.');
-    }
+    throw_unless($firstEvent instanceof EditorialCalendarEventData, RuntimeException::class, 'Expected the blog contributor to return an editorial calendar event.');
 
     expect($events)->toHaveCount(2)
         ->and($events->pluck('id')->all())->toBe([
@@ -87,9 +85,7 @@ it('is included by the publishing studio editorial calendar aggregator', functio
 
     $firstEvent = $events->first();
 
-    if (! $firstEvent instanceof EditorialCalendarEventData) {
-        throw new RuntimeException('Expected the aggregator to return a blog editorial calendar event.');
-    }
+    throw_unless($firstEvent instanceof EditorialCalendarEventData, RuntimeException::class, 'Expected the aggregator to return a blog editorial calendar event.');
 
     expect($events)->toHaveCount(1)
         ->and($firstEvent->sourcePackage)->toBe(BlogServiceProvider::$packageName)

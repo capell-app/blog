@@ -53,7 +53,7 @@ Gives editors a dedicated article workflow that still fits the same structured p
 
 ## Screenshots
 
-![Articles admin index](../../../public/docs/screenshots/packages/blog/articles-admin-index.png)
+![Articles admin index](screenshots/articles-admin-index.png)
 
 The frontend screenshots need seeded blog pages and articles before they are useful. Keep them in the manifest, but do not use the current blank captures as documentation assets.
 
@@ -134,7 +134,7 @@ erDiagram
 
 ## Screenshot Automation
 
-Deployment should read [screenshots.json](screenshots.json), install the package with demo data, resolve each admin surface or frontend URL, and write images to `public/docs/screenshots/packages/blog`.
+Deployment should read [screenshots.json](screenshots.json), install the package with demo data, resolve each admin surface or frontend URL, and write images to `packages/blog/docs/screenshots`.
 
 - Articles admin index.
 - Create/edit article form.

@@ -35,7 +35,7 @@ final class BlogEditorialCalendarEventContributor implements EditorialCalendarEv
         }
 
         if ($this->includesEventType($query, SchedulerEventTypeEnum::Unpublish)) {
-            $events = $events->merge($this->articleColumnEvents($query, 'visible_until', SchedulerEventTypeEnum::Unpublish));
+            return $events->merge($this->articleColumnEvents($query, 'visible_until', SchedulerEventTypeEnum::Unpublish));
         }
 
         return $events;
