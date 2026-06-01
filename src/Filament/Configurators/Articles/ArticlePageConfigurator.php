@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Filament\Configurators\Articles;
 
-use Capell\Admin\Contracts\Schemas\PageSchemaExtenderResolverInterface;
 use Capell\Admin\Filament\Components\Forms\FixedWidthSidebar;
 use Capell\Admin\Filament\Components\Forms\MediaLibraryFileUpload;
 use Capell\Admin\Filament\Components\Forms\Page\LayoutSelect;
@@ -99,7 +98,7 @@ class ArticlePageConfigurator extends DefaultPageConfigurator
     #[Override]
     protected function getTabs(Schema $configurator): array
     {
-        return resolve(PageSchemaExtenderResolverInterface::class)->resolveTabs($configurator, [
+        return $this->resolvePageTabs($configurator, [
             SettingsTab::make($configurator),
         ]);
     }
