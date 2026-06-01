@@ -7,6 +7,7 @@ namespace Capell\Blog\Support;
 use Capell\Blog\Models\Article;
 use Capell\Core\Data\PageVariationData;
 use Capell\Core\Facades\CapellCore;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Str;
 
@@ -29,10 +30,11 @@ class BlogModelRegistrar
             ),
         );
 
-        Relation::morphMap(
-            collect(self::MODELS)
-                ->mapWithKeys(fn (string $modelClass): array => [Str::snake(class_basename($modelClass)) => $modelClass])
-                ->all(),
-        );
+        /** @var array<string, class-string<Model>> $morphMap */
+        $morphMap = collect(self::MODELS)
+            ->mapWithKeys(fn (string $modelClass): array => [Str::snake(class_basename($modelClass)) => $modelClass])
+            ->all();
+
+        Relation::morphMap($morphMap);
     }
 }

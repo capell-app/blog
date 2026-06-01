@@ -11,8 +11,7 @@ use Capell\Frontend\Support\Loader\PageLoader;
 use Capell\Tests\Support\Concerns\TestingFrontend;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
 uses(TestingFrontend::class);
 
@@ -57,7 +56,7 @@ beforeEach(function (): void {
 
 /**
  * @param  array<array-key, mixed>  $articleIds
- * @return Collection<int, Model>
+ * @return Collection<int, Article>
  */
 function loadArticlesForOrderingTest(
     Language $language,
@@ -65,7 +64,7 @@ function loadArticlesForOrderingTest(
     array $articleIds,
     ?PageOrderEnum $ordering,
 ): Collection {
-    /** @var Illuminate\Support\Collection<int, Article> */
+    /** @var Collection<int, Article> */
     return PageLoader::getPages(
         language: $language,
         site: $site,

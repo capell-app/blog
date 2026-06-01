@@ -241,6 +241,8 @@ class BlogCreator
     ): Page {
         $site = $parent->site;
 
+        throw_unless($site instanceof Site, LogicException::class, 'Archive page requires a parent site.');
+
         if (! $type instanceof Blueprint) {
             $type = Blueprint::query()->where('key', BlogPageTypeEnum::Archive)->pageType()->first()
                 ?? self::createArchivePageType();
@@ -686,6 +688,9 @@ class BlogCreator
         ?Collection $languages = null,
     ): Page {
         $site = $parent->site;
+
+        throw_unless($site instanceof Site, LogicException::class, 'Archives page requires a parent site.');
+
         if (! $layout instanceof Layout) {
             $layout = Layout::query()->firstWhere('key', 'archives') ?? self::createArchivesLayout();
         }

@@ -55,7 +55,7 @@ final class TopPagesWidgetAbstract extends Widget implements CapellWidgetContrac
             ->get();
 
         $pages = $rows->map(fn (object $row): TopPageData => new TopPageData(
-            path: $row->path,
+            path: (string) $row->path,
             views: (int) $row->views,
         ));
 

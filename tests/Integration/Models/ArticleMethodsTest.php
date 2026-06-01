@@ -27,8 +27,9 @@ it('returns Latest for defaultOrdering', function (): void {
 it('returns the article page type for getDefaultType', function (): void {
     $type = Article::getDefaultType(null);
 
-    expect($type)->not()->toBeNull()
-        ->and($type->key)->toBe(BlogPageTypeEnum::Article->value);
+    $type = blogTestBlueprint($type);
+
+    expect($type->key)->toBe(BlogPageTypeEnum::Article->value);
 });
 
 it('returns null for getDefaultType when the article type does not exist', function (): void {

@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Livewire\Page;
 
+use Capell\Blog\Actions\BuildBlogResultsViewDataAction;
+use Capell\Blog\Data\BlogResultsViewData;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Loader\TagLoader;
 use Capell\Core\Enums\PageOrderEnum;
+use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
+use Capell\Core\Models\Site;
 use Capell\Frontend\Facades\Frontend;
 use Capell\Frontend\Livewire\Page\AbstractPage;
 use Capell\Frontend\Support\Loader\PageLoader;
@@ -32,6 +36,8 @@ class Blog extends AbstractPage
         $page = Frontend::page();
         $language = Frontend::language();
         $site = Frontend::site();
+
+        abort_unless($language instanceof Language && $site instanceof Site, 404);
 
         $paginationPage = config('capell-admin.page_query', 'pageQuery');
 
@@ -81,7 +87,8 @@ class Blog extends AbstractPage
      * @return array{
      *     latestArticles: Collection<array-key, mixed>|null,
      *     sidebarTags: Collection<array-key, mixed>|null,
-     *     tagPage: Page|null
+     *     tagPage: Page|null,
+     *     blogResultsViewData: BlogResultsViewData
      * }
      */
     #[Override]
@@ -91,6 +98,7 @@ class Blog extends AbstractPage
             'latestArticles' => $this->latestArticles,
             'sidebarTags' => $this->sidebarTags,
             'tagPage' => $this->tagPage,
+            'blogResultsViewData' => BuildBlogResultsViewDataAction::run($this->results),
         ];
     }
 }

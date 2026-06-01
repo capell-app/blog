@@ -109,7 +109,7 @@ class BlogTestCase extends AbstractTestCase
         );
         CapellCore::forcePackageInstalled(TagsServiceProvider::$packageName);
 
-        CapellCore::registerPackage('capell-app/navigation', path: realpath(__DIR__ . '/../../navigation'));
+        CapellCore::registerPackage('capell-app/navigation', path: realpath(__DIR__ . '/../../navigation') ?: null);
         CapellCore::forcePackageInstalled('capell-app/navigation');
 
         $app->make(Repository::class)->set('tags.tag_model', Tag::class);

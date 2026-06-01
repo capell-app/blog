@@ -90,6 +90,9 @@ class ArticlePagesTable implements TableConfigurator
      */
     protected static function getTableQuery(Builder $query, HasTable $livewire): Builder
     {
+        $filterState = $livewire->getTableFilterState('filter');
+        $languageId = is_array($filterState) ? ($filterState['language_id'] ?? null) : null;
+
         return $query
             ->whereHas('site', self::includeTrashedSite(...))
             ->whereHas('type')
@@ -103,7 +106,7 @@ class ArticlePagesTable implements TableConfigurator
                 'site.siteDomains',
                 'translation' => fn (BuilderContract $query): BuilderContract => $query->with('language')
                     ->select(['translatable_id', 'translatable_type', 'language_id', 'title'])
-                    ->when($livewire->getTableFilterState('filter')['language_id'], self::applyTranslationLanguageFilter(...)),
+                    ->when($languageId, self::applyTranslationLanguageFilter(...)),
                 'translations.language',
                 'type',
                 'pageUrls' => self::includeOrderedPageUrls(...),
@@ -430,9 +433,11 @@ class ArticlePagesTable implements TableConfigurator
             /** @var class-string<Language> $model */
             $model = Language::class;
 
+            $languageId = is_scalar($data['language_id']) ? (int) $data['language_id'] : null;
+
             $indicators['language_id'] = __(
                 'capell-admin::filter.language',
-                ['search' => $model::query()->find($data['language_id'], 'name')?->name],
+                ['search' => $languageId !== null ? $model::query()->find($languageId, 'name')?->name : null],
             );
         }
 
@@ -518,7 +523,8 @@ class ArticlePagesTable implements TableConfigurator
         /** @var class-string<Language> $model */
         $model = Language::class;
 
-        $code = $model::query()->find($languageId, 'code')?->code;
+        $languageId = is_scalar($languageId) ? (int) $languageId : null;
+        $code = $languageId !== null ? $model::query()->find($languageId, 'code')?->code : null;
         if ($code !== null && $code !== '') {
             $query->whereRaw('JSON_EXTRACT(`tags`.`name`, ' . DB::getPdo()->quote('$.' . $code) . ') IS NOT NULL');
         }
@@ -552,10 +558,10 @@ class ArticlePagesTable implements TableConfigurator
         $indicators = [];
         $value = $state['value'] ?? null;
 
-        if ($value) {
+        if (is_scalar($value) && $value !== '') {
             $indicators['tags'] = __(
                 'capell-layout-builder::filter.tag',
-                ['search' => Tag::query()->find($value)?->getTranslation('name', app()->getLocale())],
+                ['search' => Tag::query()->find((int) $value)?->getTranslation('name', app()->getLocale())],
             );
         }
 

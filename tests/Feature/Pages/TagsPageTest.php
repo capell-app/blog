@@ -37,6 +37,8 @@ test('tags page list tags', function (): void {
     $blogPage = $blogCreator->createBlogPage($site);
     $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createBlocks: true);
     $tagPage = $blogCreator->createTagPage($site, $tagsPage);
+    $tagsPageUrl = blogTestPageUrl($tagsPage->pageUrl);
+    $tagsPageTranslation = blogTestTranslation($tagsPage->translation);
 
     expect($tagsPage)
         ->toBeInstanceOf(Page::class)
@@ -53,11 +55,11 @@ test('tags page list tags', function (): void {
         ->translation->language->id->toBe($language->id)
         ->pageUrl->language->id->toBe($language->id);
 
-    get($tagsPage->pageUrl->full_url)
+    get($tagsPageUrl->full_url)
         ->assertOk()
         ->assertElementExists(
             'title',
-            fn (AssertElement $elm): BaseAssert => $elm->containsText($tagsPage->translation->title . ' | ' . $site->title),
+            fn (AssertElement $elm): BaseAssert => $elm->containsText($tagsPageTranslation->title . ' | ' . $site->title),
         )
         ->assertElementExists(
             'main',

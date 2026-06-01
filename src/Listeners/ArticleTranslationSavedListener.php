@@ -8,6 +8,7 @@ use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Loader\BlogLoader;
 use Capell\Core\Actions\UpdatePageUrlAction;
 use Capell\Core\Models\Language;
+use Capell\Core\Models\Site;
 use Capell\Core\Models\Translation;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
@@ -30,9 +31,14 @@ final class ArticleTranslationSavedListener
         }
 
         $article->loadMissing('site');
+        $site = $article->site;
 
-        $url = BlogLoader::getBlogPageUrl($article->site, $language, fullUrl: false);
+        if (! $site instanceof Site) {
+            return;
+        }
 
-        UpdatePageUrlAction::run($article->site, $translation, $url);
+        $url = BlogLoader::getBlogPageUrl($site, $language, fullUrl: false);
+
+        UpdatePageUrlAction::run($site, $translation, $url);
     }
 }

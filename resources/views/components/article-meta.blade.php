@@ -6,14 +6,17 @@
     ])
 >
     @if ($withAuthor && $author)
-        <x-capell-blog::page.author class="min-w-0" :author="$author" />
+        <x-capell-blog::page.author
+            class="min-w-0"
+            :author="$author"
+            :profile-image="$profileImage"
+        />
     @endif
 
     @if ($tags->isNotEmpty())
         <div class="article-tags flex flex-col gap-x-10 gap-y-4 md:items-end">
             <x-capell-blog::page.tags
-                :tagPage="$tagPage"
-                :tags="$tags"
+                :$tagLinks
                 with_tag_icon="true"
             />
         </div>

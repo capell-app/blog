@@ -18,6 +18,13 @@ return [
     'blog_archives_title' => 'Browse our archives of articles.',
     'blog_intro' => 'Practical notes, release thinking, and implementation guidance for teams building with Capell.',
     'blog_page' => 'Blog Posts',
+    'editorial_calendar' => [
+        'descriptions' => [
+            'publish' => 'Article becomes visible.',
+            'unpublish' => 'Article public visibility expires automatically.',
+        ],
+        'status_scheduled' => 'Scheduled',
+    ],
     'latest_articles' => 'Latest Articles',
     'next_article' => 'Next article',
     'popular_articles' => 'Popular Articles',

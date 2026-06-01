@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Capell\Blog\Actions;
 
 use Capell\Blog\Models\Article;
-use Capell\Core\Enums\MediaCollectionEnum;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\Page;
@@ -18,9 +17,7 @@ use Capell\LayoutBuilder\Models\WidgetAsset;
 use Capell\LayoutBuilder\Support\Creator\DemoCreator;
 use Capell\LayoutBuilder\Support\Creator\TypeCreator;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\File;
 use Lorisleiva\Actions\Concerns\AsAction;
-use Spatie\MediaLibrary\HasMedia;
 
 final class CreateBlogHeroDemoContentAction
 {
@@ -131,41 +128,6 @@ final class CreateBlogHeroDemoContentAction
                 'content' => '<p>' . __('capell-blog::generic.blog_intro') . '</p>',
             ])->save();
         });
-
-        $this->replaceHeroImageWithSpaniel($asset);
-    }
-
-    private function replaceHeroImageWithSpaniel(Model $asset): void
-    {
-        if (! $asset instanceof HasMedia) {
-            return;
-        }
-
-        $spanielImage = $this->demoKitPath('demo/img/springer-spaniel.jpg');
-
-        if ($spanielImage === null || ! File::exists($spanielImage)) {
-            return;
-        }
-
-        $asset->clearMediaCollection(MediaCollectionEnum::Image->value);
-        $asset->addMedia($spanielImage)
-            ->preservingOriginal()
-            ->toMediaCollection(MediaCollectionEnum::Image->value);
-    }
-
-    private function demoKitPath(string $path): ?string
-    {
-        $packageName = 'capell-app/demo-kit';
-
-        if (! CapellCore::hasPackage($packageName)) {
-            return null;
-        }
-
-        $packagePath = CapellCore::getPackage($packageName)->path;
-
-        return is_string($packagePath) && $packagePath !== ''
-            ? rtrim($packagePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . ltrim($path, DIRECTORY_SEPARATOR)
-            : null;
     }
 
     private function applyArticleHeroMeta(Site $site): void

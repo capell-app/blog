@@ -7,6 +7,8 @@ namespace Capell\Blog\View\Components\Footer;
 use Capell\Blog\Enums\BlogTypeGroupEnum;
 use Capell\Blog\Models\Article;
 use Capell\Core\Enums\PageOrderEnum;
+use Capell\Core\Models\Language;
+use Capell\Core\Models\Site;
 use Capell\Frontend\Facades\Frontend;
 use Capell\Frontend\Support\Loader\PageLoader;
 use Illuminate\Contracts\View\View as ViewContract;
@@ -25,9 +27,18 @@ class Pages extends Component
      */
     public function __construct(public array $item)
     {
+        $language = Frontend::language();
+        $site = Frontend::site();
+
+        if (! $language instanceof Language || ! $site instanceof Site) {
+            $this->pages = collect();
+
+            return;
+        }
+
         $this->pages = PageLoader::getPages(
-            language: Frontend::language(),
-            site: Frontend::site(),
+            language: $language,
+            site: $site,
             limit: 3,
             ordering: PageOrderEnum::Latest,
             pageGroup: BlogTypeGroupEnum::Article,

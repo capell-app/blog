@@ -12,6 +12,7 @@ use Capell\Core\Models\Language;
 use Capell\Core\Models\Site;
 use Capell\Frontend\Enums\CacheEnum as FrontendCacheEnum;
 use Capell\Frontend\Support\Cache\PublicPageRenderDataCache;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Cache;
 use Lorisleiva\Actions\Concerns\AsObject;
 
@@ -59,7 +60,12 @@ final class ClearBlogContentCacheAction
     {
         $articleId = (int) $article->getKey();
 
-        foreach ([$article::class, $article->getMorphClass()] as $pageType) {
+        $pageTypes = array_unique([
+            $article::class,
+            Relation::getMorphedModel($article->getMorphClass()) ?? $article::class,
+        ]);
+
+        foreach ($pageTypes as $pageType) {
             CapellCore::removeCacheKey(FrontendCacheEnum::pageModel($pageType, $articleId, $siteId, $languageId));
         }
 

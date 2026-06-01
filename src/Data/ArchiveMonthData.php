@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Capell\Blog\Data;
 
 use Carbon\CarbonImmutable;
+use RuntimeException;
 use Spatie\LaravelData\Data;
 
 class ArchiveMonthData extends Data
@@ -25,6 +26,10 @@ class ArchiveMonthData extends Data
 
     public function getDate(): CarbonImmutable
     {
-        return CarbonImmutable::createFromFormat('Y-m', sprintf('%d-%d', $this->year, $this->month));
+        $date = CarbonImmutable::createFromFormat('!Y-m', sprintf('%04d-%02d', $this->year, $this->month));
+
+        throw_unless($date instanceof CarbonImmutable, RuntimeException::class, 'Unable to create archive month date.');
+
+        return $date;
     }
 }

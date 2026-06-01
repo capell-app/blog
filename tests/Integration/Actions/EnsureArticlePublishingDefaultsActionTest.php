@@ -38,29 +38,31 @@ it('installs article publishing page types layouts and blocks', function (): voi
     $articleLayout = Layout::query()->where('key', BlogLayoutEnum::Article->value)->firstOrFail();
     $latestArticlesBlock = Widget::query()->where('key', 'latest-articles')->firstOrFail();
 
+    $articleContainers = blogTestArray($articleLayout->containers);
+
     expect($articleType->getMeta('with_next_prev'))->toBeTrue()
         ->and($articleType->getMeta('suppress_layout_neighbor_links'))->toBeTrue()
         ->and($latestArticlesBlock->component)->toBe(BlockComponentEnum::PageLatest->value)
         ->and($latestArticlesBlock->is_livewire)->toBeFalse()
-        ->and($articleLayout->containers)->toHaveKey('latest')
-        ->and(array_column($articleLayout->containers['sidebar']['widgets'], 'widget_key'))->not->toContain('latest-articles')
-        ->and(array_column($articleLayout->containers['latest']['widgets'], 'widget_key'))->toContain('latest-articles');
+        ->and($articleContainers)->toHaveKey('latest')
+        ->and(array_column(blogTestContainerWidgets($articleContainers, 'sidebar'), 'widget_key'))->not->toContain('latest-articles')
+        ->and(array_column(blogTestContainerWidgets($articleContainers, 'latest'), 'widget_key'))->toContain('latest-articles');
 });
 
 it('updates default and results sidebars with article publishing blocks', function (): void {
     EnsureArticlePublishingDefaultsAction::run();
 
-    $defaultLayout = Layout::query()->firstWhere('key', LayoutEnum::Default->value);
-    $resultsLayout = Layout::query()->firstWhere('key', LayoutEnum::Results->value);
+    $defaultLayout = blogTestLayout(Layout::query()->firstWhere('key', LayoutEnum::Default->value));
+    $resultsLayout = blogTestLayout(Layout::query()->firstWhere('key', LayoutEnum::Results->value));
 
-    $defaultContainers = $defaultLayout->getAttribute('containers');
-    $resultsContainers = $resultsLayout->getAttribute('containers');
+    $defaultContainers = blogTestArray($defaultLayout->getAttribute('containers'));
+    $resultsContainers = blogTestArray($resultsLayout->getAttribute('containers'));
 
     expect($defaultContainers)->toBeArray()
         ->and($resultsContainers)->toBeArray();
 
-    $defaultSidebarBlockKeys = array_column($defaultContainers['sidebar']['widgets'], 'widget_key');
-    $resultsSidebarBlockKeys = array_column($resultsContainers['sidebar']['widgets'], 'widget_key');
+    $defaultSidebarBlockKeys = array_column(blogTestContainerWidgets($defaultContainers, 'sidebar'), 'widget_key');
+    $resultsSidebarBlockKeys = array_column(blogTestContainerWidgets($resultsContainers, 'sidebar'), 'widget_key');
 
     expect($defaultSidebarBlockKeys)->toContain('latest-articles')
         ->and($defaultSidebarBlockKeys)->not->toContain('latest-pages')

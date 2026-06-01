@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Filament\Configurators\Articles;
 
-use Capell\Admin\Contracts\Schemas\PageSchemaExtenderResolverInterface;
 use Capell\Admin\Filament\Components\Forms\FixedWidthSidebar;
 use Capell\Admin\Filament\Components\Forms\MediaLibraryFileUpload;
 use Capell\Admin\Filament\Components\Forms\Page\LayoutSelect;
@@ -18,12 +17,14 @@ use Capell\Blog\Filament\Components\Forms\Article\Tab\SettingsTab;
 use Capell\Blog\Filament\Components\Forms\Article\TagsInput;
 use Capell\Blog\Filament\Resources\Articles\ArticleResource;
 use Capell\Blog\Support\Loader\BlogLoader;
+use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
 use Closure;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Override;
@@ -45,18 +46,25 @@ class ArticlePageConfigurator extends DefaultPageConfigurator
         return function (Builder $query) use ($configurator) {
             /** @var class-string<Site> $model */
             $model = Site::class;
+            $rawState = $configurator->getRawState();
+            $state = $rawState instanceof Arrayable ? $rawState->toArray() : $rawState;
+            $siteId = is_array($state) && is_scalar($state['site_id'] ?? null)
+                ? (int) $state['site_id']
+                : null;
 
-            $site = $model::query()->find($configurator->getRawState()['site_id']);
+            $site = $siteId !== null ? $model::query()->find($siteId) : null;
 
             $blogPage = $site !== null ? BlogLoader::getBlogPage($site) : null;
 
-            return $query->adminResource(
+            $query = $query->adminResource(
                 ArticleResource::getResourceName(),
-            )
-                ->when(
-                    $blogPage,
-                    fn (Builder $query) => $query->orWhere('id', $blogPage->id),
-                );
+            );
+
+            if (! $blogPage instanceof Page) {
+                return $query;
+            }
+
+            return $query->orWhereKey($blogPage->getKey());
         };
     }
 
@@ -74,7 +82,7 @@ class ArticlePageConfigurator extends DefaultPageConfigurator
                         components: [
                             TagsInput::make('tags'),
                         ],
-                        pageGroup: ArticleResource::getResourceName(),
+                        pageGroup: $this->articleResourceName(),
                         modifyParentQueryUsing: static::modifyParentQueryUsing($configurator),
                         withParent: false,
                         withType: false,
@@ -90,7 +98,7 @@ class ArticlePageConfigurator extends DefaultPageConfigurator
     #[Override]
     protected function getTabs(Schema $configurator): array
     {
-        return resolve(PageSchemaExtenderResolverInterface::class)->resolveTabs($configurator, [
+        return $this->resolvePageTabs($configurator, [
             SettingsTab::make($configurator),
         ]);
     }
@@ -110,7 +118,7 @@ class ArticlePageConfigurator extends DefaultPageConfigurator
                             TagsInput::make('tags'),
                             MediaLibraryFileUpload::make('image'),
                         ],
-                        pageGroup: ArticleResource::getResourceName(),
+                        pageGroup: $this->articleResourceName(),
                         modifyParentQueryUsing: static::modifyParentQueryUsing($configurator),
                         withParent: false,
                         withType: false,
@@ -130,5 +138,10 @@ class ArticlePageConfigurator extends DefaultPageConfigurator
             TagsInput::make('tags'),
             PublishSchema::make($configurator),
         ];
+    }
+
+    private function articleResourceName(): string
+    {
+        return ArticleResource::getResourceName();
     }
 }

@@ -9,6 +9,7 @@ use Capell\Core\Models\Site;
 use Capell\Tests\Support\Concerns\CreatesAdminUser;
 use Filament\Facades\Filament;
 use Filament\GlobalSearch\GlobalSearchResult;
+use Filament\GlobalSearch\Providers\Contracts\GlobalSearchProvider;
 
 uses(CreatesAdminUser::class)
     ->group('global-search');
@@ -47,7 +48,11 @@ it('finds an article by its $attribute', function (string $searchTerm): void {
         'url' => '/blog/' . $articleUrlToken,
     ]);
 
-    $results = Filament::getGlobalSearchProvider()->getResults($searchTerm);
+    $provider = Filament::getGlobalSearchProvider();
+
+    throw_unless($provider instanceof GlobalSearchProvider, RuntimeException::class, 'Expected global search provider.');
+
+    $results = $provider->getResults($searchTerm);
     $articleResult = $results?->getCategories()->get(ArticleResource::getPluralModelLabel())?->first();
 
     expect($articleResult)

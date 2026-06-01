@@ -5,15 +5,20 @@ declare(strict_types=1);
 namespace Capell\Blog\View\Components\Block\Page;
 
 use Capell\Blog\Actions\BuildArticleMetaDataAction;
+use Capell\Blog\Data\ArticleBlockRenderData;
 use Capell\Blog\Data\ArticleMetaData;
+use Capell\Blog\Data\ArticleNeighborLinkData;
 use Capell\Blog\Models\Article as ArticleModel;
 use Capell\Core\Contracts\Pageable;
+use Capell\Core\Models\Language;
+use Capell\Core\Models\Site;
 use Capell\FoundationTheme\View\Components\Block\AbstractBlock;
 use Capell\Frontend\Facades\Frontend;
 use Capell\Frontend\Support\Loader\PageLoader;
 use Closure;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Model;
 use Override;
 
 class Article extends AbstractBlock
@@ -26,6 +31,8 @@ class Article extends AbstractBlock
 
     public ?ArticleMetaData $articleMeta = null;
 
+    public ArticleBlockRenderData $articleRenderData;
+
     protected static string $defaultView = 'capell-blog::components.block.page.article';
 
     #[Override]
@@ -37,20 +44,43 @@ class Article extends AbstractBlock
             'previousPage' => $this->previousPage,
             'nextPage' => $this->nextPage,
             'articleMetaData' => $this->articleMeta,
+            'articleRenderData' => $this->articleRenderData,
         ]);
     }
 
     protected function mountBlock(): void
     {
+        $this->articleRenderData = ArticleBlockRenderData::blank();
+
         $page = Frontend::page();
         $language = Frontend::language();
         $site = Frontend::site();
+
+        if (! $page instanceof Pageable || ! $language instanceof Language || ! $site instanceof Site) {
+            $this->skipRender = true;
+
+            return;
+        }
 
         if ($page instanceof ArticleModel) {
             $page->loadMissing('image');
         }
 
-        if (! isset($page->type->meta['hidden']) && (bool) $this->block->getMeta('with_next_prev')) {
+        $pageTranslation = $page instanceof Model
+            ? ArticleBlockRenderData::loadedRelation($page, 'translation')
+            : null;
+        $pageType = $page instanceof Model
+            ? ArticleBlockRenderData::loadedRelation($page, 'type')
+            : null;
+        $siteDomain = $site->relationLoaded('siteDomain') ? $site->getRelation('siteDomain') : null;
+        $articleImage = $page instanceof Model
+            ? ArticleBlockRenderData::loadedRelation($page, 'image')
+            : null;
+        $pageTypeMeta = $pageType instanceof Model && is_array($pageType->getAttribute('meta'))
+            ? $pageType->getAttribute('meta')
+            : [];
+
+        if (! isset($pageTypeMeta['hidden']) && (bool) $this->block->getMeta('with_next_prev')) {
             $this->previousPage = PageLoader::getPreviousPage($page, $site, $language);
             $this->nextPage = PageLoader::getNextPage($page, $site, $language);
         }
@@ -62,8 +92,33 @@ class Article extends AbstractBlock
             withAuthor: (bool) $this->block->getMeta('with_author'),
         );
 
+        if (! $this->articleMeta instanceof ArticleMetaData) {
+            $this->skipRender = true;
+
+            return;
+        }
+
         if ($this->articleMeta->author instanceof Authenticatable) {
             $this->author = $this->articleMeta->author;
         }
+
+        $authorProfileImage = $this->author instanceof Model
+            ? ArticleBlockRenderData::loadedRelation($this->author, 'profileImage')
+            : null;
+
+        $this->articleRenderData = new ArticleBlockRenderData(
+            title: is_string($pageTranslation?->getAttribute('title')) ? $pageTranslation->getAttribute('title') : null,
+            label: is_string($pageTranslation?->getAttribute('label')) ? $pageTranslation->getAttribute('label') : null,
+            summary: is_string($pageTranslation?->getAttribute('summary')) ? $pageTranslation->getAttribute('summary') : null,
+            content: is_string($pageTranslation?->getAttribute('content')) ? $pageTranslation->getAttribute('content') : null,
+            contentStructure: $pageType?->getAttribute('content_structure'),
+            image: $articleImage,
+            authorProfileImage: $authorProfileImage,
+            publishedDate: $page instanceof Model ? ($page->getAttribute('visible_from') ?: $page->getAttribute('created_at')) : null,
+            blogUrl: $page->getParentUrl($language, true),
+            homeUrl: is_string($siteDomain?->getAttribute('url')) ? $siteDomain->getAttribute('url') : null,
+            previous: ArticleNeighborLinkData::fromPage($this->previousPage),
+            next: ArticleNeighborLinkData::fromPage($this->nextPage),
+        );
     }
 }

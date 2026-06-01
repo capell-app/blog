@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Capell\Blog\Actions;
 
 use Capell\Blog\Data\ArticleMetaData;
+use Capell\Blog\Data\BlogTagLinkData;
 use Capell\Blog\Support\Loader\TagLoader;
 use Capell\Core\Contracts\Pageable;
 use Capell\Core\Models\Language;
@@ -58,7 +59,9 @@ final class BuildArticleMetaDataAction
 
         return new ArticleMetaData(
             tags: $tags,
+            tagLinks: $tagPage instanceof Page ? BlogTagLinkData::collectionFromTags($tags, $tagPage, $language) : [],
             tagPage: $tagPage,
+            language: $language,
             author: $author,
             withAuthor: $withAuthor,
         );

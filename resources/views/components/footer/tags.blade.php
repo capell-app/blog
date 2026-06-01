@@ -8,21 +8,22 @@
         {{ __('Tags') }}
     </div>
 
-    @if ($tags->isNotEmpty())
+    @if ($tagLinks !== [])
         <div class="flex flex-wrap gap-2">
-            @foreach ($tags as $tag)
-                @php($url = $tag->getUrl($tagPage, $language))
+            @foreach ($tagLinks as $tagLink)
                 <x-capell-blog::tag
-                    :$url
+                    :url="$tagLink->url"
                     wire:navigate
                     color="dark"
                     size="xs"
                     class="footer-tag"
                 >
-                    {{ $tag->getTranslation('name', $language->code) }}
-                    <x-slot:count>
-                        ({{ $tag->taggables_count }})
-                    </x-slot>
+                    {{ $tagLink->name }}
+                    @if ($tagLink->count !== null)
+                        <x-slot:count>
+                            ({{ $tagLink->count }})
+                        </x-slot>
+                    @endif
                 </x-capell-blog::tag>
             @endforeach
         </div>

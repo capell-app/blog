@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Livewire\Page;
 
+use Capell\Blog\Actions\BuildBlogResultsViewDataAction;
+use Capell\Blog\Data\BlogResultsViewData;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Loader\TagLoader;
+use Capell\Core\Models\Language;
+use Capell\Core\Models\Site;
 use Capell\Frontend\Facades\Frontend;
 use Capell\Frontend\Livewire\Page\AbstractPage;
 use Capell\Frontend\Support\Loader\PageLoader;
@@ -24,6 +28,8 @@ class Tag extends AbstractPage
 
     protected ?string $tagName = null;
 
+    protected ?BlogResultsViewData $blogResultsViewData = null;
+
     protected function setup(): void
     {
         $params = Frontend::params();
@@ -34,6 +40,8 @@ class Tag extends AbstractPage
         $language = Frontend::language();
         $page = Frontend::page();
         $site = Frontend::site();
+
+        abort_unless($language instanceof Language && $site instanceof Site, 404);
 
         $tag = TagLoader::tagPage($this->tagSlug, $site, $language);
 
@@ -66,7 +74,8 @@ class Tag extends AbstractPage
             },
         );
 
-        $this->params = $this->getViewData();
+        $this->blogResultsViewData = BuildBlogResultsViewDataAction::run($this->results);
+        $this->params = $this->getReplacementData();
 
         resolve(FrontendState::class)->withParams($this->params);
     }
@@ -76,6 +85,19 @@ class Tag extends AbstractPage
      */
     #[Override]
     protected function getViewData(): array
+    {
+        return [
+            'Tag_name' => $this->tagName,
+            'tag_slug' => $this->tagSlug,
+            'tag_name' => $this->tagName,
+            'blogResultsViewData' => $this->blogResultsViewData ?? BuildBlogResultsViewDataAction::run($this->results),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function getReplacementData(): array
     {
         return [
             'Tag_name' => $this->tagName,

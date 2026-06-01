@@ -87,6 +87,12 @@ class ArticleResource extends PageResource
     }
 
     #[Override]
+    public static function getResourceName(): string
+    {
+        return strtolower(ResourceEnum::Article->name);
+    }
+
+    #[Override]
     public static function getNavigationParentItem(): ?string
     {
         return null;
@@ -127,7 +133,7 @@ class ArticleResource extends PageResource
     #[Override]
     public static function getGlobalSearchResultDetails(Model $record): array
     {
-        if ($record->site->default) {
+        if (! $record instanceof Article || ! $record->site instanceof Site || $record->site->default) {
             return [];
         }
 
@@ -151,12 +157,12 @@ class ArticleResource extends PageResource
             ->where('group', BlogTypeGroupEnum::Article)
             ->value('id');
 
-        $siteId = $data['site_id'] ?? null;
+        $siteId = is_scalar($data['site_id'] ?? null) ? (int) $data['site_id'] : null;
 
         /* @var class-string<\Capell\Core\Models\Site> $model */
         $model = Site::class;
 
-        $site = $model::query()->find($siteId) ?? $model::query()->default()->first();
+        $site = ($siteId !== null ? $model::query()->find($siteId) : null) ?? $model::query()->default()->first();
 
         if ($site === null) {
             return;

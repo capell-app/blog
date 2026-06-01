@@ -1,10 +1,6 @@
 @php
     use Capell\Frontend\Enums\RenderHookLocation;
-    use Capell\Frontend\Facades\Frontend;
     use Capell\Frontend\Support\Render\RenderHookRegistry;
-
-    $page = Frontend::page();
-    $theme = Frontend::theme();
 @endphp
 
 @props([
@@ -19,22 +15,16 @@
     'withNextPrev' => (bool) $block->getMeta('with_next_prev'),
 ])
 @php
+    use Capell\Blog\Data\ArticleBlockRenderData;
+
     $nextPage ??= null;
     $previousPage ??= null;
     $articleMetaData ??= null;
-    $language = Frontend::language();
-    $site = Frontend::site();
-    $siteDomain = $site !== null && method_exists($site, 'relationLoaded') && $site->relationLoaded('siteDomain') ? $site->siteDomain : null;
+    $articleRenderData ??= ArticleBlockRenderData::blank();
     $author ??= $articleMetaData?->author;
-    $pageTranslation = method_exists($page, 'relationLoaded') && $page->relationLoaded('translation')
-        ? $page->getRelation('translation')
-        : null;
-    $pageType = method_exists($page, 'relationLoaded') && $page->relationLoaded('type')
-        ? $page->getRelation('type')
-        : null;
-    $secondaryContainers = $theme?->secondary_containers ?? ['sidebar'];
-    $publishedDate = $page->visible_from ?: $page->created_at;
-    $summary = $pageTranslation?->summary ?: null;
+    $secondaryContainers = ['sidebar'];
+    $publishedDate = $articleRenderData->publishedDate;
+    $summary = $articleRenderData->summary;
     $articleMeta = app(RenderHookRegistry::class)->renderAll(
         RenderHookLocation::ArticleMeta,
         [
@@ -46,33 +36,13 @@
 
     $hasDefaultArticleMeta = $articleMetaData?->shouldRender() ?? false;
     $headingTag = in_array($headingSize, ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'], true) ? $headingSize : 'h1';
-    $previousPageUrlModel = $previousPage !== null && method_exists($previousPage, 'relationLoaded') && $previousPage->relationLoaded('pageUrl')
-        ? $previousPage->getRelation('pageUrl')
-        : null;
-    $nextPageUrlModel = $nextPage !== null && method_exists($nextPage, 'relationLoaded') && $nextPage->relationLoaded('pageUrl')
-        ? $nextPage->getRelation('pageUrl')
-        : null;
-    $previousPageUrl = is_string($previousPageUrlModel?->url ?? null) && $previousPageUrlModel->url !== ''
-        ? $previousPageUrlModel->full_url
-        : null;
-    $nextPageUrl = is_string($nextPageUrlModel?->url ?? null) && $nextPageUrlModel->url !== ''
-        ? $nextPageUrlModel->full_url
-        : null;
-    $previousPageTranslation = $previousPage !== null && method_exists($previousPage, 'relationLoaded') && $previousPage->relationLoaded('translation')
-        ? $previousPage->getRelation('translation')
-        : null;
-    $nextPageTranslation = $nextPage !== null && method_exists($nextPage, 'relationLoaded') && $nextPage->relationLoaded('translation')
-        ? $nextPage->getRelation('translation')
-        : null;
-    $hasPreviousArticleLink = $previousPage && $previousPageUrl && $previousPageTranslation;
-    $hasNextArticleLink = $nextPage && $nextPageUrl && $nextPageTranslation;
+    $hasPreviousArticleLink = $articleRenderData->previous !== null;
+    $hasNextArticleLink = $articleRenderData->next !== null;
     $hasAuthorMeta = $withAuthor && $articleMetaData?->author;
     $hasTagMeta = $articleMetaData?->tags->isNotEmpty() ?? false;
-    $blogUrl = $language !== null && method_exists($page, 'getParentUrl') ? $page->getParentUrl($language, true) : null;
-    $homeUrl = $siteDomain?->url;
-    $articleImage = method_exists($page, 'relationLoaded') && $page->relationLoaded('image')
-        ? $page->getRelation('image')
-        : null;
+    $blogUrl = $articleRenderData->blogUrl;
+    $homeUrl = $articleRenderData->homeUrl;
+    $articleImage = $articleRenderData->image;
 @endphp
 
 <x-capell-foundation-theme::block.wrapper
@@ -104,7 +74,12 @@
                     @endif
 
                     @if ($blogUrl)
-                        <li aria-hidden="true" class="text-slate-300">/</li>
+                        <li
+                            aria-hidden="true"
+                            class="text-slate-300"
+                        >
+                            /
+                        </li>
                         <li>
                             <a
                                 href="{{ $blogUrl }}"
@@ -116,9 +91,17 @@
                         </li>
                     @endif
 
-                    <li aria-hidden="true" class="text-slate-300">/</li>
-                    <li aria-current="page" class="line-clamp-1 text-slate-600">
-                        {{ $pageTranslation?->title }}
+                    <li
+                        aria-hidden="true"
+                        class="text-slate-300"
+                    >
+                        /
+                    </li>
+                    <li
+                        aria-current="page"
+                        class="line-clamp-1 text-slate-600"
+                    >
+                        {{ $articleRenderData->title }}
                     </li>
                 </ol>
             </nav>
@@ -146,7 +129,7 @@
                 <{{ $headingTag }}
                     class="max-w-4xl text-4xl leading-[1.05] font-semibold text-balance text-slate-950 md:text-6xl"
                 >
-                    {{ $pageTranslation?->title }}
+                    {{ $articleRenderData->title }}
                 </{{ $headingTag }}>
 
                 @if ($summary)
@@ -161,7 +144,7 @@
                     >
                         <img
                             src="{{ $articleImage->getUrl() }}"
-                            alt="{{ $pageTranslation?->title }}"
+                            alt="{{ $articleRenderData->title }}"
                             class="aspect-[16/9] w-full object-cover"
                         />
                     </figure>
@@ -175,12 +158,12 @@
                 :$containerKey
                 :image="null"
                 :heading-size="$headingSize"
-                :content="$pageTranslation?->content"
-                :content-type="$pageType?->content_structure"
+                :content="$articleRenderData->content"
+                :content-type="$articleRenderData->contentStructure"
                 :muted="in_array($containerKey, $secondaryContainers)"
                 :text-align="$block->getMeta('align')"
                 :title="null"
-                :image-title="$pageTranslation?->title"
+                :image-title="$articleRenderData->title"
                 :heading-style="$block->getMeta('heading_style')"
                 width="content"
             />
@@ -200,6 +183,7 @@
                     <x-capell-blog::page.author
                         class="min-w-0"
                         :author="$articleMetaData->author"
+                        :profile-image="$articleRenderData->authorProfileImage"
                     />
                 @endif
 
@@ -208,8 +192,7 @@
                         class="article-tags flex flex-col gap-x-10 gap-y-4 md:items-end"
                     >
                         <x-capell-blog::page.tags
-                            :tagPage="$articleMetaData->tagPage"
-                            :tags="$articleMetaData->tags"
+                            :tag-links="$articleMetaData->tagLinks"
                             with_tag_icon="true"
                         />
                     </div>
@@ -224,8 +207,8 @@
             >
                 @if ($hasPreviousArticleLink)
                     <a
-                        href="{{ $previousPageUrl }}"
-                        title="{{ strip_tags((string) $previousPageTranslation?->title) }}"
+                        href="{{ $articleRenderData->previous->url }}"
+                        title="{{ strip_tags($articleRenderData->previous->title) }}"
                         class="group flex flex-col text-left"
                         @wireNavigate
                     >
@@ -237,13 +220,13 @@
                         <span
                             class="group-hover:text-primary group-focus:text-primary mt-3 text-lg leading-snug font-semibold text-slate-950 transition"
                         >
-                            {{ strip_tags((string) $previousPageTranslation?->label) }}
+                            {{ strip_tags($articleRenderData->previous->label) }}
                         </span>
-                        @if ($previousPageTranslation?->summary)
+                        @if ($articleRenderData->previous->summary)
                             <span
                                 class="mt-2 line-clamp-2 text-sm leading-6 text-slate-500"
                             >
-                                {{ strip_tags((string) $previousPageTranslation->summary) }}
+                                {{ strip_tags($articleRenderData->previous->summary) }}
                             </span>
                         @endif
                     </a>
@@ -251,8 +234,8 @@
 
                 @if ($hasNextArticleLink)
                     <a
-                        href="{{ $nextPageUrl }}"
-                        title="{{ strip_tags((string) $nextPageTranslation?->title) }}"
+                        href="{{ $articleRenderData->next->url }}"
+                        title="{{ strip_tags($articleRenderData->next->title) }}"
                         @class([
                             'group flex flex-col text-left md:text-right',
                             'md:col-start-2' => ! $hasPreviousArticleLink,
@@ -267,13 +250,13 @@
                         <span
                             class="group-hover:text-primary group-focus:text-primary mt-3 text-lg leading-snug font-semibold text-slate-950 transition"
                         >
-                            {{ strip_tags((string) $nextPageTranslation?->label) }}
+                            {{ strip_tags($articleRenderData->next->label) }}
                         </span>
-                        @if ($nextPageTranslation?->summary)
+                        @if ($articleRenderData->next->summary)
                             <span
                                 class="mt-2 line-clamp-2 text-sm leading-6 text-slate-500"
                             >
-                                {{ strip_tags((string) $nextPageTranslation->summary) }}
+                                {{ strip_tags($articleRenderData->next->summary) }}
                             </span>
                         @endif
                     </a>
