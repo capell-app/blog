@@ -21,9 +21,16 @@
     class="capell-page-results-slot capell-blog-results results @container mx-auto w-full max-w-[1200px] px-[6%] pb-12 xl:px-0"
     data-blog-results
 >
-    <div id="capell-blog-results-top" class="scroll-mt-24"></div>
+    <div
+        id="capell-blog-results-top"
+        class="scroll-mt-24"
+    ></div>
 
-    <p class="sr-only" role="status" aria-live="polite">
+    <p
+        class="sr-only"
+        role="status"
+        aria-live="polite"
+    >
         {{ $total }} {{ __('capell-frontend::messages.results_found') }}
     </p>
 

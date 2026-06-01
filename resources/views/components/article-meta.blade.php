@@ -15,7 +15,10 @@
 
     @if ($tags->isNotEmpty())
         <div class="article-tags flex flex-col gap-x-10 gap-y-4 md:items-end">
-            <x-capell-blog::page.tags :$tagLinks with_tag_icon="true" />
+            <x-capell-blog::page.tags
+                :$tagLinks
+                with_tag_icon="true"
+            />
         </div>
     @endif
 </div>

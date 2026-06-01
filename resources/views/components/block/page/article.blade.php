@@ -74,7 +74,12 @@
                     @endif
 
                     @if ($blogUrl)
-                        <li aria-hidden="true" class="text-slate-300">/</li>
+                        <li
+                            aria-hidden="true"
+                            class="text-slate-300"
+                        >
+                            /
+                        </li>
                         <li>
                             <a
                                 href="{{ $blogUrl }}"
@@ -86,8 +91,16 @@
                         </li>
                     @endif
 
-                    <li aria-hidden="true" class="text-slate-300">/</li>
-                    <li aria-current="page" class="line-clamp-1 text-slate-600">
+                    <li
+                        aria-hidden="true"
+                        class="text-slate-300"
+                    >
+                        /
+                    </li>
+                    <li
+                        aria-current="page"
+                        class="line-clamp-1 text-slate-600"
+                    >
                         {{ $articleRenderData->title }}
                     </li>
                 </ol>

@@ -38,7 +38,10 @@
         <ul class="flex flex-wrap gap-2">
             @foreach ($tagLinks as $tagLink)
                 <li>
-                    <x-capell-blog::tag :url="$tagLink->url" :$withDarkMode>
+                    <x-capell-blog::tag
+                        :url="$tagLink->url"
+                        :$withDarkMode
+                    >
                         {{ $tagLink->name }}
                         @if ($tagLink->count !== null)
                             <x-slot:count>
