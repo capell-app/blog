@@ -191,15 +191,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
 
     private function registerBlazeComponents(): self
     {
-        foreach ([
-            __DIR__ . '/../../resources/views/components/article-meta.blade.php',
-            __DIR__ . '/../../resources/views/components/asset-after-title.blade.php',
-            __DIR__ . '/../../resources/views/components/footer',
-            __DIR__ . '/../../resources/views/components/page',
-            __DIR__ . '/../../resources/views/components/tag.blade.php',
-        ] as $path) {
-            RegisterBlazeOptimizedViewsAction::run($path);
-        }
+        RegisterBlazeOptimizedViewsAction::run(__DIR__ . '/../../resources/views/components');
 
         return $this;
     }
