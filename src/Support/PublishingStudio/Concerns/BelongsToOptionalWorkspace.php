@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Support\PublishingStudio\Concerns;
 
+use Capell\PublishingStudio\Actions\CopyOnWriteAction;
+use Capell\PublishingStudio\Models\Workspace;
+use Capell\PublishingStudio\WorkspaceContext;
+use Capell\PublishingStudio\WorkspaceContextScope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,13 +20,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 trait BelongsToOptionalWorkspace
 {
-    private const string COPY_ON_WRITE_ACTION = 'Capell\\PublishingStudio\\Actions\\CopyOnWriteAction';
+    private const string COPY_ON_WRITE_ACTION = CopyOnWriteAction::class;
 
-    private const string WORKSPACE_CONTEXT = 'Capell\\PublishingStudio\\WorkspaceContext';
+    private const string WORKSPACE_CONTEXT = WorkspaceContext::class;
 
-    private const string WORKSPACE_CONTEXT_SCOPE = 'Capell\\PublishingStudio\\WorkspaceContextScope';
+    private const string WORKSPACE_CONTEXT_SCOPE = WorkspaceContextScope::class;
 
-    private const string WORKSPACE_MODEL = 'Capell\\PublishingStudio\\Models\\Workspace';
+    private const string WORKSPACE_MODEL = Workspace::class;
 
     public static function bootBelongsToOptionalWorkspace(): void
     {
@@ -66,6 +70,10 @@ trait BelongsToOptionalWorkspace
                 return null;
             }
 
+            if (! $activeWorkspace instanceof Workspace) {
+                return null;
+            }
+
             if (! $record->exists) {
                 return null;
             }
@@ -94,6 +102,10 @@ trait BelongsToOptionalWorkspace
             $activeWorkspace = $workspaceContextClass::current();
 
             if (! self::isPublishingStudioWorkspace($activeWorkspace)) {
+                return null;
+            }
+
+            if (! $activeWorkspace instanceof Workspace) {
                 return null;
             }
 

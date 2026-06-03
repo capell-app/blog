@@ -11,7 +11,7 @@ use Capell\Tests\Fixtures\Models\User;
 use Illuminate\Support\Facades\Log;
 
 it('omits tag links instead of failing when no tag page exists', function (): void {
-    Log::spy();
+    $logger = Log::spy();
 
     $site = Site::factory()->withTranslations()->create();
     $language = blogTestLanguage($site->language);
@@ -29,7 +29,7 @@ it('omits tag links instead of failing when no tag page exists', function (): vo
         ->and($data->tagLinks)->toBe([])
         ->and($data->tagPage)->toBeNull();
 
-    Log::shouldHaveReceived('warning')->once();
+    $logger->shouldHaveReceived('warning')->once();
 });
 
 it('exposes article reading and schema metadata', function (): void {

@@ -17,6 +17,7 @@ use Capell\Blog\Models\Article;
 use Capell\Blog\Policies\ArticlePolicy;
 use Capell\Blog\Support\BlogModelRegistrar;
 use Capell\Blog\Support\BlogSidebarWidgetContributor;
+use Capell\Blog\Support\EditorialCalendar\BlogEditorialCalendarEventContributor;
 use Capell\Blog\Support\PublicUrls\BlogPublicUrlContributor;
 use Capell\ContentSections\Models\Section;
 use Capell\Core\Actions\RegisterBlazeOptimizedViewsAction;
@@ -30,7 +31,11 @@ use Capell\Core\Models\Site;
 use Capell\Core\Models\Translation;
 use Capell\Core\Support\Packages\AbstractPackageServiceProvider;
 use Capell\Core\Support\Renderables\RenderableRegistry;
+use Capell\Frontend\Support\Cache\CacheInvalidationRegistry;
 use Capell\LayoutBuilder\Contracts\LayoutSidebarWidgetContributor;
+use Capell\PublishingStudio\Contracts\EditorialCalendarEventContributor;
+use Capell\PublishingStudio\WorkspaceRegistry;
+use Capell\SiteDiscovery\Contracts\PublicUrlContributor;
 use Capell\Tags\Models\Tag;
 use Composer\InstalledVersions;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -48,11 +53,11 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
 {
     private const string LAYOUT_SIDEBAR_ELEMENT_CONTRIBUTOR = LayoutSidebarWidgetContributor::class;
 
-    private const string EDITORIAL_CALENDAR_EVENT_CONTRIBUTOR = 'Capell\\PublishingStudio\\Contracts\\EditorialCalendarEventContributor';
+    private const string EDITORIAL_CALENDAR_EVENT_CONTRIBUTOR = EditorialCalendarEventContributor::class;
 
-    private const string PUBLIC_URL_CONTRIBUTOR = 'Capell\\SiteDiscovery\\Contracts\\PublicUrlContributor';
+    private const string PUBLIC_URL_CONTRIBUTOR = PublicUrlContributor::class;
 
-    private const string WORKSPACE_REGISTRY = 'Capell\\PublishingStudio\\WorkspaceRegistry';
+    private const string WORKSPACE_REGISTRY = WorkspaceRegistry::class;
 
     public static string $name = 'capell-blog';
 
@@ -319,7 +324,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
         $editorialCalendarContributorContract = self::EDITORIAL_CALENDAR_EVENT_CONTRIBUTOR;
 
         if (interface_exists($editorialCalendarContributorContract)) {
-            $contributorClass = 'Capell\\Blog\\Support\\EditorialCalendar\\BlogEditorialCalendarEventContributor';
+            $contributorClass = BlogEditorialCalendarEventContributor::class;
 
             $this->app->singleton($contributorClass);
             $this->app->tag([$contributorClass], $editorialCalendarContributorContract::TAG);
@@ -337,7 +342,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
 
     private function registerCacheInvalidationDependencies(): self
     {
-        $cacheInvalidationRegistryClass = 'Capell\\Frontend\\Support\\Cache\\CacheInvalidationRegistry';
+        $cacheInvalidationRegistryClass = CacheInvalidationRegistry::class;
 
         if (! class_exists($cacheInvalidationRegistryClass) || ! $this->app->bound($cacheInvalidationRegistryClass)) {
             return $this;

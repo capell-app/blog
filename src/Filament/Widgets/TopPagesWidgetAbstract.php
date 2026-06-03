@@ -9,6 +9,8 @@ use Capell\Admin\Filament\Concerns\GatedByRoleAndSettings;
 use Capell\Admin\Filament\Concerns\HasDashboardDateRange;
 use Capell\Blog\Data\Dashboard\TopPageData;
 use Capell\Blog\Data\Dashboard\TopPagesData;
+use Capell\Insights\Enums\InsightsEventType;
+use Capell\Insights\Models\InsightsEvent;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -19,9 +21,9 @@ final class TopPagesWidgetAbstract extends Widget implements CapellWidgetContrac
     use GatedByRoleAndSettings;
     use HasDashboardDateRange;
 
-    private const string INSIGHTS_EVENT = 'Capell\\Insights\\Models\\InsightsEvent';
+    private const string INSIGHTS_EVENT = InsightsEvent::class;
 
-    private const string INSIGHTS_EVENT_TYPE = 'Capell\\Insights\\Enums\\InsightsEventType';
+    private const string INSIGHTS_EVENT_TYPE = InsightsEventType::class;
 
     protected static string $settingsKey = 'top_pages';
 

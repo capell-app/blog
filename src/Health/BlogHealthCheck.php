@@ -9,20 +9,24 @@ use Capell\Blog\Actions\ClearBlogContentCacheAction;
 use Capell\Blog\Actions\ClearBlogTagCacheAction;
 use Capell\Blog\Data\ArticleMetaData;
 use Capell\Blog\Enums\BlogPageTypeEnum;
-use Capell\Blog\Enums\CacheEnum;
 use Capell\Blog\Enums\WidgetComponentEnum;
 use Capell\Blog\Models\Article;
+use Capell\Blog\Support\Sitemap\ArchivesSitemap;
+use Capell\Blog\Support\Sitemap\ArticlesSitemap;
+use Capell\Blog\Support\Sitemap\TagsSitemap;
 use Capell\Blog\Support\StaticSite\BlogStaticSiteExtension;
 use Capell\Core\Contracts\Extensions\ChecksExtensionHealth;
 use Capell\Core\Data\Diagnostics\DoctorCheckResultData;
 use Capell\Core\Enums\BlueprintSubjectEnum;
 use Capell\Core\Models\Blueprint;
+use Capell\SiteDiscovery\Contracts\PublicUrlContributor;
+use Capell\Tags\Models\Tag;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
 
 final class BlogHealthCheck implements ChecksExtensionHealth
 {
-    private const string PUBLIC_URL_CONTRIBUTOR = 'Capell\\SiteDiscovery\\Contracts\\PublicUrlContributor';
+    private const string PUBLIC_URL_CONTRIBUTOR = PublicUrlContributor::class;
 
     public static function compatibleCapellApiVersion(): string
     {
@@ -80,12 +84,10 @@ final class BlogHealthCheck implements ChecksExtensionHealth
         $hasArticleInvalidation = collect($manifestSources)
             ->contains(fn (array $source): bool => ($source['model'] ?? null) === Article::class);
         $hasTagInvalidation = collect($manifestSources)
-            ->contains(fn (array $source): bool => ($source['model'] ?? null) === 'Capell\\Tags\\Models\\Tag');
+            ->contains(fn (array $source): bool => ($source['model'] ?? null) === Tag::class);
 
         $passed = class_exists(ClearBlogContentCacheAction::class)
             && class_exists(ClearBlogTagCacheAction::class)
-            && method_exists(CacheEnum::class, 'blogPage')
-            && method_exists(CacheEnum::class, 'tagPage')
             && $hasArticleInvalidation
             && $hasTagInvalidation;
 
@@ -123,9 +125,9 @@ final class BlogHealthCheck implements ChecksExtensionHealth
 
         if ($siteDiscoveryAvailable) {
             $passed = $passed
-                && class_exists('Capell\\Blog\\Support\\Sitemap\\ArticlesSitemap')
-                && class_exists('Capell\\Blog\\Support\\Sitemap\\ArchivesSitemap')
-                && class_exists('Capell\\Blog\\Support\\Sitemap\\TagsSitemap');
+                && class_exists(ArticlesSitemap::class)
+                && class_exists(ArchivesSitemap::class)
+                && class_exists(TagsSitemap::class);
         }
 
         return new DoctorCheckResultData(
@@ -161,11 +163,11 @@ final class BlogHealthCheck implements ChecksExtensionHealth
             ->pluck('key')
             ->all();
 
-        return collect(BlogPageTypeEnum::cases())
+        return array_values(collect(BlogPageTypeEnum::cases())
             ->map(fn (BlogPageTypeEnum $pageType): string => $pageType->value)
             ->diff($installedPageTypes)
             ->values()
-            ->all();
+            ->all());
     }
 
     /**
@@ -183,6 +185,6 @@ final class BlogHealthCheck implements ChecksExtensionHealth
         $manifest = json_decode($contents, associative: true);
         $sources = $manifest['performance']['cacheSafety']['invalidationSources'] ?? [];
 
-        return is_array($sources) ? array_values(array_filter($sources, 'is_array')) : [];
+        return is_array($sources) ? array_values(array_filter($sources, is_array(...))) : [];
     }
 }

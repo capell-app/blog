@@ -1,6 +1,10 @@
 <?php
 
 declare(strict_types=1);
+
+use Capell\Blog\Models\Article;
+use Capell\Blog\Support\PublishingStudio\Concerns\BelongsToOptionalWorkspace;
+use Capell\PublishingStudio\BelongsToWorkspace;
 use Symfony\Component\Finder\Finder;
 
 it('declares navigation as an explicit package dependency', function (): void {
@@ -89,6 +93,6 @@ arch('blog package does not depend on comments')
     ->not->toUse('Capell\Comments');
 
 arch('blog model uses its optional publishing studio bridge')
-    ->expect('Capell\Blog\Models\Article')
-    ->not->toUse('Capell\PublishingStudio\BelongsToWorkspace')
-    ->toUse('Capell\Blog\Support\PublishingStudio\Concerns\BelongsToOptionalWorkspace');
+    ->expect(Article::class)
+    ->not->toUse(BelongsToWorkspace::class)
+    ->toUse(BelongsToOptionalWorkspace::class);

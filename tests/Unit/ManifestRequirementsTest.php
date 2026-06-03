@@ -1,6 +1,9 @@
 <?php
 
 declare(strict_types=1);
+
+use Capell\Blog\Models\Article;
+use Capell\Tags\Models\Tag;
 use Illuminate\Support\Facades\File;
 
 describe('blog capell.json manifest', function (): void {
@@ -96,7 +99,13 @@ describe('blog capell.json manifest', function (): void {
 
     it('declares blog capabilities permissions and cache invalidation sources', function () use ($blogManifest): void {
         $manifest = $blogManifest();
-        $invalidationSources = collect($manifest['performance']['cacheSafety']['invalidationSources']);
+        $invalidationSourceData = $manifest['performance']['cacheSafety']['invalidationSources'] ?? [];
+
+        if (! is_array($invalidationSourceData)) {
+            throw new RuntimeException('Blog invalidation sources must be an array.');
+        }
+
+        $invalidationSources = collect($invalidationSourceData);
 
         expect($manifest['capabilities'])
             ->toContain('blog-articles')
@@ -105,14 +114,19 @@ describe('blog capell.json manifest', function (): void {
             ->toContain('article.view')
             ->toContain('tag.view')
             ->and($invalidationSources->pluck('model')->all())
-            ->toContain('Capell\\Blog\\Models\\Article')
-            ->toContain('Capell\\Tags\\Models\\Tag');
+            ->toContain(Article::class)
+            ->toContain(Tag::class);
     });
 
     it('promotes committed admin screenshots to the marketplace manifest', function () use ($blogManifest): void {
         $manifest = $blogManifest();
+        $screenshots = $manifest['marketplace']['screenshots'] ?? [];
 
-        expect(collect($manifest['marketplace']['screenshots'])->pluck('path')->all())
+        if (! is_array($screenshots)) {
+            throw new RuntimeException('Blog marketplace screenshots must be an array.');
+        }
+
+        expect(collect($screenshots)->pluck('path')->all())
             ->toContain('docs/screenshots/articles-admin-index.png')
             ->toContain('docs/screenshots/articles-admin-index-dark.png')
             ->toContain('docs/screenshots/create-edit-article-form.png')
