@@ -10,8 +10,8 @@ use Capell\Core\Models\Layout;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\Translation;
-use Capell\LayoutBuilder\Actions\AddHeroBlockToLayoutAction;
-use Capell\LayoutBuilder\Actions\CreateHeroBlockAction;
+use Capell\LayoutBuilder\Actions\AddHeroWidgetToLayoutAction;
+use Capell\LayoutBuilder\Actions\CreateHeroWidgetAction;
 use Capell\LayoutBuilder\Models\Widget;
 use Capell\LayoutBuilder\Models\WidgetAsset;
 use Capell\LayoutBuilder\Support\Creator\DemoCreator;
@@ -26,7 +26,7 @@ final class CreateBlogHeroDemoContentAction
     public function handle(Site $site): void
     {
         $blogPage = $this->blogPage($site);
-        $blogHeroBlock = CreateHeroBlockAction::run(
+        $blogHeroWidget = CreateHeroWidgetAction::run(
             'blog-hero',
             __('capell-blog::generic.blog'),
             'small',
@@ -50,15 +50,15 @@ final class CreateBlogHeroDemoContentAction
                 'media_position' => 'right',
             ],
         );
-        CreateHeroBlockAction::run('article-hero', __('capell-blog::generic.article'));
+        CreateHeroWidgetAction::run('article-hero', __('capell-blog::generic.article'));
 
         if ($blogPage instanceof Page && $blogPage->layout instanceof Layout) {
-            AddHeroBlockToLayoutAction::run($blogHeroBlock, $blogPage->layout);
+            AddHeroWidgetToLayoutAction::run($blogHeroWidget, $blogPage->layout);
 
             if (CapellCore::hasAsset('Section')) {
                 resolve(TypeCreator::class)->createDefaultContentType();
-                resolve(DemoCreator::class)->createContentsBlock($blogHeroBlock, $blogPage, 'hero');
-                $this->customizeBlogHeroSlide($blogHeroBlock);
+                resolve(DemoCreator::class)->createContentsWidget($blogHeroWidget, $blogPage, 'hero');
+                $this->customizeBlogHeroSlide($blogHeroWidget);
             }
 
             $this->applyBlogHeroMeta($blogPage);
@@ -83,18 +83,18 @@ final class CreateBlogHeroDemoContentAction
         });
     }
 
-    private function customizeBlogHeroSlide(Widget $block): void
+    private function customizeBlogHeroSlide(Widget $widget): void
     {
-        $block->loadMissing(['assets.asset.translations', 'assets.asset.media']);
+        $widget->loadMissing(['assets.asset.translations', 'assets.asset.media']);
 
         /** @var WidgetAsset|null $slide */
-        $slide = $block->assets->first();
+        $slide = $widget->assets->first();
 
         if (! $slide instanceof WidgetAsset || ! $slide->asset instanceof Model) {
             return;
         }
 
-        $block->assets
+        $widget->assets
             ->skip(1)
             ->each(fn (WidgetAsset $asset): ?bool => $asset->delete());
 

@@ -4,20 +4,20 @@
     'containerWidth' => null,
     'loop',
     'results',
-    'block',
+    'widget',
 ])
 
-<x-capell-foundation-theme::block.wrapper
-    class="capell-page-archives block block-{{ $block->key }}"
+<x-capell-foundation-theme::widget.wrapper
+    class="capell-page-archives widget widget-{{ $widget->key }}"
     :$container
     :$containerKey
     :$containerWidth
     :index="$loop->index"
-    :widget="$block"
+    :widget="$widget"
 >
     @if ($contentData->show)
         <x-capell::content
-            class="block-content mb-6"
+            class="widget-content mb-6"
             :compact="true"
             :content="$contentData->content"
             :content-type="$contentData->contentType"
@@ -35,7 +35,7 @@
         </x-capell::no-results>
     @else
         <ul
-            class="block-archives-months @md:grid-cols-2 grid gap-x-6 divide-y divide-gray-100 dark:divide-gray-600"
+            class="widget-archives-months @md:grid-cols-2 grid gap-x-6 divide-y divide-gray-100 dark:divide-gray-600"
         >
             @foreach ($archiveLinks as $archiveLink)
                 <x-capell::list.list-item
@@ -43,11 +43,11 @@
                     :count="$archiveLink->count"
                     :active="$archiveLink->active"
                     size="sm"
-                    class="block-archives-month px-2"
+                    class="widget-archives-month px-2"
                 >
                     {{ $archiveLink->label }}
                 </x-capell::list.list-item>
             @endforeach
         </ul>
     @endif
-</x-capell-foundation-theme::block.wrapper>
+</x-capell-foundation-theme::widget.wrapper>

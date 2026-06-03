@@ -12,18 +12,18 @@ use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Livewire\livewire;
 
 uses(CreatesAdminUser::class)
-    ->group('block');
+    ->group('widget');
 
 beforeEach(function (): void {
     test()->actingAsAdmin();
 });
 
-test('can create article block type', function (): void {
+test('can create article widget type', function (): void {
     $newData = Widget::factory()->make();
 
     $typeCreator = new BlogCreator;
 
-    $type = $typeCreator->createArticleBlockType();
+    $type = $typeCreator->createArticleWidgetType();
 
     livewire(ListWidgets::class)
         ->assertSuccessful()
@@ -43,17 +43,17 @@ test('can create article block type', function (): void {
     ]);
 });
 
-test('can edit article block', function (): void {
+test('can edit article widget', function (): void {
     $typeCreator = new BlogCreator;
 
-    $type = $typeCreator->createArticleBlockType();
+    $type = $typeCreator->createArticleWidgetType();
 
     $newData = Widget::factory()->make();
 
-    $block = Widget::factory()->for($type)->create();
+    $widget = Widget::factory()->for($type)->create();
 
     livewire(EditWidget::class, [
-        'record' => $block->getRouteKey(),
+        'record' => $widget->getRouteKey(),
     ])
         ->assertSuccessful()
         ->fillForm([
@@ -69,7 +69,7 @@ test('can edit article block', function (): void {
         ->call('save')
         ->assertHasNoFormErrors();
 
-    expect($block->refresh())
+    expect($widget->refresh())
         ->name->toBe($newData->name)
         ->key->toBe($newData->key);
 });

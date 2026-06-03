@@ -25,7 +25,7 @@ test('tag page list articles by tag', function (): void {
     $site = Site::factory()->recycle($language)->withTranslations()->create();
 
     $blogPage = $blogCreator->createBlogPage($site);
-    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createBlocks: true);
+    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createWidgets: true);
     $tagPage = $blogCreator->createTagPage($site, $tagsPage);
 
     $tag = Tag::factory()->translate($language)->type(TagTypeEnum::Page)->create();
@@ -52,11 +52,11 @@ test('tag page list articles by tag', function (): void {
     $title = trans((string) blogTestTranslation($tagPage->translation)->title, ['tag_name' => $tag->translate('name', $language->code)]);
 
     $containers = blogTestLayout($tagPage->layout)->getAttribute('containers');
-    $containerBlocks = capell_test_collect($containers)->pluck('widgets.*.widget_key')->flatten()->filter()->toArray();
+    $containerWidgets = capell_test_collect($containers)->pluck('widgets.*.widget_key')->flatten()->filter()->toArray();
 
     expect($tagPage)
         ->translation->title->toBe(':Tag_name Articles')
-        ->and($containerBlocks)->toContain('breadcrumbs')
+        ->and($containerWidgets)->toContain('breadcrumbs')
         ->and($articles)->toHaveCount(5);
 
     $response = get($tag->getUrl($tagPage, $language))
@@ -122,7 +122,7 @@ test('tag page resolves site tag before global tag with same slug', function ():
     $site = Site::factory()->recycle($language)->withTranslations()->create();
 
     $blogPage = $blogCreator->createBlogPage($site);
-    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createBlocks: true);
+    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createWidgets: true);
     $tagPage = $blogCreator->createTagPage($site, $tagsPage);
 
     $slug = 'shared-topic';
@@ -161,7 +161,7 @@ test('tag page resolves site tag before global tag with same slug', function ():
         ->assertDontSeeText('Global Topic Articles')
         ->assertElementExists(
             '.results',
-            fn (AssertElement $block): BaseAssert => $block
+            fn (AssertElement $widget): BaseAssert => $widget
                 ->containsText((string) blogTestTranslation($siteArticle->translation)->title)
                 ->doesntContainText((string) blogTestTranslation($globalArticle->translation)->title),
         );
@@ -174,7 +174,7 @@ test('tag page renders results without lazy-loading page translation data', func
     $site = Site::factory()->recycle($language)->withTranslations()->create();
 
     $blogPage = $blogCreator->createBlogPage($site);
-    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createBlocks: true);
+    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createWidgets: true);
     $tagPage = $blogCreator->createTagPage($site, $tagsPage);
 
     $tag = Tag::factory()

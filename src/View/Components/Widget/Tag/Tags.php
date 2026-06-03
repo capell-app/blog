@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Capell\Blog\View\Components\Block\Tag;
+namespace Capell\Blog\View\Components\Widget\Tag;
 
 use Capell\Blog\Actions\BuildTagListingDataAction;
-use Capell\Blog\Data\BlogBlockContentData;
 use Capell\Blog\Data\BlogTagLinkData;
+use Capell\Blog\Data\BlogWidgetContentData;
 use Capell\Blog\Data\TagListingData;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\Theme;
-use Capell\FoundationTheme\View\Components\Block\AbstractBlock;
+use Capell\FoundationTheme\View\Components\Widget\AbstractWidget;
 use Capell\Frontend\Facades\Frontend;
 use Capell\Tags\Models\Tag;
 use Closure;
@@ -22,7 +22,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Override;
 
-class Tags extends AbstractBlock
+class Tags extends AbstractWidget
 {
     public ?Page $tagPage = null;
 
@@ -33,7 +33,7 @@ class Tags extends AbstractBlock
 
     public ?TagListingData $tagListing = null;
 
-    public BlogBlockContentData $contentData;
+    public BlogWidgetContentData $contentData;
 
     /** @var list<BlogTagLinkData> */
     public array $tagLinks = [];
@@ -42,7 +42,7 @@ class Tags extends AbstractBlock
 
     public bool $withDarkMode = false;
 
-    protected static string $defaultView = 'capell-blog::components.block.tag.tags';
+    protected static string $defaultView = 'capell-blog::components.widget.tag.tags';
 
     #[Override]
     public function render(array $data = []): View|string|Closure
@@ -58,17 +58,17 @@ class Tags extends AbstractBlock
         ]);
     }
 
-    protected function mountBlock(): void
+    protected function mountWidget(): void
     {
-        $this->contentData = new BlogBlockContentData;
+        $this->contentData = new BlogWidgetContentData;
         $this->noResultsText = __('capell-blog::messages.no_tags_found');
 
-        $limit = $this->block->meta['limit'] ?? null;
+        $limit = $this->widget->meta['limit'] ?? null;
         $limit = is_numeric($limit) ? (int) $limit : null;
 
-        $withPagination = (bool) $this->block->getMeta('pagination');
-        $occurrence = is_numeric($this->blockData['occurrence'] ?? null) ? (int) $this->blockData['occurrence'] : $this->blockIndex + 1;
-        $paginationKey = sprintf('tags-%s-%s-%d', $this->containerKey, $this->block->getKey(), $occurrence);
+        $withPagination = (bool) $this->widget->getMeta('pagination');
+        $occurrence = is_numeric($this->widgetData['occurrence'] ?? null) ? (int) $this->widgetData['occurrence'] : $this->widgetIndex + 1;
+        $paginationKey = sprintf('tags-%s-%s-%d', $this->containerKey, $this->widget->getKey(), $occurrence);
         $requestedPage = request()->query($paginationKey, 1);
         $paginationPage = $withPagination && is_numeric($requestedPage) ? (int) $requestedPage : null;
 
@@ -117,41 +117,41 @@ class Tags extends AbstractBlock
             return;
         }
 
-        if (isset($this->blockData['meta']['hide_no_results']) && $this->blockData['meta']['hide_no_results']) {
+        if (isset($this->widgetData['meta']['hide_no_results']) && $this->widgetData['meta']['hide_no_results']) {
             $this->skipRender = true;
         }
 
-        if (config('capell-layout-builder.block.skip_render_empty') === true) {
+        if (config('capell-layout-builder.widget.skip_render_empty') === true) {
             $this->skipRender = true;
         }
     }
 
-    private function buildContentData(mixed $page, mixed $theme): BlogBlockContentData
+    private function buildContentData(mixed $page, mixed $theme): BlogWidgetContentData
     {
-        $blockTranslation = $this->block->relationLoaded('translation') ? $this->block->getRelation('translation') : null;
-        $blockType = $this->block->relationLoaded('type') ? $this->block->getRelation('type') : null;
+        $widgetTranslation = $this->widget->relationLoaded('translation') ? $this->widget->getRelation('translation') : null;
+        $widgetType = $this->widget->relationLoaded('type') ? $this->widget->getRelation('type') : null;
         $pageTranslation = $page instanceof Model && $page->relationLoaded('translation') ? $page->getRelation('translation') : null;
         $pageType = $page instanceof Model && $page->relationLoaded('type') ? $page->getRelation('type') : null;
-        $showPageContent = (bool) ($this->blockData['meta']['show_page_content'] ?? false);
-        $showPageTitle = (bool) ($this->blockData['meta']['show_page_title'] ?? false);
-        $title = $this->stringAttribute($blockTranslation, 'title')
+        $showPageContent = (bool) ($this->widgetData['meta']['show_page_content'] ?? false);
+        $showPageTitle = (bool) ($this->widgetData['meta']['show_page_title'] ?? false);
+        $title = $this->stringAttribute($widgetTranslation, 'title')
             ?: ($showPageTitle ? $this->stringAttribute($pageTranslation, 'title') : null);
-        $content = $this->stringAttribute($blockTranslation, 'content')
+        $content = $this->stringAttribute($widgetTranslation, 'content')
             ?: ($showPageContent ? $this->stringAttribute($pageTranslation, 'content') : null);
-        $showTitle = $this->block->getMeta(sprintf('container_options.%s.hide_title', $this->containerKey)) !== true && $title !== null;
-        $showContent = $this->block->getMeta(sprintf('container_options.%s.hide_content', $this->containerKey)) !== true && $content !== null;
+        $showTitle = $this->widget->getMeta(sprintf('container_options.%s.hide_title', $this->containerKey)) !== true && $title !== null;
+        $showContent = $this->widget->getMeta(sprintf('container_options.%s.hide_content', $this->containerKey)) !== true && $content !== null;
         $secondaryContainers = $theme instanceof Theme && is_array($theme->secondary_containers) ? $theme->secondary_containers : [];
 
-        return new BlogBlockContentData(
+        return new BlogWidgetContentData(
             show: $showTitle || $showContent,
             title: $showTitle ? $title : null,
             content: $showContent ? $content : null,
-            contentType: $this->stringAttribute($blockTranslation, 'content') !== null
-                ? $blockType?->getAttribute('content_structure')
+            contentType: $this->stringAttribute($widgetTranslation, 'content') !== null
+                ? $widgetType?->getAttribute('content_structure')
                 : ($showPageContent ? $pageType?->getAttribute('content_structure') : null),
-            divider: $this->block->getMeta('content_divider'),
-            textAlign: $this->block->getMeta('align'),
-            headingStyle: $this->block->getMeta('heading_style'),
+            divider: $this->widget->getMeta('content_divider'),
+            textAlign: $this->widget->getMeta('align'),
+            headingStyle: $this->widget->getMeta('heading_style'),
             muted: in_array($this->containerKey, $secondaryContainers, true),
             headingTag: $showPageTitle ? 'h1' : null,
         );
@@ -159,7 +159,7 @@ class Tags extends AbstractBlock
 
     private function translatedNoResultsText(): string
     {
-        $translation = $this->block->relationLoaded('translation') ? $this->block->getRelation('translation') : null;
+        $translation = $this->widget->relationLoaded('translation') ? $this->widget->getRelation('translation') : null;
         $meta = $translation instanceof Model && is_array($translation->getAttribute('meta')) ? $translation->getAttribute('meta') : [];
         $text = $meta['no_results'] ?? null;
 

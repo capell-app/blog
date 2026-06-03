@@ -23,8 +23,8 @@ final class ArticleNeighborLinkData extends Data
             return null;
         }
 
-        $pageUrl = ArticleBlockRenderData::loadedRelation($page, 'pageUrl');
-        $translation = ArticleBlockRenderData::loadedRelation($page, 'translation');
+        $pageUrl = ArticleWidgetRenderData::loadedRelation($page, 'pageUrl');
+        $translation = ArticleWidgetRenderData::loadedRelation($page, 'translation');
 
         if (! $pageUrl instanceof Model || ! $translation instanceof Model) {
             return null;

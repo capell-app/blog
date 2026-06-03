@@ -6,7 +6,7 @@ namespace Capell\Blog\Data;
 
 use Spatie\LaravelData\Data;
 
-final class BlogBlockContentData extends Data
+final class BlogWidgetContentData extends Data
 {
     public function __construct(
         public readonly bool $show = false,

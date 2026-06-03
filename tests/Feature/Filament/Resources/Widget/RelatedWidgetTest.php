@@ -11,22 +11,22 @@ use Capell\Tests\Support\Concerns\CreatesAdminUser;
 use function Pest\Livewire\livewire;
 
 uses(CreatesAdminUser::class)
-    ->group('block');
+    ->group('widget');
 
 beforeEach(function (): void {
     test()->actingAsAdmin();
 });
 
-test('can edit related block', function (): void {
+test('can edit related widget', function (): void {
     $typeCreator = new BlogCreator;
-    $block = $typeCreator->relatedArticlesBlock();
+    $widget = $typeCreator->relatedArticlesWidget();
 
     $newData = Widget::factory()->make();
 
     Blueprint::factory()->page()->state(['key' => 'home'])->create();
 
     livewire(EditWidget::class, [
-        'record' => $block->getRouteKey(),
+        'record' => $widget->getRouteKey(),
     ])
         ->assertSuccessful()
         ->fillForm([
@@ -42,7 +42,7 @@ test('can edit related block', function (): void {
         ->call('save')
         ->assertHasNoFormErrors();
 
-    expect($block->refresh())
+    expect($widget->refresh())
         ->name->toBe($newData->name)
         ->key->toBe($newData->key);
 });

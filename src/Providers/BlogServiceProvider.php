@@ -9,14 +9,14 @@ use Capell\Admin\Enums\ResourceEnum as AdminResourceEnum;
 use Capell\Admin\Facades\CapellAdmin;
 use Capell\Blog\Actions\ClearBlogContentCacheAction;
 use Capell\Blog\Actions\ClearBlogTagCacheAction;
-use Capell\Blog\Enums\BlockComponentEnum;
 use Capell\Blog\Enums\LivewirePageComponentEnum;
 use Capell\Blog\Enums\ResourceEnum;
+use Capell\Blog\Enums\WidgetComponentEnum;
 use Capell\Blog\Listeners\ArticleTranslationSavedListener;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Policies\ArticlePolicy;
 use Capell\Blog\Support\BlogModelRegistrar;
-use Capell\Blog\Support\BlogSidebarBlockContributor;
+use Capell\Blog\Support\BlogSidebarWidgetContributor;
 use Capell\Blog\Support\EditorialCalendar\BlogEditorialCalendarEventContributor;
 use Capell\Blog\Support\PublicUrls\BlogPublicUrlContributor;
 use Capell\ContentSections\Models\Section;
@@ -31,7 +31,7 @@ use Capell\Core\Models\Site;
 use Capell\Core\Models\Translation;
 use Capell\Core\Support\Packages\AbstractPackageServiceProvider;
 use Capell\Core\Support\Renderables\RenderableRegistry;
-use Capell\LayoutBuilder\Contracts\LayoutSidebarBlockContributor;
+use Capell\LayoutBuilder\Contracts\LayoutSidebarWidgetContributor;
 use Capell\PublishingStudio\Contracts\EditorialCalendarEventContributor;
 use Capell\PublishingStudio\WorkspaceRegistry;
 use Capell\SiteDiscovery\Contracts\PublicUrlContributor;
@@ -50,7 +50,7 @@ use Spatie\MediaLibrary\MediaCollections\Events\MediaHasBeenAddedEvent;
 
 class BlogServiceProvider extends AbstractPackageServiceProvider
 {
-    private const string LAYOUT_SIDEBAR_ELEMENT_CONTRIBUTOR = LayoutSidebarBlockContributor::class;
+    private const string LAYOUT_SIDEBAR_ELEMENT_CONTRIBUTOR = LayoutSidebarWidgetContributor::class;
 
     public static string $name = 'capell-blog';
 
@@ -70,7 +70,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
         $this->app->register(ConsoleServiceProvider::class);
 
         if (interface_exists(self::LAYOUT_SIDEBAR_ELEMENT_CONTRIBUTOR)) {
-            $this->app->tag([BlogSidebarBlockContributor::class], self::LAYOUT_SIDEBAR_ELEMENT_CONTRIBUTOR::TAG);
+            $this->app->tag([BlogSidebarWidgetContributor::class], self::LAYOUT_SIDEBAR_ELEMENT_CONTRIBUTOR::TAG);
         }
 
         BlogModelRegistrar::register();
@@ -118,7 +118,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
             ->registerBlazeComponents()
             ->registerBladeComponents()
             ->registerPageRenderables()
-            ->registerBlockRenderables()
+            ->registerWidgetRenderables()
             ->registerLivewireComponents()
             ->registerTypes()
             ->registerPublicUrlContributors()
@@ -250,15 +250,15 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
         return $this;
     }
 
-    private function registerBlockRenderables(): self
+    private function registerWidgetRenderables(): self
     {
         $registry = resolve(RenderableRegistry::class);
 
-        foreach (BlockComponentEnum::cases() as $blockComponent) {
+        foreach (WidgetComponentEnum::cases() as $widgetComponent) {
             $registry->register(new RenderableDefinitionData(
-                key: $blockComponent->value,
-                type: 'layout-block',
-                blade: $blockComponent->value,
+                key: $widgetComponent->value,
+                type: 'layout-widget',
+                blade: $widgetComponent->value,
             ));
         }
 

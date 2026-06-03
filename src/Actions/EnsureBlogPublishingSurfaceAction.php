@@ -14,8 +14,8 @@ use Capell\Core\Models\Language;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\Site;
 use Capell\Core\Support\Creator\BlueprintCreator;
-use Capell\LayoutBuilder\Support\Creator\BlockCreator;
 use Capell\LayoutBuilder\Support\Creator\TypeCreator as LayoutTypeCreator;
+use Capell\LayoutBuilder\Support\Creator\WidgetCreator;
 use Capell\Navigation\Enums\NavigationHandle;
 use Illuminate\Support\Collection;
 use LogicException;
@@ -23,7 +23,7 @@ use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 /**
- * @method static BlogPublishingSurfaceData run(Site $site, ?Collection<int, Language> $languages = null, bool $createBlocks = true)
+ * @method static BlogPublishingSurfaceData run(Site $site, ?Collection<int, Language> $languages = null, bool $createWidgets = true)
  */
 class EnsureBlogPublishingSurfaceAction
 {
@@ -33,13 +33,13 @@ class EnsureBlogPublishingSurfaceAction
     /**
      * @param  Collection<array-key, mixed>  $languages
      */
-    public function handle(Site $site, ?Collection $languages = null, bool $createBlocks = true): BlogPublishingSurfaceData
+    public function handle(Site $site, ?Collection $languages = null, bool $createWidgets = true): BlogPublishingSurfaceData
     {
         $blogCreator = resolve(BlogCreator::class);
         $languages ??= $site->getAllLanguages();
 
-        if ($createBlocks) {
-            $this->ensureSurfaceBlocks($blogCreator, $languages);
+        if ($createWidgets) {
+            $this->ensureSurfaceWidgets($blogCreator, $languages);
         }
 
         $blogPage = $blogCreator->createBlogPage(
@@ -98,17 +98,17 @@ class EnsureBlogPublishingSurfaceAction
     /**
      * @param  Collection<array-key, mixed>  $languages
      */
-    private function ensureSurfaceBlocks(BlogCreator $blogCreator, Collection $languages): void
+    private function ensureSurfaceWidgets(BlogCreator $blogCreator, Collection $languages): void
     {
-        $resultsBlockType = resolve(LayoutTypeCreator::class)->resultsBlockType();
+        $resultsWidgetType = resolve(LayoutTypeCreator::class)->resultsWidgetType();
 
-        $blogCreator->createLatestArticlesBlock($languages);
-        $blogCreator->createPopularArticlesBlock($languages);
-        $blogCreator->createArchivesBlock($languages);
-        $blogCreator->createTagsBlock($languages);
-        $blogCreator->relatedArticlesBlock($resultsBlockType, $languages);
+        $blogCreator->createLatestArticlesWidget($languages);
+        $blogCreator->createPopularArticlesWidget($languages);
+        $blogCreator->createArchivesWidget($languages);
+        $blogCreator->createTagsWidget($languages);
+        $blogCreator->relatedArticlesWidget($resultsWidgetType, $languages);
 
-        resolve(BlockCreator::class)->latestPagesBlock($resultsBlockType, $languages);
+        resolve(WidgetCreator::class)->latestPagesWidget($resultsWidgetType, $languages);
     }
 
     private function getPageType(BlogCreator $blogCreator, string $key): Blueprint

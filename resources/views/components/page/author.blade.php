@@ -25,7 +25,7 @@
         @endif
 
         <div class="leading-tight tracking-wide">
-            <span class="text-secondary block text-sm font-semibold">
+            <span class="text-secondary widget text-sm font-semibold">
                 {{ $author->name }}
             </span>
 

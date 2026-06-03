@@ -9,9 +9,9 @@ use Capell\Admin\Enums\ConfiguratorTypeEnum;
 use Capell\Admin\Enums\ResourceEnum as AdminResourceEnum;
 use Capell\Admin\Facades\CapellAdmin;
 use Capell\Blog\Actions\EnsureBlogPublishingSurfaceAction;
-use Capell\Blog\Enums\BlockComponentEnum;
-use Capell\Blog\Enums\BlockConfiguratorEnum;
 use Capell\Blog\Enums\ResourceEnum;
+use Capell\Blog\Enums\WidgetComponentEnum;
+use Capell\Blog\Enums\WidgetConfiguratorEnum;
 use Capell\Blog\Filament\Configurators\Articles\ArticlePageConfigurator;
 use Capell\Blog\Listeners\AddBlogPagesToNavigation;
 use Capell\Core\Facades\CapellCore;
@@ -42,7 +42,7 @@ final class AdminServiceProvider extends ServiceProvider
         }
 
         $this->registerResources();
-        $this->registerBlockComponents();
+        $this->registerWidgetComponents();
         $this->registerConfigurators();
         $this->registerDefaultPages();
         $this->registerNavigationListener();
@@ -62,13 +62,13 @@ final class AdminServiceProvider extends ServiceProvider
         ));
     }
 
-    private function registerBlockComponents(): void
+    private function registerWidgetComponents(): void
     {
         if (! enum_exists(self::LAYOUT_BUILDER_COMPONENT_TYPE_ENUM)) {
             return;
         }
 
-        CapellCore::registerComponents(self::LAYOUT_BUILDER_COMPONENT_TYPE_ENUM::Widget->name, BlockComponentEnum::cases());
+        CapellCore::registerComponents(self::LAYOUT_BUILDER_COMPONENT_TYPE_ENUM::Widget->name, WidgetComponentEnum::cases());
     }
 
     private function registerConfigurators(): void
@@ -83,7 +83,7 @@ final class AdminServiceProvider extends ServiceProvider
             return;
         }
 
-        foreach (BlockConfiguratorEnum::cases() as $configurator) {
+        foreach (WidgetConfiguratorEnum::cases() as $configurator) {
             $configuratorClass = $configurator->value;
 
             if (! class_exists($configuratorClass)) {
