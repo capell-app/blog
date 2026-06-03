@@ -1,6 +1,6 @@
 {
     "name": "capell-app/blog",
-    "description": "Blog for Capell",
+    "description": "Premium editorial publishing for Capell: articles, archive and tag pages, related article widgets, multilingual output, and optional growth bridges.",
     "keywords": [
         "capell",
         "blog",
@@ -21,14 +21,11 @@
         "php": "^8.3",
         "capell-app/admin": "^4.0 || 4.x-dev",
         "capell-app/content-sections": "^4.0 || 4.x-dev",
-        "capell-app/insights": "^4.0 || 4.x-dev",
         "capell-app/frontend": "^4.0 || 4.x-dev",
         "capell-app/html-cache": "^4.0 || 4.x-dev",
         "capell-app/layout-builder": "^4.0 || 4.x-dev",
         "capell-app/navigation": "^4.0 || 4.x-dev",
-        "capell-app/site-discovery": "^4.0 || 4.x-dev",
-        "capell-app/tags": "^4.0 || 4.x-dev",
-        "capell-app/publishing-studio": "^4.0 || 4.x-dev"
+        "capell-app/tags": "^4.0 || 4.x-dev"
     },
     "autoload": {
         "psr-4": {

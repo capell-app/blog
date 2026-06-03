@@ -82,3 +82,12 @@ arch()
 arch('blog package does not depend on seo-suite')
     ->expect('Capell\Blog')
     ->not->toUse('Capell\SeoSuite');
+
+arch('blog package does not depend on comments')
+    ->expect('Capell\Blog')
+    ->not->toUse('Capell\Comments');
+
+arch('blog model uses its optional publishing studio bridge')
+    ->expect('Capell\Blog\Models\Article')
+    ->not->toUse('Capell\PublishingStudio\BelongsToWorkspace')
+    ->toUse('Capell\Blog\Support\PublishingStudio\Concerns\BelongsToOptionalWorkspace');

@@ -40,6 +40,60 @@ describe('blog capell.json manifest', function (): void {
             ->toHaveKey('capell-app/layout-builder');
     });
 
+    it('is sold as a premium publishing package', function () use ($blogManifest): void {
+        $manifest = $blogManifest();
+
+        expect($manifest['product']['group'])->toBe('Capell Publishing')
+            ->and($manifest['product']['tier'])->toBe('premium')
+            ->and($manifest['product']['bundle'])->toBe('publishing-pro')
+            ->and($manifest['commercial']['proposedLicense'])->toBe('paid');
+    });
+
+    it('does not require premium packages', function () use ($blogManifest, $blogComposerManifest): void {
+        $manifest = $blogManifest();
+        $composerManifest = $blogComposerManifest();
+
+        $packagesPath = realpath(__DIR__ . '/../../../');
+
+        expect($packagesPath)->not->toBeFalse();
+
+        $premiumPackageNames = collect(File::directories((string) $packagesPath))
+            ->map(function (string $packagePath): ?string {
+                $manifestPath = $packagePath . '/capell.json';
+
+                if (! File::exists($manifestPath)) {
+                    return null;
+                }
+
+                $packageManifest = json_decode(File::get($manifestPath), associative: true, flags: JSON_THROW_ON_ERROR);
+
+                if (($packageManifest['product']['tier'] ?? null) !== 'premium') {
+                    return null;
+                }
+
+                return is_string($packageManifest['name'] ?? null) ? $packageManifest['name'] : null;
+            })
+            ->filter()
+            ->values();
+
+        expect($manifest['dependencies']['requires'])
+            ->not->toContain(...$premiumPackageNames->all());
+
+        foreach ($premiumPackageNames as $premiumPackageName) {
+            expect($composerManifest['require'])->not->toHaveKey($premiumPackageName);
+        }
+    });
+
+    it('keeps premium integrations as optional bridges', function () use ($blogManifest): void {
+        $manifest = $blogManifest();
+
+        expect($manifest['dependencies']['supports'])
+            ->toContain('capell-app/comments')
+            ->toContain('capell-app/insights')
+            ->toContain('capell-app/publishing-studio')
+            ->toContain('capell-app/site-discovery');
+    });
+
     it('registers the full blog demo command', function () use ($blogManifest): void {
         $manifest = $blogManifest();
 

@@ -9,8 +9,6 @@ use Capell\Admin\Filament\Concerns\GatedByRoleAndSettings;
 use Capell\Admin\Filament\Concerns\HasDashboardDateRange;
 use Capell\Blog\Data\Dashboard\TrafficChartData;
 use Capell\Blog\Data\Dashboard\TrafficPointData;
-use Capell\Insights\Enums\InsightsEventType;
-use Capell\Insights\Models\InsightsEvent;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -20,6 +18,10 @@ final class TrafficChartWidgetAbstract extends Widget implements CapellWidgetCon
 {
     use GatedByRoleAndSettings;
     use HasDashboardDateRange;
+
+    private const string INSIGHTS_EVENT = 'Capell\\Insights\\Models\\InsightsEvent';
+
+    private const string INSIGHTS_EVENT_TYPE = 'Capell\\Insights\\Enums\\InsightsEventType';
 
     protected static string $settingsKey = 'traffic_chart';
 
@@ -42,15 +44,27 @@ final class TrafficChartWidgetAbstract extends Widget implements CapellWidgetCon
 
     private function getData(): TrafficChartData
     {
-        [$rangeStart, $rangeEnd] = $this->getDashboardDateRange();
+        $insightsEventClass = self::INSIGHTS_EVENT;
+        $insightsEventTypeClass = self::INSIGHTS_EVENT_TYPE;
 
-        $rows = InsightsEvent::query()
+        if (! class_exists($insightsEventClass) || ! enum_exists($insightsEventTypeClass)) {
+            return new TrafficChartData(
+                totalViews: 0,
+                totalVisitors: 0,
+                points: TrafficPointData::collect([], Collection::class),
+            );
+        }
+
+        [$rangeStart, $rangeEnd] = $this->getDashboardDateRange();
+        $pageViewEventType = constant($insightsEventTypeClass . '::PageView');
+
+        $rows = $insightsEventClass::query()
             ->select(
                 DB::raw('DATE(occurred_at) as date'),
                 DB::raw('COUNT(*) as views'),
                 DB::raw('COUNT(DISTINCT visit_id) as visitors'),
             )
-            ->where('type', InsightsEventType::PageView)
+            ->where('type', $pageViewEventType)
             ->where('occurred_at', '>=', $rangeStart)
             ->where('occurred_at', '<=', $rangeEnd)
             ->groupBy(DB::raw('DATE(occurred_at)'))

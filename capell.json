@@ -6,11 +6,11 @@
     "kind": "package",
     "capellApiVersion": "^4.0",
     "version": "4.x-dev",
-    "description": "Blog adds article publishing, archive pages, tag pages, article widgets, Site Discovery sitemap contributions, and frontend Livewire page components to Capell.",
+    "description": "Blog adds premium article publishing, archive pages, tag pages, article widgets, optional discovery and analytics bridges, and frontend Livewire page components to Capell.",
     "product": {
-        "group": "Capell Foundation",
-        "tier": "free",
-        "bundle": "foundation"
+        "group": "Capell Publishing",
+        "tier": "premium",
+        "bundle": "publishing-pro"
     },
     "namespace": "Capell\\Blog",
     "surfaces": ["admin", "frontend", "console"],
@@ -21,14 +21,16 @@
             "capell-app/core",
             "capell-app/frontend",
             "capell-app/html-cache",
-            "capell-app/insights",
             "capell-app/layout-builder",
             "capell-app/navigation",
-            "capell-app/publishing-studio",
-            "capell-app/site-discovery",
             "capell-app/tags"
         ],
-        "supports": ["capell-app/comments"],
+        "supports": [
+            "capell-app/comments",
+            "capell-app/insights",
+            "capell-app/publishing-studio",
+            "capell-app/site-discovery"
+        ],
         "conflicts": []
     },
     "providers": {
@@ -100,13 +102,13 @@
         }
     ],
     "commercial": {
-        "proposedLicense": "free",
+        "proposedLicense": "paid",
         "requestedCertification": "first-party",
         "supportPolicy": "capell-first-party",
         "privateDocsRequested": false
     },
     "marketplace": {
-        "summary": "Blog adds article publishing, archive pages, tag pages, article widgets, Site Discovery sitemap contributions, and frontend Livewire page components to Capell.",
+        "summary": "Publish articles, archives, tag pages, and related-article widgets with multilingual, multi-site output and optional growth bridges.",
         "screenshots": [
             {
                 "path": "docs/assets/marketplace/extension-card.jpg",

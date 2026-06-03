@@ -11,6 +11,7 @@ use Capell\Blog\Database\Factories\ArticleFactory;
 use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Observers\ArticleObserver;
 use Capell\Blog\Support\Loader\BlogLoader;
+use Capell\Blog\Support\PublishingStudio\Concerns\BelongsToOptionalWorkspace;
 use Capell\Core\Concerns\HasCapellMedia;
 use Capell\Core\Contracts\Pageable;
 use Capell\Core\Enums\BlueprintGroupEnum;
@@ -37,7 +38,6 @@ use Capell\Core\Models\Layout;
 use Capell\Core\Models\PageUrl;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\Translation;
-use Capell\PublishingStudio\BelongsToWorkspace;
 use Capell\Tags\Models\Concerns\HasTags;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -69,7 +69,7 @@ use Staudenmeir\EloquentJsonRelations\Relations\BelongsToJson;
 #[ObservedBy(ArticleObserver::class)]
 class Article extends Model implements HasMedia, Pageable, Publishable, Translatable, Typeable, Userstampable
 {
-    use BelongsToWorkspace;
+    use BelongsToOptionalWorkspace;
     use Cloneable;
     use CloneableExcept;
     use HasAssets;
