@@ -7,7 +7,7 @@ namespace Capell\Blog\Data;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\LaravelData\Data;
 
-final class ArticleBlockRenderData extends Data
+final class ArticleWidgetRenderData extends Data
 {
     public function __construct(
         public readonly ?string $title = null,

@@ -35,7 +35,7 @@ test('tags page list tags', function (): void {
         ->hasAttached($tags->slice(0, 2))
         ->create();
     $blogPage = $blogCreator->createBlogPage($site);
-    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createBlocks: true);
+    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createWidgets: true);
     $tagPage = $blogCreator->createTagPage($site, $tagsPage);
     $tagsPageUrl = blogTestPageUrl($tagsPage->pageUrl);
     $tagsPageTranslation = blogTestTranslation($tagsPage->translation);
@@ -66,9 +66,9 @@ test('tags page list tags', function (): void {
             fn (AssertElement $main): BaseAssert => $main->doesntContain('.no-results')
                 ->containsText($tags[0]->translate('name', $language->code)),
         )
-        ->assertSeeHtml('href="' . $tags[0]->getUrl($tagPage, $language) . '"')
+        ->assertElementExists('a[href="' . $tags[0]->getUrl($tagPage, $language) . '"]')
         ->assertSee($tags[1]->translate('name', $language->code))
-        ->assertSeeHtml('href="' . $tags[1]->getUrl($tagPage, $language) . '"')
+        ->assertElementExists('a[href="' . $tags[1]->getUrl($tagPage, $language) . '"]')
         ->assertDontSeeText($tags[2]->translate('name', $language->code));
 });
 

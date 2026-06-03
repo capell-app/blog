@@ -9,36 +9,36 @@ use Capell\Core\Enums\LayoutEnum;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Layout;
 use Capell\Core\Support\Creator\LayoutCreator;
-use Capell\LayoutBuilder\Actions\ApplyLayoutSidebarBlockContributionsAction;
+use Capell\LayoutBuilder\Actions\ApplyLayoutSidebarWidgetContributionsAction;
 use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 /**
- * @method static void run(bool $createBlocks = true)
+ * @method static void run(bool $createWidgets = true)
  */
 class EnsureArticlePublishingDefaultsAction
 {
     use AsFake;
     use AsObject;
 
-    public function handle(bool $createBlocks = true): void
+    public function handle(bool $createWidgets = true): void
     {
         $blogCreator = resolve(BlogCreator::class);
 
-        if ($createBlocks) {
-            $articleBlockType = $blogCreator->createArticleBlockType();
-            $blogCreator->createArticleBlock($articleBlockType);
+        if ($createWidgets) {
+            $articleWidgetType = $blogCreator->createArticleWidgetType();
+            $blogCreator->createArticleWidget($articleWidgetType);
 
-            $blogCreator->createLatestArticlesBlock();
-            $blogCreator->createPopularArticlesBlock();
-            $blogCreator->createArchivesBlock();
-            $blogCreator->createTagsBlock(Language::all());
-            $blogCreator->relatedArticlesBlock();
+            $blogCreator->createLatestArticlesWidget();
+            $blogCreator->createPopularArticlesWidget();
+            $blogCreator->createArchivesWidget();
+            $blogCreator->createTagsWidget(Language::all());
+            $blogCreator->relatedArticlesWidget();
 
             $this->updateLayoutSidebars();
         }
 
-        $blogCreator->createArticleLayout(createBlocks: $createBlocks);
+        $blogCreator->createArticleLayout(createWidgets: $createWidgets);
         $blogCreator->createArchivesLayout();
         $blogCreator->createBlogPageLayout();
         $blogCreator->createTagResultsLayout();
@@ -61,7 +61,7 @@ class EnsureArticlePublishingDefaultsAction
             $layout = Layout::query()->firstWhere('key', $layoutKey->value)
                 ?? resolve(LayoutCreator::class)->create($layoutKey);
 
-            ApplyLayoutSidebarBlockContributionsAction::run($layout);
+            ApplyLayoutSidebarWidgetContributionsAction::run($layout);
         }
     }
 }

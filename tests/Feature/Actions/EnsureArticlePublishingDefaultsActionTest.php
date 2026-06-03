@@ -35,11 +35,11 @@ it('keeps latest pages in default sidebars when adding latest articles', functio
     EnsureArticlePublishingDefaultsAction::run();
 
     $containers = blogTestArray($layout->refresh()->containers);
-    $sidebarBlockKeys = capell_test_collect(blogTestContainerWidgets($containers, 'sidebar'))
+    $sidebarWidgetKeys = capell_test_collect(blogTestContainerWidgets($containers, 'sidebar'))
         ->pluck('widget_key')
         ->all();
 
-    expect($sidebarBlockKeys)
+    expect($sidebarWidgetKeys)
         ->toContain('latest-pages')
         ->toContain('latest-articles');
 });

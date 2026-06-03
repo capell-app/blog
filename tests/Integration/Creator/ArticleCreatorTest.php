@@ -8,7 +8,7 @@ use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Creator\ArticleCreator;
 use Capell\Blog\Support\Creator\BlogCreator;
-use Capell\Blog\View\Components\Block\Page\Related;
+use Capell\Blog\View\Components\Widget\Page\Related;
 use Capell\Core\Enums\BlueprintSubjectEnum;
 use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Language;
@@ -125,10 +125,10 @@ it('loads related articles for the current tagged article without leaking the cu
     $currentArticle->tags()->attach($tag);
     $relatedArticle->tags()->attach($tag);
 
-    $block = resolve(BlogCreator::class)->relatedArticlesBlock();
-    $block->forceFill([
+    $widget = resolve(BlogCreator::class)->relatedArticlesWidget();
+    $widget->forceFill([
         'meta' => [
-            ...blogTestArray($block->meta),
+            ...blogTestArray($widget->meta),
             'limit' => 3,
             'exclude_parent' => true,
             'with_date' => true,
@@ -147,9 +147,9 @@ it('loads related articles for the current tagged article without leaking the cu
     $component = new Related(
         container: [],
         containerKey: 'main',
-        blockIndex: 0,
+        widgetIndex: 0,
         loop: new stdClass,
-        block: $block,
+        widget: $widget,
     );
 
     $relatedIds = $component->pages?->pluck('id')->all() ?? [];

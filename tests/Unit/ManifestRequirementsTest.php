@@ -30,7 +30,7 @@ describe('blog capell.json manifest', function (): void {
         expect($manifest['dependencies']['requires'])->toContain('capell-app/core');
     });
 
-    it('requires the layout-builder package for article blocks and layout defaults', function () use ($blogManifest, $blogComposerManifest): void {
+    it('requires the layout-builder package for article widgets and layout defaults', function () use ($blogManifest, $blogComposerManifest): void {
         $manifest = $blogManifest();
         $composerManifest = $blogComposerManifest();
 

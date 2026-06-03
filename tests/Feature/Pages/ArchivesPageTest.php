@@ -64,10 +64,10 @@ test('archives page list articles archives by month/year', function (): void {
             fn (AssertElement $elm): BaseAssert => $elm->containsText((string) $archivesPageTranslation->title),
         )
         ->assertElementExists(
-            '.block-archives',
-            fn (AssertElement $elm): BaseAssert => $elm->contains('.block-archives-month', count: 3)
+            '.widget-archives',
+            fn (AssertElement $elm): BaseAssert => $elm->contains('.widget-archives-month', count: 3)
                 ->each(
-                    '.block-archives-month',
+                    '.widget-archives-month',
                     fn (AssertElement $month, int $index): BaseAssert => $month->find(
                         'a',
                         fn (AssertElement $link): BaseAssert => $link->has(

@@ -80,7 +80,7 @@ test('blog page lists articles', function (): void {
                 ->containsText((string) blogTestTranslation($blogPage->translation)->title)
                 ->doesntContain('Article Archives'),
         )
-        ->assertSee('https://images.unsplash.com', false)
+        ->assertElementExists('img[src^="https://images.unsplash.com"]')
         ->assertElementExists(
             '.results',
             fn (AssertElement $elm): BaseAssert => $elm->doesntContain('.no-results')
@@ -162,7 +162,7 @@ test('article page', function (): void {
     $archivesPage = $blogCreator->createArchivesPage($blogPage);
     $blogCreator->createArchivePage($archivesPage);
 
-    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createBlocks: true);
+    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createWidgets: true);
     $tagPage = $blogCreator->createTagPage($site, $tagsPage);
 
     $article = Article::factory()
@@ -179,8 +179,8 @@ test('article page', function (): void {
 
     get(blogTestPageUrl($article->pageUrl)->full_url)
         ->assertOk()
-        ->assertSeeHtml(e($article->title))
-        ->assertSeeHtml(e($blogPage->label));
+        ->assertSeeText((string) $article->title)
+        ->assertSeeText((string) $blogPage->label);
 });
 
 test('article page list tags', function (): void {
@@ -192,7 +192,7 @@ test('article page list tags', function (): void {
 
     $blogPage = $blogCreator->createBlogPage($site);
 
-    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createBlocks: true);
+    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createWidgets: true);
     $tagPage = $blogCreator->createTagPage($site, $tagsPage);
 
     $archivesPage = $blogCreator->createArchivesPage($blogPage);
@@ -229,11 +229,11 @@ test('article page list tags', function (): void {
 
     get(blogTestPageUrl($article->pageUrl)->full_url)
         ->assertOk()
-        ->assertSeeHtml(e($article->title))
-        ->assertSeeHtml(e($blogPage->label))
+        ->assertSeeText((string) $article->title)
+        ->assertSeeText((string) $blogPage->label)
         ->assertSee($tags[0]->translate('name', $language->code))
-        ->assertSeeHtml('href="' . $tags[0]->getUrl($tagPage, $language) . '"')
-        ->assertSeeHtml('href="' . $archiveUrl . '"');
+        ->assertElementExists('a[href="' . $tags[0]->getUrl($tagPage, $language) . '"]')
+        ->assertElementExists('a[href="' . $archiveUrl . '"]');
 });
 
 test('articles pagination', function (): void {

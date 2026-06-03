@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Capell\Blog\View\Components\Block\Page;
+namespace Capell\Blog\View\Components\Widget\Page;
 
 use Capell\Blog\Actions\BuildArticleMetaDataAction;
-use Capell\Blog\Data\ArticleBlockRenderData;
 use Capell\Blog\Data\ArticleMetaData;
 use Capell\Blog\Data\ArticleNeighborLinkData;
+use Capell\Blog\Data\ArticleWidgetRenderData;
 use Capell\Blog\Models\Article as ArticleModel;
 use Capell\Core\Contracts\Pageable;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Site;
-use Capell\FoundationTheme\View\Components\Block\AbstractBlock;
+use Capell\FoundationTheme\View\Components\Widget\AbstractWidget;
 use Capell\Frontend\Facades\Frontend;
 use Capell\Frontend\Support\Loader\PageLoader;
 use Closure;
@@ -21,7 +21,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
 use Override;
 
-class Article extends AbstractBlock
+class Article extends AbstractWidget
 {
     public ?Authenticatable $author = null;
 
@@ -31,9 +31,9 @@ class Article extends AbstractBlock
 
     public ?ArticleMetaData $articleMeta = null;
 
-    public ArticleBlockRenderData $articleRenderData;
+    public ArticleWidgetRenderData $articleRenderData;
 
-    protected static string $defaultView = 'capell-blog::components.block.page.article';
+    protected static string $defaultView = 'capell-blog::components.widget.page.article';
 
     #[Override]
     public function render(array $data = []): View|string|Closure
@@ -48,9 +48,9 @@ class Article extends AbstractBlock
         ]);
     }
 
-    protected function mountBlock(): void
+    protected function mountWidget(): void
     {
-        $this->articleRenderData = ArticleBlockRenderData::blank();
+        $this->articleRenderData = ArticleWidgetRenderData::blank();
 
         $page = Frontend::page();
         $language = Frontend::language();
@@ -67,20 +67,20 @@ class Article extends AbstractBlock
         }
 
         $pageTranslation = $page instanceof Model
-            ? ArticleBlockRenderData::loadedRelation($page, 'translation')
+            ? ArticleWidgetRenderData::loadedRelation($page, 'translation')
             : null;
         $pageType = $page instanceof Model
-            ? ArticleBlockRenderData::loadedRelation($page, 'type')
+            ? ArticleWidgetRenderData::loadedRelation($page, 'type')
             : null;
         $siteDomain = $site->relationLoaded('siteDomain') ? $site->getRelation('siteDomain') : null;
         $articleImage = $page instanceof Model
-            ? ArticleBlockRenderData::loadedRelation($page, 'image')
+            ? ArticleWidgetRenderData::loadedRelation($page, 'image')
             : null;
         $pageTypeMeta = $pageType instanceof Model && is_array($pageType->getAttribute('meta'))
             ? $pageType->getAttribute('meta')
             : [];
 
-        if (! isset($pageTypeMeta['hidden']) && (bool) $this->block->getMeta('with_next_prev')) {
+        if (! isset($pageTypeMeta['hidden']) && (bool) $this->widget->getMeta('with_next_prev')) {
             $this->previousPage = PageLoader::getPreviousPage($page, $site, $language);
             $this->nextPage = PageLoader::getNextPage($page, $site, $language);
         }
@@ -89,7 +89,7 @@ class Article extends AbstractBlock
             page: $page,
             site: $site,
             language: $language,
-            withAuthor: (bool) $this->block->getMeta('with_author'),
+            withAuthor: (bool) $this->widget->getMeta('with_author'),
         );
 
         if (! $this->articleMeta instanceof ArticleMetaData) {
@@ -103,10 +103,10 @@ class Article extends AbstractBlock
         }
 
         $authorProfileImage = $this->author instanceof Model
-            ? ArticleBlockRenderData::loadedRelation($this->author, 'profileImage')
+            ? ArticleWidgetRenderData::loadedRelation($this->author, 'profileImage')
             : null;
 
-        $this->articleRenderData = new ArticleBlockRenderData(
+        $this->articleRenderData = new ArticleWidgetRenderData(
             title: is_string($pageTranslation?->getAttribute('title')) ? $pageTranslation->getAttribute('title') : null,
             label: is_string($pageTranslation?->getAttribute('label')) ? $pageTranslation->getAttribute('label') : null,
             summary: is_string($pageTranslation?->getAttribute('summary')) ? $pageTranslation->getAttribute('summary') : null,

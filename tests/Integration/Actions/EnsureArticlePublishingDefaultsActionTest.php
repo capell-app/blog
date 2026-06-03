@@ -9,14 +9,14 @@ use Capell\Core\Enums\LayoutEnum;
 use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Layout;
 use Capell\LayoutBuilder\Actions\InstallPackageAction as LayoutBuilderInstallPackageAction;
-use Capell\LayoutBuilder\Enums\BlockComponentEnum;
+use Capell\LayoutBuilder\Enums\WidgetComponentEnum;
 use Capell\LayoutBuilder\Models\Widget;
 
 beforeEach(function (): void {
     LayoutBuilderInstallPackageAction::run();
 });
 
-it('installs article publishing page types layouts and blocks', function (): void {
+it('installs article publishing page types layouts and widgets', function (): void {
     EnsureArticlePublishingDefaultsAction::run();
 
     expect(Blueprint::query()->pageType()->where('key', BlogPageTypeEnum::Article->value)->exists())->toBeTrue()
@@ -36,20 +36,20 @@ it('installs article publishing page types layouts and blocks', function (): voi
 
     $articleType = Blueprint::query()->pageType()->where('key', BlogPageTypeEnum::Article->value)->firstOrFail();
     $articleLayout = Layout::query()->where('key', BlogLayoutEnum::Article->value)->firstOrFail();
-    $latestArticlesBlock = Widget::query()->where('key', 'latest-articles')->firstOrFail();
+    $latestArticlesWidget = Widget::query()->where('key', 'latest-articles')->firstOrFail();
 
     $articleContainers = blogTestArray($articleLayout->containers);
 
     expect($articleType->getMeta('with_next_prev'))->toBeTrue()
         ->and($articleType->getMeta('suppress_layout_neighbor_links'))->toBeTrue()
-        ->and($latestArticlesBlock->component)->toBe(BlockComponentEnum::PageLatest->value)
-        ->and($latestArticlesBlock->is_livewire)->toBeFalse()
+        ->and($latestArticlesWidget->component)->toBe(WidgetComponentEnum::PageLatest->value)
+        ->and($latestArticlesWidget->is_livewire)->toBeFalse()
         ->and($articleContainers)->toHaveKey('latest')
         ->and(array_column(blogTestContainerWidgets($articleContainers, 'sidebar'), 'widget_key'))->not->toContain('latest-articles')
         ->and(array_column(blogTestContainerWidgets($articleContainers, 'latest'), 'widget_key'))->toContain('latest-articles');
 });
 
-it('updates default and results sidebars with article publishing blocks', function (): void {
+it('updates default and results sidebars with article publishing widgets', function (): void {
     EnsureArticlePublishingDefaultsAction::run();
 
     $defaultLayout = blogTestLayout(Layout::query()->firstWhere('key', LayoutEnum::Default->value));
@@ -61,12 +61,12 @@ it('updates default and results sidebars with article publishing blocks', functi
     expect($defaultContainers)->toBeArray()
         ->and($resultsContainers)->toBeArray();
 
-    $defaultSidebarBlockKeys = array_column(blogTestContainerWidgets($defaultContainers, 'sidebar'), 'widget_key');
-    $resultsSidebarBlockKeys = array_column(blogTestContainerWidgets($resultsContainers, 'sidebar'), 'widget_key');
+    $defaultSidebarWidgetKeys = array_column(blogTestContainerWidgets($defaultContainers, 'sidebar'), 'widget_key');
+    $resultsSidebarWidgetKeys = array_column(blogTestContainerWidgets($resultsContainers, 'sidebar'), 'widget_key');
 
-    expect($defaultSidebarBlockKeys)->toContain('latest-articles')
-        ->and($defaultSidebarBlockKeys)->not->toContain('latest-pages')
-        ->and($resultsSidebarBlockKeys)->toContain('latest-articles')
-        ->and($resultsSidebarBlockKeys)->toContain('archives')
-        ->and($resultsSidebarBlockKeys)->not->toContain('latest-pages');
+    expect($defaultSidebarWidgetKeys)->toContain('latest-articles')
+        ->and($defaultSidebarWidgetKeys)->not->toContain('latest-pages')
+        ->and($resultsSidebarWidgetKeys)->toContain('latest-articles')
+        ->and($resultsSidebarWidgetKeys)->toContain('archives')
+        ->and($resultsSidebarWidgetKeys)->not->toContain('latest-pages');
 });

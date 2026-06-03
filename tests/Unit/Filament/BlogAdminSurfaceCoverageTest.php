@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Capell\Blog\Filament\Configurators\Blocks\RelatedBlockConfigurator;
+use Capell\Blog\Filament\Configurators\Widgets\RelatedWidgetConfigurator;
 use Capell\Blog\Filament\Resources\Articles\Tables\ArticlePagesTable;
 use Capell\Blog\Models\Article;
 use Capell\Core\Models\Blueprint;
@@ -17,10 +17,10 @@ use Filament\Tables\Contracts\HasTable;
 use Illuminate\Support\HtmlString;
 use Mockery\MockInterface;
 
-it('builds related article block schemas for option and edit workflows', function (): void {
+it('builds related article widget schemas for option and edit workflows', function (): void {
     Blueprint::factory()->count(2)->page()->create(['status' => true]);
 
-    $configurator = new RelatedBlockConfigurator;
+    $configurator = new RelatedWidgetConfigurator;
 
     $optionComponents = $configurator->make(Schema::make()->operation('createOption'));
     $editComponents = $configurator->make(Schema::make()->operation('edit'));

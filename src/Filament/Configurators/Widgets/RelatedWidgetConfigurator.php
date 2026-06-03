@@ -2,20 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Capell\Blog\Filament\Configurators\Blocks;
+namespace Capell\Blog\Filament\Configurators\Widgets;
 
 use Capell\Admin\Filament\Components\Forms\CacheFrequencySelect;
 use Capell\Admin\Filament\Components\Forms\FixedWidthSidebar;
 use Capell\Core\Models\Blueprint;
 use Capell\LayoutBuilder\Filament\Components\Forms\Widget\ComponentSection;
 use Capell\LayoutBuilder\Filament\Components\Forms\Widget\CreateDetailsSchema;
-use Capell\LayoutBuilder\Filament\Components\Forms\Widget\DisplaySection;
 use Capell\LayoutBuilder\Filament\Components\Forms\Widget\ResultsSchema;
 use Capell\LayoutBuilder\Filament\Components\Forms\Widget\SettingsSchema;
-use Capell\LayoutBuilder\Filament\Components\Forms\Widget\Tab\BlockAdminTab;
-use Capell\LayoutBuilder\Filament\Components\Forms\Widget\Tab\BlockDisplayTab;
+use Capell\LayoutBuilder\Filament\Components\Forms\Widget\Tab\WidgetAdminTab;
+use Capell\LayoutBuilder\Filament\Components\Forms\Widget\Tab\WidgetPresentationTabs;
 use Capell\LayoutBuilder\Filament\Components\Forms\Widget\TranslationsRepeater;
-use Capell\LayoutBuilder\Filament\Configurators\Blocks\DefaultBlockConfigurator;
+use Capell\LayoutBuilder\Filament\Configurators\Widgets\DefaultWidgetConfigurator;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -27,7 +26,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Override;
 
-class RelatedBlockConfigurator extends DefaultBlockConfigurator
+class RelatedWidgetConfigurator extends DefaultWidgetConfigurator
 {
     #[Override]
     public function make(Schema $configurator): array
@@ -75,8 +74,9 @@ class RelatedBlockConfigurator extends DefaultBlockConfigurator
                 ->visibleOn('edit')
                 ->columnSpanFull()
                 ->tabs([
-                    BlockDisplayTab::make([
-                        DisplaySection::make([
+                    ...WidgetPresentationTabs::make(
+                        withComponentSection: false,
+                        itemsSchema: [
                             Group::make([
                                 Checkbox::make('exclude_parent')
                                     ->label(__('capell-layout-builder::form.exclude_parent')),
@@ -106,11 +106,13 @@ class RelatedBlockConfigurator extends DefaultBlockConfigurator
                                     CacheFrequencySelect::make('cache_frequency'),
                                 ]),
                             ...ResultsSchema::make($configurator),
-                        ]),
-                        ComponentSection::make()
-                            ->statePath('meta'),
-                    ]),
-                    BlockAdminTab::make(),
+                        ],
+                        renderingSchema: [
+                            ComponentSection::make()
+                                ->statePath('meta'),
+                        ],
+                    ),
+                    WidgetAdminTab::make(),
                 ]),
         ];
     }

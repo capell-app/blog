@@ -31,15 +31,15 @@ it('creates the blog, archives, archive, tags, and tag pages for the site', func
     expect($pageTypeKeys)->toContain(BlogPageTypeEnum::Blog->value);
 });
 
-it('adds the archives block to the results layout sidebar during install', function (): void {
+it('adds the archives widget to the results layout sidebar during install', function (): void {
     $resultsLayout = blogTestLayout(Layout::query()->firstWhere('key', LayoutEnum::Results->value));
     $containers = blogTestArray($resultsLayout->getAttribute('containers'));
 
     expect($containers)->toBeArray();
 
-    $sidebarBlockKeys = array_column(blogTestContainerWidgets($containers, 'sidebar'), 'widget_key');
+    $sidebarWidgetKeys = array_column(blogTestContainerWidgets($containers, 'sidebar'), 'widget_key');
 
-    expect($sidebarBlockKeys)->toContain('archives');
+    expect($sidebarWidgetKeys)->toContain('archives');
 });
 
 it('creates an archive placeholder page under the archives parent', function (): void {

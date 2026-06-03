@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Capell\Blog\View\Components\Block\Page;
+namespace Capell\Blog\View\Components\Widget\Page;
 
 use Capell\Blog\Support\Loader\TagLoader;
 use Capell\Core\Contracts\Pageable;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
-use Capell\FoundationTheme\View\Components\Block\Page\AbstractPagesBlock;
+use Capell\FoundationTheme\View\Components\Widget\Page\AbstractPagesWidget;
 use Capell\Frontend\Facades\Frontend;
 use Capell\Frontend\Support\Loader\PageLoader;
 use Illuminate\Contracts\Database\Eloquent\Builder as BuilderContract;
@@ -17,13 +17,13 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
-class Related extends AbstractPagesBlock
+class Related extends AbstractPagesWidget
 {
-    protected static string $defaultView = 'capell-layout-builder::components.block.asset.pages';
+    protected static string $defaultView = 'capell-layout-builder::components.widget.asset.pages';
 
-    protected function mountBlock(): void
+    protected function mountWidget(): void
     {
-        $limit = $this->block->meta['limit'] ?? config('capell-frontend.pagination_limit', 12);
+        $limit = $this->widget->meta['limit'] ?? config('capell-frontend.pagination_limit', 12);
 
         $page = Frontend::page();
         $language = Frontend::language();
@@ -39,9 +39,9 @@ class Related extends AbstractPagesBlock
 
         $tagIds = $tags->pluck('id')->toArray();
 
-        $excludeParent = $page->hasPageHierarchy() && (bool) ($this->block->meta['exclude_parent'] ?? false);
+        $excludeParent = $page->hasPageHierarchy() && (bool) ($this->widget->meta['exclude_parent'] ?? false);
 
-        $morphModel = $this->block->getMeta('page_model');
+        $morphModel = $this->widget->getMeta('page_model');
 
         $modelClass = null;
 
@@ -59,9 +59,9 @@ class Related extends AbstractPagesBlock
             site: $site,
             limit: $limit,
             withChildrenCount: $page->hasPageHierarchy() && ($page->type->meta['with_children_count'] ?? true),
-            withImage: $this->block->meta['with_image'] ?? false,
-            withParent: $this->block->meta['with_parent'] ?? false,
-            withDate: $this->block->meta['with_date'] ?? false,
+            withImage: $this->widget->meta['with_image'] ?? false,
+            withParent: $this->widget->meta['with_parent'] ?? false,
+            withDate: $this->widget->meta['with_date'] ?? false,
             cacheKeyPrepend: 'tags-' . implode('-', $tagIds),
             morphModel: $modelClass,
             /**
@@ -81,10 +81,10 @@ class Related extends AbstractPagesBlock
                             ->listable()
                             ->accessible()
                             ->when(
-                                $this->block->meta['exclude_types'] ?? false,
+                                $this->widget->meta['exclude_types'] ?? false,
                                 fn (BuilderContract $query): BuilderContract => $query->whereNotIn(
                                     'blueprints.key',
-                                    $this->block->meta['exclude_types'] ?? [],
+                                    $this->widget->meta['exclude_types'] ?? [],
                                 ),
                             ),
                     )

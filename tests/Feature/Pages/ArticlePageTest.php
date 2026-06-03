@@ -111,7 +111,7 @@ test('article page with layout', function (): void {
             '#layout-container-latest.blog-latest-articles .widget-pages',
             fn (AssertElement $elm): BaseAssert => $elm->contains('.latest-articles-page-item', count: 2),
         )
-        ->assertDontSee('capell-neighbor-links-mobile', false);
+        ->assertElementExists(fn (AssertElement $body): BaseAssert => $body->doesntContain('.capell-neighbor-links-mobile'));
 });
 
 test('article neighbor navigation skips adjacent articles without urls', function (): void {

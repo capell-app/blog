@@ -1,6 +1,6 @@
 # Blog Docs
 
-Blog adds article publishing, archive pages, tag pages, article blocks, Site Discovery sitemap contributions, and frontend Livewire page components to Capell.
+Blog adds article publishing, archive pages, tag pages, article widgets, Site Discovery sitemap contributions, and frontend Livewire page components to Capell.
 
 Start at the [package README](../README.md) when deciding whether to install this package. Use the docs below for setup, extension, debugging, and verification details.
 

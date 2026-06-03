@@ -8,19 +8,19 @@
     'containerKey',
     'containerWidth' => null,
     'loop',
-    'block',
-    'headingSize' => $block->getMeta('heading_size', 'h1'),
-    'withAuthor' => (bool) $block->getMeta('with_author'),
-    'withDate' => (bool) $block->getMeta('with_date'),
-    'withNextPrev' => (bool) $block->getMeta('with_next_prev'),
+    'widget',
+    'headingSize' => $widget->getMeta('heading_size', 'h1'),
+    'withAuthor' => (bool) $widget->getMeta('with_author'),
+    'withDate' => (bool) $widget->getMeta('with_date'),
+    'withNextPrev' => (bool) $widget->getMeta('with_next_prev'),
 ])
 @php
-    use Capell\Blog\Data\ArticleBlockRenderData;
+    use Capell\Blog\Data\ArticleWidgetRenderData;
 
     $nextPage ??= null;
     $previousPage ??= null;
     $articleMetaData ??= null;
-    $articleRenderData ??= ArticleBlockRenderData::blank();
+    $articleRenderData ??= ArticleWidgetRenderData::blank();
     $author ??= $articleMetaData?->author;
     $secondaryContainers = ['sidebar'];
     $publishedDate = $articleRenderData->publishedDate;
@@ -45,13 +45,13 @@
     $articleImage = $articleRenderData->image;
 @endphp
 
-<x-capell-foundation-theme::block.wrapper
-    class="capell-page-article block block-{{ $block->key }}"
+<x-capell-foundation-theme::widget.wrapper
+    class="capell-page-article widget widget-{{ $widget->key }}"
     :$container
     :$containerKey
     :$containerWidth
     :index="$loop->index"
-    :widget="$block"
+    :widget="$widget"
     container-class="capell-blog-article mx-auto flex max-w-5xl flex-col gap-12"
 >
     <article class="grid gap-12">
@@ -161,10 +161,10 @@
                 :content="$articleRenderData->content"
                 :content-type="$articleRenderData->contentStructure"
                 :muted="in_array($containerKey, $secondaryContainers)"
-                :text-align="$block->getMeta('align')"
+                :text-align="$widget->getMeta('align')"
                 :title="null"
                 :image-title="$articleRenderData->title"
-                :heading-style="$block->getMeta('heading_style')"
+                :heading-style="$widget->getMeta('heading_style')"
                 width="content"
             />
         </div>
@@ -264,4 +264,4 @@
             </nav>
         @endif
     </article>
-</x-capell-foundation-theme::block.wrapper>
+</x-capell-foundation-theme::widget.wrapper>

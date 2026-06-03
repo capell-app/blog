@@ -3,17 +3,17 @@
     'containerKey',
     'containerWidth' => null,
     'loop',
-    'block',
+    'widget',
 ])
 
-<x-capell-foundation-theme::block.wrapper
-    class="capell-tag-tags block block-{{ $block->key }} block-tags"
+<x-capell-foundation-theme::widget.wrapper
+    class="capell-tag-tags widget widget-{{ $widget->key }} widget-tags"
     :$container
     :$containerKey
     :$containerWidth
     :$containerWidth
     :index="$loop->index"
-    :widget="$block"
+    :widget="$widget"
 >
     @if ($contentData->show)
         <x-capell::content
@@ -56,7 +56,7 @@
     @if (method_exists($tags, 'total') && $tags->hasPages())
         <x-capell::pagination
             :results="$tags"
-            :scrollToBlock="$containerKey . '-' . $block->key . '-' . $loop->index"
+            :scrollToWidget="$containerKey . '-' . $widget->key . '-' . $loop->index"
         />
     @endif
-</x-capell-foundation-theme::block.wrapper>
+</x-capell-foundation-theme::widget.wrapper>

@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Capell\Blog\Filament\Configurators\Blocks;
+namespace Capell\Blog\Filament\Configurators\Widgets;
 
 use Capell\LayoutBuilder\Filament\Components\Forms\Widget\AdminSchema;
 use Capell\LayoutBuilder\Filament\Components\Forms\Widget\SettingsSchema;
-use Capell\LayoutBuilder\Filament\Components\Forms\Widget\Tab\BlockDisplayTab;
-use Capell\LayoutBuilder\Filament\Configurators\Blocks\DefaultBlockConfigurator;
+use Capell\LayoutBuilder\Filament\Configurators\Widgets\DefaultWidgetConfigurator;
 use Filament\Forms\Components\Checkbox;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Section;
@@ -17,7 +16,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Override;
 
-class ArticleBlockConfigurator extends DefaultBlockConfigurator
+class ArticleWidgetConfigurator extends DefaultWidgetConfigurator
 {
     #[Override]
     protected function getFormSchema(Schema $configurator): array
@@ -44,10 +43,12 @@ class ArticleBlockConfigurator extends DefaultBlockConfigurator
                     ->visibleOn(['edit', 'editOption'])
                     ->columnSpanFull()
                     ->tabs([
-                        BlockDisplayTab::make([
-                            ...SettingsSchema::make($configurator),
-                            $this->articleSettingsSchema(),
-                        ]),
+                        Tab::make(__('capell-admin::generic.settings'))
+                            ->icon(Heroicon::OutlinedCog6Tooth)
+                            ->schema([
+                                ...SettingsSchema::make($configurator),
+                                $this->articleSettingsSchema(),
+                            ]),
                         Tab::make(__('capell-admin::generic.admin'))
                             ->statePath('admin')
                             ->icon(config('capell-admin.icon.admin'))
