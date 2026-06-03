@@ -64,11 +64,11 @@ final class ClearBlogTagCacheAction
         ]));
 
         $articleSiteIds = DB::table('taggables')
-            ->join('pages', 'pages.id', '=', 'taggables.taggable_id')
+            ->join('articles', 'articles.id', '=', 'taggables.taggable_id')
             ->where('taggables.tag_id', $tag->getKey())
             ->whereIn('taggables.taggable_type', $articleMorphTypes)
-            ->whereNotNull('pages.site_id')
-            ->pluck('pages.site_id')
+            ->whereNotNull('articles.site_id')
+            ->pluck('articles.site_id')
             ->map(fn (mixed $siteId): int => (int) $siteId);
 
         return $siteIds

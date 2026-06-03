@@ -125,6 +125,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
             ->registerTypes()
             ->registerPublicUrlContributors()
             ->registerEditorialCalendarContributors()
+            ->registerCacheInvalidationDependencies()
             ->registerTranslationEvents()
             ->registerTagCacheEvents()
             ->registerArticleMediaCacheEvents()
@@ -330,6 +331,37 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
     private function registerTranslationEvents(): self
     {
         Event::listen('eloquent.saved: ' . Translation::class, ArticleTranslationSavedListener::class);
+
+        return $this;
+    }
+
+    private function registerCacheInvalidationDependencies(): self
+    {
+        $cacheInvalidationRegistryClass = 'Capell\\Frontend\\Support\\Cache\\CacheInvalidationRegistry';
+
+        if (! class_exists($cacheInvalidationRegistryClass) || ! $this->app->bound($cacheInvalidationRegistryClass)) {
+            return $this;
+        }
+
+        $registry = resolve($cacheInvalidationRegistryClass);
+
+        if (! is_object($registry) || ! method_exists($registry, 'registerDependency')) {
+            return $this;
+        }
+
+        $registry->registerDependency(Article::class, [
+            'page-tags-*',
+            'site-*-blog-page',
+            'site-*-archive-page',
+            'site-*-tag-page',
+            'site-tags-*',
+        ]);
+
+        $registry->registerDependency(Tag::class, [
+            'page-tags-*',
+            'site-*-tag-page',
+            'site-tags-*',
+        ]);
 
         return $this;
     }

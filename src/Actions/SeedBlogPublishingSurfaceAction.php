@@ -11,7 +11,7 @@ use Lorisleiva\Actions\Concerns\AsObject;
 /**
  * @method static void run()
  */
-class InstallPackageAction
+class SeedBlogPublishingSurfaceAction
 {
     use AsFake;
     use AsObject;

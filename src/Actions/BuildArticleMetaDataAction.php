@@ -11,9 +11,11 @@ use Capell\Core\Contracts\Pageable;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
+use Capell\Core\Models\Translation;
 use Capell\Frontend\Contracts\RenderedModelTracker;
-use Exception;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 final class BuildArticleMetaDataAction
@@ -51,11 +53,23 @@ final class BuildArticleMetaDataAction
             ? TagLoader::getTagResultsPage($site, $language)
             : null;
 
-        throw_if(
-            $tags->isNotEmpty() && ! $tagPage instanceof Page,
-            Exception::class,
-            'Tag results page not found for the current site ' . $site->id . ' and language ' . $language->id,
-        );
+        if ($tags->isNotEmpty() && ! $tagPage instanceof Page) {
+            Log::warning('Blog article tags could not be linked because no tag results page exists.', [
+                'site_id' => $site->getKey(),
+                'language_id' => $language->getKey(),
+                'page_type' => $page instanceof Model ? $page::class : $page::class,
+                'page_id' => $page instanceof Model ? $page->getKey() : null,
+            ]);
+        }
+
+        $translation = $page instanceof Model && $page->relationLoaded('translation')
+            ? $page->getRelation('translation')
+            : null;
+        $content = $translation instanceof Translation && is_string($translation->content)
+            ? $translation->content
+            : null;
+        $publishedAt = $page instanceof Model ? $page->getAttribute('visible_from') ?: $page->getAttribute('created_at') : null;
+        $modifiedAt = $page instanceof Model ? $page->getAttribute('updated_at') : null;
 
         return new ArticleMetaData(
             tags: $tags,
@@ -64,6 +78,25 @@ final class BuildArticleMetaDataAction
             language: $language,
             author: $author,
             withAuthor: $withAuthor,
+            authorName: $author instanceof Model && is_string($author->getAttribute('name')) ? $author->getAttribute('name') : null,
+            publishedAt: $publishedAt instanceof CarbonInterface ? $publishedAt : null,
+            modifiedAt: $modifiedAt instanceof CarbonInterface ? $modifiedAt : null,
+            readingTimeMinutes: $this->readingTimeMinutes($content),
         );
+    }
+
+    private function readingTimeMinutes(?string $content): ?int
+    {
+        if ($content === null || trim($content) === '') {
+            return null;
+        }
+
+        $wordCount = str_word_count(strip_tags($content));
+
+        if ($wordCount === 0) {
+            return null;
+        }
+
+        return max(1, (int) ceil($wordCount / 200));
     }
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Capell\Blog\Actions\InstallPackageAction;
+use Capell\Blog\Actions\SeedBlogPublishingSurfaceAction;
 use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Enums\CacheEnum;
 use Capell\Blog\Models\Article;
@@ -13,7 +13,7 @@ use Capell\LayoutBuilder\Actions\InstallPackageAction as LayoutBuilderInstallPac
 
 beforeEach(function (): void {
     LayoutBuilderInstallPackageAction::run();
-    InstallPackageAction::run();
+    SeedBlogPublishingSurfaceAction::run();
 });
 
 it('returns false for hasPageHierarchy', function (): void {

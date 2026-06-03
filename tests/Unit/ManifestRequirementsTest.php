@@ -94,6 +94,31 @@ describe('blog capell.json manifest', function (): void {
             ->toContain('capell-app/site-discovery');
     });
 
+    it('declares blog capabilities permissions and cache invalidation sources', function () use ($blogManifest): void {
+        $manifest = $blogManifest();
+        $invalidationSources = collect($manifest['performance']['cacheSafety']['invalidationSources']);
+
+        expect($manifest['capabilities'])
+            ->toContain('blog-articles')
+            ->toContain('blog-cache-invalidation')
+            ->and($manifest['permissions'])
+            ->toContain('article.view')
+            ->toContain('tag.view')
+            ->and($invalidationSources->pluck('model')->all())
+            ->toContain('Capell\\Blog\\Models\\Article')
+            ->toContain('Capell\\Tags\\Models\\Tag');
+    });
+
+    it('promotes committed admin screenshots to the marketplace manifest', function () use ($blogManifest): void {
+        $manifest = $blogManifest();
+
+        expect(collect($manifest['marketplace']['screenshots'])->pluck('path')->all())
+            ->toContain('docs/screenshots/articles-admin-index.png')
+            ->toContain('docs/screenshots/articles-admin-index-dark.png')
+            ->toContain('docs/screenshots/create-edit-article-form.png')
+            ->toContain('docs/screenshots/create-edit-article-form-dark.png');
+    });
+
     it('registers the full blog demo command', function () use ($blogManifest): void {
         $manifest = $blogManifest();
 
