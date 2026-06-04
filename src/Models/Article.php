@@ -21,17 +21,17 @@ use Capell\Core\Enums\PageOrderEnum;
 use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Concerns\CloneableExcept;
 use Capell\Core\Models\Concerns\HasAssets;
+use Capell\Core\Models\Concerns\HasBlueprint;
+use Capell\Core\Models\Concerns\HasBlueprints;
 use Capell\Core\Models\Concerns\HasMetaData;
 use Capell\Core\Models\Concerns\HasMorphModelRelations;
 use Capell\Core\Models\Concerns\HasPageOrdering;
 use Capell\Core\Models\Concerns\HasPublishDates;
 use Capell\Core\Models\Concerns\HasTranslations;
-use Capell\Core\Models\Concerns\HasType;
-use Capell\Core\Models\Concerns\HasTypes;
 use Capell\Core\Models\Concerns\HasUserstamps;
+use Capell\Core\Models\Contracts\Blueprintable;
 use Capell\Core\Models\Contracts\Publishable;
 use Capell\Core\Models\Contracts\Translatable;
-use Capell\Core\Models\Contracts\Typeable;
 use Capell\Core\Models\Contracts\Userstampable;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Layout;
@@ -67,12 +67,14 @@ use Staudenmeir\EloquentJsonRelations\Relations\BelongsToJson;
  * @method HasOne<Translation, $this>|MorphOne<Translation, $this> translation()
  */
 #[ObservedBy(ArticleObserver::class)]
-class Article extends Model implements HasMedia, Pageable, Publishable, Translatable, Typeable, Userstampable
+class Article extends Model implements Blueprintable, HasMedia, Pageable, Publishable, Translatable, Userstampable
 {
     use BelongsToOptionalWorkspace;
     use Cloneable;
     use CloneableExcept;
     use HasAssets;
+    use HasBlueprint;
+    use HasBlueprints;
     use HasCapellMedia;
 
     /** @use HasFactory<ArticleFactory> */
@@ -88,8 +90,6 @@ class Article extends Model implements HasMedia, Pageable, Publishable, Translat
     use HasPublishDates;
     use HasTags;
     use HasTranslations;
-    use HasType;
-    use HasTypes;
     use HasUserstamps;
     use LogsActivity;
     use SoftDeletes;

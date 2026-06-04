@@ -39,6 +39,8 @@ class ArticleResource extends PageResource
 
     protected static ?string $slug = 'article';
 
+    protected static bool $isGloballySearchable = true;
+
     protected static string $tableConfigurator = ArticlePagesTable::class;
 
     protected static string $formConfigurator = ArticleForm::class;
