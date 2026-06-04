@@ -101,9 +101,7 @@ describe('blog capell.json manifest', function (): void {
         $manifest = $blogManifest();
         $invalidationSourceData = $manifest['performance']['cacheSafety']['invalidationSources'] ?? [];
 
-        if (! is_array($invalidationSourceData)) {
-            throw new RuntimeException('Blog invalidation sources must be an array.');
-        }
+        throw_unless(is_array($invalidationSourceData), RuntimeException::class, 'Blog invalidation sources must be an array.');
 
         $invalidationSources = collect($invalidationSourceData);
 
@@ -122,9 +120,7 @@ describe('blog capell.json manifest', function (): void {
         $manifest = $blogManifest();
         $screenshots = $manifest['marketplace']['screenshots'] ?? [];
 
-        if (! is_array($screenshots)) {
-            throw new RuntimeException('Blog marketplace screenshots must be an array.');
-        }
+        throw_unless(is_array($screenshots), RuntimeException::class, 'Blog marketplace screenshots must be an array.');
 
         expect(collect($screenshots)->pluck('path')->all())
             ->toContain('docs/screenshots/articles-admin-index.png')
