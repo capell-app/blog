@@ -15,7 +15,8 @@
             "required": true,
             "notes": "Requires Blog plus its required Capell extensions installed, package migrations, and seeded draft/published articles with sites, layouts, URLs, translations, and tags.",
             "useCase": "An editor reviews the article queue, publish windows, language coverage, and article status before editing content.",
-            "screenshotPath": "packages/blog/docs/screenshots/articles-admin-index.png"
+            "screenshotPath": "packages/blog/docs/screenshots/articles-admin-index.png",
+            "darkScreenshotPath": "packages/blog/docs/screenshots/articles-admin-index-dark.png"
         },
         {
             "id": "create-edit-article-form",
@@ -27,7 +28,8 @@
             "required": true,
             "notes": "Requires seeded sites, article type, layouts, and tags so relationship fields are populated. The batch harness could not complete extension install until required dependency extensions were marked installed.",
             "useCase": "An editor creates or updates an article with publishing windows, metadata, layout selection, media, and taxonomy.",
-            "screenshotPath": "packages/blog/docs/screenshots/create-edit-article-form.png"
+            "screenshotPath": "packages/blog/docs/screenshots/create-edit-article-form.png",
+            "darkScreenshotPath": "packages/blog/docs/screenshots/create-edit-article-form-dark.png"
         },
         {
             "id": "article-health-widget",
