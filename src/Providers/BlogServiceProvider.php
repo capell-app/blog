@@ -37,6 +37,7 @@ use Capell\PublishingStudio\Contracts\EditorialCalendarEventContributor;
 use Capell\PublishingStudio\WorkspaceRegistry;
 use Capell\SiteDiscovery\Contracts\PublicUrlContributor;
 use Capell\Tags\Models\Tag;
+use Capell\Tags\Support\TagModelRegistrar;
 use Composer\InstalledVersions;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
@@ -178,13 +179,9 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
 
     private function registerModelRelations(): self
     {
-        CapellCore::registerModelRelations(Page::class, 'tags');
-        CapellCore::registerModelRelations(Section::class, 'tags');
-
-        Tag::resolveRelationUsing(
-            'articles',
-            fn (Tag $tag): MorphToMany => $tag->morphedByMany(Article::class, 'taggable', 'taggables'),
-        );
+        TagModelRegistrar::registerTaggable(Article::class, inverseRelation: 'articles');
+        TagModelRegistrar::registerTaggable(Page::class);
+        TagModelRegistrar::registerTaggable(Section::class);
 
         return $this;
     }
@@ -278,26 +275,12 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
 
     private function registerRelationships(): self
     {
-        Page::resolveRelationUsing(
-            'tags',
-            fn (Page $model): MorphToMany => $model->morphToMany(
-                Tag::class,
-                'taggable',
-                'taggables',
-            ),
-        );
-
         Site::resolveRelationUsing(
             'tags',
             fn (Site $model): HasMany => $model->hasMany(Tag::class, 'site_id'),
         );
 
         if (class_exists(Section::class)) {
-            Section::resolveRelationUsing(
-                'tags',
-                fn (Section $model): MorphToMany => $model->morphToMany(Tag::class, 'taggable', 'taggables'),
-            );
-
             Tag::resolveRelationUsing(
                 'sections',
                 fn (Tag $model): MorphToMany => $model->morphedByMany(Section::class, 'taggable', 'taggables'),
