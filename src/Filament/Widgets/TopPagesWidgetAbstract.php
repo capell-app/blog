@@ -21,6 +21,10 @@ final class TopPagesWidgetAbstract extends Widget implements CapellWidgetContrac
     use GatedByRoleAndSettings;
     use HasDashboardDateRange;
 
+    private const string INSIGHTS_EVENT = InsightsEvent::class;
+
+    private const string INSIGHTS_EVENT_TYPE = InsightsEventType::class;
+
     protected static string $settingsKey = 'top_pages';
 
     /** @var list<string> */
@@ -42,11 +46,21 @@ final class TopPagesWidgetAbstract extends Widget implements CapellWidgetContrac
 
     private function getData(): TopPagesData
     {
-        [$rangeStart, $rangeEnd] = $this->getDashboardDateRange();
+        $insightsEventClass = self::INSIGHTS_EVENT;
+        $insightsEventTypeClass = self::INSIGHTS_EVENT_TYPE;
 
-        $rows = InsightsEvent::query()
+        if (! class_exists($insightsEventClass) || ! enum_exists($insightsEventTypeClass)) {
+            return new TopPagesData(
+                pages: TopPageData::collect([], Collection::class),
+            );
+        }
+
+        [$rangeStart, $rangeEnd] = $this->getDashboardDateRange();
+        $pageViewEventType = constant($insightsEventTypeClass . '::PageView');
+
+        $rows = $insightsEventClass::query()
             ->select('path', DB::raw('COUNT(*) as views'))
-            ->where('type', InsightsEventType::PageView)
+            ->where('type', $pageViewEventType)
             ->where('occurred_at', '>=', $rangeStart)
             ->where('occurred_at', '<=', $rangeEnd)
             ->groupBy('path')

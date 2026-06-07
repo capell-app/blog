@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Console\Commands;
 
-use Capell\Blog\Actions\InstallPackageAction;
+use Capell\Blog\Actions\SeedBlogPublishingSurfaceAction;
 use Illuminate\Console\Command;
 
 class SetupCommand extends Command
@@ -23,7 +23,7 @@ class SetupCommand extends Command
      */
     public function handle(): int
     {
-        InstallPackageAction::run();
+        SeedBlogPublishingSurfaceAction::run();
 
         $this->newLine();
         $this->info('Capell Blog setup successfully.');

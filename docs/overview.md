@@ -1,17 +1,20 @@
 # Blog
 
-Status: **Available, schema-owning** · Kind: **package** · Tier: **free** · Bundle: **foundation** · Contexts: **admin, frontend, console** · Product group: **Capell Foundation**
+Status: **Available, schema-owning** · Kind: **package** · Tier: **premium** · Bundle: **publishing-pro** · Contexts: **admin, frontend, console** · Product group: **Capell Publishing**
 
 This page is the consolidated implementation overview for the Blog package. It is extracted from the package README, service providers, migrations, config files, routes, resources, models, actions, and the shared Capell ERD notes where available.
 
 ## What This Package Adds
 
-Blog adds article publishing, archive pages, tag pages, article widgets, Site Discovery sitemap contributions, and frontend Livewire page components to Capell.
+Blog adds premium article publishing, archive pages, tag pages, article widgets, optional discovery and analytics bridges, and frontend Livewire page components to Capell.
 
 - Article Filament resource.
 - Blog, archive, and tag frontend Livewire components.
 - Article widgets and configurators for layout builder.
-- Site Discovery sitemap contributions for articles, archives, and tags.
+- Optional Site Discovery sitemap contributions for articles, archives, and tags.
+- Optional Publishing Studio workspace and editorial calendar bridge.
+- Optional Insights dashboard traffic widgets.
+- Optional Comments package compatibility through the dedicated Comments bridge.
 - Commands to install and create blog pages.
 
 ## Developer Notes
@@ -30,7 +33,7 @@ Builds on core pages, layouts, translations, page URLs, core layout builder widg
 Gives editors a dedicated article workflow that still fits the same structured publishing foundation as pages.
 
 - Adds articles table and article admin resource.
-- Adds blog frontend components and Site Discovery sitemap contributions.
+- Adds blog frontend components and optional Site Discovery sitemap contributions.
 - Adds console commands for setup, install, demo, faker, and page creation.
 - May add blog pages to navigation through listener behaviour.
 
@@ -61,7 +64,8 @@ The frontend screenshots need seeded blog pages and articles before they are use
 
 - Run the package setup before expecting archive/tag pages.
 - Check layouts before creating article records.
-- Cache and Site Discovery sitemap output may need regeneration after setup.
+- Cache output may need regeneration after setup.
+- Site Discovery sitemap output may need regeneration when that optional bridge is installed.
 
 ## Verification
 
@@ -72,12 +76,13 @@ The frontend screenshots need seeded blog pages and articles before they are use
 ## Package Manifest
 
 - Composer name: `capell-app/blog`
-- Product group: Capell Foundation
+- Product group: Capell Publishing
 - Kind: package
-- Tier: free
-- Bundle: foundation
+- Tier: premium
+- Bundle: publishing-pro
 - Contexts: `admin`, `frontend`, `console`
-- Optional dependencies: None listed.
+- Required dependencies: `capell-app/admin`, `capell-app/content-sections`, `capell-app/core`, `capell-app/frontend`, `capell-app/html-cache`, `capell-app/layout-builder`, `capell-app/navigation`, `capell-app/tags`
+- Optional bridges: `capell-app/comments`, `capell-app/insights`, `capell-app/publishing-studio`, `capell-app/site-discovery`
 
 ## Admin Surfaces
 

@@ -31,11 +31,13 @@ use Capell\Core\Models\Site;
 use Capell\Core\Models\Translation;
 use Capell\Core\Support\Packages\AbstractPackageServiceProvider;
 use Capell\Core\Support\Renderables\RenderableRegistry;
+use Capell\Frontend\Support\Cache\CacheInvalidationRegistry;
 use Capell\LayoutBuilder\Contracts\LayoutSidebarWidgetContributor;
 use Capell\PublishingStudio\Contracts\EditorialCalendarEventContributor;
 use Capell\PublishingStudio\WorkspaceRegistry;
 use Capell\SiteDiscovery\Contracts\PublicUrlContributor;
 use Capell\Tags\Models\Tag;
+use Capell\Tags\Support\TagModelRegistrar;
 use Composer\InstalledVersions;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
@@ -51,6 +53,12 @@ use Spatie\MediaLibrary\MediaCollections\Events\MediaHasBeenAddedEvent;
 class BlogServiceProvider extends AbstractPackageServiceProvider
 {
     private const string LAYOUT_SIDEBAR_ELEMENT_CONTRIBUTOR = LayoutSidebarWidgetContributor::class;
+
+    private const string EDITORIAL_CALENDAR_EVENT_CONTRIBUTOR = EditorialCalendarEventContributor::class;
+
+    private const string PUBLIC_URL_CONTRIBUTOR = PublicUrlContributor::class;
+
+    private const string WORKSPACE_REGISTRY = WorkspaceRegistry::class;
 
     public static string $name = 'capell-blog';
 
@@ -123,6 +131,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
             ->registerTypes()
             ->registerPublicUrlContributors()
             ->registerEditorialCalendarContributors()
+            ->registerCacheInvalidationDependencies()
             ->registerTranslationEvents()
             ->registerTagCacheEvents()
             ->registerArticleMediaCacheEvents()
@@ -170,13 +179,9 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
 
     private function registerModelRelations(): self
     {
-        CapellCore::registerModelRelations(Page::class, 'tags');
-        CapellCore::registerModelRelations(Section::class, 'tags');
-
-        Tag::resolveRelationUsing(
-            'articles',
-            fn (Tag $tag): MorphToMany => $tag->morphedByMany(Article::class, 'taggable', 'taggables'),
-        );
+        TagModelRegistrar::registerTaggable(Article::class, inverseRelation: 'articles');
+        TagModelRegistrar::registerTaggable(Page::class);
+        TagModelRegistrar::registerTaggable(Section::class);
 
         return $this;
     }
@@ -191,15 +196,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
 
     private function registerBlazeComponents(): self
     {
-        foreach ([
-            __DIR__ . '/../../resources/views/components/article-meta.blade.php',
-            __DIR__ . '/../../resources/views/components/asset-after-title.blade.php',
-            __DIR__ . '/../../resources/views/components/footer',
-            __DIR__ . '/../../resources/views/components/page',
-            __DIR__ . '/../../resources/views/components/tag.blade.php',
-        ] as $path) {
-            RegisterBlazeOptimizedViewsAction::run($path);
-        }
+        RegisterBlazeOptimizedViewsAction::run(__DIR__ . '/../../resources/views/components');
 
         return $this;
     }
@@ -278,26 +275,12 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
 
     private function registerRelationships(): self
     {
-        Page::resolveRelationUsing(
-            'tags',
-            fn (Page $model): MorphToMany => $model->morphToMany(
-                Tag::class,
-                'taggable',
-                'taggables',
-            ),
-        );
-
         Site::resolveRelationUsing(
             'tags',
             fn (Site $model): HasMany => $model->hasMany(Tag::class, 'site_id'),
         );
 
         if (class_exists(Section::class)) {
-            Section::resolveRelationUsing(
-                'tags',
-                fn (Section $model): MorphToMany => $model->morphToMany(Tag::class, 'taggable', 'taggables'),
-            );
-
             Tag::resolveRelationUsing(
                 'sections',
                 fn (Tag $model): MorphToMany => $model->morphedByMany(Section::class, 'taggable', 'taggables'),
@@ -309,9 +292,11 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
 
     private function registerPublicUrlContributors(): self
     {
-        if (interface_exists(PublicUrlContributor::class)) {
+        $publicUrlContributorContract = self::PUBLIC_URL_CONTRIBUTOR;
+
+        if (interface_exists($publicUrlContributorContract)) {
             $this->app->singleton(BlogPublicUrlContributor::class);
-            $this->app->tag([BlogPublicUrlContributor::class], PublicUrlContributor::TAG);
+            $this->app->tag([BlogPublicUrlContributor::class], $publicUrlContributorContract::TAG);
         }
 
         return $this;
@@ -319,9 +304,13 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
 
     private function registerEditorialCalendarContributors(): self
     {
-        if (interface_exists(EditorialCalendarEventContributor::class)) {
-            $this->app->singleton(BlogEditorialCalendarEventContributor::class);
-            $this->app->tag([BlogEditorialCalendarEventContributor::class], EditorialCalendarEventContributor::TAG);
+        $editorialCalendarContributorContract = self::EDITORIAL_CALENDAR_EVENT_CONTRIBUTOR;
+
+        if (interface_exists($editorialCalendarContributorContract)) {
+            $contributorClass = BlogEditorialCalendarEventContributor::class;
+
+            $this->app->singleton($contributorClass);
+            $this->app->tag([$contributorClass], $editorialCalendarContributorContract::TAG);
         }
 
         return $this;
@@ -330,6 +319,37 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
     private function registerTranslationEvents(): self
     {
         Event::listen('eloquent.saved: ' . Translation::class, ArticleTranslationSavedListener::class);
+
+        return $this;
+    }
+
+    private function registerCacheInvalidationDependencies(): self
+    {
+        $cacheInvalidationRegistryClass = CacheInvalidationRegistry::class;
+
+        if (! class_exists($cacheInvalidationRegistryClass) || ! $this->app->bound($cacheInvalidationRegistryClass)) {
+            return $this;
+        }
+
+        $registry = resolve($cacheInvalidationRegistryClass);
+
+        if (! is_object($registry) || ! method_exists($registry, 'registerDependency')) {
+            return $this;
+        }
+
+        $registry->registerDependency(Article::class, [
+            'page-tags-*',
+            'site-*-blog-page',
+            'site-*-archive-page',
+            'site-*-tag-page',
+            'site-tags-*',
+        ]);
+
+        $registry->registerDependency(Tag::class, [
+            'page-tags-*',
+            'site-*-tag-page',
+            'site-tags-*',
+        ]);
 
         return $this;
     }
@@ -379,7 +399,11 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
 
     private function registerPublishingStudio(): self
     {
-        WorkspaceRegistry::register(Article::class);
+        $workspaceRegistryClass = self::WORKSPACE_REGISTRY;
+
+        if (class_exists($workspaceRegistryClass)) {
+            $workspaceRegistryClass::register(Article::class);
+        }
 
         return $this;
     }

@@ -57,6 +57,11 @@ test('article page with layout', function (): void {
 
     get($articlePageUrl->full_url)
         ->assertOk()
+        ->assertDontSee('frontend-authoring', false)
+        ->assertDontSee('data-editable', false)
+        ->assertDontSee('signed-editor', false)
+        ->assertDontSee('/admin', false)
+        ->assertDontSee('filament', false)
         ->assertElementExists(
             'title',
             fn (AssertElement $elm): BaseAssert => $elm->containsText($articleTitle . ' | ' . $site->title),

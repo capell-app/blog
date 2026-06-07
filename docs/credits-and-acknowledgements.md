@@ -17,16 +17,21 @@ Package role: Blog for Capell
 ## Capell Packages Used Here
 
 - [Capell Admin](https://docs.capell.app) supplies the Capell-side contracts, surfaces, or runtime that Blog builds on.
-- [Insights](../../insights/README.md) supplies the Capell-side contracts, surfaces, or runtime that Blog builds on.
 - [Capell Frontend](https://docs.capell.app) supplies the Capell-side contracts, surfaces, or runtime that Blog builds on.
 - Core admin/frontend layout builder APIs supply the Capell-side contracts, surfaces, and runtime that Blog builds on.
 - [Navigation](../../navigation/README.md) supplies the Capell-side contracts, surfaces, or runtime that Blog builds on.
 - [Tags](../../tags/README.md) supplies the Capell-side contracts, surfaces, or runtime that Blog builds on.
-- [Publishing Studio](../../publishing-studio/README.md) supplies the Capell-side contracts, surfaces, or runtime that Blog builds on.
+
+## Optional Capell Bridges
+
+- [Comments](../../comments/README.md) owns comment behaviour and can attach discussion surfaces to Blog articles without Blog requiring it.
+- [Insights](../../insights/README.md) can power Blog traffic dashboard widgets when installed.
+- [Publishing Studio](../../publishing-studio/README.md) can add article workspace and editorial calendar behaviour when installed.
+- [Site Discovery](../../site-discovery/README.md) can consume Blog sitemap and public URL contributions when installed.
 
 ## What We Especially Appreciate
 
-Blog is useful because it composes many Capell packages without absorbing them. Tags, navigation, layout, insights, and Publishing Studio all stay updateable in their own packages while Blog wires them into an editorial surface.
+Blog is useful because it composes focused Capell packages without absorbing them. Tags, navigation, and layout stay core dependencies; comments, insights, Publishing Studio, and Site Discovery remain optional bridges that stay updateable in their own packages.
 
 ## Keeping This Page Current
 

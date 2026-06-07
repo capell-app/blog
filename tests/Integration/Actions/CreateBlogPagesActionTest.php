@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Capell\Blog\Actions\CreateBlogPagesAction;
-use Capell\Blog\Actions\InstallPackageAction;
+use Capell\Blog\Actions\SeedBlogPublishingSurfaceAction;
 use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Core\Enums\LayoutEnum;
 use Capell\Core\Models\Layout;
@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 beforeEach(function (): void {
     LayoutBuilderInstallPackageAction::run();
-    InstallPackageAction::run();
+    SeedBlogPublishingSurfaceAction::run();
 });
 
 it('creates the blog, archives, archive, tags, and tag pages for the site', function (): void {

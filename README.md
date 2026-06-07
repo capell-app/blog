@@ -1,6 +1,6 @@
 # Blog
 
-Blog adds article publishing, archive pages, tag pages, article widgets, Site Discovery sitemap contributions, and frontend Livewire page components to Capell.
+Blog adds premium article publishing, archive pages, tag pages, article widgets, optional discovery and analytics bridges, and frontend Livewire page components to Capell.
 
 ## At A Glance
 
@@ -8,7 +8,8 @@ Blog adds article publishing, archive pages, tag pages, article widgets, Site Di
 - Namespace: `Capell\Blog\`
 - Surfaces: Filament admin, Livewire, console, database
 - Service providers: `packages/blog/src/Providers/AdminServiceProvider.php`, `packages/blog/src/Providers/BlogServiceProvider.php`, `packages/blog/src/Providers/ConsoleServiceProvider.php`, `packages/blog/src/Providers/FrontendServiceProvider.php`
-- Capell dependencies: `capell-app/admin`, `capell-app/content-sections`, `capell-app/frontend`, `capell-app/html-cache`, `capell-app/insights`, `capell-app/navigation`, `capell-app/publishing-studio`, `capell-app/site-discovery`, `capell-app/tags`
+- Capell dependencies: `capell-app/admin`, `capell-app/content-sections`, `capell-app/frontend`, `capell-app/html-cache`, `capell-app/navigation`, `capell-app/tags`
+- Optional bridges: `capell-app/comments`, `capell-app/insights`, `capell-app/publishing-studio`, `capell-app/site-discovery`
 
 ## Why It Helps Your Capell Workflow
 
@@ -19,17 +20,23 @@ Blog adds article publishing, archive pages, tag pages, article widgets, Site Di
 ## Best Used With
 
 - [Tags](../tags/README.md)
+- [Comments](../comments/README.md)
+- [Insights](../insights/README.md)
+- [Publishing Studio](../publishing-studio/README.md)
 - [Site Discovery](../site-discovery/README.md)
 - [SEO Suite](../seo-suite/README.md)
 
 ## What It Adds
 
-Blog adds article publishing, archive pages, tag pages, article widgets, Site Discovery sitemap contributions, and frontend Livewire page components to Capell.
+Blog adds premium article publishing, archive pages, tag pages, article widgets, optional discovery and analytics bridges, and frontend Livewire page components to Capell.
 
 - Article Filament resource.
 - Blog, archive, and tag frontend Livewire components.
 - Article widgets and configurators for layout builder.
-- Site Discovery sitemap contributions for articles, archives, and tags.
+- Optional Site Discovery sitemap contributions for articles, archives, and tags.
+- Optional Publishing Studio workspace and editorial calendar bridge.
+- Optional Insights dashboard traffic widgets.
+- Optional Comments package compatibility through the dedicated Comments bridge.
 - Commands to install and create blog pages.
 
 ## Why It Matters
@@ -45,13 +52,17 @@ This package makes its Composer dependencies visible because they are part of th
 **Capell packages used here**
 
 - [Capell Admin](https://github.com/capell-app/admin)
-- [Capell Insights](../insights/README.md)
 - [Capell Frontend](https://github.com/capell-app/frontend)
 - Core admin/frontend layout builder APIs
 - [Capell Navigation](../navigation/README.md)
-- [Capell Site Discovery](../site-discovery/README.md)
 - [Capell Tags](../tags/README.md)
+
+**Optional Capell bridges**
+
+- [Capell Comments](../comments/README.md)
+- [Capell Insights](../insights/README.md)
 - [Capell Publishing Studio](../publishing-studio/README.md)
+- [Capell Site Discovery](../site-discovery/README.md)
 
 **Open-source packages used here**
 

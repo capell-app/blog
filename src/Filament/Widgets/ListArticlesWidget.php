@@ -88,8 +88,8 @@ class ListArticlesWidget extends BaseWidget
                 },
             )
             ->searchable(false)
-            ->heading($this->getTableHeading())
-            ->columns($this->getTableColumns())
+            ->heading($this->tableHeading())
+            ->columns($this->tableColumns())
             ->queryStringIdentifier('articles')
             ->filtersFormColumns(2)
             ->paginationPageOptions([5])
@@ -124,7 +124,10 @@ class ListArticlesWidget extends BaseWidget
             });
     }
 
-    protected function getTableColumns(): array
+    /**
+     * @return array<int, mixed>
+     */
+    protected function tableColumns(): array
     {
         return [
             Split::make([
@@ -152,8 +155,7 @@ class ListArticlesWidget extends BaseWidget
         ];
     }
 
-    #[Override]
-    protected function getTableHeading(): string
+    protected function tableHeading(): string
     {
         return __('capell-admin::heading.latest_pages');
     }

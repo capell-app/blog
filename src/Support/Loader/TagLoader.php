@@ -35,7 +35,7 @@ class TagLoader
         $tags = CapellCore::rememberCache($key, function () use ($page, &$fromCache): Collection {
             $fromCache = false;
 
-            return $page->tags()->ordered()->get();
+            return $page->tags()->enabled()->ordered()->get();
         });
 
         if ($fromCache) {
@@ -86,6 +86,7 @@ class TagLoader
             ->withCount([
                 'taggables' => fn (Builder $query): BuilderContract => self::applyTaggableSiteLanguageScope($query, $site, $language),
             ])
+            ->enabled()
             ->where('type', TagTypeEnum::Page)
             ->where(fn (Builder $query): Builder => self::applySiteScope($query, $site))
             ->when($hasArticles, fn (Builder $query): Builder => self::applyHasArticlesScope($query, $site, $language))
@@ -165,7 +166,9 @@ class TagLoader
             /** @var class-string<Tag> $model */
             $model = Tag::class;
 
-            return $model::query()->where('type', TagTypeEnum::Page->value)
+            return $model::query()
+                ->enabled()
+                ->where('type', TagTypeEnum::Page->value)
                 ->where('slug->' . $language->code, $slug)
                 ->where(
                     fn (Builder $query): Builder => $query->where('site_id', $site->id)->orWhereNull('site_id'),

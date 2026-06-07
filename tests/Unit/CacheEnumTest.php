@@ -74,6 +74,29 @@ it('increments the site tag cache version and clears tag slug cache when tags ch
         ->and(CapellCore::getFromCache($newTagPageKey))->toBeNull();
 });
 
+it('increments the article site tag cache version when a shared tag changes', function (): void {
+    $articleSite = Site::factory()->withTranslations()->create();
+    $tagSite = Site::factory()->withTranslations()->create();
+    $language = $articleSite->language;
+    $versionKey = CacheEnum::siteTagsVersion((int) $articleSite->getKey(), (int) $language->getKey());
+    $tag = Tag::factory()->site($tagSite)->type(TagTypeEnum::Page)->create([
+        'name' => [$language->code => 'Shared tag'],
+        'slug' => [$language->code => 'shared-tag'],
+    ]);
+    $article = Article::withoutEvents(
+        fn (): Article => Article::factory()->site($articleSite)->create(),
+    );
+    $article->tags()->attach($tag);
+
+    Cache::store()->forget($versionKey);
+
+    $tag->forceFill([
+        'name' => [$language->code => 'Updated shared tag'],
+    ])->save();
+
+    expect(Cache::store()->get($versionKey))->toBe(1);
+});
+
 it('uses a new tag listing cache key after the first invalidation', function (): void {
     $site = Site::factory()->withTranslations()->create();
     $language = $site->language;

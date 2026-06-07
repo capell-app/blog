@@ -6,11 +6,11 @@
     "kind": "package",
     "capellApiVersion": "^4.0",
     "version": "4.x-dev",
-    "description": "Blog adds article publishing, archive pages, tag pages, article widgets, Site Discovery sitemap contributions, and frontend Livewire page components to Capell.",
+    "description": "Blog adds premium article publishing, archive pages, tag pages, article widgets, optional discovery and analytics bridges, and frontend Livewire page components to Capell.",
     "product": {
-        "group": "Capell Foundation",
-        "tier": "free",
-        "bundle": "foundation"
+        "group": "Capell Publishing",
+        "tier": "premium",
+        "bundle": "publishing-pro"
     },
     "namespace": "Capell\\Blog",
     "surfaces": ["admin", "frontend", "console"],
@@ -21,14 +21,16 @@
             "capell-app/core",
             "capell-app/frontend",
             "capell-app/html-cache",
-            "capell-app/insights",
             "capell-app/layout-builder",
             "capell-app/navigation",
-            "capell-app/publishing-studio",
-            "capell-app/site-discovery",
             "capell-app/tags"
         ],
-        "supports": ["capell-app/comments"],
+        "supports": [
+            "capell-app/comments",
+            "capell-app/insights",
+            "capell-app/publishing-studio",
+            "capell-app/site-discovery"
+        ],
         "conflicts": []
     },
     "providers": {
@@ -55,8 +57,32 @@
         "install": "Capell\\Blog\\Actions\\InstallBlogPackageAction"
     },
     "settings": [],
-    "permissions": [],
-    "capabilities": [],
+    "permissions": [
+        "article.view",
+        "article.create",
+        "article.update",
+        "article.delete",
+        "article.restore",
+        "article.force_delete",
+        "tag.view",
+        "tag.create",
+        "tag.update",
+        "tag.delete",
+        "tag.restore",
+        "tag.force_delete"
+    ],
+    "capabilities": [
+        "blog",
+        "blog-admin",
+        "blog-frontend",
+        "blog-articles",
+        "blog-archives",
+        "blog-tags",
+        "blog-related-widgets",
+        "blog-cache-invalidation",
+        "blog-publishing-studio-bridge",
+        "blog-comments-bridge"
+    ],
     "performance": {
         "frontendRenderBudgetMs": 20,
         "adminQueryBudget": 40,
@@ -65,7 +91,22 @@
             "cacheable": false,
             "variesBy": ["site", "locale"],
             "sensitiveOutput": false,
-            "invalidationSources": [],
+            "invalidationSources": [
+                {
+                    "model": "Capell\\Blog\\Models\\Article",
+                    "events": [
+                        "created",
+                        "updated",
+                        "deleted",
+                        "restored",
+                        "forceDeleted"
+                    ]
+                },
+                {
+                    "model": "Capell\\Tags\\Models\\Tag",
+                    "events": ["created", "updated", "deleted"]
+                }
+            ],
             "queueInvalidation": true
         }
     },
@@ -100,21 +141,41 @@
         }
     ],
     "commercial": {
-        "proposedLicense": "free",
+        "proposedLicense": "paid",
         "requestedCertification": "first-party",
         "supportPolicy": "capell-first-party",
         "privateDocsRequested": false
     },
     "marketplace": {
-        "summary": "Blog adds article publishing, archive pages, tag pages, article widgets, Site Discovery sitemap contributions, and frontend Livewire page components to Capell.",
+        "summary": "Publish articles, archives, tag pages, and related-article widgets with multilingual, multi-site output and optional growth bridges.",
         "screenshots": [
             {
                 "path": "docs/assets/marketplace/extension-card.jpg",
                 "alt": "Blog extension preview image",
                 "caption": "Blog extension preview"
+            },
+            {
+                "path": "docs/screenshots/articles-admin-index.png",
+                "alt": "Articles admin index showing article publishing status and editorial controls",
+                "caption": "Review the article queue, publish windows, language coverage, and status from the admin index."
+            },
+            {
+                "path": "docs/screenshots/articles-admin-index-dark.png",
+                "alt": "Articles admin index in dark mode",
+                "caption": "Manage the article queue in dark mode."
+            },
+            {
+                "path": "docs/screenshots/create-edit-article-form.png",
+                "alt": "Create and edit article form with publishing, metadata, layout, media, and taxonomy fields",
+                "caption": "Create or update an article with publishing windows, metadata, layout selection, media, and tags."
+            },
+            {
+                "path": "docs/screenshots/create-edit-article-form-dark.png",
+                "alt": "Create and edit article form in dark mode",
+                "caption": "Edit article publishing details in dark mode."
             }
         ],
-        "categories": ["admin", "console", "foundation", "frontend"]
+        "categories": ["admin", "console", "frontend", "publishing"]
     },
     "contributionTraceability": {
         "deferredContributions": [

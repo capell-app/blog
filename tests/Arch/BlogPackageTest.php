@@ -1,6 +1,10 @@
 <?php
 
 declare(strict_types=1);
+
+use Capell\Blog\Models\Article;
+use Capell\Blog\Support\PublishingStudio\Concerns\BelongsToOptionalWorkspace;
+use Capell\PublishingStudio\BelongsToWorkspace;
 use Symfony\Component\Finder\Finder;
 
 it('declares navigation as an explicit package dependency', function (): void {
@@ -23,7 +27,7 @@ it('declares navigation as an explicit package dependency', function (): void {
         ->and($composerManifest['require'])->toHaveKey('capell-app/navigation');
 });
 
-it('declares site discovery as an explicit package dependency', function (): void {
+it('declares site discovery as an optional package bridge', function (): void {
     $packagePath = dirname(__DIR__, 2);
     $capellManifestContents = file_get_contents($packagePath . '/capell.json');
     $composerManifestContents = file_get_contents($packagePath . '/composer.json');
@@ -39,8 +43,9 @@ it('declares site discovery as an explicit package dependency', function (): voi
         flags: JSON_THROW_ON_ERROR,
     );
 
-    expect($capellManifest['dependencies']['requires'])->toContain('capell-app/site-discovery')
-        ->and($composerManifest['require'])->toHaveKey('capell-app/site-discovery');
+    expect($capellManifest['dependencies']['requires'])->not->toContain('capell-app/site-discovery')
+        ->and($capellManifest['dependencies']['supports'])->toContain('capell-app/site-discovery')
+        ->and($composerManifest['require'])->not->toHaveKey('capell-app/site-discovery');
 });
 
 it('keeps blog package references inside the blog source package except intentional bridges', function (): void {
@@ -82,3 +87,12 @@ arch()
 arch('blog package does not depend on seo-suite')
     ->expect('Capell\Blog')
     ->not->toUse('Capell\SeoSuite');
+
+arch('blog package does not depend on comments')
+    ->expect('Capell\Blog')
+    ->not->toUse('Capell\Comments');
+
+arch('blog model uses its optional publishing studio bridge')
+    ->expect(Article::class)
+    ->not->toUse(BelongsToWorkspace::class)
+    ->toUse(BelongsToOptionalWorkspace::class);
