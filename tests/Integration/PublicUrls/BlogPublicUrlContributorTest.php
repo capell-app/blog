@@ -44,7 +44,7 @@ it('contributes blog article and listing URLs to the public URL registry contrac
         ->and($urls->first(fn (PublicUrlData $url): bool => $url->canonicalUrl === $articlePageUrl->full_url)?->contentType)
         ->toBe(PublicUrlContentType::Article)
         ->and($urls->first(fn (PublicUrlData $url): bool => $url->canonicalUrl === $articlePageUrl->full_url)?->title)
-        ->toBe($article->translation?->label ?? $article->name);
+        ->toBe($article->translation->label ?? $article->name);
 });
 
 it('registers the blog public URL contributor when Site Discovery is available', function (): void {
