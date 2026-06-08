@@ -38,6 +38,9 @@
             "providers": [
                 "Capell\\Blog\\Providers\\BlogServiceProvider"
             ]
+        },
+        "branch-alias": {
+            "dev-main": "4.x-dev"
         }
     },
     "config": {
