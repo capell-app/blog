@@ -33,11 +33,11 @@ use Override;
 
 class ArticleResource extends PageResource
 {
+    protected static ?string $slug = 'blog/article';
+
     protected static string $adminResourceName = ResourceEnum::Article->name;
 
     protected static ?int $navigationSort = 2;
-
-    protected static ?string $slug = 'article';
 
     protected static bool $isGloballySearchable = true;
 
