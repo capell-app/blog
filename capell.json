@@ -79,6 +79,7 @@
         "blog-archives",
         "blog-tags",
         "blog-related-widgets",
+        "requires-livewire",
         "blog-cache-invalidation",
         "blog-publishing-studio-bridge",
         "blog-comments-bridge"

@@ -1,21 +1,23 @@
 <x-filament-widgets::widget>
     <x-filament::section>
         <x-slot name="heading">
-            Site traffic &mdash; views &amp; visitors
+            {{ __('capell-blog::generic.admin_widgets.site_traffic_heading') }}
         </x-slot>
 
         <div class="space-y-4">
             <div class="flex gap-6 text-sm">
                 <span class="font-medium text-gray-700 dark:text-gray-300">
-                    {{ number_format($data->totalViews) }} views
+                    {{ __('capell-blog::generic.admin_widgets.views_count', ['count' => number_format($data->totalViews)]) }}
                 </span>
                 <span class="font-medium text-gray-500 dark:text-gray-400">
-                    {{ number_format($data->totalVisitors) }} visitors
+                    {{ __('capell-blog::generic.admin_widgets.visitors_count', ['count' => number_format($data->totalVisitors)]) }}
                 </span>
             </div>
 
             @if ($data->points->isEmpty())
-                <p class="text-sm text-gray-500">No traffic data yet.</p>
+                <p class="text-sm text-gray-500">
+                    {{ __('capell-blog::generic.admin_widgets.no_traffic_data') }}
+                </p>
             @else
                 <div class="flex h-32 items-end gap-1">
                     @foreach ($data->points as $point)
@@ -27,7 +29,7 @@
 
                         <div
                             class="flex flex-1 flex-col items-center gap-0.5"
-                            title="{{ $point->date }}: {{ $point->views }} views, {{ $point->visitors }} visitors"
+                            title="{{ __('capell-blog::generic.admin_widgets.traffic_point_title', ['date' => $point->date, 'views' => $point->views, 'visitors' => $point->visitors]) }}"
                         >
                             <div class="flex h-28 w-full items-end gap-px">
                                 <div
@@ -47,13 +49,13 @@
                         <span
                             class="inline-block h-3 w-3 rounded-sm bg-amber-400"
                         ></span>
-                        Views
+                        {{ __('capell-blog::generic.admin_widgets.views') }}
                     </span>
                     <span class="flex items-center gap-1.5">
                         <span
                             class="inline-block h-3 w-3 rounded-sm bg-blue-400"
                         ></span>
-                        Visitors
+                        {{ __('capell-blog::generic.admin_widgets.visitors') }}
                     </span>
                 </div>
             @endif
