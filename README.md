@@ -169,10 +169,7 @@ Screenshots are generated from [docs/screenshots.json](docs/screenshots.json) du
 ## Docs
 
 - [docs index](docs/README.md)
-- [blog-api.md](docs/blog-api.md)
-- [blog-database.md](docs/blog-database.md)
 - [credits-and-acknowledgements.md](docs/credits-and-acknowledgements.md)
-- [media-attachment.md](docs/media-attachment.md)
 - [overview.md](docs/overview.md)
 
 ## Testing

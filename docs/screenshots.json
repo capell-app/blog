@@ -38,8 +38,8 @@
             "surface": "admin",
             "targetType": "admin-surface",
             "target": "ArticleHealthWidgetAbstract",
-            "required": true,
-            "notes": "Capture when the host dashboard registers the Blog widget implementation and seeded articles include complete/incomplete metadata states.",
+            "required": false,
+            "notes": "Optional follow-up. Capture only when the runner can target the host dashboard with the Blog widget implementation visible and seeded articles include complete/incomplete metadata states.",
             "useCase": "An editor sees whether articles are missing metadata, tags, media, translations, or publish settings.",
             "screenshotPath": "packages/blog/docs/screenshots/article-health-widget.png"
         },
@@ -50,8 +50,8 @@
             "surface": "admin",
             "targetType": "admin-surface",
             "target": "TopPagesWidgetAbstract",
-            "required": true,
-            "notes": "Requires the host dashboard to register the widget and seeded article/page traffic data from the analytics package used by the host.",
+            "required": false,
+            "notes": "Optional follow-up. Capture only when the runner can target the host dashboard with the Blog top pages widget visible and seeded article/page traffic data.",
             "useCase": "An editor identifies which articles or blog pages are drawing the most visits.",
             "screenshotPath": "packages/blog/docs/screenshots/top-pages-widget.png"
         },
@@ -62,8 +62,8 @@
             "surface": "admin",
             "targetType": "admin-surface",
             "target": "TrafficChartWidgetAbstract",
-            "required": true,
-            "notes": "Requires the host dashboard to register the widget and seeded time-series traffic data.",
+            "required": false,
+            "notes": "Optional follow-up. Capture only when the runner can target the host dashboard with the Blog traffic widget visible and seeded time-series traffic data.",
             "useCase": "An editor reviews recent traffic trends for blog content from the dashboard.",
             "screenshotPath": "packages/blog/docs/screenshots/traffic-chart-widget.png"
         },
@@ -110,8 +110,8 @@
             "surface": "frontend",
             "targetType": "frontend-view",
             "target": "capell-blog::components.widget.page.article",
-            "required": true,
-            "notes": "Requires a seeded article page with author, date, tag, media, and related metadata. Capture as anonymous public output.",
+            "required": false,
+            "notes": "Optional follow-up. Requires a route-backed seeded article fixture with author, date, tag, media, and related metadata. Capture as anonymous public output.",
             "useCase": "A visitor reads a public article widget with the article metadata needed for scanning and navigation.",
             "screenshotPath": "packages/blog/docs/screenshots/article-page-widget-output.png"
         },
@@ -122,8 +122,8 @@
             "surface": "frontend",
             "targetType": "frontend-view",
             "target": "capell-blog::components.widget.tag.tags",
-            "required": true,
-            "notes": "Requires seeded tags with at least one published article per tag. Capture as anonymous public output.",
+            "required": false,
+            "notes": "Optional follow-up. Requires a route-backed seeded tag widget fixture with at least one published article per tag. Capture as anonymous public output.",
             "useCase": "A visitor uses the tag widget to navigate between related article topics.",
             "screenshotPath": "packages/blog/docs/screenshots/article-tags-widget-output.png"
         }
