@@ -8,7 +8,7 @@
     "version": "4.x-dev",
     "description": "Blog adds premium article publishing, archive pages, tag pages, article widgets, optional discovery and analytics bridges, and frontend Livewire page components to Capell.",
     "product": {
-        "group": "Capell Publishing",
+        "group": "Capell Publishing Pro",
         "tier": "premium",
         "bundle": "publishing-pro"
     },
