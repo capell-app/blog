@@ -16,6 +16,7 @@ use Illuminate\Contracts\Database\Eloquent\Builder as BuilderContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Collection;
 
 class Related extends AbstractPagesWidget
 {
@@ -24,6 +25,10 @@ class Related extends AbstractPagesWidget
     protected function mountWidget(): void
     {
         $limit = $this->widget->meta['limit'] ?? config('capell-frontend.pagination_limit', 12);
+        $fallbackLimit = config('capell-frontend.pagination_limit', 12);
+        $limit = is_numeric($limit)
+            ? (int) $limit
+            : (is_int($fallbackLimit) ? $fallbackLimit : 12);
 
         $page = Frontend::page();
         $language = Frontend::language();
@@ -31,6 +36,15 @@ class Related extends AbstractPagesWidget
 
         if (! $page instanceof Pageable || ! $language instanceof Language || ! $site instanceof Site) {
             $this->skipRender = true;
+
+            return;
+        }
+
+        $preparedRelatedArticles = Frontend::getFrontendData('blog.related_articles');
+
+        if ($preparedRelatedArticles instanceof Collection) {
+            $this->pages = $preparedRelatedArticles->take($limit);
+            $this->skipRender = $this->pages->isEmpty();
 
             return;
         }

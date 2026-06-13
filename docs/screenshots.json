@@ -32,42 +32,6 @@
             "darkScreenshotPath": "packages/blog/docs/screenshots/create-edit-article-form-dark.png"
         },
         {
-            "id": "article-health-widget",
-            "title": "Article health dashboard widget.",
-            "package": "blog",
-            "surface": "admin",
-            "targetType": "admin-surface",
-            "target": "ArticleHealthWidgetAbstract",
-            "required": true,
-            "notes": "Capture when the host dashboard registers the Blog widget implementation and seeded articles include complete/incomplete metadata states.",
-            "useCase": "An editor sees whether articles are missing metadata, tags, media, translations, or publish settings.",
-            "screenshotPath": "packages/blog/docs/screenshots/article-health-widget.png"
-        },
-        {
-            "id": "top-pages-widget",
-            "title": "Top pages dashboard widget.",
-            "package": "blog",
-            "surface": "admin",
-            "targetType": "admin-surface",
-            "target": "TopPagesWidgetAbstract",
-            "required": true,
-            "notes": "Requires the host dashboard to register the widget and seeded article/page traffic data from the analytics package used by the host.",
-            "useCase": "An editor identifies which articles or blog pages are drawing the most visits.",
-            "screenshotPath": "packages/blog/docs/screenshots/top-pages-widget.png"
-        },
-        {
-            "id": "traffic-chart-widget",
-            "title": "Traffic chart dashboard widget.",
-            "package": "blog",
-            "surface": "admin",
-            "targetType": "admin-surface",
-            "target": "TrafficChartWidgetAbstract",
-            "required": true,
-            "notes": "Requires the host dashboard to register the widget and seeded time-series traffic data.",
-            "useCase": "An editor reviews recent traffic trends for blog content from the dashboard.",
-            "screenshotPath": "packages/blog/docs/screenshots/traffic-chart-widget.png"
-        },
-        {
             "id": "blog-page-frontend-output",
             "title": "Blog page frontend output.",
             "package": "blog",
@@ -102,30 +66,6 @@
             "notes": "Requires seeded tags attached to published articles and tag page URLs from the blog setup flow.",
             "useCase": "A visitor opens a tag page and sees published articles associated with that tag.",
             "screenshotPath": "packages/blog/docs/screenshots/tag-page-frontend-output.png"
-        },
-        {
-            "id": "article-page-widget-output",
-            "title": "Article page widget output.",
-            "package": "blog",
-            "surface": "frontend",
-            "targetType": "frontend-view",
-            "target": "capell-blog::components.widget.page.article",
-            "required": true,
-            "notes": "Requires a seeded article page with author, date, tag, media, and related metadata. Capture as anonymous public output.",
-            "useCase": "A visitor reads a public article widget with the article metadata needed for scanning and navigation.",
-            "screenshotPath": "packages/blog/docs/screenshots/article-page-widget-output.png"
-        },
-        {
-            "id": "article-tags-widget-output",
-            "title": "Article tags widget output.",
-            "package": "blog",
-            "surface": "frontend",
-            "targetType": "frontend-view",
-            "target": "capell-blog::components.widget.tag.tags",
-            "required": true,
-            "notes": "Requires seeded tags with at least one published article per tag. Capture as anonymous public output.",
-            "useCase": "A visitor uses the tag widget to navigate between related article topics.",
-            "screenshotPath": "packages/blog/docs/screenshots/article-tags-widget-output.png"
         }
     ]
 }

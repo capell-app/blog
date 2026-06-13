@@ -1,5 +1,7 @@
 <x-filament-widgets::widget>
-    <x-filament::section heading="Article health">
+    <x-filament::section
+        :heading="__('capell-blog::generic.admin_widgets.article_health_heading')"
+    >
         <div class="space-y-6">
             {{-- Summary Cards --}}
             <div class="grid grid-cols-3 gap-4">
@@ -7,7 +9,7 @@
                     <div
                         class="text-sm font-medium text-gray-600 dark:text-gray-400"
                     >
-                        Total Articles
+                        {{ __('capell-blog::generic.admin_widgets.total_articles') }}
                     </div>
                     <div
                         class="mt-1 text-2xl font-bold text-gray-900 dark:text-white"
@@ -19,7 +21,7 @@
                     <div
                         class="text-sm font-medium text-gray-600 dark:text-gray-400"
                     >
-                        Total Tags
+                        {{ __('capell-blog::generic.admin_widgets.total_tags') }}
                     </div>
                     <div
                         class="mt-1 text-2xl font-bold text-gray-900 dark:text-white"
@@ -31,7 +33,7 @@
                     <div
                         class="text-sm font-medium text-gray-600 dark:text-gray-400"
                     >
-                        Recent (7 days)
+                        {{ __('capell-blog::generic.admin_widgets.recent_7_days') }}
                     </div>
                     <div
                         class="mt-1 text-2xl font-bold text-gray-900 dark:text-white"
@@ -46,14 +48,14 @@
                 <h3
                     class="mb-3 text-sm font-semibold text-gray-900 dark:text-white"
                 >
-                    Status Breakdown
+                    {{ __('capell-blog::generic.admin_widgets.status_breakdown') }}
                 </h3>
                 <div class="space-y-2">
                     <div
                         class="flex items-center justify-between rounded px-3 py-2 text-sm odd:bg-gray-50 dark:odd:bg-gray-800/50"
                     >
                         <span class="text-gray-700 dark:text-gray-300">
-                            Published
+                            {{ __('capell-blog::generic.admin_widgets.published') }}
                         </span>
                         <span
                             class="rounded bg-green-100 px-2 py-1 text-xs font-medium text-green-700 dark:bg-green-900/40 dark:text-green-300"
@@ -65,7 +67,7 @@
                         class="flex items-center justify-between rounded px-3 py-2 text-sm even:bg-gray-50 dark:even:bg-gray-800/50"
                     >
                         <span class="text-gray-700 dark:text-gray-300">
-                            Draft
+                            {{ __('capell-blog::generic.admin_widgets.draft') }}
                         </span>
                         <span
                             class="rounded bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-300"
@@ -77,7 +79,7 @@
                         class="flex items-center justify-between rounded px-3 py-2 text-sm odd:bg-gray-50 dark:odd:bg-gray-800/50"
                     >
                         <span class="text-gray-700 dark:text-gray-300">
-                            Scheduled (Future)
+                            {{ __('capell-blog::generic.admin_widgets.scheduled_future') }}
                         </span>
                         <span
                             class="rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
@@ -89,7 +91,7 @@
                         class="flex items-center justify-between rounded px-3 py-2 text-sm even:bg-gray-50 dark:even:bg-gray-800/50"
                     >
                         <span class="text-gray-700 dark:text-gray-300">
-                            Expired
+                            {{ __('capell-blog::generic.admin_widgets.expired') }}
                         </span>
                         <span
                             class="rounded bg-red-100 px-2 py-1 text-xs font-medium text-red-700 dark:bg-red-900/40 dark:text-red-300"
@@ -106,7 +108,9 @@
                     <summary
                         class="flex cursor-pointer items-center justify-between gap-2 py-2 text-sm font-medium text-gray-900 dark:text-white"
                     >
-                        <span>Top Tags</span>
+                        <span>
+                            {{ __('capell-blog::generic.admin_widgets.top_tags') }}
+                        </span>
                         <svg
                             class="h-4 w-4 transition-transform group-open:rotate-180"
                             xmlns="http://www.w3.org/2000/svg"
@@ -131,7 +135,7 @@
                                 <span
                                     class="rounded bg-blue-100 px-1.5 py-0.5 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
                                 >
-                                    {{ $tag->articleCount }} articles
+                                    {{ __('capell-blog::generic.admin_widgets.article_count', ['count' => $tag->articleCount]) }}
                                 </span>
                             </div>
                         @endforeach
@@ -145,7 +149,9 @@
                     <summary
                         class="flex cursor-pointer items-center justify-between gap-2 py-2 text-sm font-medium text-gray-900 dark:text-white"
                     >
-                        <span>Translation Coverage</span>
+                        <span>
+                            {{ __('capell-blog::generic.admin_widgets.translation_coverage') }}
+                        </span>
                         <svg
                             class="h-4 w-4 transition-transform group-open:rotate-180"
                             xmlns="http://www.w3.org/2000/svg"

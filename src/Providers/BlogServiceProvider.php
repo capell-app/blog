@@ -15,6 +15,7 @@ use Capell\Blog\Enums\WidgetComponentEnum;
 use Capell\Blog\Listeners\ArticleTranslationSavedListener;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Policies\ArticlePolicy;
+use Capell\Blog\Support\BlogFrontendRuntimeManifestContributor;
 use Capell\Blog\Support\BlogModelRegistrar;
 use Capell\Blog\Support\BlogSidebarWidgetContributor;
 use Capell\Blog\Support\EditorialCalendar\BlogEditorialCalendarEventContributor;
@@ -31,6 +32,7 @@ use Capell\Core\Models\Site;
 use Capell\Core\Models\Translation;
 use Capell\Core\Support\Packages\AbstractPackageServiceProvider;
 use Capell\Core\Support\Renderables\RenderableRegistry;
+use Capell\Frontend\Contracts\FrontendRuntimeManifestContributor;
 use Capell\Frontend\Support\Cache\CacheInvalidationRegistry;
 use Capell\LayoutBuilder\Contracts\LayoutSidebarWidgetContributor;
 use Capell\PublishingStudio\Contracts\EditorialCalendarEventContributor;
@@ -131,6 +133,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
             ->registerTypes()
             ->registerPublicUrlContributors()
             ->registerEditorialCalendarContributors()
+            ->registerFrontendRuntimeManifestContributors()
             ->registerCacheInvalidationDependencies()
             ->registerTranslationEvents()
             ->registerTagCacheEvents()
@@ -302,6 +305,15 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
         return $this;
     }
 
+    private function registerFrontendRuntimeManifestContributors(): self
+    {
+        if (interface_exists(FrontendRuntimeManifestContributor::class)) {
+            $this->app->tag([BlogFrontendRuntimeManifestContributor::class], FrontendRuntimeManifestContributor::TAG);
+        }
+
+        return $this;
+    }
+
     private function registerEditorialCalendarContributors(): self
     {
         $editorialCalendarContributorContract = self::EDITORIAL_CALENDAR_EVENT_CONTRIBUTOR;
@@ -386,7 +398,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
 
     private function registerTypes(): self
     {
-        CapellCore::registerPageType(
+        $this->surface()->pageType(
             new PageTypeData(
                 name: 'article',
                 model: Article::class,

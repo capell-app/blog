@@ -1,9 +1,13 @@
 <x-filament-widgets::widget>
     <x-filament::section>
-        <x-slot name="heading">Top pages</x-slot>
+        <x-slot name="heading">
+            {{ __('capell-blog::generic.admin_widgets.top_pages_heading') }}
+        </x-slot>
 
         @if ($data->pages->isEmpty())
-            <p class="text-sm text-gray-500">No page views recorded yet.</p>
+            <p class="text-sm text-gray-500">
+                {{ __('capell-blog::generic.admin_widgets.no_page_views') }}
+            </p>
         @else
             <div class="divide-y divide-gray-100 dark:divide-gray-800">
                 @foreach ($data->pages as $page)

@@ -8,7 +8,7 @@
     "version": "4.x-dev",
     "description": "Blog adds premium article publishing, archive pages, tag pages, article widgets, optional discovery and analytics bridges, and frontend Livewire page components to Capell.",
     "product": {
-        "group": "Capell Publishing",
+        "group": "Capell Publishing Pro",
         "tier": "premium",
         "bundle": "publishing-pro"
     },
@@ -79,10 +79,57 @@
         "blog-archives",
         "blog-tags",
         "blog-related-widgets",
+        "requires-livewire",
         "blog-cache-invalidation",
         "blog-publishing-studio-bridge",
         "blog-comments-bridge"
     ],
+    "security": {
+        "riskTier": "standard",
+        "publicSurface": {
+            "routeNames": [],
+            "auth": "none",
+            "csrfExemptRoutes": [],
+            "signedRoutes": [],
+            "tokenizedRoutes": [],
+            "webhookRoutes": [],
+            "throttledRoutes": []
+        },
+        "sensitiveData": {
+            "encryptedFields": [],
+            "hashedTokenFields": [],
+            "redactedOutputClasses": [],
+            "plaintextJustifications": []
+        },
+        "publicOutput": {
+            "cacheSafe": true,
+            "forbidAuthoringSurface": true,
+            "forbidSecrets": true,
+            "forbidPublicBladeQueries": true
+        },
+        "externalHttpClients": {
+            "requiresTimeouts": false,
+            "requiresSecretRedaction": false,
+            "clients": []
+        },
+        "adminSurface": {
+            "authorization": "permissions",
+            "permissions": [
+                "article.view",
+                "article.create",
+                "article.update",
+                "article.delete",
+                "article.restore",
+                "article.force_delete",
+                "tag.view",
+                "tag.create",
+                "tag.update",
+                "tag.delete",
+                "tag.restore",
+                "tag.force_delete"
+            ]
+        }
+    },
     "performance": {
         "frontendRenderBudgetMs": 20,
         "adminQueryBudget": 40,

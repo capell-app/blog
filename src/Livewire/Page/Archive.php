@@ -15,6 +15,8 @@ use Capell\Frontend\Livewire\Page\AbstractPage;
 use Capell\Frontend\Support\Loader\PageLoader;
 use Capell\Frontend\Support\State\FrontendState;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Override;
@@ -42,6 +44,24 @@ class Archive extends AbstractPage
         $site = Frontend::site();
 
         abort_unless($language instanceof Language && $site instanceof Site, 404);
+
+        $preparedResults = Frontend::getFrontendData('blog.results');
+        $preparedViewData = Frontend::getFrontendData('blog.results_view_data');
+
+        if (
+            ($preparedResults instanceof Collection || $preparedResults instanceof LengthAwarePaginator)
+            && $preparedViewData instanceof BlogResultsViewData
+        ) {
+            abort_if($preparedResults->isEmpty(), 404);
+
+            $this->results = $preparedResults;
+            $this->blogResultsViewData = $preparedViewData;
+            $this->params = $this->getReplacementData();
+
+            resolve(FrontendState::class)->withParams($this->params);
+
+            return;
+        }
 
         $paginationPage = config('capell-admin.page_query', 'pageQuery');
 

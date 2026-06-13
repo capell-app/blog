@@ -8,10 +8,7 @@ Start at the [package README](../README.md) when deciding whether to install thi
 
 | Doc                                                             | Use it for                                                                         |
 | --------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| [Blog Api](blog-api.md)                                         | HTTP/API contracts, payloads, and integration behavior.                            |
-| [Blog Database](blog-database.md)                               | Tables, migrations, model ownership, and persistence behavior.                     |
 | [Credits And Acknowledgements](credits-and-acknowledgements.md) | Upstream services, dependencies, and acknowledgements.                             |
-| [Media Attachment](media-attachment.md)                         | Focused package workflow, setup, troubleshooting, or implementation details.       |
 | [Overview](overview.md)                                         | Package boundary, runtime surfaces, install notes, and first troubleshooting path. |
 
 ## Read Next
