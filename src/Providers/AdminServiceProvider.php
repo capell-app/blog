@@ -16,6 +16,7 @@ use Capell\Blog\Filament\Configurators\Articles\ArticlePageConfigurator;
 use Capell\Blog\Listeners\AddBlogPagesToNavigation;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Site;
+use Capell\Core\Support\Packages\PackageSurfaceRegistrar;
 use Capell\LayoutBuilder\Enums\ComponentTypeEnum;
 use Capell\Navigation\Events\NavigationCreating;
 use Illuminate\Support\Collection;
@@ -68,7 +69,16 @@ final class AdminServiceProvider extends ServiceProvider
             return;
         }
 
-        CapellCore::registerComponents(self::LAYOUT_BUILDER_COMPONENT_TYPE_ENUM::Widget->name, WidgetComponentEnum::cases());
+        $widgetComponents = [];
+
+        foreach (WidgetComponentEnum::cases() as $widgetComponent) {
+            $widgetComponents[$widgetComponent->name] = $widgetComponent->value;
+        }
+
+        app(PackageSurfaceRegistrar::class)->components(
+            self::LAYOUT_BUILDER_COMPONENT_TYPE_ENUM::Widget->name,
+            $widgetComponents,
+        );
     }
 
     private function registerConfigurators(): void

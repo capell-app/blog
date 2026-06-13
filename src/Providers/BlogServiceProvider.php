@@ -398,7 +398,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
 
     private function registerTypes(): self
     {
-        CapellCore::registerPageType(
+        $this->surface()->pageType(
             new PageTypeData(
                 name: 'article',
                 model: Article::class,

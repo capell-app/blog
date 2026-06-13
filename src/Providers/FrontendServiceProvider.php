@@ -9,15 +9,15 @@ use Capell\Blog\Enums\BlogTypeGroupEnum;
 use Capell\Blog\Enums\LivewirePageComponentEnum;
 use Capell\Blog\Support\Loader\BlogLoader;
 use Capell\Blog\Support\Loader\TagLoader;
+use Capell\Blog\Support\RenderHooks\AfterTitleRenderHook;
+use Capell\Blog\Support\RenderHooks\ArticleMetaRenderHook;
+use Capell\Blog\Support\RenderHooks\BeforeContentTagsRenderHook;
+use Capell\Blog\Support\RenderHooks\FooterPagesRenderHook;
+use Capell\Blog\Support\RenderHooks\FooterTagsRenderHook;
 use Capell\Blog\Support\Sitemap\ArchivesSitemap;
 use Capell\Blog\Support\Sitemap\ArticlesSitemap;
 use Capell\Blog\Support\Sitemap\TagsSitemap;
 use Capell\Blog\Support\StaticSite\BlogStaticSiteExtension;
-use Capell\Blog\View\Components\ArticleMeta;
-use Capell\Blog\View\Components\AssetAfterTitle;
-use Capell\Blog\View\Components\Footer\Pages;
-use Capell\Blog\View\Components\Footer\Tags;
-use Capell\Blog\View\Components\Page\BeforeContentTags;
 use Capell\Core\Contracts\Pageable;
 use Capell\Core\Data\RenderableDefinitionData;
 use Capell\Core\Enums\RenderableTypeEnum;
@@ -25,15 +25,13 @@ use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Site;
 use Capell\Core\Support\Renderables\RenderableRegistry;
-use Capell\Frontend\Data\RenderHookContext;
 use Capell\Frontend\Enums\RenderHookLocation;
 use Capell\Frontend\Events\FrontendContextResolved;
-use Capell\Frontend\Support\Render\RenderHookRegistry;
+use Capell\Frontend\Support\Render\FrontendHookRegistrar;
 use Capell\Frontend\Support\State\FrontendState;
 use Capell\HtmlCache\Support\StaticSite\StaticSiteExtensionRegistry;
 use Capell\SiteDiscovery\Support\Sitemap\SitemapPageRegistry;
 use Capell\Tags\Models\Tag;
-use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
@@ -161,60 +159,48 @@ final class FrontendServiceProvider extends ServiceProvider
 
     private function registerRenderHooks(): void
     {
-        resolve(RenderHookRegistry::class)->register(
-            RenderHookLocation::Footer,
-            function (RenderHookContext $context): ?View {
-                $view = resolve(Tags::class, [
-                    'item' => $context->item,
-                ])->render();
+        $registrar = resolve(FrontendHookRegistrar::class);
 
-                return $view instanceof View ? $view : null;
-            },
+        $registrar->contribute(
+            location: RenderHookLocation::Footer,
+            extension: new FooterTagsRenderHook,
+            owner: 'capell-app/blog',
+            key: 'footer-tags',
             target: 'footer.index',
+            cacheSafe: true,
         );
 
-        resolve(RenderHookRegistry::class)->register(
-            RenderHookLocation::Footer,
-            fn (RenderHookContext $context): View => resolve(Pages::class, [
-                'item' => $context->item,
-            ])
-                ->render(),
+        $registrar->contribute(
+            location: RenderHookLocation::Footer,
+            extension: new FooterPagesRenderHook,
+            owner: 'capell-app/blog',
+            key: 'footer-pages',
             target: 'footer.index',
+            cacheSafe: true,
         );
 
-        resolve(RenderHookRegistry::class)->register(
-            RenderHookLocation::ArticleMeta,
-            function (RenderHookContext $context): string|View {
-                $item = is_array($context->item) ? $context->item : [];
-
-                return resolve(ArticleMeta::class, [
-                    'item' => $context->item ?? null,
-                    'withAuthor' => $item['withAuthor'] ?? false,
-                    'author' => $item['author'] ?? null,
-                    'articleMetaData' => $item['articleMetaData'] ?? null,
-                ])
-                    ->render();
-            },
+        $registrar->contribute(
+            location: RenderHookLocation::ArticleMeta,
+            extension: new ArticleMetaRenderHook,
+            owner: 'capell-app/blog',
+            key: 'article-meta',
+            cacheSafe: false,
         );
 
-        resolve(RenderHookRegistry::class)->register(
-            RenderHookLocation::BeforeContent,
-            fn (RenderHookContext $context): string|View => resolve(BeforeContentTags::class, [
-                'item' => $context->item ?? null,
-                'tags' => $context->item['tags'] ?? null,
-            ])
-                ->render(),
+        $registrar->contribute(
+            location: RenderHookLocation::BeforeContent,
+            extension: new BeforeContentTagsRenderHook,
+            owner: 'capell-app/blog',
+            key: 'before-content-tags',
+            cacheSafe: true,
         );
 
-        resolve(RenderHookRegistry::class)->register(
-            RenderHookLocation::AfterTitle,
-            fn (RenderHookContext $context): string|View => resolve(AssetAfterTitle::class, [
-                'publishDate' => $context->item['publishDate'] ?? null,
-                'publishDatePosition' => $context->item['publishDatePosition'] ?? null,
-                'tags' => $context->item['tags'] ?? null,
-                'publishDateOutput' => $context->item['publishDateOutput'] ?? null,
-            ])
-                ->render(),
+        $registrar->contribute(
+            location: RenderHookLocation::AfterTitle,
+            extension: new AfterTitleRenderHook,
+            owner: 'capell-app/blog',
+            key: 'after-title',
+            cacheSafe: false,
         );
     }
 
