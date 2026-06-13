@@ -83,14 +83,21 @@ class Tags extends AbstractWidget
             return;
         }
 
-        $tagListing = BuildTagListingDataAction::run(
-            site: $site,
-            language: $language,
-            limit: $limit,
-            paginationPage: $paginationPage,
-            withPagination: $withPagination,
-            paginationKey: $paginationKey,
-        );
+        $preparedTags = Frontend::getFrontendData('blog.sidebar_tags');
+        $preparedTagPage = Frontend::getFrontendData('blog.tag_page');
+        $tagListing = $preparedTags instanceof Collection && $preparedTagPage instanceof Page
+            ? new TagListingData(
+                tags: $limit !== null ? $preparedTags->take($limit)->values() : $preparedTags,
+                tagPage: $preparedTagPage,
+            )
+            : BuildTagListingDataAction::run(
+                site: $site,
+                language: $language,
+                limit: $limit,
+                paginationPage: $paginationPage,
+                withPagination: $withPagination,
+                paginationKey: $paginationKey,
+            );
 
         if (! $tagListing instanceof TagListingData) {
             $this->skipRender = true;

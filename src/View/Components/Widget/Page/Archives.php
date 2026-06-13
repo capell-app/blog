@@ -18,9 +18,9 @@ use Capell\Core\Models\Theme;
 use Capell\FoundationTheme\View\Components\Widget\AbstractWidget;
 use Capell\Frontend\Facades\Frontend;
 use Closure;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Override;
 
@@ -36,7 +36,7 @@ class Archives extends AbstractWidget
     protected ?Page $archivePage = null;
 
     /**
-     * @var Collection<int, ArchiveMonthData>|\Illuminate\Pagination\LengthAwarePaginator<int, ArchiveMonthData>|null
+     * @var Collection<int, ArchiveMonthData>|LengthAwarePaginator<int, ArchiveMonthData>|null
      */
     protected null|Collection|LengthAwarePaginator $archives = null;
 
@@ -71,7 +71,10 @@ class Archives extends AbstractWidget
             return;
         }
 
-        $this->archivePage = BlogLoader::getArchivePage($site, $language);
+        $preparedArchivePage = Frontend::getFrontendData('blog.archive_page');
+        $this->archivePage = $preparedArchivePage instanceof Page
+            ? $preparedArchivePage
+            : BlogLoader::getArchivePage($site, $language);
 
         if (! $this->archivePage instanceof Pageable) {
             $this->skipRender = true;
@@ -86,12 +89,15 @@ class Archives extends AbstractWidget
 
         $limit = $this->widget->meta['limit'] ?? config('capell-frontend.pagination_limit', 12);
 
-        $this->archives = BlogLoader::getArchives(
-            site: $site,
-            language: $language,
-            group: $group,
-            limit: $limit,
-        );
+        $preparedArchives = Frontend::getFrontendData('blog.archives');
+        $this->archives = $preparedArchives instanceof Collection || $preparedArchives instanceof LengthAwarePaginator
+            ? $preparedArchives
+            : BlogLoader::getArchives(
+                site: $site,
+                language: $language,
+                group: $group,
+                limit: $limit,
+            );
 
         $archivePageUrl = $this->archivePage->relationLoaded('pageUrl') ? $this->archivePage->getRelation('pageUrl') : null;
         $activeArchive = $this->activeArchive();

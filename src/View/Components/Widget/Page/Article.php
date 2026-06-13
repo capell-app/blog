@@ -62,6 +62,20 @@ class Article extends AbstractWidget
             return;
         }
 
+        $preparedArticleMeta = Frontend::getFrontendData('blog.article.meta');
+        $preparedArticleRenderData = Frontend::getFrontendData('blog.article.render_data');
+
+        if ($preparedArticleMeta instanceof ArticleMetaData && $preparedArticleRenderData instanceof ArticleWidgetRenderData) {
+            $this->articleMeta = $preparedArticleMeta;
+            $this->articleRenderData = $preparedArticleRenderData;
+
+            if ($this->articleMeta->author instanceof Authenticatable) {
+                $this->author = $this->articleMeta->author;
+            }
+
+            return;
+        }
+
         if ($page instanceof ArticleModel) {
             $page->loadMissing('image');
         }

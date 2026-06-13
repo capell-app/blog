@@ -16,6 +16,8 @@ use Capell\Frontend\Support\Loader\PageLoader;
 use Capell\Frontend\Support\State\FrontendState;
 use Capell\Tags\Models\Tag as TagModel;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Override;
 
 class Tag extends AbstractPage
@@ -42,6 +44,27 @@ class Tag extends AbstractPage
         $site = Frontend::site();
 
         abort_unless($language instanceof Language && $site instanceof Site, 404);
+
+        $preparedTag = Frontend::getFrontendData('blog.tag');
+        $preparedResults = Frontend::getFrontendData('blog.results');
+        $preparedViewData = Frontend::getFrontendData('blog.results_view_data');
+
+        if (
+            $preparedTag instanceof TagModel
+            && ($preparedResults instanceof Collection || $preparedResults instanceof LengthAwarePaginator)
+            && $preparedViewData instanceof BlogResultsViewData
+        ) {
+            $this->tag = $preparedTag;
+            $preparedTagName = Frontend::getFrontendData('blog.tag_name');
+            $this->tagName = is_string($preparedTagName) ? $preparedTagName : null;
+            $this->results = $preparedResults;
+            $this->blogResultsViewData = $preparedViewData;
+            $this->params = $this->getReplacementData();
+
+            resolve(FrontendState::class)->withParams($this->params);
+
+            return;
+        }
 
         $tag = TagLoader::tagPage($this->tagSlug, $site, $language);
 

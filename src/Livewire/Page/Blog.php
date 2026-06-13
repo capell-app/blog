@@ -16,6 +16,7 @@ use Capell\Frontend\Facades\Frontend;
 use Capell\Frontend\Livewire\Page\AbstractPage;
 use Capell\Frontend\Support\Loader\PageLoader;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Override;
 
@@ -38,6 +39,21 @@ class Blog extends AbstractPage
         $site = Frontend::site();
 
         abort_unless($language instanceof Language && $site instanceof Site, 404);
+
+        $preparedResults = Frontend::getFrontendData('blog.results');
+        $preparedViewData = Frontend::getFrontendData('blog.results_view_data');
+
+        if ($preparedResults instanceof Collection || $preparedResults instanceof LengthAwarePaginator) {
+            $this->results = $preparedResults;
+            $preparedLatestArticles = Frontend::getFrontendData('blog.latest_articles');
+            $preparedSidebarTags = Frontend::getFrontendData('blog.sidebar_tags');
+            $preparedTagPage = Frontend::getFrontendData('blog.tag_page');
+            $this->latestArticles = $preparedLatestArticles instanceof Collection ? $preparedLatestArticles : null;
+            $this->sidebarTags = $preparedSidebarTags instanceof Collection ? $preparedSidebarTags : null;
+            $this->tagPage = $preparedTagPage instanceof Page ? $preparedTagPage : null;
+
+            return;
+        }
 
         $paginationPage = config('capell-admin.page_query', 'pageQuery');
 
@@ -94,11 +110,15 @@ class Blog extends AbstractPage
     #[Override]
     protected function getViewData(): array
     {
+        $preparedViewData = Frontend::getFrontendData('blog.results_view_data');
+
         return [
             'latestArticles' => $this->latestArticles,
             'sidebarTags' => $this->sidebarTags,
             'tagPage' => $this->tagPage,
-            'blogResultsViewData' => BuildBlogResultsViewDataAction::run($this->results),
+            'blogResultsViewData' => $preparedViewData instanceof BlogResultsViewData
+                ? $preparedViewData
+                : BuildBlogResultsViewDataAction::run($this->results),
         ];
     }
 }

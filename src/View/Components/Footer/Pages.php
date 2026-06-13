@@ -11,6 +11,7 @@ use Capell\Core\Models\Language;
 use Capell\Core\Models\Site;
 use Capell\Frontend\Facades\Frontend;
 use Capell\Frontend\Support\Loader\PageLoader;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\View\View as ViewContract;
 use Illuminate\Support\Collection;
 use Illuminate\View\Component;
@@ -32,6 +33,20 @@ class Pages extends Component
 
         if (! $language instanceof Language || ! $site instanceof Site) {
             $this->pages = collect();
+
+            return;
+        }
+
+        $preparedPages = Frontend::getFrontendData('blog.latest_articles');
+
+        if ($preparedPages instanceof Collection) {
+            $this->pages = $preparedPages->take(3);
+
+            return;
+        }
+
+        if ($preparedPages instanceof LengthAwarePaginator) {
+            $this->pages = collect($preparedPages->items())->take(3);
 
             return;
         }

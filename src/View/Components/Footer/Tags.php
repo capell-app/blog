@@ -43,13 +43,19 @@ class Tags extends Component
             return;
         }
 
-        $this->tags = TagLoader::getTags($site, $language, limit: 5, hasArticles: true);
+        $preparedTags = Frontend::getFrontendData('blog.sidebar_tags');
+        $this->tags = $preparedTags instanceof Collection
+            ? $preparedTags->take(5)
+            : TagLoader::getTags($site, $language, limit: 5, hasArticles: true);
 
         if ($this->tags->isEmpty()) {
             return;
         }
 
-        $tagPage = TagLoader::getTagResultsPage($site, $language);
+        $preparedTagPage = Frontend::getFrontendData('blog.tag_page');
+        $tagPage = $preparedTagPage instanceof Page
+            ? $preparedTagPage
+            : TagLoader::getTagResultsPage($site, $language);
         if (! $tagPage instanceof Pageable) {
             return;
         }
