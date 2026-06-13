@@ -1,188 +1,107 @@
 # Blog
 
-Blog adds premium article publishing, archive pages, tag pages, article widgets, optional discovery and analytics bridges, and frontend Livewire page components to Capell.
+<!-- prettier-ignore-start -->
 
-## At A Glance
+## What This Plugin Adds
 
-- Package: `capell-app/blog`
-- Namespace: `Capell\Blog\`
-- Surfaces: Filament admin, Livewire, console, database
-- Service providers: `packages/blog/src/Providers/AdminServiceProvider.php`, `packages/blog/src/Providers/BlogServiceProvider.php`, `packages/blog/src/Providers/ConsoleServiceProvider.php`, `packages/blog/src/Providers/FrontendServiceProvider.php`
-- Capell dependencies: `capell-app/admin`, `capell-app/content-sections`, `capell-app/frontend`, `capell-app/html-cache`, `capell-app/navigation`, `capell-app/tags`
-- Optional bridges: `capell-app/comments`, `capell-app/insights`, `capell-app/publishing-studio`, `capell-app/site-discovery`
-
-## Why It Helps Your Capell Workflow
-
-- Adds the editorial publishing layer most Capell sites need: articles, archives, tag pages, related widgets, and sitemap contributions.
-- Lets editors manage content marketing inside Capell instead of building one-off article page types for every project.
-- Gives developers package-owned loaders, Actions, Livewire pages, and tests for article ordering, tags, media, and public rendering.
-
-## Best Used With
-
-- [Tags](../tags/README.md)
-- [Comments](../comments/README.md)
-- [Insights](../insights/README.md)
-- [Publishing Studio](../publishing-studio/README.md)
-- [Site Discovery](../site-discovery/README.md)
-- [SEO Suite](../seo-suite/README.md)
-
-## What It Adds
+Blog is an **Available**, **Schema-owning** Capell package in the **Capell Publishing Pro** product group. It ships as `capell-app/blog` and extends these surfaces: admin, frontend, console.
 
 Blog adds premium article publishing, archive pages, tag pages, article widgets, optional discovery and analytics bridges, and frontend Livewire page components to Capell.
 
-- Article Filament resource.
-- Blog, archive, and tag frontend Livewire components.
-- Article widgets and configurators for layout builder.
-- Optional Site Discovery sitemap contributions for articles, archives, and tags.
-- Optional Publishing Studio workspace and editorial calendar bridge.
-- Optional Insights dashboard traffic widgets.
-- Optional Comments package compatibility through the dedicated Comments bridge.
-- Commands to install and create blog pages.
+After install, admins get package-owned management surfaces and public users may see package-owned frontend output or routes.
+
+Status details:
+
+- Status: Available
+- Tier: premium
+- Bundle: publishing-pro
+- Composer package: `capell-app/blog`
+- Namespace: `Capell\Blog`
+- Theme key: not applicable
 
 ## Why It Matters
 
-**For developers:** Builds on core pages, layouts, translations, page URLs, core layout builder widgets, and tags while keeping article-specific logic in actions and loaders.
+**For developers:** The package gives developers package-owned service providers, Actions, Data objects, models, Filament classes, and Blade views instead of pushing this behaviour into core or application code.
 
-**For teams:** Gives editors a dedicated article workflow that still fits the same structured publishing foundation as pages.
-
-## Built With
-
-This package makes its Composer dependencies visible because they are part of the value proposition, not just plumbing. When an upstream package has a public repository, its linked preview card points readers back to the maintainers so their work gets proper credit.
-
-**Capell packages used here**
-
-- [Capell Admin](https://github.com/capell-app/admin)
-- [Capell Frontend](https://github.com/capell-app/frontend)
-- Core admin/frontend layout builder APIs
-- [Capell Navigation](../navigation/README.md)
-- [Capell Tags](../tags/README.md)
-
-**Optional Capell bridges**
-
-- [Capell Comments](../comments/README.md)
-- [Capell Insights](../insights/README.md)
-- [Capell Publishing Studio](../publishing-studio/README.md)
-- [Capell Site Discovery](../site-discovery/README.md)
-
-**Open-source packages used here**
-
-- No extra third-party Composer package beyond the Capell package stack is required here.
+**For teams:** Publish articles, archives, tag pages, and related-article widgets with multilingual, multi-site output and optional growth bridges.
 
 ## Screens And Workflow
 
-Screenshots are generated from [docs/screenshots.json](docs/screenshots.json) during package deployment.
+Screenshot contract: `docs/screenshots.json`.
 
-- Articles admin index.
-- Create/edit article form.
-- Blog page frontend output.
-- Archive page frontend output.
-- Tag page frontend output.
+- Articles admin index (admin, required).
+- Create/edit article form (admin, required).
+- Blog page frontend output (frontend, required).
+- Archive page frontend output (frontend, required).
+- Tag page frontend output (frontend, required).
 
 ## Technical Shape
 
-- BlogServiceProvider, AdminServiceProvider, ConsoleServiceProvider, and FrontendServiceProvider register package surfaces.
-- Migration creates articles.
-- Model: Article.
-- Filament resource: ArticleResource.
-- Livewire pages: Blog, Archive, Tag.
-- Listeners sync navigation and translation changes.
+- Service providers: `Capell\Blog\Providers\ConsoleServiceProvider`, `Capell\Blog\Providers\BlogServiceProvider`, `Capell\Blog\Providers\AdminServiceProvider`, `Capell\Blog\Providers\FrontendServiceProvider`.
+- Migrations: `packages/blog/database/migrations/2026_05_10_190842_01_create_articles_table.php`.
+- Models: `Article`.
+- Filament classes: `ArticleSelect`, `SettingsTab`, `TagsInput`, `ArticlePageConfigurator`, `ArticleWidgetConfigurator`, `RelatedWidgetConfigurator`, `ArticleResource`, `CreateArticle`, `EditArticle`, `ListArticles`, `ArticleForm`, `ArticlePagesTable`, `and 4 more`.
+- Livewire components: `Archive`, `Blog`, `Tag`.
+- Policies: `ArticlePolicy`.
+- Listeners: `AddBlogPagesToNavigation`, `ArticleTranslationSavedListener`.
+- Actions: `AssignExampleArticleImageAction`, `BuildArticleMetaDataAction`, `BuildBlogResultsViewDataAction`, `BuildTagListingDataAction`, `ClearBlogContentCacheAction`, `ClearBlogTagCacheAction`, `CreateBlogHeroDemoContentAction`, `CreateBlogPagesAction`, `EnsureArticlePublishingDefaultsAction`, `EnsureBlogPublishingSurfaceAction`, `GenerateArchiveUrl`, `GetArticleLayoutAction`, `and 2 more`.
+- Data objects: `ArchiveLinkData`, `ArchiveMonthData`, `ArticleMetaData`, `ArticleNeighborLinkData`, `ArticleWidgetRenderData`, `BlogPublishingSurfaceData`, `BlogResultItemData`, `BlogResultsViewData`, `BlogTagLinkData`, `BlogWidgetContentData`, `ArticleHealthData`, `LanguageCoverageData`, `and 6 more`.
+- Command signatures: `capell:blog-demo`, `capell:blog-install`, `capell:blog-setup`.
+- Console command classes: `CreateBlogPagesCommand`, `DemoCommand`, `FakerCommand`, `HeroDemoCommand`, `InstallCommand`, `SetupCommand`.
+- Health checks: `Capell\Blog\Health\BlogHealthCheck`.
+- Blade views: `packages/blog/resources/views/components/article-meta.blade.php`, `packages/blog/resources/views/components/asset-after-title.blade.php`, `packages/blog/resources/views/components/footer/pages.blade.php`, `packages/blog/resources/views/components/footer/tags.blade.php`, `packages/blog/resources/views/components/page/author.blade.php`, `packages/blog/resources/views/components/page/published-date.blade.php`, `packages/blog/resources/views/components/page/tags.blade.php`, `packages/blog/resources/views/components/tag.blade.php`, `packages/blog/resources/views/components/widget/page/archives.blade.php`, `packages/blog/resources/views/components/widget/page/article.blade.php`, `packages/blog/resources/views/components/widget/tag/tags.blade.php`, `packages/blog/resources/views/filament/widgets/article-health.blade.php`, `and 4 more`.
+- Cache tags: `blog`.
 
-## Code Map
-
-| Area      | Path                          | Purpose                                                             |
-| --------- | ----------------------------- | ------------------------------------------------------------------- |
-| Actions   | `packages/blog/src/Actions`   | Domain operations. Test these directly where possible.              |
-| Data      | `packages/blog/src/Data`      | Structured payloads, form state, view models, and integration data. |
-| Enums     | `packages/blog/src/Enums`     | Persisted states and Filament option values.                        |
-| Models    | `packages/blog/src/Models`    | Eloquent records owned by the package.                              |
-| Filament  | `packages/blog/src/Filament`  | Admin resources, pages, widgets, and settings UI.                   |
-| Livewire  | `packages/blog/src/Livewire`  | Interactive frontend or admin components.                           |
-| Providers | `packages/blog/src/Providers` | Registration, extension hooks, routes, migrations, and resources.   |
-| Resources | `packages/blog/resources`     | Views, translations, assets, and package resources.                 |
-| Database  | `packages/blog/database`      | Migrations, seeders, and settings migrations.                       |
-| Tests     | `packages/blog/tests`         | Package-level Pest coverage.                                        |
-
-## Admin Surface
-
-- Resources: `ArticleResource`.
-- Pages: `CreateArticle`, `EditArticle`, `ListArticles`.
-- Widgets: `ArticleHealthWidgetAbstract`, `ArticleWidgetConfigurator`, `ListArticlesWidget`, `RelatedWidgetConfigurator`, `TopPagesWidgetAbstract`, `TrafficChartWidgetAbstract`.
-
-## Runtime Surface
-
-- Livewire: `Archive`, `Blog`, `Tag`.
-
-## Commands
-
-- `capell:blog-create-pages {site : The ID of the site to create blog pages for}` (packages/blog/src/Console/Commands/CreateBlogPagesCommand.php)
-- `capell:blog-faker {--count=25} {--sites=} {--languages=} {--force}` (packages/blog/src/Console/Commands/FakerCommand.php)
-- `capell:blog-install` (packages/blog/src/Console/Commands/InstallCommand.php)
-- `capell:blog-setup {--user= : Ignored - accepted for compatibility with capell:install} {--sites= : Ignored - accepted for compatibility with capell:install} {--languages= : Ignored - accepted for compatibility with capell:install} {--url= : Ignored - accepted for compatibility with capell:install}` (packages/blog/src/Console/Commands/SetupCommand.php)
-- `capell:hero-demo {--sites=}` (packages/blog/src/Console/Commands/HeroDemoCommand.php)
-
-## Data And Persistence
-
-- articles stores uuid, workspace, type, layout, site, meta, visible_from, and visible_until.
-- Articles connect to sites, types, layouts, page URLs, translations, core layout builder widget assets, and tags.
-- Blog uses the layout builder APIs provided by the admin/frontend core packages.
-- Deletion and retention behaviour should be verified against the host application policy.
+## Data Model
 
 - Models: `Article`.
-- Migrations: `2026_05_10_190842_01_create_articles_table.php`.
-- Data objects live in `src/Data/`; use them for payloads, form state, and view models.
-
-## Extension Points
-
-- Listeners: `AddBlogPagesToNavigation`, `ArticleTranslationSavedListener`.
-- Register Capell extension points, routes, migrations, settings, render hooks, and resources from service providers.
+- Migration files: `2026_05_10_190842_01_create_articles_table.php`.
+- Migration impact: run host migrations through the package install flow before opening package surfaces.
+- Deletion/retention behaviour: Docs gap unless the package has an explicit pruning command, retention setting, or tested cascade path.
 
 ## Install Impact
 
-- Adds articles table and article admin resource.
-- Adds blog frontend components and Site Discovery sitemap contributions.
-- Adds console commands for setup, install, demo, faker, and page creation.
-- May add blog pages to navigation through listener behaviour.
-
-## Install And Setup
-
-- Install with `composer require capell-app/blog` in the host Capell application.
-- Run the package install command above when the package needs migrations, settings, generated pages, or seed data.
-- In this repository, verify package changes with `vendor/bin/pest`; do not use `php artisan`.
-
-## Admin And Access
-
-- ArticleResource (packages/blog/src/Filament/Resources/Articles/ArticleResource.php, slug `article`)
-- CreateArticle (packages/blog/src/Filament/Resources/Articles/Pages/CreateArticle.php)
-- EditArticle (packages/blog/src/Filament/Resources/Articles/Pages/EditArticle.php)
-- ListArticles (packages/blog/src/Filament/Resources/Articles/Pages/ListArticles.php)
-
-- Gate: ArticleHealthWidgetAbstract: `developer`, `admin`, `super_admin`
-- Gate: TopPagesWidgetAbstract: `admin`, `super_admin`
-- Gate: TrafficChartWidgetAbstract: `admin`, `super_admin`
+- Admin navigation: adds package-owned Filament classes when registered.
+- Permissions: `article.view`, `article.create`, `article.update`, `article.delete`, `article.restore`, `article.force_delete`, `tag.view`, `tag.create`, `tag.update`, `tag.delete`, `tag.restore`, `tag.force_delete`.
+- Public routes: none detected in package route files.
+- Database changes: package migrations are declared.
+- Settings: no package settings declared.
+- Queues or schedules: none detected in standard package paths.
+- Cache tags: `blog`.
+- Commands: `capell:blog-demo`, `capell:blog-install`, `capell:blog-setup`.
 
 ## Common Pitfalls
 
-- Run the package setup before expecting archive/tag pages.
-- Check layouts before creating article records.
-- Cache and Site Discovery sitemap output may need regeneration after setup.
+- Run migrations before opening package resources or public routes.
+- Keep public Blade and cached HTML free of authoring markers, model IDs, permissions, signed editor URLs, and lazy database queries.
+- Run package commands from the host app; in this repository use `vendor/bin/pest` for package tests.
+- Keep `composer.json`, `composer.local.json`, `capell.json`, docs, screenshots, and tests aligned when the package surface changes.
 
-## Docs
+## Troubleshooting
 
-- [docs index](docs/README.md)
-- [credits-and-acknowledgements.md](docs/credits-and-acknowledgements.md)
-- [overview.md](docs/overview.md)
+| Symptom | Likely cause | Check | Fix |
+| --- | --- | --- | --- |
+| Package surface is missing after install | Provider or manifest is not loaded | Confirm `capell.json`, package `composer.json`, and provider registration | Reinstall the package, refresh Composer autoload, and clear host caches |
+| Admin screen or command fails on missing table | Package migrations have not run | Check the tables listed in `Data Model` | Run host migrations and rerun the focused package test |
+| Background work does not run | Queue worker or scheduled command is not active | Check package jobs, commands, and host scheduler configuration | Start the queue or scheduler, then run the focused command or package test |
+| Public output leaks unexpected state | Render data, cache variation, or authoring boundary has regressed | Check public Blade, cache tags, and public-output safety tests | Move data loading out of Blade and rerun the package public-output tests |
 
-## Testing
+## Quick Start
 
-Run package tests from the repository root:
+1. Install the package: `composer require capell-app/blog`.
+2. Run the required setup: `php artisan capell:blog-setup`.
+3. Open the related Capell admin surface and verify Blog appears.
 
-```bash
-vendor/bin/pest packages/blog/tests --configuration=phpunit.xml
-```
+## Next Steps
 
-## Maintenance Notes
+- [Package docs](docs/README.md)
+- [Overview](docs/overview.md)
+- [Screenshot contract](docs/screenshots.json)
+- [Marketplace assets](docs/assets/marketplace/)
+- [Capell content language plan](../../docs/CONTENT_LANGUAGE_PLAN.md)
+- [Capell documentation design system](../../docs/DESIGN_SYSTEM.md)
+- [Capell and package ERD notes](../../docs/erd/capell-and-package-erds.md)
+- Related packages: [Content Sections](../content-sections/README.md), [Html Cache](../html-cache/README.md), [Layout Builder](../layout-builder/README.md), [Navigation](../navigation/README.md), [Tags](../tags/README.md), [Comments](../comments/README.md), [Insights](../insights/README.md), [Publishing Studio](../publishing-studio/README.md), [Site Discovery](../site-discovery/README.md).
+- Focused tests: `vendor/bin/pest packages/blog/tests --configuration=phpunit.xml`.
 
-- Keep Blog widget setup aligned with the layout builder APIs provided by admin/frontend core packages.
-- Put behaviour changes in `src/Actions/`; UI classes, commands, and controllers should call actions instead of owning domain logic.
-- Use package `Data` classes at boundaries instead of passing anonymous arrays between layers.
-- Use backed enums for persisted values and enum labels for Filament options.
+<!-- prettier-ignore-end -->

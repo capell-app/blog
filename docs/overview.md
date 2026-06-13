@@ -1,148 +1,106 @@
 # Blog
 
-Status: **Available, schema-owning** · Kind: **package** · Tier: **premium** · Bundle: **publishing-pro** · Contexts: **admin, frontend, console** · Product group: **Capell Publishing**
+<!-- prettier-ignore-start -->
 
-This page is the consolidated implementation overview for the Blog package. It is extracted from the package README, service providers, migrations, config files, routes, resources, models, actions, and the shared Capell ERD notes where available.
+## What This Plugin Adds
 
-## What This Package Adds
+Blog is an **Available**, **Schema-owning** Capell package in the **Capell Publishing Pro** product group. It ships as `capell-app/blog` and extends these surfaces: admin, frontend, console.
 
 Blog adds premium article publishing, archive pages, tag pages, article widgets, optional discovery and analytics bridges, and frontend Livewire page components to Capell.
 
-- Article Filament resource.
-- Blog, archive, and tag frontend Livewire components.
-- Article widgets and configurators for layout builder.
-- Optional Site Discovery sitemap contributions for articles, archives, and tags.
-- Optional Publishing Studio workspace and editorial calendar bridge.
-- Optional Insights dashboard traffic widgets.
-- Optional Comments package compatibility through the dedicated Comments bridge.
-- Commands to install and create blog pages.
+After install, admins get package-owned management surfaces and public users may see package-owned frontend output or routes.
 
-## Developer Notes
+Status details:
 
-Builds on core pages, layouts, translations, page URLs, core layout builder widgets, and tags while keeping article-specific logic in actions and loaders.
-
-- BlogServiceProvider, AdminServiceProvider, ConsoleServiceProvider, and FrontendServiceProvider register package surfaces.
-- Migration creates articles.
-- Model: Article.
-- Filament resource: ArticleResource.
-- Livewire pages: Blog, Archive, Tag.
-- Listeners sync navigation and translation changes.
-
-## Operational Notes
-
-Gives editors a dedicated article workflow that still fits the same structured publishing foundation as pages.
-
-- Adds articles table and article admin resource.
-- Adds blog frontend components and optional Site Discovery sitemap contributions.
-- Adds console commands for setup, install, demo, faker, and page creation.
-- May add blog pages to navigation through listener behaviour.
-
-## Data And Retention
-
-- articles stores uuid, workspace, type, layout, site, meta, visible_from, and visible_until.
-- Articles connect to sites, types, layouts, page URLs, translations, core layout builder widget assets, and tags.
-- Blog uses the layout builder APIs provided by the admin/frontend core packages.
-- Deletion and retention behaviour should be verified against the host application policy.
-
-## Screenshot Plan
-
-- Articles admin index.
-- Create/edit article form.
-- Blog dashboard widgets.
-- Blog page frontend output.
-- Archive page frontend output.
-- Tag page frontend output.
-- Article and tag widget frontend output.
-
-## Screenshots
-
-![Articles admin index](screenshots/articles-admin-index.png)
-
-The frontend screenshots need seeded blog pages and articles before they are useful. Keep them in the manifest, but do not use the current blank captures as documentation assets.
-
-## Pitfalls
-
-- Run the package setup before expecting archive/tag pages.
-- Check layouts before creating article records.
-- Cache output may need regeneration after setup.
-- Site Discovery sitemap output may need regeneration when that optional bridge is installed.
-
-## Verification
-
-- Run `vendor/bin/pest packages/blog/tests` when package tests exist.
-- Run the relevant host-app migration or package install flow in a disposable database.
-- Open the listed admin or frontend surface and compare it with the screenshot plan.
-
-## Package Manifest
-
-- Composer name: `capell-app/blog`
-- Product group: Capell Publishing
-- Kind: package
+- Status: Available
 - Tier: premium
 - Bundle: publishing-pro
-- Contexts: `admin`, `frontend`, `console`
-- Required dependencies: `capell-app/admin`, `capell-app/content-sections`, `capell-app/core`, `capell-app/frontend`, `capell-app/html-cache`, `capell-app/layout-builder`, `capell-app/navigation`, `capell-app/tags`
-- Optional bridges: `capell-app/comments`, `capell-app/insights`, `capell-app/publishing-studio`, `capell-app/site-discovery`
+- Composer package: `capell-app/blog`
+- Namespace: `Capell\Blog`
+- Theme key: not applicable
 
-## Admin Surfaces
+## Why It Matters
 
-- ArticleResource (packages/blog/src/Filament/Resources/Articles/ArticleResource.php, slug `article`)
-- CreateArticle (packages/blog/src/Filament/Resources/Articles/Pages/CreateArticle.php)
-- EditArticle (packages/blog/src/Filament/Resources/Articles/Pages/EditArticle.php)
-- ListArticles (packages/blog/src/Filament/Resources/Articles/Pages/ListArticles.php)
+**For developers:** The package gives developers package-owned service providers, Actions, Data objects, models, Filament classes, and Blade views instead of pushing this behaviour into core or application code.
 
-## Commands
+**For teams:** Publish articles, archives, tag pages, and related-article widgets with multilingual, multi-site output and optional growth bridges.
 
-- `capell:blog-create-pages {site : The ID of the site to create blog pages for}` (packages/blog/src/Console/Commands/CreateBlogPagesCommand.php)
-- `capell:blog-faker {--count=25} {--sites=} {--languages=} {--force}` (packages/blog/src/Console/Commands/FakerCommand.php)
-- `capell:blog-install` (packages/blog/src/Console/Commands/InstallCommand.php)
-- `capell:blog-setup {--user= : Ignored — accepted for compatibility with capell:install} {--sites= : Ignored — accepted for compatibility with capell:install} {--languages= : Ignored — accepted for compatibility with capell:install} {--url= : Ignored — accepted for compatibility with capell:install}` (packages/blog/src/Console/Commands/SetupCommand.php)
+## Screens And Workflow
 
-## Routes And Config
+Screenshot contract: `screenshots.json`.
 
-- None proven in this package directory.
+- Articles admin index (admin, required).
+- Create/edit article form (admin, required).
+- Blog page frontend output (frontend, required).
+- Archive page frontend output (frontend, required).
+- Tag page frontend output (frontend, required).
 
-## Permissions And Gates
+## Technical Shape
 
-- Gate: ArticleHealthWidgetAbstract: `developer`, `admin`, `super_admin`
-- Gate: TopPagesWidgetAbstract: `admin`, `super_admin`
-- Gate: TrafficChartWidgetAbstract: `admin`, `super_admin`
+- Service providers: `Capell\Blog\Providers\ConsoleServiceProvider`, `Capell\Blog\Providers\BlogServiceProvider`, `Capell\Blog\Providers\AdminServiceProvider`, `Capell\Blog\Providers\FrontendServiceProvider`.
+- Migrations: `packages/blog/database/migrations/2026_05_10_190842_01_create_articles_table.php`.
+- Models: `Article`.
+- Filament classes: `ArticleSelect`, `SettingsTab`, `TagsInput`, `ArticlePageConfigurator`, `ArticleWidgetConfigurator`, `RelatedWidgetConfigurator`, `ArticleResource`, `CreateArticle`, `EditArticle`, `ListArticles`, `ArticleForm`, `ArticlePagesTable`, `and 4 more`.
+- Livewire components: `Archive`, `Blog`, `Tag`.
+- Policies: `ArticlePolicy`.
+- Listeners: `AddBlogPagesToNavigation`, `ArticleTranslationSavedListener`.
+- Actions: `AssignExampleArticleImageAction`, `BuildArticleMetaDataAction`, `BuildBlogResultsViewDataAction`, `BuildTagListingDataAction`, `ClearBlogContentCacheAction`, `ClearBlogTagCacheAction`, `CreateBlogHeroDemoContentAction`, `CreateBlogPagesAction`, `EnsureArticlePublishingDefaultsAction`, `EnsureBlogPublishingSurfaceAction`, `GenerateArchiveUrl`, `GetArticleLayoutAction`, `and 2 more`.
+- Data objects: `ArchiveLinkData`, `ArchiveMonthData`, `ArticleMetaData`, `ArticleNeighborLinkData`, `ArticleWidgetRenderData`, `BlogPublishingSurfaceData`, `BlogResultItemData`, `BlogResultsViewData`, `BlogTagLinkData`, `BlogWidgetContentData`, `ArticleHealthData`, `LanguageCoverageData`, `and 6 more`.
+- Command signatures: `capell:blog-demo`, `capell:blog-install`, `capell:blog-setup`.
+- Console command classes: `CreateBlogPagesCommand`, `DemoCommand`, `FakerCommand`, `HeroDemoCommand`, `InstallCommand`, `SetupCommand`.
+- Health checks: `Capell\Blog\Health\BlogHealthCheck`.
+- Blade views: `packages/blog/resources/views/components/article-meta.blade.php`, `packages/blog/resources/views/components/asset-after-title.blade.php`, `packages/blog/resources/views/components/footer/pages.blade.php`, `packages/blog/resources/views/components/footer/tags.blade.php`, `packages/blog/resources/views/components/page/author.blade.php`, `packages/blog/resources/views/components/page/published-date.blade.php`, `packages/blog/resources/views/components/page/tags.blade.php`, `packages/blog/resources/views/components/tag.blade.php`, `packages/blog/resources/views/components/widget/page/archives.blade.php`, `packages/blog/resources/views/components/widget/page/article.blade.php`, `packages/blog/resources/views/components/widget/tag/tags.blade.php`, `packages/blog/resources/views/filament/widgets/article-health.blade.php`, `and 4 more`.
+- Cache tags: `blog`.
 
-## Migrations
+## Data Model
 
-- Migration: 2026_05_10_190842_01_create_articles_table.php
+- Models: `Article`.
+- Migration files: `2026_05_10_190842_01_create_articles_table.php`.
+- Migration impact: run host migrations through the package install flow before opening package surfaces.
+- Deletion/retention behaviour: Docs gap unless the package has an explicit pruning command, retention setting, or tested cascade path.
 
-## ERD Excerpt
+## Install Impact
 
-```mermaid
-erDiagram
-    SITES ||--o{ ARTICLES : publishes
-    TYPES ||--o{ ARTICLES : classifies
-    LAYOUTS ||--o{ ARTICLES : renders
-    ARTICLES ||--o{ PAGE_URLS : addressable
-    ARTICLES ||--o{ TRANSLATIONS : translatable
-    ARTICLES ||--o{ WIDGET_ASSETS : pageable_context
-    ARTICLES }o--o{ TAGS : tagged
+- Admin navigation: adds package-owned Filament classes when registered.
+- Permissions: `article.view`, `article.create`, `article.update`, `article.delete`, `article.restore`, `article.force_delete`, `tag.view`, `tag.create`, `tag.update`, `tag.delete`, `tag.restore`, `tag.force_delete`.
+- Public routes: none detected in package route files.
+- Database changes: package migrations are declared.
+- Settings: no package settings declared.
+- Queues or schedules: none detected in standard package paths.
+- Cache tags: `blog`.
+- Commands: `capell:blog-demo`, `capell:blog-install`, `capell:blog-setup`.
 
-    ARTICLES {
-        bigint id PK
-        uuid uuid
-        bigint workspace_id
-        bigint blueprint_id FK
-        bigint layout_id FK
-        bigint site_id FK
-        json meta
-        timestamp visible_from
-        timestamp visible_until
-    }
-```
+## Common Pitfalls
 
-## Screenshot Automation
+- Run migrations before opening package resources or public routes.
+- Keep public Blade and cached HTML free of authoring markers, model IDs, permissions, signed editor URLs, and lazy database queries.
+- Run package commands from the host app; in this repository use `vendor/bin/pest` for package tests.
+- Keep `composer.json`, `composer.local.json`, `capell.json`, docs, screenshots, and tests aligned when the package surface changes.
 
-Deployment should read [screenshots.json](screenshots.json), install the package with demo data, resolve each admin surface or frontend URL, and write images to `packages/blog/docs/screenshots`.
+## Troubleshooting
 
-- Articles admin index.
-- Create/edit article form.
-- Blog page frontend output.
-- Archive page frontend output.
-- Tag page frontend output.
+| Symptom | Likely cause | Check | Fix |
+| --- | --- | --- | --- |
+| Package surface is missing after install | Provider or manifest is not loaded | Confirm `capell.json`, package `composer.json`, and provider registration | Reinstall the package, refresh Composer autoload, and clear host caches |
+| Admin screen or command fails on missing table | Package migrations have not run | Check the tables listed in `Data Model` | Run host migrations and rerun the focused package test |
+| Background work does not run | Queue worker or scheduled command is not active | Check package jobs, commands, and host scheduler configuration | Start the queue or scheduler, then run the focused command or package test |
+| Public output leaks unexpected state | Render data, cache variation, or authoring boundary has regressed | Check public Blade, cache tags, and public-output safety tests | Move data loading out of Blade and rerun the package public-output tests |
+
+## Quick Start
+
+1. Install the package: `composer require capell-app/blog`.
+2. Run the required setup: `php artisan capell:blog-setup`.
+3. Open the related Capell admin surface and verify Blog appears.
+
+## Next Steps
+
+- [Package docs index](README.md)
+- [Screenshot contract](screenshots.json)
+- [Marketplace assets](assets/marketplace/)
+- [Capell content language plan](../../../docs/CONTENT_LANGUAGE_PLAN.md)
+- [Capell documentation design system](../../../docs/DESIGN_SYSTEM.md)
+- [Capell and package ERD notes](../../../docs/erd/capell-and-package-erds.md)
+- Related packages: [Content Sections](../../content-sections/README.md), [Html Cache](../../html-cache/README.md), [Layout Builder](../../layout-builder/README.md), [Navigation](../../navigation/README.md), [Tags](../../tags/README.md), [Comments](../../comments/README.md), [Insights](../../insights/README.md), [Publishing Studio](../../publishing-studio/README.md), [Site Discovery](../../site-discovery/README.md).
+- Focused tests: `vendor/bin/pest packages/blog/tests --configuration=phpunit.xml`.
+
+<!-- prettier-ignore-end -->
