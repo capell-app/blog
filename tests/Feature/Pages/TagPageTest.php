@@ -167,6 +167,51 @@ test('tag page resolves site tag before global tag with same slug', function ():
         );
 });
 
+test('tag page returns not found when the tag slug is missing', function (): void {
+    $blogCreator = resolve(BlogCreator::class);
+
+    $language = Language::factory()->create();
+    $site = Site::factory()->recycle($language)->withTranslations()->create();
+
+    $blogPage = $blogCreator->createBlogPage($site);
+    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createWidgets: true);
+    $tagPage = $blogCreator->createTagPage($site, $tagsPage);
+    $tagPageUrl = blogTestPageUrl($tagPage->pageUrl);
+
+    $missingTagUrl = rtrim($tagPageUrl->full_url, '/*') . '/missing-topic';
+
+    get($missingTagUrl)
+        ->assertNotFound();
+});
+
+test('tag page renders public empty state when tag has no articles', function (): void {
+    $blogCreator = resolve(BlogCreator::class);
+
+    $language = Language::factory()->create();
+    $site = Site::factory()->recycle($language)->withTranslations()->create();
+
+    $blogPage = $blogCreator->createBlogPage($site);
+    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createWidgets: true);
+    $tagPage = $blogCreator->createTagPage($site, $tagsPage);
+
+    $tag = Tag::factory()
+        ->translate($language)
+        ->type(TagTypeEnum::Page)
+        ->site($site)
+        ->create([
+            'name' => [$language->code => 'Unpublished Topic'],
+            'slug' => [$language->code => 'unpublished-topic'],
+        ]);
+
+    get($tag->getUrl($tagPage, $language))
+        ->assertOk()
+        ->assertSeeText('Unpublished Topic Articles')
+        ->assertSeeText('No results found.')
+        ->assertDontSee(':Tag_name Articles')
+        ->assertDontSee('data-authoring')
+        ->assertDontSee('signed-editor-url');
+});
+
 test('tag page renders results without lazy-loading page translation data', function (): void {
     $blogCreator = resolve(BlogCreator::class);
 

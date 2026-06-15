@@ -132,6 +132,30 @@ test('archive page list articles by month/year', function (): void {
         ->assertDontSeeText('no-results');
 });
 
+test('archive page returns not found when selected month has no articles', function (): void {
+    $blogCreator = resolve(BlogCreator::class);
+
+    $siteDomain = SiteDomain::factory()->default()->create();
+    $site = $siteDomain->site;
+
+    $blogPage = $blogCreator->createBlogPage($site);
+    $archivesPage = $blogCreator->createArchivesPage($blogPage);
+    $archivePage = $blogCreator->createArchivePage($archivesPage);
+    $articleLayout = $blogCreator->createArticleLayout();
+    $archivePageUrl = blogTestPageUrl($archivePage->pageUrl);
+
+    Article::factory()
+        ->site($site)
+        ->layout($articleLayout)
+        ->withTranslations($site->languages)
+        ->create(['visible_from' => '2024-10-01']);
+
+    $archiveUrl = GenerateArchiveUrl::run($archivePageUrl, new ArchiveMonthData(year: 2024, month: 11));
+
+    get($archiveUrl)
+        ->assertNotFound();
+});
+
 test('archives sitemap formats archive page urls without wildcard', function (): void {
     $blogCreator = resolve(BlogCreator::class);
 

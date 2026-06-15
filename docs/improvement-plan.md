@@ -10,7 +10,7 @@ Blog is a premium publishing package for articles, archives, tag pages, article 
 
 1. **Remove duplicate health check manifest entries.** `capell.json` repeats `Capell\Blog\Health\BlogHealthCheck` four times. Keep one health entry and add a manifest test preventing duplicate classes. Evidence: `capell.json`, `tests/Unit/ManifestRequirementsTest.php`. - **S**
 
-2. **Expand frontend edge-case coverage for archive/tag/blog pages.** The runtime contributor prepares many data branches. Add direct tests for empty archives, invalid archive months, missing tag slugs, empty tag results, and pagination clamping. Evidence: `src/Support/BlogFrontendRuntimeManifestContributor.php`, `tests/Feature/Pages/*PageTest.php`. - **M**
+2. **Expand frontend edge-case coverage for archive/tag/blog pages.** The runtime contributor prepares many data branches. Add direct tests for empty archives, invalid archive months, missing tag slugs, empty tag results, and pagination clamping. Evidence: `src/Support/BlogFrontendRuntimeManifestContributor.php`, `tests/Feature/Pages/*PageTest.php`. - **M** - **Shipped**
 
 3. **Harden media/author loading against N+1 regressions.** Article pages load creator, profile image, image translations, latest articles, tags, and related articles. Add query-budget coverage for article, blog, archive, and tag routes with seeded media/tags/authors. Evidence: `BlogFrontendRuntimeManifestContributor::prepareArticlePage()`, `BuildArticleMetaDataAction`, media tests. - **M**
 
@@ -75,6 +75,12 @@ For frontend behavior changes, include:
 vendor/bin/pest packages/blog/tests/Feature/Pages packages/blog/tests/Unit/ManifestRequirementsTest.php --configuration=phpunit.xml
 ```
 
+Implementation slice 3 added route-level frontend edge coverage for empty archive months, missing tag slugs, empty tag results, and invalid Blog pagination requests. Verify with:
+
+```bash
+vendor/bin/pest packages/blog/tests/Feature/Pages/ArticlesPageTest.php packages/blog/tests/Feature/Pages/ArchivesPageTest.php packages/blog/tests/Feature/Pages/TagPageTest.php --configuration=phpunit.xml
+```
+
 ## 8. Completion Checklist
 
 - [x] Package plan created from current code, manifest, docs, screenshots, and tests.
@@ -82,6 +88,7 @@ vendor/bin/pest packages/blog/tests/Feature/Pages packages/blog/tests/Unit/Manif
 - [x] Capell audience pass completed for editors, site owners, and developers.
 - [x] Approved implementation slice 1 shipped: health manifest de-duplication.
 - [x] Approved implementation slice 2 shipped: admin-resource, configurator, model, page-type, and page-variation contribution gaps replaced with concrete manifest classes and metadata.
-- [ ] Focused Blog verification passed.
-- [ ] Package tests passed.
-- [ ] Repo preflight passed for changed files.
+- [x] Approved implementation slice 3 shipped: frontend route edge coverage for archive, tag, and pagination branches.
+- [x] Focused Blog verification passed.
+- [x] Package tests passed.
+- [x] Repo preflight passed for changed files.
