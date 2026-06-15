@@ -89,6 +89,8 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
             cacheKeyPrepend: sprintf('year-%s-month-%s', $archiveDate['year'], $archiveDate['month']),
             morphModel: Article::class,
             modifyQuery: function (Builder $query) use ($archiveDate): void {
+                $query->with(['tags']);
+
                 $this->filterArchiveQuery($query, $archiveDate['year'], $archiveDate['month']);
             },
         );
@@ -226,7 +228,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
             cacheKeyPrepend: 'tagged-' . $tag->id,
             morphModel: Article::class,
             modifyQuery: function (Builder $query) use ($tag): void {
-                $query->whereHas(
+                $query->with(['tags'])->whereHas(
                     'tags',
                     fn (Builder $query): Builder => $query->whereKey($tag->id),
                 );

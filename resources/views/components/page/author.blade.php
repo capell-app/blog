@@ -3,6 +3,10 @@
     'profileImage' => null,
 ])
 
+@php
+    $withDarkMode = (bool) (($theme ?? null)?->withDarkMode ?? false);
+@endphp
+
 @if ($author)
     <div {{ $attributes->class('page-author flex items-center gap-5') }}>
         @if ($profileImage)
@@ -33,7 +37,7 @@
                 <div
                     @class([
                         'prose text-sm leading-tight font-light text-gray-500 [&>:first-child]:mt-0 [&>:last-child]:mb-0',
-                        'dark:prose-invert' => $theme->withDarkMode,
+                        'dark:prose-invert' => $withDarkMode,
                     ])
                 >
                     {!! nl2br(e($author->bio)) !!}
