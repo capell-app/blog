@@ -142,6 +142,7 @@ describe('blog capell.json manifest', function (): void {
         $healthChecks = $manifest['healthChecks'] ?? [];
 
         throw_unless(is_array($healthChecks), RuntimeException::class, 'Blog health checks must be an array.');
+        throw_unless(is_array($healthChecks[0] ?? null), RuntimeException::class, 'Blog health check entry must be an array.');
 
         expect($healthChecks)->toHaveCount(1)
             ->and($healthChecks[0]['key'])->toBe('blog.package-health')
