@@ -81,6 +81,7 @@ vendor/bin/pest packages/blog/tests/Feature/Pages packages/blog/tests/Unit/Manif
 - [x] Comprehensive local review pass completed for provider, health, frontend runtime contributor, docs, screenshots, and tests.
 - [x] Capell audience pass completed for editors, site owners, and developers.
 - [x] Approved implementation slice 1 shipped: health manifest de-duplication.
+- [x] Approved implementation slice 2 shipped: admin-resource, configurator, model, page-type, and page-variation contribution gaps replaced with concrete manifest classes and metadata.
 - [ ] Focused Blog verification passed.
 - [ ] Package tests passed.
 - [ ] Repo preflight passed for changed files.

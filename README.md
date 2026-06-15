@@ -38,6 +38,7 @@ Screenshot contract: `docs/screenshots.json`.
 ## Technical Shape
 
 - Service providers: `Capell\Blog\Providers\ConsoleServiceProvider`, `Capell\Blog\Providers\BlogServiceProvider`, `Capell\Blog\Providers\AdminServiceProvider`, `Capell\Blog\Providers\FrontendServiceProvider`.
+- Manifest contributions: Article and Tags admin resources, Article/Page/Widget configurators, the Article model, and the Article page type/page variation.
 - Migrations: `packages/blog/database/migrations/2026_05_10_190842_01_create_articles_table.php`.
 - Models: `Article`.
 - Filament classes: `ArticleSelect`, `SettingsTab`, `TagsInput`, `ArticlePageConfigurator`, `ArticleWidgetConfigurator`, `RelatedWidgetConfigurator`, `ArticleResource`, `CreateArticle`, `EditArticle`, `ListArticles`, `ArticleForm`, `ArticlePagesTable`, `and 4 more`.
