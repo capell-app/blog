@@ -63,7 +63,7 @@ Blog should be positioned as Capell's premium publishing layer for teams that ne
 
 ## 7. Verification
 
-Plan-writing review only; no commands were run for this package in this pass. First implementation slice should start with:
+Implementation slice 1 collapsed duplicate `BlogHealthCheck` manifest entries into one package-health entry and added manifest coverage preventing duplicate health classes. Verify with:
 
 ```bash
 vendor/bin/pest packages/blog/tests --configuration=phpunit.xml
@@ -80,7 +80,7 @@ vendor/bin/pest packages/blog/tests/Feature/Pages packages/blog/tests/Unit/Manif
 - [x] Package plan created from current code, manifest, docs, screenshots, and tests.
 - [x] Comprehensive local review pass completed for provider, health, frontend runtime contributor, docs, screenshots, and tests.
 - [x] Capell audience pass completed for editors, site owners, and developers.
-- [ ] Approved implementation slices shipped.
+- [x] Approved implementation slice 1 shipped: health manifest de-duplication.
 - [ ] Focused Blog verification passed.
 - [ ] Package tests passed.
 - [ ] Repo preflight passed for changed files.
