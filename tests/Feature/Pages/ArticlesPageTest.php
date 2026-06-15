@@ -376,3 +376,56 @@ test('articles pagination', function (): void {
                 ->doesntContain('.wire-pagination-links a[rel="next"]'),
         );
 });
+
+test('articles pagination clamps invalid requested page values to the first page', function (string $requestedPage): void {
+    $blogCreator = resolve(BlogCreator::class);
+
+    $siteDomain = SiteDomain::factory()->default()->create();
+    $site = $siteDomain->site;
+
+    $blogPage = $blogCreator->createBlogPage($site, meta: ['limit' => 2]);
+    $blogUrl = blogTestPageUrl($blogPage->pageUrl);
+
+    $articleType = $blogCreator->createArticlePageType();
+    $articleLayout = $blogCreator->createArticleLayout();
+
+    Article::factory()
+        ->site($siteDomain->site)
+        ->layout($articleLayout)
+        ->type($articleType)
+        ->withTranslations($site->languages)
+        ->forEachSequence(
+            ['visible_from' => '2023-01-01'],
+            ['visible_from' => '2023-02-01'],
+            ['visible_from' => '2023-03-01'],
+        )
+        ->create();
+
+    $orderedArticles = Article::query()
+        ->with('translation')
+        ->whereRelation('site', 'id', $site->getKey())
+        ->publishedLatest()
+        ->get();
+
+    $firstArticle = blogTestArticle($orderedArticles->get(0));
+    $secondArticle = blogTestArticle($orderedArticles->get(1));
+    $thirdArticle = blogTestArticle($orderedArticles->get(2));
+
+    get($blogUrl->full_url . '?pageQuery=' . urlencode($requestedPage))
+        ->assertOk()
+        ->assertElementExists(
+            '.results',
+            fn (AssertElement $elm): BaseAssert => $elm
+                ->contains('.asset-item', count: 2)
+                ->containsText((string) blogTestTranslation($firstArticle->translation)->title)
+                ->containsText((string) blogTestTranslation($secondArticle->translation)->title)
+                ->doesntContainText((string) blogTestTranslation($thirdArticle->translation)->title),
+        )
+        ->assertElementExists(
+            '.pagination',
+            fn (AssertElement $elm): BaseAssert => $elm->find(
+                '.pagination-info',
+                fn (AssertElement $elm): BaseAssert => $elm->has('aria-label', 'Showing 1 to 2 of 3 results'),
+            ),
+        );
+})->with(['0', '-2', 'not-a-page']);

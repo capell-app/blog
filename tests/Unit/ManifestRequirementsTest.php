@@ -2,8 +2,21 @@
 
 declare(strict_types=1);
 
+use Capell\Blog\Filament\Configurators\Articles\ArticlePageConfigurator;
+use Capell\Blog\Filament\Configurators\Widgets\ArticleWidgetConfigurator;
+use Capell\Blog\Filament\Configurators\Widgets\RelatedWidgetConfigurator;
+use Capell\Blog\Filament\Resources\Articles\ArticleResource;
 use Capell\Blog\Health\BlogHealthCheck;
+use Capell\Blog\Manifest\BlogAdminResourcesContribution;
+use Capell\Blog\Manifest\BlogConfiguratorsContribution;
+use Capell\Blog\Manifest\BlogModelsContribution;
+use Capell\Blog\Manifest\BlogPageTypesContribution;
 use Capell\Blog\Models\Article;
+use Capell\Core\Contracts\Extensions\ExtensionContribution;
+use Capell\Core\Contracts\Extensions\RegistersExtensionAdminResource;
+use Capell\Core\Contracts\Extensions\RegistersExtensionPageType;
+use Capell\Core\Support\Manifest\ManifestValidator;
+use Capell\Tags\Filament\Resources\Tags\TagResource;
 use Capell\Tags\Models\Tag;
 use Illuminate\Support\Facades\File;
 
@@ -148,5 +161,60 @@ describe('blog capell.json manifest', function (): void {
             ->and($healthChecks[0]['key'])->toBe('blog.package-health')
             ->and($healthChecks[0]['class'])->toBe(BlogHealthCheck::class)
             ->and(collect($healthChecks)->pluck('class')->duplicates()->all())->toBe([]);
+    });
+
+    it('declares shipped extension contribution surfaces', function () use ($blogManifest, $blogComposerManifest): void {
+        $packagePath = dirname(__DIR__, 2);
+        $manifest = $blogManifest();
+        $composer = $blogComposerManifest();
+        $contributions = $manifest['contributes'] ?? null;
+
+        throw_unless(is_array($contributions), RuntimeException::class, 'Expected Blog manifest contributions.');
+
+        (new ManifestValidator)->validate($manifest, $composer, 'capell-app/blog', $packagePath . '/capell.json');
+
+        expect(collect($contributions))
+            ->toContain([
+                'type' => 'admin-resource',
+                'class' => BlogAdminResourcesContribution::class,
+                'resourceClasses' => [
+                    ArticleResource::class,
+                    TagResource::class,
+                ],
+                'groups' => ['Page', 'Tag'],
+            ])
+            ->toContain([
+                'type' => 'configurator',
+                'class' => BlogConfiguratorsContribution::class,
+                'configuratorClasses' => [
+                    ArticlePageConfigurator::class,
+                    ArticleWidgetConfigurator::class,
+                    RelatedWidgetConfigurator::class,
+                ],
+                'groups' => ['Page', 'Widget'],
+            ])
+            ->toContain([
+                'type' => 'model',
+                'class' => BlogModelsContribution::class,
+                'modelClass' => Article::class,
+            ])
+            ->toContain([
+                'type' => 'page-type',
+                'class' => BlogPageTypesContribution::class,
+                'name' => 'article',
+                'modelClass' => Article::class,
+            ])
+            ->toContain([
+                'type' => 'page-variation',
+                'class' => BlogPageTypesContribution::class,
+                'name' => 'article',
+                'modelClass' => Article::class,
+                'resourceName' => 'article',
+            ])
+            ->and($manifest['contributionTraceability']['deferredContributions'])->toBe([])
+            ->and(class_implements(BlogAdminResourcesContribution::class))->toContain(RegistersExtensionAdminResource::class)
+            ->and(class_implements(BlogConfiguratorsContribution::class))->toContain(ExtensionContribution::class)
+            ->and(class_implements(BlogModelsContribution::class))->toContain(ExtensionContribution::class)
+            ->and(class_implements(BlogPageTypesContribution::class))->toContain(RegistersExtensionPageType::class);
     });
 });

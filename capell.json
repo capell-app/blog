@@ -40,7 +40,45 @@
         "admin": ["Capell\\Blog\\Providers\\AdminServiceProvider"],
         "frontend": ["Capell\\Blog\\Providers\\FrontendServiceProvider"]
     },
-    "contributes": [],
+    "contributes": [
+        {
+            "type": "admin-resource",
+            "class": "Capell\\Blog\\Manifest\\BlogAdminResourcesContribution",
+            "resourceClasses": [
+                "Capell\\Blog\\Filament\\Resources\\Articles\\ArticleResource",
+                "Capell\\Tags\\Filament\\Resources\\Tags\\TagResource"
+            ],
+            "groups": ["Page", "Tag"]
+        },
+        {
+            "type": "configurator",
+            "class": "Capell\\Blog\\Manifest\\BlogConfiguratorsContribution",
+            "configuratorClasses": [
+                "Capell\\Blog\\Filament\\Configurators\\Articles\\ArticlePageConfigurator",
+                "Capell\\Blog\\Filament\\Configurators\\Widgets\\ArticleWidgetConfigurator",
+                "Capell\\Blog\\Filament\\Configurators\\Widgets\\RelatedWidgetConfigurator"
+            ],
+            "groups": ["Page", "Widget"]
+        },
+        {
+            "type": "model",
+            "class": "Capell\\Blog\\Manifest\\BlogModelsContribution",
+            "modelClass": "Capell\\Blog\\Models\\Article"
+        },
+        {
+            "type": "page-type",
+            "class": "Capell\\Blog\\Manifest\\BlogPageTypesContribution",
+            "name": "article",
+            "modelClass": "Capell\\Blog\\Models\\Article"
+        },
+        {
+            "type": "page-variation",
+            "class": "Capell\\Blog\\Manifest\\BlogPageTypesContribution",
+            "name": "article",
+            "modelClass": "Capell\\Blog\\Models\\Article",
+            "resourceName": "article"
+        }
+    ],
     "database": {
         "migrations": true,
         "settings": false,
@@ -204,12 +242,6 @@
         "categories": ["admin", "console", "frontend", "publishing"]
     },
     "contributionTraceability": {
-        "deferredContributions": [
-            "admin-resource",
-            "configurator",
-            "model",
-            "page-type",
-            "page-variation"
-        ]
+        "deferredContributions": []
     }
 }
