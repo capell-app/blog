@@ -71,9 +71,24 @@ Screenshot contract: `docs/screenshots.json`.
 - Cache tags: `blog`.
 - Commands: `capell:blog-demo`, `capell:blog-install`, `capell:blog-setup`.
 
+## Package Bridges
+
+| Package | Requirement | Behavior |
+| --- | --- | --- |
+| Layout Builder | Required by the publishing surface | Blog page/article widgets resolve through the registered page and widget configurators. Install Layout Builder before Blog. |
+| Tags | Required for tag pages and article tagging | Tag admin/resource contribution and tag listing output are active when the package is installed. |
+| Navigation | Optional | Blog setup can add generated pages to navigation; without it, articles and archive/tag pages still render through their registered page types. |
+| HTML Cache | Optional | Article and tag saves clear Blog cache tags when the bridge exists; without it, no cache invalidation calls are emitted. |
+| Content Sections | Optional | Demo/section-oriented content can use Content Sections, while core article publishing remains independent. |
+| Publishing Studio | Optional | Draft/publish workflow integration is registered when available; without it, Blog uses its own article status and visibility checks. |
+| Comments | Optional | Comment surfaces attach when the package is present; article rendering degrades to comment-free output when it is absent. |
+| Site Discovery/static export | Optional | Sitemap/static export metadata is contributed when installed; public Blog routes remain available without discovery indexing. |
+| Insights/GA4 | Optional | Analytics adoption is a documentation and dashboard concern, not a runtime prerequisite for public article delivery. |
+
 ## Common Pitfalls
 
 - Run migrations before opening package resources or public routes.
+- Keep optional bridge behavior additive. Missing optional packages should remove the bridge feature without breaking article, archive, tag, or widget rendering.
 - Keep public Blade and cached HTML free of authoring markers, model IDs, permissions, signed editor URLs, and lazy database queries.
 - Run package commands from the host app; in this repository use `vendor/bin/pest` for package tests.
 - Keep `composer.json`, `composer.local.json`, `capell.json`, docs, screenshots, and tests aligned when the package surface changes.

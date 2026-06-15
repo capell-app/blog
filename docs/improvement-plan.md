@@ -51,10 +51,10 @@ Blog should be positioned as Capell's premium publishing layer for teams that ne
 
 | Item                                                       | Bucket | Effort | Impact | Section ref |
 | ---------------------------------------------------------- | ------ | ------ | ------ | ----------- |
-| Remove duplicate health entries from `capell.json`         | Now    | S      | High   | §2.1, §4.1  |
-| Add archive/tag/blog edge-case route tests                 | Now    | M      | High   | §2.2, §4.2  |
-| Add query-budget coverage for media/author/tag rich routes | Now    | M      | High   | §2.3, §4.3  |
-| Document required/optional bridge behavior                 | Now    | S      | Medium | §2.4, §4.4  |
+| Remove duplicate health entries from `capell.json`         | Done   | S      | High   | §2.1, §4.1  |
+| Add archive/tag/blog edge-case route tests                 | Done   | M      | High   | §2.2, §4.2  |
+| Add query-budget coverage for media/author/tag rich routes | Done   | M      | High   | §2.3, §4.3  |
+| Document required/optional bridge behavior                 | Done   | S      | Medium | §2.4, §4.4  |
 | Add RSS/Atom feed support                                  | Next   | M      | Medium | §3, §5      |
 | Add URL Manager redirect integration for slug changes      | Next   | M      | Medium | §3          |
 | Add analytics adoption docs tying widgets to Insights/GA4  | Next   | S      | Medium | §3          |

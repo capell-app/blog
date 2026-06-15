@@ -71,9 +71,24 @@ Screenshot contract: `screenshots.json`.
 - Cache tags: `blog`.
 - Commands: `capell:blog-demo`, `capell:blog-install`, `capell:blog-setup`.
 
+## Package Bridges
+
+| Package | Requirement | Behavior |
+| --- | --- | --- |
+| Layout Builder | Required by the publishing surface | Blog page and widget configurators depend on the Layout Builder contract; install Layout Builder before Blog. |
+| Tags | Required for tag publishing | Article tags, tag admin/resource metadata, and tag listing pages use the Tags package contract. |
+| Navigation | Optional | Setup listeners can place Blog pages in navigation, but public rendering continues without navigation entries. |
+| HTML Cache | Optional | Cache tags are cleared when the cache bridge exists; otherwise saves skip host cache invalidation. |
+| Content Sections | Optional | Section/demo integrations are additive and do not gate core article publishing. |
+| Publishing Studio | Optional | Draft/publish surfaces register when present; Blog still enforces its own published article visibility without it. |
+| Comments | Optional | Comment UI and counts are attached only when Comments is installed. |
+| Site Discovery/static export | Optional | Discovery and export metadata are contributed when available; the package does not require them for public routes. |
+| Insights/GA4 | Optional | Analytics packages can consume Blog traffic, but they are not needed for article, archive, tag, or widget rendering. |
+
 ## Common Pitfalls
 
 - Run migrations before opening package resources or public routes.
+- Optional bridges must fail closed and additive: missing bridge packages should remove only that integration, not the public publishing surface.
 - Keep public Blade and cached HTML free of authoring markers, model IDs, permissions, signed editor URLs, and lazy database queries.
 - Run package commands from the host app; in this repository use `vendor/bin/pest` for package tests.
 - Keep `composer.json`, `composer.local.json`, `capell.json`, docs, screenshots, and tests aligned when the package surface changes.
