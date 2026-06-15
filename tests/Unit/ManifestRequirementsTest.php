@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Capell\Blog\Health\BlogHealthCheck;
 use Capell\Blog\Models\Article;
 use Capell\Tags\Models\Tag;
 use Illuminate\Support\Facades\File;
@@ -134,5 +135,18 @@ describe('blog capell.json manifest', function (): void {
 
         expect($manifest['commands']['demo'])->toBe('capell:blog-demo')
             ->and($manifest['commands']['demoParams'])->toBe(['sites', 'languages', 'force']);
+    });
+
+    it('declares a single package health contribution for diagnostics', function () use ($blogManifest): void {
+        $manifest = $blogManifest();
+        $healthChecks = $manifest['healthChecks'] ?? [];
+
+        throw_unless(is_array($healthChecks), RuntimeException::class, 'Blog health checks must be an array.');
+        throw_unless(is_array($healthChecks[0] ?? null), RuntimeException::class, 'Blog health check entry must be an array.');
+
+        expect($healthChecks)->toHaveCount(1)
+            ->and($healthChecks[0]['key'])->toBe('blog.package-health')
+            ->and($healthChecks[0]['class'])->toBe(BlogHealthCheck::class)
+            ->and(collect($healthChecks)->pluck('class')->duplicates()->all())->toBe([]);
     });
 });
