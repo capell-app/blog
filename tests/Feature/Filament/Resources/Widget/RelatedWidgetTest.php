@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
+use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Creator\BlogCreator;
+use Capell\Core\Data\PageTypeData;
+use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Blueprint;
 use Capell\LayoutBuilder\Filament\Resources\Widgets\Pages\EditWidget;
 use Capell\LayoutBuilder\Models\Widget;
@@ -24,6 +27,11 @@ test('can edit related widget', function (): void {
     $newData = Widget::factory()->make();
 
     Blueprint::factory()->page()->state(['key' => 'home'])->create();
+    CapellCore::registerPageType(new PageTypeData(
+        name: 'article',
+        model: Article::class,
+        label: fn (): string => __('capell-blog::generic.article'),
+    ));
 
     livewire(EditWidget::class, [
         'record' => $widget->getRouteKey(),
