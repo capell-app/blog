@@ -85,6 +85,15 @@ Screenshot contract: `docs/screenshots.json`.
 | Site Discovery/static export | Optional | Sitemap/static export metadata is contributed when installed; public Blog routes remain available without discovery indexing. |
 | Insights/GA4 | Optional | Analytics adoption is a documentation and dashboard concern, not a runtime prerequisite for public article delivery. |
 
+## Analytics Adoption
+
+Blog does not require analytics packages for article, archive, tag, widget, or static export rendering. When Insights or GA4 Reports are installed, treat them as optional growth bridges:
+
+- Use GA4 landing-page and content reports to compare article entrances, engaged sessions, and archive/tag discovery paths.
+- Use Insights dashboard widgets to surface top articles, declining articles, and search/social referrers for editors.
+- Keep editorial KPIs tied to published article URLs, not admin record IDs, so slug changes, static export, and canonical URL behavior remain understandable to site owners.
+- Pair Blog widgets with campaign pages or Content Sections, then review conversion-adjacent traffic in Insights/GA4 rather than embedding analytics logic in Blog views.
+
 ## Common Pitfalls
 
 - Run migrations before opening package resources or public routes.

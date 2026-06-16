@@ -22,7 +22,7 @@ Capabilities declared include blog admin/frontend, articles, archives, tags, wid
 
 - **No RSS/Atom feed.** Publishing packages commonly need syndication feeds.
 - **No canonical redirect strategy for changed article slugs.** URL Manager integration is not visible in this package.
-- **No editorial analytics summary in package docs.** Traffic widgets exist, but adoption docs should connect them to Insights/GA4.
+- **Shipped 2026-06-16: editorial analytics adoption docs are explicit.** README and overview now explain how Insights and GA4 Reports can be used as optional growth bridges for article entrances, engaged sessions, archive/tag discovery, referrers, declining articles, and widget performance without making Blog depend on analytics packages.
 - **No package-local completion review.** The package has broad test coverage but no plan reconciliation yet.
 
 ## 4. Issues / Risks
@@ -57,7 +57,7 @@ Blog should be positioned as Capell's premium publishing layer for teams that ne
 | Document required/optional bridge behavior                 | Done   | S      | Medium | §2.4, §4.4  |
 | Add RSS/Atom feed support                                  | Next   | M      | Medium | §3, §5      |
 | Add URL Manager redirect integration for slug changes      | Next   | M      | Medium | §3          |
-| Add analytics adoption docs tying widgets to Insights/GA4  | Next   | S      | Medium | §3          |
+| Add analytics adoption docs tying widgets to Insights/GA4  | Done   | S      | Medium | §3          |
 | Add editorial workflow templates                           | Later  | M      | Medium | §5          |
 | Complete full package plan reconciliation                  | Later  | M      | Medium | §3          |
 
