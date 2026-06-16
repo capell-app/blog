@@ -12,6 +12,7 @@ use Capell\Blog\Actions\ClearBlogTagCacheAction;
 use Capell\Blog\Enums\LivewirePageComponentEnum;
 use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Enums\WidgetComponentEnum;
+use Capell\Blog\Http\Controllers\BlogFeedController;
 use Capell\Blog\Listeners\ArticleTranslationSavedListener;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Policies\ArticlePolicy;
@@ -47,6 +48,7 @@ use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
 use Override;
 use Spatie\LaravelPackageTools\Package;
@@ -72,6 +74,21 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
             ->name(self::$name)
             ->hasViews(self::$name)
             ->hasTranslations();
+    }
+
+    public function bootingPackage(): void
+    {
+        Route::get('/blog/feed.xml', [BlogFeedController::class, '__invoke'])
+            ->defaults('format', 'xml')
+            ->name('capell.blog.feed.xml');
+
+        Route::get('/blog/feed.rss', [BlogFeedController::class, '__invoke'])
+            ->defaults('format', 'rss')
+            ->name('capell.blog.feed.rss');
+
+        Route::get('/blog/feed.atom', [BlogFeedController::class, '__invoke'])
+            ->defaults('format', 'atom')
+            ->name('capell.blog.feed.atom');
     }
 
     public function registeringPackage(): void

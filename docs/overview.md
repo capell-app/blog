@@ -10,6 +10,8 @@ Blog adds premium article publishing, archive pages, tag pages, article widgets,
 
 After install, admins get package-owned management surfaces and public users may see package-owned frontend output or routes.
 
+Public syndication feeds are available at `/blog/feed.xml`, `/blog/feed.rss`, and `/blog/feed.atom` for the resolved site domain. Feeds include published article URLs only, use the site language tied to the domain, and expose no admin/editor state.
+
 Status details:
 
 - Status: Available

@@ -117,6 +117,7 @@
         "blog-archives",
         "blog-tags",
         "blog-related-widgets",
+        "blog-syndication-feeds",
         "requires-livewire",
         "blog-cache-invalidation",
         "blog-publishing-studio-bridge",
@@ -125,7 +126,11 @@
     "security": {
         "riskTier": "standard",
         "publicSurface": {
-            "routeNames": [],
+            "routeNames": [
+                "capell.blog.feed.xml",
+                "capell.blog.feed.rss",
+                "capell.blog.feed.atom"
+            ],
             "auth": "none",
             "csrfExemptRoutes": [],
             "signedRoutes": [],
