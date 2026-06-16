@@ -85,6 +85,7 @@ Screenshot contract: `screenshots.json`.
 | Publishing Studio | Optional | Draft/publish surfaces register when present; Blog still enforces its own published article visibility without it. |
 | Comments | Optional | Comment UI and counts are attached only when Comments is installed. |
 | Site Discovery/static export | Optional | Discovery and export metadata are contributed when available; the package does not require them for public routes. |
+| URL Manager | Optional | Article slug changes update the canonical `PageUrl` and emit the core `PageUrlChanged` event that URL Manager consumes to preserve old article URLs. |
 | Insights/GA4 | Optional | Analytics packages can consume Blog traffic, but they are not needed for article, archive, tag, or widget rendering. |
 
 ## Analytics Adoption
