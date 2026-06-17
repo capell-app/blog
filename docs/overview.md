@@ -10,6 +10,8 @@ Blog adds premium article publishing, archive pages, tag pages, article widgets,
 
 After install, admins get package-owned management surfaces and public users may see package-owned frontend output or routes.
 
+Public syndication feeds are available at `/blog/feed.xml`, `/blog/feed.rss`, and `/blog/feed.atom` for the resolved site domain. Feeds include published article URLs only, use the site language tied to the domain, and expose no admin/editor state.
+
 Status details:
 
 - Status: Available
@@ -71,9 +73,34 @@ Screenshot contract: `screenshots.json`.
 - Cache tags: `blog`.
 - Commands: `capell:blog-demo`, `capell:blog-install`, `capell:blog-setup`.
 
+## Package Bridges
+
+| Package | Requirement | Behavior |
+| --- | --- | --- |
+| Layout Builder | Required by the publishing surface | Blog page and widget configurators depend on the Layout Builder contract; install Layout Builder before Blog. |
+| Tags | Required for tag publishing | Article tags, tag admin/resource metadata, and tag listing pages use the Tags package contract. |
+| Navigation | Optional | Setup listeners can place Blog pages in navigation, but public rendering continues without navigation entries. |
+| HTML Cache | Optional | Cache tags are cleared when the cache bridge exists; otherwise saves skip host cache invalidation. |
+| Content Sections | Optional | Section/demo integrations are additive and do not gate core article publishing. |
+| Publishing Studio | Optional | Draft/publish surfaces register when present; Blog still enforces its own published article visibility without it. |
+| Comments | Optional | Comment UI and counts are attached only when Comments is installed. |
+| Site Discovery/static export | Optional | Discovery and export metadata are contributed when available; the package does not require them for public routes. |
+| URL Manager | Optional | Article slug changes update the canonical `PageUrl` and emit the core `PageUrlChanged` event that URL Manager consumes to preserve old article URLs. |
+| Insights/GA4 | Optional | Analytics packages can consume Blog traffic, but they are not needed for article, archive, tag, or widget rendering. |
+
+## Analytics Adoption
+
+Blog does not require analytics packages for article, archive, tag, widget, or static export rendering. When Insights or GA4 Reports are installed, treat them as optional growth bridges:
+
+- Use GA4 landing-page and content reports to compare article entrances, engaged sessions, and archive/tag discovery paths.
+- Use Insights dashboard widgets to surface top articles, declining articles, and search/social referrers for editors.
+- Keep editorial KPIs tied to published article URLs, not admin record IDs, so slug changes, static export, and canonical URL behavior remain understandable to site owners.
+- Pair Blog widgets with campaign pages or Content Sections, then review conversion-adjacent traffic in Insights/GA4 rather than embedding analytics logic in Blog views.
+
 ## Common Pitfalls
 
 - Run migrations before opening package resources or public routes.
+- Optional bridges must fail closed and additive: missing bridge packages should remove only that integration, not the public publishing surface.
 - Keep public Blade and cached HTML free of authoring markers, model IDs, permissions, signed editor URLs, and lazy database queries.
 - Run package commands from the host app; in this repository use `vendor/bin/pest` for package tests.
 - Keep `composer.json`, `composer.local.json`, `capell.json`, docs, screenshots, and tests aligned when the package surface changes.

@@ -29,7 +29,8 @@
             "capell-app/comments",
             "capell-app/insights",
             "capell-app/publishing-studio",
-            "capell-app/site-discovery"
+            "capell-app/site-discovery",
+            "capell-app/url-manager"
         ],
         "conflicts": []
     },
@@ -117,6 +118,8 @@
         "blog-archives",
         "blog-tags",
         "blog-related-widgets",
+        "blog-syndication-feeds",
+        "blog-url-manager-redirect-bridge",
         "requires-livewire",
         "blog-cache-invalidation",
         "blog-publishing-studio-bridge",
@@ -125,7 +128,11 @@
     "security": {
         "riskTier": "standard",
         "publicSurface": {
-            "routeNames": [],
+            "routeNames": [
+                "capell.blog.feed.xml",
+                "capell.blog.feed.rss",
+                "capell.blog.feed.atom"
+            ],
             "auth": "none",
             "csrfExemptRoutes": [],
             "signedRoutes": [],

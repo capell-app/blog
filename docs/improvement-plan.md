@@ -20,9 +20,9 @@ Blog is a premium publishing package for articles, archives, tag pages, article 
 
 Capabilities declared include blog admin/frontend, articles, archives, tags, widgets, Livewire, cache invalidation, Publishing Studio bridge, and Comments bridge.
 
-- **No RSS/Atom feed.** Publishing packages commonly need syndication feeds.
-- **No canonical redirect strategy for changed article slugs.** URL Manager integration is not visible in this package.
-- **No editorial analytics summary in package docs.** Traffic widgets exist, but adoption docs should connect them to Insights/GA4.
+- **Shipped 2026-06-16: RSS/Atom feed support.** Blog now exposes anonymous `/blog/feed.xml`, `/blog/feed.rss`, and `/blog/feed.atom` public feeds scoped to the resolved site domain/language and published articles only.
+- **Shipped 2026-06-16: URL Manager redirect bridge is explicit.** Blog now declares URL Manager as an optional bridge, documents that article slug changes emit `PageUrlChanged`, and tests that changed article slugs update the canonical URL through the core event URL Manager consumes.
+- **Shipped 2026-06-16: editorial analytics adoption docs are explicit.** README and overview now explain how Insights and GA4 Reports can be used as optional growth bridges for article entrances, engaged sessions, archive/tag discovery, referrers, declining articles, and widget performance without making Blog depend on analytics packages.
 - **No package-local completion review.** The package has broad test coverage but no plan reconciliation yet.
 
 ## 4. Issues / Risks
@@ -51,13 +51,13 @@ Blog should be positioned as Capell's premium publishing layer for teams that ne
 
 | Item                                                       | Bucket | Effort | Impact | Section ref |
 | ---------------------------------------------------------- | ------ | ------ | ------ | ----------- |
-| Remove duplicate health entries from `capell.json`         | Now    | S      | High   | §2.1, §4.1  |
-| Add archive/tag/blog edge-case route tests                 | Now    | M      | High   | §2.2, §4.2  |
-| Add query-budget coverage for media/author/tag rich routes | Now    | M      | High   | §2.3, §4.3  |
-| Document required/optional bridge behavior                 | Now    | S      | Medium | §2.4, §4.4  |
-| Add RSS/Atom feed support                                  | Next   | M      | Medium | §3, §5      |
-| Add URL Manager redirect integration for slug changes      | Next   | M      | Medium | §3          |
-| Add analytics adoption docs tying widgets to Insights/GA4  | Next   | S      | Medium | §3          |
+| Remove duplicate health entries from `capell.json`         | Done   | S      | High   | §2.1, §4.1  |
+| Add archive/tag/blog edge-case route tests                 | Done   | M      | High   | §2.2, §4.2  |
+| Add query-budget coverage for media/author/tag rich routes | Done   | M      | High   | §2.3, §4.3  |
+| Document required/optional bridge behavior                 | Done   | S      | Medium | §2.4, §4.4  |
+| Add RSS/Atom feed support                                  | Done   | M      | Medium | §3, §5      |
+| Add URL Manager redirect integration for slug changes      | Done   | M      | Medium | §3          |
+| Add analytics adoption docs tying widgets to Insights/GA4  | Done   | S      | Medium | §3          |
 | Add editorial workflow templates                           | Later  | M      | Medium | §5          |
 | Complete full package plan reconciliation                  | Later  | M      | Medium | §3          |
 

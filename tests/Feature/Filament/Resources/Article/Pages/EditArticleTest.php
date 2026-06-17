@@ -6,14 +6,19 @@ use Capell\Admin\Filament\Resources\Pages\PageResource;
 use Capell\Blog\Filament\Resources\Articles\ArticleResource;
 use Capell\Blog\Filament\Resources\Articles\Pages\EditArticle;
 use Capell\Blog\Models\Article;
+use Capell\Blog\Support\Creator\BlogCreator;
+use Capell\Core\Events\PageUrlChanged;
 use Capell\Core\Models\Page;
+use Capell\Core\Models\PageUrl;
 use Capell\Core\Models\Site;
+use Capell\Core\Models\SiteDomain;
 use Capell\Core\Models\Translation;
 use Capell\Tags\Enums\TagTypeEnum;
 use Capell\Tags\Models\Tag;
 use Capell\Tests\Support\Concerns\CreatesAdminUser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 
 use function Pest\Laravel\assertSoftDeleted;
@@ -87,6 +92,55 @@ it('can save', function (): void {
 
     expect($page->refresh())
         ->name->toBe($newData->name);
+});
+
+it('emits the core page url changed event when an article slug changes', function (): void {
+    $blogCreator = resolve(BlogCreator::class);
+
+    $siteDomain = SiteDomain::factory()->default()->create([
+        'domain' => 'blog.example.test',
+        'path' => null,
+        'scheme' => 'https',
+    ]);
+    $site = $siteDomain->site;
+    $language = $siteDomain->language;
+
+    $blogCreator->createBlogPage($site);
+    $articleType = $blogCreator->createArticlePageType();
+    $articleLayout = $blogCreator->createArticleLayout();
+
+    $article = Article::factory()
+        ->site($site)
+        ->layout($articleLayout)
+        ->type($articleType)
+        ->withTranslations($site->languages)
+        ->create(['name' => 'Original Article']);
+
+    $pageUrl = $article->pageUrl;
+    $translation = $article->translation;
+
+    expect($pageUrl)->toBeInstanceOf(PageUrl::class)
+        ->and($translation)->toBeInstanceOf(Translation::class)
+        ->and($language)->not->toBeNull();
+
+    $oldUrl = $pageUrl->url;
+
+    Event::fake([PageUrlChanged::class]);
+
+    $translation->forceFill([
+        'meta' => [
+            ...($translation->meta ?? []),
+            'slug' => 'renamed-article',
+        ],
+    ])->save();
+
+    Event::assertDispatched(
+        PageUrlChanged::class,
+        fn (PageUrlChanged $event): bool => $event->old_url === $oldUrl
+            && $event->new_url === '/blog/renamed-article'
+            && $event->site_id === $site->getKey()
+            && $event->language_id === $language->getKey(),
+    );
 });
 
 it('can delete', function (): void {
