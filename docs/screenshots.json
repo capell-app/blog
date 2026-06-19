@@ -16,11 +16,7 @@
             "notes": "Requires Blog plus its required Capell extensions installed, package migrations, and seeded draft/published articles with sites, layouts, URLs, translations, and tags.",
             "useCase": "An editor reviews the article queue, publish windows, language coverage, and article status before editing content.",
             "screenshotPath": "packages/blog/docs/screenshots/articles-admin-index.png",
-            "darkScreenshotPath": "packages/blog/docs/screenshots/articles-admin-index-dark.png",
-            "covers": [
-                "packages/blog/src/Filament/Resources/Articles/Tables/ArticlePagesTable.php",
-                "packages/blog/src/Filament/Widgets/ListArticlesWidget.php"
-            ]
+            "darkScreenshotPath": "packages/blog/docs/screenshots/articles-admin-index-dark.png"
         },
         {
             "id": "create-edit-article-form",
