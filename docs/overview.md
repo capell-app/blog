@@ -37,6 +37,50 @@ Screenshot contract: `screenshots.json`.
 - Archive page frontend output (frontend, required).
 - Tag page frontend output (frontend, required).
 
+## Screenshot Evidence
+
+These captures are the package-owned visual contract for the admin pages, public pages, actions, workflows, and feature surfaces described above. Keep this section aligned with `docs/screenshots.json` whenever the package surface changes.
+
+### Articles admin index
+
+![Articles admin index](screenshots/articles-admin-index.png)
+
+- Surface: admin · Target: ArticleResource.
+- Documents: An editor reviews the article queue, publish windows, language coverage, and article status before editing content.
+- Capture notes: Requires Blog plus its required Capell extensions installed, package migrations, and seeded draft/published articles with sites, layouts, URLs, translations, and tags.
+
+### Create/edit article form
+
+![Create/edit article form](screenshots/create-edit-article-form.png)
+
+- Surface: admin · Target: ArticleResource.create.
+- Documents: An editor creates or updates an article with publishing windows, metadata, layout selection, media, and taxonomy.
+- Capture notes: Requires seeded sites, article type, layouts, and tags so relationship fields are populated. The batch harness could not complete extension install until required dependency extensions were marked installed.
+
+### Blog page frontend output
+
+![Blog page frontend output](screenshots/blog-page-frontend-output.png)
+
+- Surface: frontend · Target: frontend-url.
+- Documents: A visitor browses the public blog landing page and sees published article listings.
+- Capture notes: Requires seeded blog landing page, published articles, layout content, URLs, and navigation. Verify public output contains no authoring markers or admin/editor URLs.
+
+### Archive page frontend output
+
+![Archive page frontend output](screenshots/archive-page-frontend-output.png)
+
+- Surface: frontend · Target: frontend-url.
+- Documents: A visitor opens a monthly archive and sees articles filtered to that archive period.
+- Capture notes: Requires archive pages created by setup/demo commands and articles with visible dates across at least two months.
+
+### Tag page frontend output
+
+![Tag page frontend output](screenshots/tag-page-frontend-output.png)
+
+- Surface: frontend · Target: frontend-url.
+- Documents: A visitor opens a tag page and sees published articles associated with that tag.
+- Capture notes: Requires seeded tags attached to published articles and tag page URLs from the blog setup flow.
+
 ## Technical Shape
 
 - Service providers: `Capell\Blog\Providers\ConsoleServiceProvider`, `Capell\Blog\Providers\BlogServiceProvider`, `Capell\Blog\Providers\AdminServiceProvider`, `Capell\Blog\Providers\FrontendServiceProvider`.
