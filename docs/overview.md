@@ -10,8 +10,6 @@ Blog adds premium article publishing, archive pages, tag pages, article widgets,
 
 After install, admins get package-owned management surfaces and public users may see package-owned frontend output or routes.
 
-Public syndication feeds are available at `/blog/feed.xml`, `/blog/feed.rss`, and `/blog/feed.atom` for the resolved site domain. Feeds include published article URLs only, use the site language tied to the domain, and expose no admin/editor state.
-
 Status details:
 
 - Status: Available
@@ -40,17 +38,17 @@ Screenshot contract: `screenshots.json`.
 ## Technical Shape
 
 - Service providers: `Capell\Blog\Providers\ConsoleServiceProvider`, `Capell\Blog\Providers\BlogServiceProvider`, `Capell\Blog\Providers\AdminServiceProvider`, `Capell\Blog\Providers\FrontendServiceProvider`.
-- Manifest contributions: Article and Tags admin resources, Article/Page/Widget configurators, the Article model, and the Article page type/page variation.
 - Migrations: `packages/blog/database/migrations/2026_05_10_190842_01_create_articles_table.php`.
 - Models: `Article`.
 - Filament classes: `ArticleSelect`, `SettingsTab`, `TagsInput`, `ArticlePageConfigurator`, `ArticleWidgetConfigurator`, `RelatedWidgetConfigurator`, `ArticleResource`, `CreateArticle`, `EditArticle`, `ListArticles`, `ArticleForm`, `ArticlePagesTable`, `and 4 more`.
 - Livewire components: `Archive`, `Blog`, `Tag`.
 - Policies: `ArticlePolicy`.
 - Listeners: `AddBlogPagesToNavigation`, `ArticleTranslationSavedListener`.
-- Actions: `AssignExampleArticleImageAction`, `BuildArticleMetaDataAction`, `BuildBlogResultsViewDataAction`, `BuildTagListingDataAction`, `ClearBlogContentCacheAction`, `ClearBlogTagCacheAction`, `CreateBlogHeroDemoContentAction`, `CreateBlogPagesAction`, `EnsureArticlePublishingDefaultsAction`, `EnsureBlogPublishingSurfaceAction`, `GenerateArchiveUrl`, `GetArticleLayoutAction`, `and 2 more`.
+- Actions: `AssignExampleArticleImageAction`, `BuildArticleMetaDataAction`, `BuildBlogFeedXmlAction`, `BuildBlogResultsViewDataAction`, `BuildTagListingDataAction`, `ClearBlogContentCacheAction`, `ClearBlogTagCacheAction`, `CreateBlogHeroDemoContentAction`, `CreateBlogPagesAction`, `EnsureArticlePublishingDefaultsAction`, `EnsureBlogPublishingSurfaceAction`, `GenerateArchiveUrl`, `and 3 more`.
 - Data objects: `ArchiveLinkData`, `ArchiveMonthData`, `ArticleMetaData`, `ArticleNeighborLinkData`, `ArticleWidgetRenderData`, `BlogPublishingSurfaceData`, `BlogResultItemData`, `BlogResultsViewData`, `BlogTagLinkData`, `BlogWidgetContentData`, `ArticleHealthData`, `LanguageCoverageData`, `and 6 more`.
 - Command signatures: `capell:blog-demo`, `capell:blog-install`, `capell:blog-setup`.
 - Console command classes: `CreateBlogPagesCommand`, `DemoCommand`, `FakerCommand`, `HeroDemoCommand`, `InstallCommand`, `SetupCommand`.
+- Manifest contributions: `admin-resource: Capell\Blog\Manifest\BlogAdminResourcesContribution`, `configurator: Capell\Blog\Manifest\BlogConfiguratorsContribution`, `model: Capell\Blog\Manifest\BlogModelsContribution`, `page-type: Capell\Blog\Manifest\BlogPageTypesContribution`, `page-variation: Capell\Blog\Manifest\BlogPageTypesContribution`.
 - Health checks: `Capell\Blog\Health\BlogHealthCheck`.
 - Blade views: `packages/blog/resources/views/components/article-meta.blade.php`, `packages/blog/resources/views/components/asset-after-title.blade.php`, `packages/blog/resources/views/components/footer/pages.blade.php`, `packages/blog/resources/views/components/footer/tags.blade.php`, `packages/blog/resources/views/components/page/author.blade.php`, `packages/blog/resources/views/components/page/published-date.blade.php`, `packages/blog/resources/views/components/page/tags.blade.php`, `packages/blog/resources/views/components/tag.blade.php`, `packages/blog/resources/views/components/widget/page/archives.blade.php`, `packages/blog/resources/views/components/widget/page/article.blade.php`, `packages/blog/resources/views/components/widget/tag/tags.blade.php`, `packages/blog/resources/views/filament/widgets/article-health.blade.php`, `and 4 more`.
 - Cache tags: `blog`.
@@ -73,34 +71,9 @@ Screenshot contract: `screenshots.json`.
 - Cache tags: `blog`.
 - Commands: `capell:blog-demo`, `capell:blog-install`, `capell:blog-setup`.
 
-## Package Bridges
-
-| Package | Requirement | Behavior |
-| --- | --- | --- |
-| Layout Builder | Required by the publishing surface | Blog page and widget configurators depend on the Layout Builder contract; install Layout Builder before Blog. |
-| Tags | Required for tag publishing | Article tags, tag admin/resource metadata, and tag listing pages use the Tags package contract. |
-| Navigation | Optional | Setup listeners can place Blog pages in navigation, but public rendering continues without navigation entries. |
-| HTML Cache | Optional | Cache tags are cleared when the cache bridge exists; otherwise saves skip host cache invalidation. |
-| Content Sections | Optional | Section/demo integrations are additive and do not gate core article publishing. |
-| Publishing Studio | Optional | Draft/publish surfaces register when present; Blog still enforces its own published article visibility without it. |
-| Comments | Optional | Comment UI and counts are attached only when Comments is installed. |
-| Site Discovery/static export | Optional | Discovery and export metadata are contributed when available; the package does not require them for public routes. |
-| URL Manager | Optional | Article slug changes update the canonical `PageUrl` and emit the core `PageUrlChanged` event that URL Manager consumes to preserve old article URLs. |
-| Insights/GA4 | Optional | Analytics packages can consume Blog traffic, but they are not needed for article, archive, tag, or widget rendering. |
-
-## Analytics Adoption
-
-Blog does not require analytics packages for article, archive, tag, widget, or static export rendering. When Insights or GA4 Reports are installed, treat them as optional growth bridges:
-
-- Use GA4 landing-page and content reports to compare article entrances, engaged sessions, and archive/tag discovery paths.
-- Use Insights dashboard widgets to surface top articles, declining articles, and search/social referrers for editors.
-- Keep editorial KPIs tied to published article URLs, not admin record IDs, so slug changes, static export, and canonical URL behavior remain understandable to site owners.
-- Pair Blog widgets with campaign pages or Content Sections, then review conversion-adjacent traffic in Insights/GA4 rather than embedding analytics logic in Blog views.
-
 ## Common Pitfalls
 
 - Run migrations before opening package resources or public routes.
-- Optional bridges must fail closed and additive: missing bridge packages should remove only that integration, not the public publishing surface.
 - Keep public Blade and cached HTML free of authoring markers, model IDs, permissions, signed editor URLs, and lazy database queries.
 - Run package commands from the host app; in this repository use `vendor/bin/pest` for package tests.
 - Keep `composer.json`, `composer.local.json`, `capell.json`, docs, screenshots, and tests aligned when the package surface changes.
@@ -128,7 +101,7 @@ Blog does not require analytics packages for article, archive, tag, widget, or s
 - [Capell content language plan](../../../docs/CONTENT_LANGUAGE_PLAN.md)
 - [Capell documentation design system](../../../docs/DESIGN_SYSTEM.md)
 - [Capell and package ERD notes](../../../docs/erd/capell-and-package-erds.md)
-- Related packages: [Content Sections](../../content-sections/README.md), [Html Cache](../../html-cache/README.md), [Layout Builder](../../layout-builder/README.md), [Navigation](../../navigation/README.md), [Tags](../../tags/README.md), [Comments](../../comments/README.md), [Insights](../../insights/README.md), [Publishing Studio](../../publishing-studio/README.md), [Site Discovery](../../site-discovery/README.md).
+- Related packages: [Content Sections](../../content-sections/README.md), [Html Cache](../../html-cache/README.md), [Layout Builder](../../layout-builder/README.md), [Navigation](../../navigation/README.md), [Tags](../../tags/README.md), [Comments](../../comments/README.md), [Insights](../../insights/README.md), [Publishing Studio](../../publishing-studio/README.md), [Site Discovery](../../site-discovery/README.md), [Url Manager](../../url-manager/README.md).
 - Focused tests: `vendor/bin/pest packages/blog/tests --configuration=phpunit.xml`.
 
 <!-- prettier-ignore-end -->

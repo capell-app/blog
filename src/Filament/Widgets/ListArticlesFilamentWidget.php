@@ -30,7 +30,7 @@ use Illuminate\Support\Facades\DB;
 use LogicException;
 use Override;
 
-class ListArticlesWidget extends BaseWidget
+class ListArticlesFilamentWidget extends BaseWidget
 {
     use HasWidgetShield;
 
