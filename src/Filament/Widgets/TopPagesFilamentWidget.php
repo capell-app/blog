@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Filament\Widgets;
 
-use Capell\Admin\Contracts\CapellWidgetContract;
+use Capell\Admin\Contracts\CapellFilamentWidgetContract;
 use Capell\Admin\Filament\Concerns\GatedByRoleAndSettings;
 use Capell\Admin\Filament\Concerns\HasDashboardDateRange;
 use Capell\Blog\Data\Dashboard\TopPageData;
@@ -16,7 +16,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Override;
 
-final class TopPagesWidgetAbstract extends Widget implements CapellWidgetContract
+final class TopPagesFilamentWidget extends Widget implements CapellFilamentWidgetContract
 {
     use GatedByRoleAndSettings;
     use HasDashboardDateRange;

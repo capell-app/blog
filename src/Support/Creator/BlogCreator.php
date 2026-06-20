@@ -354,7 +354,7 @@ class BlogCreator
                 'meta' => [
                     'colspan' => 9,
                 ],
-                'widgets' => [
+                'layout_widgets' => [
                     ['widget_key' => 'breadcrumbs'],
                     ['widget_key' => 'archives', 'meta' => ['show_page_content' => true, 'show_page_title' => true]],
                 ],
@@ -367,7 +367,7 @@ class BlogCreator
                     'padding' => ['md'],
                     'html_class' => 'sidebar-sticky space-y-8',
                 ],
-                'widgets' => [
+                'layout_widgets' => [
                     ['widget_key' => 'latest-articles', 'meta' => ['hide_no_results' => true]],
                     ['widget_key' => 'tags', 'meta' => ['hide_no_results' => true]],
                 ],
@@ -455,7 +455,7 @@ class BlogCreator
                 'meta' => [
                     'colspan' => 9,
                 ],
-                'widgets' => [
+                'layout_widgets' => [
                     ['widget_key' => 'breadcrumbs'],
                     $pageContentWidget,
                     ['widget_key' => 'page-slot'],
@@ -469,7 +469,7 @@ class BlogCreator
                     'padding' => ['t-sm'],
                     'html_class' => 'sidebar-sticky space-y-8',
                 ],
-                'widgets' => [
+                'layout_widgets' => [
                     ['widget_key' => 'popular-articles', 'meta' => ['hide_no_results' => true]],
                     ['widget_key' => 'tags', 'meta' => ['hide_no_results' => true]],
                     ['widget_key' => 'archives', 'meta' => ['hide_no_results' => true]],
@@ -484,7 +484,7 @@ class BlogCreator
                         'colspan' => 12,
                         'container' => 'full',
                     ],
-                    'widgets' => [
+                    'layout_widgets' => [
                         ['widget_key' => $blogHeroWidget->key],
                     ],
                 ],
@@ -510,7 +510,7 @@ class BlogCreator
                 'meta' => [
                     'colspan' => 9,
                 ],
-                'widgets' => [
+                'layout_widgets' => [
                     ['widget_key' => 'breadcrumbs'],
                     ['widget_key' => 'tags', 'meta' => ['show_page_title' => true, 'show_page_content' => true]],
                 ],
@@ -523,7 +523,7 @@ class BlogCreator
                     'padding' => ['md'],
                     'html_class' => 'sidebar-sticky space-y-8',
                 ],
-                'widgets' => [
+                'layout_widgets' => [
                     ['widget_key' => 'latest-pages', 'meta' => ['hide_no_results' => true]],
                 ],
             ],
@@ -543,7 +543,7 @@ class BlogCreator
                 'meta' => [
                     'colspan' => 9,
                 ],
-                'widgets' => [
+                'layout_widgets' => [
                     ['widget_key' => 'breadcrumbs'],
                     ['widget_key' => 'page-content'],
                     ['widget_key' => 'page-slot'],
@@ -557,7 +557,7 @@ class BlogCreator
                     'padding' => ['md'],
                     'html_class' => 'sidebar-sticky space-y-8',
                 ],
-                'widgets' => [
+                'layout_widgets' => [
                     ['widget_key' => 'latest-articles', 'meta' => ['hide_no_results' => true]],
                     ['widget_key' => 'tags', 'meta' => ['hide_no_results' => true]],
                     ['widget_key' => 'archives', 'meta' => ['hide_no_results' => true]],
@@ -571,7 +571,7 @@ class BlogCreator
                     'padding' => ['t-lg', 'b-xl'],
                     'html_class' => 'blog-tag-footer',
                 ],
-                'widgets' => [
+                'layout_widgets' => [
                     ['widget_key' => 'latest-articles', 'meta' => ['hide_no_results' => true]],
                 ],
             ],
@@ -764,7 +764,7 @@ class BlogCreator
                 'meta' => [
                     'colspan' => 9,
                 ],
-                'widgets' => [
+                'layout_widgets' => [
                     ['widget_key' => 'breadcrumbs'],
                     ['widget_key' => 'article'],
                 ],
@@ -777,7 +777,7 @@ class BlogCreator
                     'padding' => ['md'],
                     'html_class' => 'sidebar-sticky space-y-8',
                 ],
-                'widgets' => [
+                'layout_widgets' => [
                     ['widget_key' => 'tags', 'meta' => ['hide_no_results' => true]],
                     ['widget_key' => 'archives', 'meta' => ['hide_no_results' => true]],
                 ],
@@ -790,7 +790,7 @@ class BlogCreator
                     'padding' => ['t-lg', 'b-xl'],
                     'html_class' => 'blog-latest-articles',
                 ],
-                'widgets' => [
+                'layout_widgets' => [
                     ['widget_key' => 'latest-articles', 'meta' => ['hide_no_results' => true]],
                 ],
             ],
@@ -1203,8 +1203,8 @@ class BlogCreator
 
         $containers['main'] = $defaultContainers['main'];
 
-        if (isset($containers['sidebar']['widgets']) && is_array($containers['sidebar']['widgets'])) {
-            $containers['sidebar']['widgets'] = collect($containers['sidebar']['widgets'])
+        if (isset($containers['sidebar']['layout_widgets']) && is_array($containers['sidebar']['layout_widgets'])) {
+            $containers['sidebar']['layout_widgets'] = collect($containers['sidebar']['layout_widgets'])
                 ->reject(fn (array $widget): bool => ($widget['widget_key'] ?? null) === 'latest-articles')
                 ->values()
                 ->all();

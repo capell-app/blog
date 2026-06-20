@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Filament\Widgets;
 
-use Capell\Admin\Contracts\CapellWidgetContract;
+use Capell\Admin\Contracts\CapellFilamentWidgetContract;
 use Capell\Admin\Filament\Concerns\GatedByRoleAndSettings;
 use Capell\Blog\Data\Dashboard\ArticleHealthData;
 use Capell\Blog\Data\Dashboard\LanguageCoverageData;
@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Override;
 
-final class ArticleHealthWidgetAbstract extends Widget implements CapellWidgetContract
+final class ArticleHealthFilamentWidget extends Widget implements CapellFilamentWidgetContract
 {
     use GatedByRoleAndSettings;
 

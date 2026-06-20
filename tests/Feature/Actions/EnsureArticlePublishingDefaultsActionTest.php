@@ -12,7 +12,7 @@ it('keeps latest pages in default sidebars when adding latest articles', functio
         'key' => LayoutEnum::Default->value,
         'containers' => [
             'sidebar' => [
-                'widgets' => [
+                'layout_widgets' => [
                     ['widget_key' => 'siblings'],
                     ['widget_key' => 'latest-pages'],
                 ],
@@ -25,7 +25,7 @@ it('keeps latest pages in default sidebars when adding latest articles', functio
         'key' => LayoutEnum::Results->value,
         'containers' => [
             'sidebar' => [
-                'widgets' => [
+                'layout_widgets' => [
                     ['widget_key' => 'latest-pages'],
                 ],
             ],

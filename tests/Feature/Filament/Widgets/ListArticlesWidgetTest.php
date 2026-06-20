@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Capell\Blog\Filament\Widgets\ListArticlesWidget;
+use Capell\Blog\Filament\Widgets\ListArticlesFilamentWidget;
 use Capell\Blog\Models\Article;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
@@ -24,7 +24,7 @@ it('renders the articles widget', function (): void {
 
     Article::factory()->count(5)->site($site)->withTranslations()->create();
 
-    livewire(ListArticlesWidget::class)
+    livewire(ListArticlesFilamentWidget::class)
         ->assertOk()
         ->assertCountTableRecords(5);
 });
