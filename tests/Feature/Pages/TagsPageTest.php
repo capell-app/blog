@@ -12,6 +12,7 @@ use Capell\Core\Models\SiteDomain;
 use Capell\Tags\Enums\TagTypeEnum;
 use Capell\Tags\Models\Tag;
 use Capell\Tests\Support\Concerns\TestingFrontend;
+use Illuminate\Support\Str;
 
 use function Pest\Laravel\get;
 
@@ -25,7 +26,18 @@ test('tags page list tags', function (): void {
 
     $language = Language::factory()->create();
     $site = Site::factory()->recycle($language)->withTranslations()->create();
-    $tags = Tag::factory()->count(3)->translate($language)->type(TagTypeEnum::Page)->create();
+    $tagIds = collect([
+        'Visible Blog Topic One',
+        'Visible Blog Topic Two',
+        'Hidden Blog Topic Three',
+    ])->map(fn (string $tagName): int|string => Tag::factory()
+        ->type(TagTypeEnum::Page)
+        ->create([
+            'name' => [$language->code => $tagName],
+            'slug' => [$language->code => Str::slug($tagName)],
+        ])
+        ->getKey());
+    $tags = Tag::query()->whereKey($tagIds->all())->oldest('id')->get();
     $articleType = $blogCreator->createArticlePageType();
     Article::factory()
         ->count(5)
