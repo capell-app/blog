@@ -51,6 +51,13 @@ test('tags page list tags', function (): void {
     $tagPage = $blogCreator->createTagPage($site, $tagsPage);
     $tagsPageUrl = blogTestPageUrl($tagsPage->pageUrl);
     $tagsPageTranslation = blogTestTranslation($tagsPage->translation);
+    $visibleTagOne = $tags->get(0);
+    $visibleTagTwo = $tags->get(1);
+    $hiddenTag = $tags->get(2);
+
+    if (! $visibleTagOne instanceof Tag || ! $visibleTagTwo instanceof Tag || ! $hiddenTag instanceof Tag) {
+        throw new RuntimeException('Expected three deterministic tag fixtures.');
+    }
 
     expect($tagsPage)
         ->toBeInstanceOf(Page::class)
@@ -76,12 +83,12 @@ test('tags page list tags', function (): void {
         ->assertElementExists(
             'main',
             fn (AssertElement $main): BaseAssert => $main->doesntContain('.no-results')
-                ->containsText($tags[0]->translate('name', $language->code)),
+                ->containsText('Visible Blog Topic One'),
         )
-        ->assertElementExists('a[href="' . $tags[0]->getUrl($tagPage, $language) . '"]')
-        ->assertSee($tags[1]->translate('name', $language->code))
-        ->assertElementExists('a[href="' . $tags[1]->getUrl($tagPage, $language) . '"]')
-        ->assertDontSeeText($tags[2]->translate('name', $language->code));
+        ->assertElementExists('a[href="' . $visibleTagOne->getUrl($tagPage, $language) . '"]')
+        ->assertSee('Visible Blog Topic Two')
+        ->assertElementExists('a[href="' . $visibleTagTwo->getUrl($tagPage, $language) . '"]')
+        ->assertDontSeeText('Hidden Blog Topic Three');
 });
 
 test('tags sitemap formats tag urls from the generated tag results page', function (): void {
