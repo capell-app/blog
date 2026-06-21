@@ -22,7 +22,7 @@ final class BlogFeedController
 
         abort_unless($domain instanceof SiteDomain && $domain->site instanceof Site && $domain->language !== null, 404);
 
-        return response(
+        return new Response(
             content: BuildBlogFeedXmlAction::run($domain, $feedFormat),
             status: 200,
             headers: [

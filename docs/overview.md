@@ -64,7 +64,7 @@ Screenshot contract: `screenshots.json`.
 
 - Admin navigation: adds package-owned Filament classes when registered.
 - Permissions: `article.view`, `article.create`, `article.update`, `article.delete`, `article.restore`, `article.force_delete`, `tag.view`, `tag.create`, `tag.update`, `tag.delete`, `tag.restore`, `tag.force_delete`.
-- Public routes: none detected in package route files.
+- Public routes: `capell.blog.feed.xml`, `capell.blog.feed.rss`, `capell.blog.feed.atom`.
 - Database changes: package migrations are declared.
 - Settings: no package settings declared.
 - Queues or schedules: none detected in standard package paths.

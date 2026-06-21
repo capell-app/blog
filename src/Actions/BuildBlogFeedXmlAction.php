@@ -14,7 +14,7 @@ use Capell\Core\Models\Translation;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
-use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 final class BuildBlogFeedXmlAction
@@ -33,11 +33,14 @@ final class BuildBlogFeedXmlAction
         /** @var EloquentCollection<int, Article> $articles */
         $articles = Article::query()
             ->with([
-                'translation' => fn (MorphOne $query): MorphOne => $query->where('language_id', $language->id),
-                'pageUrl' => fn (MorphOne $query): MorphOne => $query
-                    ->where('language_id', $language->id)
-                    ->where('site_id', $site->id)
-                    ->where('status', true),
+                'translation' => static function (Relation $query) use ($language): void {
+                    $query->where('language_id', $language->id);
+                },
+                'pageUrl' => static function (Relation $query) use ($language, $site): void {
+                    $query->where('language_id', $language->id)
+                        ->where('site_id', $site->id)
+                        ->where('status', true);
+                },
             ])
             ->where('site_id', $site->id)
             ->whereHas('translation', fn (Builder $query): Builder => $query->where('language_id', $language->id))
@@ -101,7 +104,8 @@ XML;
     private function rssItem(Article $article): string
     {
         $translation = $article->translation;
-        $url = $article->pageUrl?->full_url ?? '';
+        $pageUrl = $article->pageUrl;
+        $url = $pageUrl instanceof PageUrl ? $pageUrl->full_url : '';
         $publishedAt = $article->getPublishDate() ?? $article->created_at;
         $description = $translation instanceof Translation ? (string) ($translation->summary ?? '') : '';
 
@@ -145,7 +149,8 @@ XML;
     private function atomEntry(Article $article): string
     {
         $translation = $article->translation;
-        $url = $article->pageUrl?->full_url ?? '';
+        $pageUrl = $article->pageUrl;
+        $url = $pageUrl instanceof PageUrl ? $pageUrl->full_url : '';
         $publishedAt = $this->date($article->getPublishDate() ?? $article->created_at);
         $summary = $translation instanceof Translation ? (string) ($translation->summary ?? '') : '';
 

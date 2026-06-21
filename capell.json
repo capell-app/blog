@@ -78,6 +78,17 @@
             "name": "article",
             "modelClass": "Capell\\Blog\\Models\\Article",
             "resourceName": "article"
+        },
+        {
+            "type": "route",
+            "class": "Capell\\Blog\\Manifest\\BlogRoutesContribution",
+            "routes": [
+                "capell.blog.feed.xml",
+                "capell.blog.feed.rss",
+                "capell.blog.feed.atom"
+            ],
+            "prefix": "blog",
+            "middleware": ["web"]
         }
     ],
     "database": {
@@ -128,7 +139,11 @@
     "security": {
         "riskTier": "standard",
         "publicSurface": {
-            "routeNames": [],
+            "routeNames": [
+                "capell.blog.feed.xml",
+                "capell.blog.feed.rss",
+                "capell.blog.feed.atom"
+            ],
             "auth": "none",
             "csrfExemptRoutes": [],
             "signedRoutes": [],

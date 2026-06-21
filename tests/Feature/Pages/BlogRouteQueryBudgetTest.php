@@ -17,6 +17,7 @@ use Capell\Tests\Fixtures\Models\User;
 use Capell\Tests\Support\Concerns\TestingFrontend;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Support\Facades\DB;
 
 use function Pest\Laravel\get;
@@ -94,7 +95,7 @@ function blogRichRouteQueryBudgetFixture(int $articleCount): array
         ->type($articleType)
         ->withTranslations($site->languages)
         ->state(['created_by' => $author->getKey()])
-        ->sequence(fn (object $sequence): array => [
+        ->sequence(fn (Sequence $sequence): array => [
             'visible_from' => now()->subDays($articleCount - $sequence->index),
         ])
         ->create();
