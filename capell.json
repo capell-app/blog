@@ -140,11 +140,11 @@
         "riskTier": "standard",
         "publicSurface": {
             "routeNames": [
-                "capell.blog.feed.xml",
+                "capell.blog.feed.atom",
                 "capell.blog.feed.rss",
-                "capell.blog.feed.atom"
+                "capell.blog.feed.xml"
             ],
-            "auth": "none",
+            "auth": "public",
             "csrfExemptRoutes": [],
             "signedRoutes": [],
             "tokenizedRoutes": [],

@@ -1,7 +1,3 @@
-# Blog
-
-<!-- prettier-ignore-start -->
-
 ## What it does for you
 
 Blog lets you write and publish articles on your site, with their own blog page, monthly archives, and tag pages. You can keep an article private as a draft while you work on it, schedule it to go live later, and feature related articles in widgets on other pages.
@@ -30,10 +26,3 @@ Go to **Content > Articles** in the admin. Tags are set on each article as you w
 - A **draft** stays private. Visitors never see it until you publish.
 - A **scheduled** article appears on its own, at the date and time you set.
 - Articles share your site's RSS/Atom feeds automatically, so readers can subscribe.
-
----
-
-For how to use Blog, see the [admin guide](admin-guide.md).
-For developers: see the [README](../README.md), [blog-api.md](blog-api.md), [blog-database.md](blog-database.md).
-
-<!-- prettier-ignore-end -->
