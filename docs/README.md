@@ -6,11 +6,11 @@ Start at the [package README](../README.md) when deciding whether to install thi
 
 ## Guides
 
-| Doc                                                             | Use it for                                                                         |
-| --------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| [Overview](overview.md)                                         | Plain-language "what the blog does for you", your screens, and where to find them. |
+| Doc                                                             | Use it for                                                                                                 |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| [Overview](overview.md)                                         | Plain-language "what the blog does for you", your screens, and where to find them.                         |
 | [Admin Guide](admin-guide.md)                                   | Step-by-step how-to for editors (write, draft, schedule, publish) plus owner roll-out and troubleshooting. |
-| [Credits And Acknowledgements](credits-and-acknowledgements.md) | Upstream services, dependencies, and acknowledgements.                             |
+| [Credits And Acknowledgements](credits-and-acknowledgements.md) | Upstream services, dependencies, and acknowledgements.                                                     |
 
 ## Read Next
 
