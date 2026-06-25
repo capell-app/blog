@@ -54,7 +54,7 @@ use Override;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\MediaLibrary\MediaCollections\Events\MediaHasBeenAddedEvent;
 
-class BlogServiceProvider extends AbstractPackageServiceProvider
+final class BlogServiceProvider extends AbstractPackageServiceProvider
 {
     private const string LAYOUT_SIDEBAR_ELEMENT_CONTRIBUTOR = LayoutSidebarWidgetContributor::class;
 
@@ -121,7 +121,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
     #[Override]
     protected function isPackageInstalled(): bool
     {
-        return CapellCore::getPackage(static::$packageName)->isInstalled();
+        return CapellCore::getPackage(self::$packageName)->isInstalled();
     }
 
     #[Override]
@@ -161,7 +161,7 @@ class BlogServiceProvider extends AbstractPackageServiceProvider
     private function registerPackageAssets(): self
     {
         CapellCore::registerVendorAsset(
-            VendorAssetData::tailwindSource('resources/views/**/*.blade.php', static::$packageName),
+            VendorAssetData::tailwindSource('resources/views/**/*.blade.php', self::$packageName),
         );
 
         return $this;
