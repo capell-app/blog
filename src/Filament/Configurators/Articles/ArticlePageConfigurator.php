@@ -9,17 +9,20 @@ use Capell\Admin\Filament\Components\Forms\MediaLibraryFileUpload;
 use Capell\Admin\Filament\Components\Forms\Page\LayoutSelect;
 use Capell\Admin\Filament\Components\Forms\Page\SettingsSchema;
 use Capell\Admin\Filament\Components\Forms\Page\SiteSelect;
+use Capell\Admin\Filament\Components\Forms\PublishDatesGrid;
 use Capell\Admin\Filament\Components\Forms\PublishSchema;
-use Capell\Admin\Filament\Components\Forms\PublishSection;
 use Capell\Admin\Filament\Configurators\Pages\DefaultPageConfigurator;
+use Capell\Admin\Filament\Livewire\PublishStatusPanel;
 use Capell\Admin\Filament\Resources\Pages\RelationManagers\UrlsRelationManager;
 use Capell\Blog\Filament\Components\Forms\Article\Tab\SettingsTab;
 use Capell\Blog\Filament\Components\Forms\Article\TagsInput;
 use Capell\Blog\Filament\Resources\Articles\ArticleResource;
+use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Loader\BlogLoader;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
 use Closure;
+use Filament\Schemas\Components\Livewire;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Schema;
@@ -77,16 +80,19 @@ class ArticlePageConfigurator extends DefaultPageConfigurator
                     $this->getTranslationFormSchema($configurator),
                 ])
                 ->sidebarSchema(
-                    SettingsSchema::make(
-                        $configurator,
-                        components: [
-                            TagsInput::make('tags'),
-                        ],
-                        pageGroup: $this->articleResourceName(),
-                        modifyParentQueryUsing: static::modifyParentQueryUsing($configurator),
-                        withParent: false,
-                        withType: false,
-                    ),
+                    [
+                        ...$this->articlePublishPanel($configurator),
+                        ...SettingsSchema::make(
+                            $configurator,
+                            components: [
+                                TagsInput::make('tags'),
+                            ],
+                            pageGroup: $this->articleResourceName(),
+                            modifyParentQueryUsing: static::modifyParentQueryUsing($configurator),
+                            withParent: false,
+                            withType: false,
+                        ),
+                    ],
                     contained: true,
                 ),
             Tabs::make()
@@ -123,8 +129,35 @@ class ArticlePageConfigurator extends DefaultPageConfigurator
                         withParent: false,
                         withType: false,
                     ),
-                    PublishSection::make(),
+                    // The editOption quick-edit modal can't host the full Livewire
+                    // panel cleanly, so keep a slim inline publish-date field here.
+                    PublishDatesGrid::getVisibleFromField(),
                 ]),
+        ];
+    }
+
+    /**
+     * The shared WordPress-style publish panel, pinned to the top of the article
+     * editor sidebar. Edit only — on create there is no record to act on yet, so
+     * the slim inline publish-date field in PublishSchema covers that case.
+     *
+     * @return array<int, Livewire>
+     */
+    protected function articlePublishPanel(Schema $configurator): array
+    {
+        $record = $configurator->getRecord();
+
+        if ($configurator->getOperation() !== 'edit' || ! $record instanceof Article) {
+            return [];
+        }
+
+        $key = $record->getKey();
+
+        return [
+            Livewire::make(PublishStatusPanel::class, [
+                'recordClass' => Article::class,
+                'recordId' => is_scalar($key) ? (int) $key : 0,
+            ]),
         ];
     }
 
