@@ -16,6 +16,7 @@ use Capell\Core\Concerns\HasCapellMedia;
 use Capell\Core\Contracts\Pageable;
 use Capell\Core\Enums\BlueprintGroupEnum;
 use Capell\Core\Enums\BlueprintSubjectEnum;
+use Capell\Core\Enums\ContentStructure;
 use Capell\Core\Enums\MediaCollectionEnum;
 use Capell\Core\Enums\PageOrderEnum;
 use Capell\Core\Models\Blueprint;
@@ -157,6 +158,17 @@ class Article extends Model implements Blueprintable, HasMedia, Pageable, Publis
     public function shouldLogVisit(): bool
     {
         return (bool) ($this->type?->meta['disable_visit_logs'] ?? true);
+    }
+
+    /**
+     * Mirror Page's content_structure accessor so shared admin page forms
+     * (inherited via EditPage) can read the active authoring mode off an
+     * Article record. Articles have no per-record override, so this resolves
+     * to the Blueprint default.
+     */
+    public function getContentStructureAttribute(): ?ContentStructure
+    {
+        return $this->type?->content_structure;
     }
 
     public function getActivitylogOptions(): LogOptions
