@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Capell\Blog\Actions\GenerateArchiveUrl;
+use Capell\Blog\Actions\GenerateArchiveUrlAction;
 use Capell\Blog\Data\ArchiveMonthData;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Creator\BlogCreator;
@@ -72,7 +72,7 @@ test('archives page list articles archives by month/year', function (): void {
                         'a',
                         fn (AssertElement $link): BaseAssert => $link->has(
                             'href',
-                            GenerateArchiveUrl::run(
+                            GenerateArchiveUrlAction::run(
                                 $archivePageUrl,
                                 new ArchiveMonthData(
                                     year: 2023,
@@ -119,7 +119,7 @@ test('archive page list articles by month/year', function (): void {
         ->and($archivePage->getAncestors(['name'])->pluck('name')->sort()->values()->toArray())
         ->toEqual(['Archives', 'Blog']);
 
-    $archiveUrl = GenerateArchiveUrl::run($archivePageUrl, ArchiveMonthData::fromDate($publishDate));
+    $archiveUrl = GenerateArchiveUrlAction::run($archivePageUrl, ArchiveMonthData::fromDate($publishDate));
 
     get($archiveUrl)
         ->assertOk()
@@ -150,7 +150,7 @@ test('archive page returns not found when selected month has no articles', funct
         ->withTranslations($site->languages)
         ->create(['visible_from' => '2024-10-01']);
 
-    $archiveUrl = GenerateArchiveUrl::run($archivePageUrl, new ArchiveMonthData(year: 2024, month: 11));
+    $archiveUrl = GenerateArchiveUrlAction::run($archivePageUrl, new ArchiveMonthData(year: 2024, month: 11));
 
     get($archiveUrl)
         ->assertNotFound();
@@ -172,7 +172,7 @@ test('archives sitemap formats archive page urls without wildcard', function ():
     $sitemapPage = $sitemap->format($archiveMonth, $archivePage);
 
     expect($sitemapPage->url)
-        ->toBe(GenerateArchiveUrl::run($archivePageUrl, $archiveMonth))
+        ->toBe(GenerateArchiveUrlAction::run($archivePageUrl, $archiveMonth))
         ->not->toContain('*');
 });
 

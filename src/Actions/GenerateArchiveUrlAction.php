@@ -11,7 +11,7 @@ use Lorisleiva\Actions\Concerns\AsObject;
 /**
  * @method static string run(PageUrl $url, ArchiveMonthData $date)
  */
-class GenerateArchiveUrl
+class GenerateArchiveUrlAction
 {
     use AsObject;
 

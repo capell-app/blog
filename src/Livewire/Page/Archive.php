@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Livewire\Page;
 
+use Capell\Blog\Actions\ApplyArchiveDateFilterAction;
 use Capell\Blog\Actions\BuildBlogResultsViewDataAction;
 use Capell\Blog\Data\BlogResultsViewData;
 use Capell\Blog\Enums\ResourceEnum;
@@ -18,7 +19,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Date;
-use Illuminate\Support\Facades\DB;
 use Override;
 
 class Archive extends AbstractPage
@@ -78,45 +78,7 @@ class Archive extends AbstractPage
             cacheKeyPrepend: sprintf('year-%s-month-%s', $this->year, $this->month),
             morphModel: Article::class,
             modifyQuery: function (Builder $query): void {
-                if (DB::getDriverName() === 'sqlite') {
-                    $query
-                        ->when(
-                            $this->year,
-                            fn (Builder $query): Builder => $query->whereRaw(
-                                "strftime('%Y', COALESCE(`visible_from`, `created_at`)) = ?",
-                                [(string) $this->year],
-                            ),
-                        )
-                        ->when(
-                            $this->month,
-                            function (Builder $query): Builder {
-                                $month = str_pad((string) $this->month, 2, '0', STR_PAD_LEFT);
-
-                                return $query->whereRaw(
-                                    "strftime('%m', COALESCE(`visible_from`, `created_at`)) = ?",
-                                    [$month],
-                                );
-                            },
-                        );
-
-                    return;
-                }
-
-                $query
-                    ->when(
-                        $this->year,
-                        fn (Builder $query): Builder => $query->whereRaw(
-                            'YEAR(COALESCE(`visible_from`, `created_at`)) = ?',
-                            [$this->year],
-                        ),
-                    )
-                    ->when(
-                        $this->month,
-                        fn (Builder $query): Builder => $query->whereRaw(
-                            'MONTH(COALESCE(`visible_from`, `created_at`)) = ?',
-                            [$this->month],
-                        ),
-                    );
+                ApplyArchiveDateFilterAction::run($query, $this->year, $this->month);
             },
         );
 
