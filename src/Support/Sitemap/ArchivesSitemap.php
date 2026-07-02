@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Support\Sitemap;
 
-use Capell\Blog\Actions\GenerateArchiveUrl;
+use Capell\Blog\Actions\GenerateArchiveUrlAction;
 use Capell\Blog\Data\ArchiveMonthData;
 use Capell\Blog\Enums\BlogTypeGroupEnum;
 use Capell\Blog\Support\Loader\BlogLoader;
@@ -52,7 +52,7 @@ class ArchivesSitemap extends AbstractSitemapPages
 
         return new SitemapPageData(
             label: $monthData->getDate()->format('F Y') . ' (' . $monthData->total . ')',
-            url: GenerateArchiveUrl::run($pageUrl, $monthData),
+            url: GenerateArchiveUrlAction::run($pageUrl, $monthData),
         );
     }
 

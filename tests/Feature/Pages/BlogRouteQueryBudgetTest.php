@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Capell\Blog\Actions\GenerateArchiveUrl;
+use Capell\Blog\Actions\GenerateArchiveUrlAction;
 use Capell\Blog\Data\ArchiveMonthData;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Creator\BlogCreator;
@@ -118,7 +118,7 @@ function blogRichRouteQueryBudgetFixture(int $articleCount): array
     return [
         'article_url' => blogTestPageUrl($article->pageUrl)->full_url,
         'blog_url' => blogTestPageUrl($blogPage->pageUrl)->full_url,
-        'archive_url' => GenerateArchiveUrl::run(blogTestPageUrl($archivePage->pageUrl), $archiveDate),
+        'archive_url' => GenerateArchiveUrlAction::run(blogTestPageUrl($archivePage->pageUrl), $archiveDate),
         'tag_url' => $tag->getUrl($tagPage, $language),
     ];
 }

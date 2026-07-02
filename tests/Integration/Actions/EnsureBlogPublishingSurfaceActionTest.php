@@ -7,10 +7,14 @@ use Capell\Blog\Actions\EnsureBlogPublishingSurfaceAction;
 use Capell\Blog\Data\BlogPublishingSurfaceData;
 use Capell\Blog\Enums\BlogLayoutEnum;
 use Capell\Blog\Enums\BlogPageTypeEnum;
+use Capell\Core\Actions\SetupPageUrlsAction;
 use Capell\Core\Enums\LayoutEnum;
+use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\Page;
+use Capell\Core\Models\PageUrl;
 use Capell\Core\Models\Site;
+use Capell\Core\Models\Translation;
 use Capell\LayoutBuilder\Actions\InstallPackageAction as LayoutBuilderInstallPackageAction;
 use Capell\Navigation\Enums\NavigationHandle;
 use Capell\Navigation\Enums\NavigationItemType;
@@ -99,6 +103,37 @@ it('is idempotent for a site', function (): void {
         ->and(Page::query()
             ->where('site_id', $site->id)
             ->whereHas('type', fn (Builder $query): Builder => $query->where('key', BlogPageTypeEnum::Tag->value))
+            ->count())->toBe(1);
+});
+
+it('adopts an existing blog url page instead of creating a duplicate blog page', function (): void {
+    $site = Site::factory()->withTranslations()->create();
+    $language = $site->languages()->firstOrFail();
+    $genericType = Blueprint::factory()->page()->default()->create();
+    $genericLayout = Layout::factory()->create(['key' => 'generic-blog']);
+
+    $existingPage = Page::factory()
+        ->site($site)
+        ->layout($genericLayout)
+        ->type($genericType)
+        ->create(['name' => 'Existing Blog']);
+
+    Translation::factory()
+        ->translatable($existingPage)
+        ->language($language)
+        ->slug('blog')
+        ->create(['title' => 'Existing Blog']);
+
+    SetupPageUrlsAction::run($existingPage);
+
+    $surface = EnsureBlogPublishingSurfaceAction::run($site);
+
+    expect($surface->blogPage->is($existingPage))->toBeTrue()
+        ->and($surface->blogPage->refresh()->type?->key)->toBe(BlogPageTypeEnum::Blog->value)
+        ->and(PageUrl::query()
+            ->where('site_id', $site->id)
+            ->where('language_id', $language->id)
+            ->where('url', '/blog')
             ->count())->toBe(1);
 });
 

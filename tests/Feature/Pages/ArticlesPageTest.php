@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Capell\Blog\Actions\GenerateArchiveUrl;
+use Capell\Blog\Actions\GenerateArchiveUrlAction;
 use Capell\Blog\Data\ArchiveMonthData;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Creator\BlogCreator;
@@ -210,7 +210,7 @@ test('article page list tags', function (): void {
         ->hasAttached($tags)
         ->create();
 
-    $archiveUrl = GenerateArchiveUrl::run(
+    $archiveUrl = GenerateArchiveUrlAction::run(
         $archivePageUrl,
         ArchiveMonthData::fromDate(
             ($article->visible_from ?? $article->created_at) instanceof CarbonImmutable
