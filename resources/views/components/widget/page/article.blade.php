@@ -45,7 +45,7 @@
     $articleImage = $articleRenderData->image;
 @endphp
 
-<x-capell-theme-foundation::widget.wrapper
+<x-capell-foundation-theme::widget.wrapper
     class="capell-page-article widget widget-{{ $widget->key }}"
     :$container
     :$containerKey
@@ -264,4 +264,4 @@
             </nav>
         @endif
     </article>
-</x-capell-theme-foundation::widget.wrapper>
+</x-capell-foundation-theme::widget.wrapper>
