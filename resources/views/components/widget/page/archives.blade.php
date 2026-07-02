@@ -7,7 +7,7 @@
     'widget',
 ])
 
-<x-capell-foundation-theme::widget.wrapper
+<x-capell-theme-foundation::widget.wrapper
     class="capell-page-archives widget widget-{{ $widget->key }}"
     :$container
     :$containerKey
@@ -50,4 +50,4 @@
             @endforeach
         </ul>
     @endif
-</x-capell-foundation-theme::widget.wrapper>
+</x-capell-theme-foundation::widget.wrapper>

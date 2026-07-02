@@ -6,7 +6,7 @@
     'widget',
 ])
 
-<x-capell-foundation-theme::widget.wrapper
+<x-capell-theme-foundation::widget.wrapper
     class="capell-tag-tags widget widget-{{ $widget->key }} widget-tags"
     :$container
     :$containerKey
@@ -59,4 +59,4 @@
             :scrollToWidget="$containerKey . '-' . $widget->key . '-' . $loop->index"
         />
     @endif
-</x-capell-foundation-theme::widget.wrapper>
+</x-capell-theme-foundation::widget.wrapper>
