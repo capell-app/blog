@@ -35,7 +35,7 @@ class BlogTestCase extends AbstractTestCase
     {
         parent::setUp();
 
-        Blade::anonymousComponentPath(__DIR__ . '/../../foundation-theme/resources/views/components', 'capell');
+        Blade::anonymousComponentPath(__DIR__ . '/../../theme-foundation/resources/views/components', 'capell');
 
         $this->registerAndMigrateSettings(
             CapellCore::getSettingMigrations(),
@@ -99,7 +99,7 @@ class BlogTestCase extends AbstractTestCase
         CapellCore::forcePackageInstalled(InsightsServiceProvider::$packageName);
         CapellCore::forcePackageInstalled(LayoutBuilderServiceProvider::$packageName);
         CapellCore::forcePackageInstalled(BlogServiceProvider::$packageName);
-        CapellCore::forcePackageInstalled('capell-app/foundation-theme');
+        CapellCore::forcePackageInstalled('capell-app/theme-foundation');
         CapellCore::forcePackageInstalled(FrontendServiceProvider::$packageName);
         CapellCore::forcePackageInstalled(ContentSectionsServiceProvider::$packageName);
 

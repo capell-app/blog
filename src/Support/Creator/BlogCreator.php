@@ -967,11 +967,15 @@ class BlogCreator
             $languages = $site->languages;
         }
 
-        $page = Page::query()->firstOrNew([
-            'layout_id' => $layout->id,
-            'site_id' => $site->id,
-            'blueprint_id' => $type->id,
-        ]);
+        $page = Page::query()
+            ->where('site_id', $site->id)
+            ->where('blueprint_id', $type->id)
+            ->first()
+            ?? $this->existingBlogPageForSite($site)
+            ?? new Page([
+                'site_id' => $site->id,
+                'blueprint_id' => $type->id,
+            ]);
 
         $page->mergeMeta([
             ...$meta,
@@ -981,6 +985,8 @@ class BlogCreator
         ]);
 
         $page->forceFill([
+            'blueprint_id' => $type->id,
+            'layout_id' => $layout->id,
             'name' => __('capell-blog::generic.blog'),
         ]);
 
@@ -1093,6 +1099,18 @@ class BlogCreator
             withDate: false,
             withImage: true,
         );
+    }
+
+    private function existingBlogPageForSite(Site $site): ?Page
+    {
+        return Page::query()
+            ->where('site_id', $site->id)
+            ->whereHas('pageUrls', function (Builder $query): void {
+                $query
+                    ->where('url', '/blog')
+                    ->where('status', true);
+            })
+            ->first();
     }
 
     /**
