@@ -1,4 +1,4 @@
-@props([
+@props ([
     'container',
     'containerKey',
     'containerWidth' => null,
@@ -30,9 +30,7 @@
     @endif
 
     @if ($archiveLinks === [])
-        <x-capell::no-results>
-            {{ $noResultsText }}
-        </x-capell::no-results>
+        <x-capell::no-results> {{ $noResultsText }} </x-capell::no-results>
     @else
         <ul
             class="widget-archives-months @md:grid-cols-2 grid gap-x-6 divide-y divide-gray-100 dark:divide-gray-600"
