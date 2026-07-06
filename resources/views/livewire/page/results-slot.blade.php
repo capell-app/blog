@@ -51,7 +51,7 @@
                 </div>
             @else
                 <div
-                    @class([
+                    @class ([
                         'grid w-full max-w-full min-w-0 gap-5 overflow-hidden transition-opacity duration-150',
                         '@3xl:grid-cols-2' => $columns >= 2,
                         '@7xl:grid-cols-3' => $columns >= 3,

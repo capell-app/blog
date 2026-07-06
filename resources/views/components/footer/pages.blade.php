@@ -1,12 +1,10 @@
-@props([
+@props ([
     'headingClass',
     'pages',
 ])
 
 <div {{ $attributes->class(['footer-pages xl:w-[25%]']) }}>
-    <div class="{{ $headingClass }} mb-4">
-        {{ __('Recent Articles') }}
-    </div>
+    <div class="{{ $headingClass }} mb-4">{{ __('Recent Articles') }}</div>
     <div class="space-y-3 lg:space-y-4">
         @forelse ($pages as $page)
             @php
@@ -14,7 +12,7 @@
                 $url = $page->pageUrl->full_url;
             @endphp
 
-            <div @class(['grid', 'grid-cols-4 gap-x-3' => $page->image])>
+            <div @class (['grid', 'grid-cols-4 gap-x-3' => $page->image])>
                 @if ($page->image)
                     <a
                         href="{{ $url }}"
@@ -32,7 +30,7 @@
 
                 <a
                     href="{{ $url }}"
-                    @class([
+                    @class ([
                         'focus:text-primary flex flex-col justify-center gap-y-1 text-inherit hover:text-gray-400',
                         'col-span-3 py-0.5' => $page->image,
                     ])
