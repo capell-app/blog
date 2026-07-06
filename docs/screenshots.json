@@ -38,6 +38,7 @@
             "surface": "frontend",
             "targetType": "frontend-url",
             "target": null,
+            "url": "/blog",
             "required": true,
             "notes": "Requires seeded blog landing page, published articles, layout content, URLs, and navigation. Verify public output contains no authoring markers or admin/editor URLs.",
             "useCase": "A visitor browses the public blog landing page and sees published article listings.",
