@@ -2,7 +2,7 @@
 
 <!-- prettier-ignore-start -->
 
-## What This Plugin Adds
+## What This Extension Adds
 
 Blog is an **Available**, **Schema-owning** Capell package in the **Capell Publishing Pro** product group. It ships as `capell-app/blog` and extends these surfaces: admin, frontend, console.
 
