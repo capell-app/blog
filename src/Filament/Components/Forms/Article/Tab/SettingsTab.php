@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Capell\Blog\Filament\Components\Forms\Article\Tab;
 
 use Capell\Admin\Filament\Components\Forms\CacheTimeSelect;
+use Capell\Blog\Enums\RobotsDirective;
 use Capell\Blog\Filament\Components\Forms\Article\ArticleSelect;
 use Capell\Core\Contracts\Pageable;
 use Filament\Forms\Components\CheckboxList;
@@ -75,13 +76,10 @@ class SettingsTab
                             }),
                     ),
                 CheckboxList::make('robots')
-                    ->options([
-                        'noindex' => __('capell-admin::form.noindex'),
-                        'nofollow' => __('capell-admin::form.nofollow'),
-                    ])
+                    ->options(RobotsDirective::class)
                     ->descriptions([
-                        'noindex' => __('capell-admin::generic.noindex_info'),
-                        'nofollow' => __('capell-admin::generic.nofollow_info'),
+                        RobotsDirective::NoIndex->value => __('capell-admin::generic.noindex_info'),
+                        RobotsDirective::NoFollow->value => __('capell-admin::generic.nofollow_info'),
                     ]),
                 Textarea::make('meta_tags')
                     ->columnSpan(2)
