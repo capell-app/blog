@@ -1,4 +1,4 @@
-@props([
+@props ([
     'count' => null,
     'color' => 'light',
     'size' => 'sm',
@@ -19,9 +19,7 @@
         ])
     }}
 >
-    <span class="font-medium tracking-tight">
-        {{ $slot }}
-    </span>
+    <span class="font-medium tracking-tight"> {{ $slot }} </span>
     @if ($count?->hasActualContent())
         <span class="ml-1">{{ $count }}</span>
     @endif

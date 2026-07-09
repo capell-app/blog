@@ -1,12 +1,10 @@
-@props([
+@props ([
     'headingClass' => null,
     'linkClass' => 'focus:bg-primary inline-flex items-center rounded-full bg-gray-600/75 px-3 py-2 text-sm leading-none font-medium tracking-wide text-[var(--color-footer)] no-underline hover:text-gray-400 focus:text-white',
 ])
 
 <div {{ $attributes->class(['footer-tags xl:w-[20%]']) }}>
-    <div class="{{ $headingClass }} mb-4">
-        {{ __('Tags') }}
-    </div>
+    <div class="{{ $headingClass }} mb-4">{{ __('Tags') }}</div>
 
     @if ($tagLinks !== [])
         <div class="flex flex-wrap gap-2">
@@ -22,7 +20,7 @@
                     @if ($tagLink->count !== null)
                         <x-slot:count>
                             ({{ $tagLink->count }})
-                        </x-slot>
+                        </x-slot:count>
                     @endif
                 </x-capell-blog::tag>
             @endforeach

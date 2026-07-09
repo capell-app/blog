@@ -59,6 +59,41 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
             BlogLayoutEnum::Tags->value => $this->prepareTagsIndexPage($context, $page, $site, $language),
             default => null,
         };
+
+        $this->prepareFooterWidgetData($context, $site, $language);
+    }
+
+    /**
+     * Prepares the data `Capell\Blog\View\Components\Footer\Tags` and
+     * `Footer\Pages` fall back to querying live otherwise.
+     *
+     * `FooterTagsRenderHook` / `FooterPagesRenderHook` are registered
+     * globally against `RenderHookLocation::Footer` (see
+     * `FrontendServiceProvider::registerRenderHooks()`) and render on every
+     * page's footer, not just blog page types -- unlike the page-type-gated
+     * `prepare*Page()` methods above, this must run unconditionally so a
+     * non-blog page (any theme reusing Foundation's default footer) doesn't
+     * fall through to a live, uncached query during the guarded Blade
+     * render. Mirrors `FoundationThemeServiceProvider::prepareFooterData()`'s
+     * same "already prepared by a more specific step" guard.
+     */
+    private function prepareFooterWidgetData(FrontendContextReader $context, Site $site, Language $language): void
+    {
+        if ($context->getFrontendData('blog.sidebar_tags') !== null) {
+            return;
+        }
+
+        $context->setFrontendData('blog.sidebar_tags', TagLoader::getTags($site, $language, limit: 5, hasArticles: true));
+        $context->setFrontendData('blog.tag_page', TagLoader::getTagResultsPage($site, $language));
+        $context->setFrontendData('blog.latest_articles', PageLoader::getPages(
+            language: $language,
+            site: $site,
+            limit: 4,
+            ordering: PageOrderEnum::Latest,
+            pageGroup: BlogTypeGroupEnum::Article,
+            withImage: true,
+            morphModel: Article::class,
+        ));
     }
 
     private function prepareArchivePage(FrontendContextReader $context, Pageable&Model $page, Site $site, Language $language): void

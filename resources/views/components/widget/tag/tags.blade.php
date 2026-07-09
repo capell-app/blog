@@ -1,4 +1,4 @@
-@props([
+@props ([
     'container',
     'containerKey',
     'containerWidth' => null,
@@ -31,9 +31,7 @@
     @endif
 
     @if ($tagLinks === [])
-        <x-capell::no-results>
-            {{ $noResultsText }}
-        </x-capell::no-results>
+        <x-capell::no-results> {{ $noResultsText }} </x-capell::no-results>
     @else
         <ul class="flex flex-wrap gap-2">
             @foreach ($tagLinks as $tagLink)
@@ -46,7 +44,7 @@
                         @if ($tagLink->count !== null)
                             <x-slot:count>
                                 ({{ $tagLink->count }})
-                            </x-slot>
+                            </x-slot:count>
                         @endif
                     </x-capell-blog::tag>
                 </li>
