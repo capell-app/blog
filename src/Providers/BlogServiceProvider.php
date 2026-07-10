@@ -9,6 +9,7 @@ use Capell\Admin\Enums\ResourceEnum as AdminResourceEnum;
 use Capell\Admin\Facades\CapellAdmin;
 use Capell\Blog\Actions\ClearBlogContentCacheAction;
 use Capell\Blog\Actions\ClearBlogTagCacheAction;
+use Capell\Blog\Actions\SanitizeBlogHtmlAction;
 use Capell\Blog\Enums\LivewirePageComponentEnum;
 use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Enums\WidgetComponentEnum;
@@ -143,6 +144,7 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
             ->registerAboutCommand()
             ->registerPackageAssets()
             ->registerBlazeComponents()
+            ->registerSafeHtmlDirective()
             ->registerBladeComponents()
             ->registerPageRenderables()
             ->registerWidgetRenderables()
@@ -210,6 +212,16 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
     {
         Blade::componentNamespace('Capell\\Blog\\View\\Components', 'capell-blog');
         Blade::anonymousComponentNamespace('Capell\\Blog\\View\\Components');
+
+        return $this;
+    }
+
+    private function registerSafeHtmlDirective(): self
+    {
+        Blade::directive(
+            'safeBlogHtml',
+            static fn (string $expression): string => sprintf('<?php echo \\%s::run(%s); ?>', SanitizeBlogHtmlAction::class, $expression),
+        );
 
         return $this;
     }

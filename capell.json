@@ -104,7 +104,8 @@
         "doctor": null
     },
     "actions": {
-        "install": "Capell\\Blog\\Actions\\InstallBlogPackageAction"
+        "install": "Capell\\Blog\\Actions\\InstallBlogPackageAction",
+        "sanitizeBlogHtml": "Capell\\Blog\\Actions\\SanitizeBlogHtmlAction"
     },
     "settings": [],
     "permissions": [
@@ -129,6 +130,7 @@
         "blog-archives",
         "blog-tags",
         "blog-related-widgets",
+        "blog-rich-text-render-sanitization",
         "blog-syndication-feeds",
         "blog-url-manager-redirect-bridge",
         "requires-livewire",
