@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Capell\Blog\Livewire\Page;
 
 use Capell\Blog\Actions\BuildBlogResultsViewDataAction;
+use Capell\Blog\Actions\RedirectMergedTagSlugAction;
 use Capell\Blog\Data\BlogResultsViewData;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Loader\TagLoader;
 use Capell\Core\Models\Language;
+use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
 use Capell\Frontend\Facades\Frontend;
 use Capell\Frontend\Livewire\Page\AbstractPage;
@@ -66,11 +68,13 @@ class Tag extends AbstractPage
             return;
         }
 
-        $tag = TagLoader::tagPage($this->tagSlug, $site, $language);
+        $resolution = TagLoader::tagPageResolution($this->tagSlug, $site, $language);
 
-        abort_unless($tag instanceof TagModel, 404);
+        abort_unless($resolution !== null && $page instanceof Page, 404);
 
-        $this->tag = $tag;
+        RedirectMergedTagSlugAction::run($resolution, $page, $language);
+
+        $this->tag = $resolution->tag;
 
         $this->tagName = $this->tag->getTranslation('name', $language->code);
 

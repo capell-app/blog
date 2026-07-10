@@ -6,6 +6,7 @@ namespace Capell\Blog\Support;
 
 use Capell\Blog\Actions\BuildArticleMetaDataAction;
 use Capell\Blog\Actions\BuildBlogResultsViewDataAction;
+use Capell\Blog\Actions\RedirectMergedTagSlugAction;
 use Capell\Blog\Data\ArticleMetaData;
 use Capell\Blog\Data\ArticleNeighborLinkData;
 use Capell\Blog\Data\ArticleWidgetRenderData;
@@ -243,11 +244,17 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
             return;
         }
 
-        $tag = TagLoader::tagPage($tagSlug, $site, $language);
+        $resolution = TagLoader::tagPageResolution($tagSlug, $site, $language);
 
-        if ($tag === null) {
+        if ($resolution === null) {
             return;
         }
+
+        abort_unless($page instanceof Page, 404);
+
+        RedirectMergedTagSlugAction::run($resolution, $page, $language);
+
+        $tag = $resolution->tag;
 
         $requestedPage = request()->query($this->pageQueryKey(), 1);
 

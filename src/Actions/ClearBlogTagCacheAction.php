@@ -86,12 +86,18 @@ final class ClearBlogTagCacheAction
         $currentSlugs = $tag->getTranslations('slug');
         $originalSlugs = $this->normalizeSlugTranslations($tag->getOriginal('slug'));
         $rawOriginalSlugs = $this->normalizeSlugTranslations($tag->getRawOriginal('slug'));
+        $currentAliases = $this->normalizeSlugAliases($tag->getAttribute('merged_slug_aliases'));
+        $originalAliases = $this->normalizeSlugAliases($tag->getOriginal('merged_slug_aliases'));
+        $rawOriginalAliases = $this->normalizeSlugAliases($tag->getRawOriginal('merged_slug_aliases'));
 
         return array_values(collect([
             $tag->getTranslation('slug', $languageCode, false),
             $currentSlugs[$languageCode] ?? null,
             $originalSlugs[$languageCode] ?? null,
             $rawOriginalSlugs[$languageCode] ?? null,
+            ...($currentAliases[$languageCode] ?? []),
+            ...($originalAliases[$languageCode] ?? []),
+            ...($rawOriginalAliases[$languageCode] ?? []),
         ])
             ->filter(fn (mixed $slug): bool => is_string($slug) && $slug !== '')
             ->unique()
@@ -115,6 +121,26 @@ final class ClearBlogTagCacheAction
         $decoded = json_decode($slugs, true);
 
         return is_array($decoded) ? $decoded : [];
+    }
+
+    /** @return array<string, list<string>> */
+    private function normalizeSlugAliases(mixed $aliases): array
+    {
+        $decoded = $this->normalizeSlugTranslations($aliases);
+        $normalized = [];
+
+        foreach ($decoded as $locale => $slugs) {
+            if (! is_string($locale) || ! is_array($slugs)) {
+                continue;
+            }
+
+            $normalized[$locale] = array_values(array_filter(
+                $slugs,
+                static fn (mixed $slug): bool => is_string($slug) && $slug !== '',
+            ));
+        }
+
+        return $normalized;
     }
 
     private function incrementSiteTagsVersion(int $siteId, int $languageId): void
