@@ -554,7 +554,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
 
     private function pageTypeKey(Model $page): ?string
     {
-        $type = $page->relationLoaded('blueprint') ? $page->getRelation('type') : null;
+        $type = $page->relationLoaded('blueprint') ? $page->getRelation('blueprint') : null;
         $key = $type instanceof Model ? $type->getAttribute('key') : null;
 
         return is_string($key) ? $key : null;
