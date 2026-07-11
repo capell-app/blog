@@ -16,7 +16,7 @@ describe('capell:hero-demo command', function (): void {
         Page::factory()
             ->site($site)
             ->layout($layout)
-            ->type($blogType)
+            ->for($blogType, 'blueprint')
             ->withTranslations()
             ->create(['name' => 'Blog']);
 
