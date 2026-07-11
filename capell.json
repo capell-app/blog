@@ -94,7 +94,7 @@
     "database": {
         "migrations": true,
         "settings": false,
-        "requiredTables": []
+        "requiredTables": ["articles"]
     },
     "commands": {
         "install": "capell:blog-install",
