@@ -225,7 +225,7 @@
         }
     ],
     "commercial": {
-        "proposedLicense": "paid",
+        "proposedLicense": "free",
         "requestedCertification": "first-party",
         "supportPolicy": "capell-first-party",
         "privateDocsRequested": false
