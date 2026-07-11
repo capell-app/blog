@@ -102,7 +102,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
         $this->prepareFoundationThemeRuntimeData($context, $page, $site, $language);
         $this->prepareArchiveSidebarData($context, $site, $language);
         $pageMeta = $this->modelMeta($page);
-        $typeMeta = $this->modelMeta($this->loadedModel($page, 'type'));
+        $typeMeta = $this->modelMeta($this->loadedModel($page, 'blueprint'));
 
         $archiveDate = $this->archiveDateFromParams($context);
 
@@ -139,7 +139,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
     {
         $site->loadMissing('siteDomain');
         $this->hydrateSiteNavigations($site);
-        $page->loadMissing(['creator', 'image.translations.language', 'pageUrl', 'tags', 'translation', 'type']);
+        $page->loadMissing(['creator', 'image.translations.language', 'pageUrl', 'tags', 'translation', 'blueprint']);
         $creator = $page->getRelation('creator');
 
         if ($creator instanceof Model && method_exists($creator, 'profileImage')) {
@@ -182,7 +182,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
     {
         $this->prepareFoundationThemeRuntimeData($context, $page, $site, $language);
         $pageMeta = $this->modelMeta($page);
-        $typeMeta = $this->modelMeta($this->loadedModel($page, 'type'));
+        $typeMeta = $this->modelMeta($this->loadedModel($page, 'blueprint'));
 
         $requestedPage = request()->query($this->pageQueryKey(), 1);
 
@@ -236,7 +236,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
     {
         $this->prepareFoundationThemeRuntimeData($context, $page, $site, $language);
         $pageMeta = $this->modelMeta($page);
-        $typeMeta = $this->modelMeta($this->loadedModel($page, 'type'));
+        $typeMeta = $this->modelMeta($this->loadedModel($page, 'blueprint'));
 
         $tagSlug = $context->params()['tag'] ?? null;
 
@@ -289,7 +289,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
     {
         $site->loadMissing('siteDomain');
         $this->hydrateSiteNavigations($site);
-        $page->loadMissing(['translation', 'pageUrl', 'type']);
+        $page->loadMissing(['translation', 'pageUrl', 'blueprint']);
 
         $this->prepareFoundationThemeRuntimeData($context, $page, $site, $language);
 
@@ -311,7 +311,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
     {
         $site->loadMissing('siteDomain');
         $this->hydrateSiteNavigations($site);
-        $page->loadMissing(['translation', 'pageUrl', 'type']);
+        $page->loadMissing(['translation', 'pageUrl', 'blueprint']);
 
         $this->prepareFoundationThemeRuntimeData($context, $page, $site, $language);
         $this->prepareArchiveSidebarData($context, $site, $language);
@@ -519,7 +519,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
     private function articleRenderData(Pageable&Model $page, Site $site, Language $language, ArticleMetaData $articleMeta): ArticleWidgetRenderData
     {
         $pageTranslation = ArticleWidgetRenderData::loadedRelation($page, 'translation');
-        $pageType = ArticleWidgetRenderData::loadedRelation($page, 'type');
+        $pageType = ArticleWidgetRenderData::loadedRelation($page, 'blueprint');
         $siteDomain = $this->loadedModel($site, 'siteDomain');
         $articleImage = ArticleWidgetRenderData::loadedRelation($page, 'image');
         $pageTypeMeta = $pageType instanceof Model && is_array($pageType->getAttribute('meta'))

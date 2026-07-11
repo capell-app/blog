@@ -27,7 +27,7 @@ class ArticlesSitemap extends AbstractSitemapPages
             return collect();
         }
 
-        $blogPage->loadMissing(['translation', 'type', 'pageUrl.siteDomain']);
+        $blogPage->loadMissing(['translation', 'blueprint', 'pageUrl.siteDomain']);
 
         // Build recursive node: blog page with articles children
         $node = SitemapPageData::fromPage($blogPage, withEditUrl: $this->withEditUrl);
@@ -40,7 +40,7 @@ class ArticlesSitemap extends AbstractSitemapPages
             pageGroup: BlogTypeGroupEnum::Article->value,
             morphModel: Article::class,
         );
-        $articles->loadMissing(['translation', 'type', 'pageUrl.siteDomain']);
+        $articles->loadMissing(['translation', 'blueprint', 'pageUrl.siteDomain']);
 
         $node->children = $articles->map(
             fn (Pageable $child): SitemapPageData => SitemapPageData::fromPage($child, withEditUrl: $this->withEditUrl),

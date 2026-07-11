@@ -80,7 +80,7 @@ class PageArchiveService
                 ]),
             )
             ->whereHas(
-                'type',
+                'blueprint',
                 function (Builder $query) use ($group): void {
                     $query->where('group', $group)->enabled()->visible();
                 },

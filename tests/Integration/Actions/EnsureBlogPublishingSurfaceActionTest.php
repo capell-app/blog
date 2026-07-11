@@ -129,7 +129,7 @@ it('adopts an existing blog url page instead of creating a duplicate blog page',
     $surface = EnsureBlogPublishingSurfaceAction::run($site);
 
     expect($surface->blogPage->is($existingPage))->toBeTrue()
-        ->and($surface->blogPage->refresh()->type?->key)->toBe(BlogPageTypeEnum::Blog->value)
+        ->and($surface->blogPage->refresh()->blueprint?->key)->toBe(BlogPageTypeEnum::Blog->value)
         ->and(PageUrl::query()
             ->where('site_id', $site->id)
             ->where('language_id', $language->id)

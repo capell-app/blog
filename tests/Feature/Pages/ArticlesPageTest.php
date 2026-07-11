@@ -64,7 +64,7 @@ test('blog page lists articles', function (): void {
 
     expect($blogPage)
         ->toBeInstanceOf(Page::class)
-        ->type->name->toBe('Blog')
+        ->blueprint->name->toBe('Blog')
         ->layout->name->toBe('Blog Posts');
 
     get($blogUrl->full_url)
@@ -141,7 +141,7 @@ test('visit blogs page with no articles and see appropriate message', function (
 
     expect($blogPage)
         ->toBeInstanceOf(Page::class)
-        ->type->name->toBe('Blog')
+        ->blueprint->name->toBe('Blog')
         ->layout->name->toBe('Blog Posts');
 
     get($blogUrl->full_url)
@@ -174,7 +174,7 @@ test('article page', function (): void {
 
     expect($article)
         ->toBeInstanceOf(Article::class)
-        ->type->name->toBe('Article')
+        ->blueprint->name->toBe('Article')
         ->layout->name->toBe('Article');
 
     get(blogTestPageUrl($article->pageUrl)->full_url)
@@ -221,7 +221,7 @@ test('article page list tags', function (): void {
 
     expect($article)
         ->toBeInstanceOf(Article::class)
-        ->type->name->toBe('Article')
+        ->blueprint->name->toBe('Article')
         ->layout->name->toBe('Article')
         ->translation->slug->toBe(str($article->name . '-' . $article->translation->language->locale)->slug()->toString())
         ->pageUrl->url->toBe('/blog/' . $article->translation->slug)
@@ -267,7 +267,7 @@ test('articles pagination', function (): void {
 
     expect($blogPage)
         ->toBeInstanceOf(Page::class)
-        ->type->name->toBe('Blog')
+        ->blueprint->name->toBe('Blog')
         ->layout->name->toBe('Blog Posts');
 
     get($blogUrl->full_url)
