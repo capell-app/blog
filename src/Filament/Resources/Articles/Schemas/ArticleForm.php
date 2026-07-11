@@ -34,7 +34,7 @@ class ArticleForm implements FormConfigurator
                 ? $resolver->resolveForType($type, ConfiguratorTypeEnum::Page, ArticlePageConfigurator::getKey())
                 : ArticlePageConfigurator::class;
 
-            $record->loadMissing('type');
+            $record->loadMissing('blueprint');
 
             return $adminType::configure($configurator, ConfiguratorContextData::forEdit(ConfiguratorTypeEnum::Page));
         }

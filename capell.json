@@ -4,8 +4,8 @@
     "slug": "blog",
     "displayName": "Blog",
     "kind": "package",
-    "capellApiVersion": "^4.0",
-    "version": "4.x-dev",
+    "capellApiVersion": "^1.0",
+    "version": "1.x-dev",
     "description": "Blog adds premium article publishing, archive pages, tag pages, article widgets, optional discovery and analytics bridges, and frontend Livewire page components to Capell.",
     "product": {
         "group": "Capell Publishing Pro",
@@ -94,7 +94,7 @@
     "database": {
         "migrations": true,
         "settings": false,
-        "requiredTables": []
+        "requiredTables": ["articles"]
     },
     "commands": {
         "install": "capell:blog-install",
@@ -104,7 +104,8 @@
         "doctor": null
     },
     "actions": {
-        "install": "Capell\\Blog\\Actions\\InstallBlogPackageAction"
+        "install": "Capell\\Blog\\Actions\\InstallBlogPackageAction",
+        "sanitizeBlogHtml": "Capell\\Blog\\Actions\\SanitizeBlogHtmlAction"
     },
     "settings": [],
     "permissions": [
@@ -129,6 +130,7 @@
         "blog-archives",
         "blog-tags",
         "blog-related-widgets",
+        "blog-rich-text-render-sanitization",
         "blog-syndication-feeds",
         "blog-url-manager-redirect-bridge",
         "requires-livewire",
@@ -223,10 +225,10 @@
         }
     ],
     "commercial": {
-        "proposedLicense": "paid",
+        "proposedLicense": "free",
         "requestedCertification": "first-party",
         "supportPolicy": "capell-first-party",
-        "privateDocsRequested": false
+        "privateDocsRequested": true
     },
     "marketplace": {
         "summary": "Publish articles, archives, tag pages, and related-article widgets with multilingual, multi-site output and optional growth bridges.",

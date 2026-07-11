@@ -124,6 +124,6 @@ enum CacheEnum: string
      */
     public static function tagPage(int $siteId, int $languageId, string $slug): string
     {
-        return sprintf('site-%d-lang-%d-tag-%s-page', $siteId, $languageId, $slug);
+        return sprintf('site-%d-lang-%d-tag-%s-resolution-v2', $siteId, $languageId, $slug);
     }
 }

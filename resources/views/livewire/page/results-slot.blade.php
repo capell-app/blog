@@ -46,7 +46,7 @@
                     class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm md:p-8"
                 >
                     <x-capell::no-results>
-                        {!! $noResultsText !!}
+                        @safeBlogHtml ($noResultsText)
                     </x-capell::no-results>
                 </div>
             @else

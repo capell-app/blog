@@ -192,7 +192,7 @@ describe('from list article', function (): void {
             ->first();
         $article = blogTestArticle($article);
 
-        expect($article->type)
+        expect($article->blueprint)
             ->key->toBe(BlogPageTypeEnum::Article->value)
             ->group->toBe('article');
     });

@@ -136,9 +136,9 @@ class Tags extends AbstractWidget
     private function buildContentData(mixed $page, mixed $theme): BlogWidgetContentData
     {
         $widgetTranslation = $this->widget->relationLoaded('translation') ? $this->widget->getRelation('translation') : null;
-        $widgetType = $this->widget->relationLoaded('type') ? $this->widget->getRelation('type') : null;
+        $widgetType = $this->widget->relationLoaded('blueprint') ? $this->widget->getRelation('type') : null;
         $pageTranslation = $page instanceof Model && $page->relationLoaded('translation') ? $page->getRelation('translation') : null;
-        $pageType = $page instanceof Model && $page->relationLoaded('type') ? $page->getRelation('type') : null;
+        $pageType = $page instanceof Model && $page->relationLoaded('blueprint') ? $page->getRelation('type') : null;
         $showPageContent = (bool) ($this->widgetData['meta']['show_page_content'] ?? false);
         $showPageTitle = (bool) ($this->widgetData['meta']['show_page_title'] ?? false);
         $title = $this->stringAttribute($widgetTranslation, 'title')

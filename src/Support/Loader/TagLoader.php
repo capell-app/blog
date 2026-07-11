@@ -12,6 +12,8 @@ use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
 use Capell\Frontend\Contracts\RenderedModelTracker;
+use Capell\Tags\Actions\ResolveTagBySlugAction;
+use Capell\Tags\Data\ResolvedTagSlugData;
 use Capell\Tags\Enums\TagTypeEnum;
 use Capell\Tags\Models\Tag;
 use Illuminate\Contracts\Database\Eloquent\Builder as BuilderContract;
@@ -156,32 +158,31 @@ class TagLoader
 
     public static function tagPage(string $slug, Site $site, Language $language): ?Tag
     {
+        return self::tagPageResolution($slug, $site, $language)?->tag;
+    }
+
+    public static function tagPageResolution(string $slug, Site $site, Language $language): ?ResolvedTagSlugData
+    {
         $key = CacheEnum::tagPage($site->id, $language->id, $slug);
 
         $fromCache = true;
 
-        $tag = CapellCore::rememberCache($key, function () use ($slug, $site, $language, &$fromCache): ?Tag {
+        $resolution = CapellCore::rememberCache($key, function () use ($slug, $site, $language, &$fromCache): ?ResolvedTagSlugData {
             $fromCache = false;
 
-            /** @var class-string<Tag> $model */
-            $model = Tag::class;
-
-            return $model::query()
-                ->enabled()
-                ->where('type', TagTypeEnum::Page->value)
-                ->where('slug->' . $language->code, $slug)
-                ->where(
-                    fn (Builder $query): Builder => $query->where('site_id', $site->id)->orWhereNull('site_id'),
-                )
-                ->orderByRaw('CASE WHEN site_id = ? THEN 0 ELSE 1 END', [$site->id])
-                ->first();
+            return ResolveTagBySlugAction::run(
+                slug: $slug,
+                siteId: (int) $site->getKey(),
+                locale: $language->code,
+                type: TagTypeEnum::Page->value,
+            );
         });
 
-        if ($fromCache && $tag instanceof Tag) {
-            resolve(RenderedModelTracker::class)->track($tag);
+        if ($fromCache && $resolution instanceof ResolvedTagSlugData) {
+            resolve(RenderedModelTracker::class)->track($resolution->tag);
         }
 
-        return $tag;
+        return $resolution;
     }
 
     private static function applyTaggableSiteLanguageScope(BuilderContract $query, Site $site, Language $language): BuilderContract

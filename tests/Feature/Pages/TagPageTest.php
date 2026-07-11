@@ -6,6 +6,7 @@ use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Creator\BlogCreator;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Site;
+use Capell\Tags\Actions\MergeTagsAction;
 use Capell\Tags\Enums\TagTypeEnum;
 use Capell\Tags\Models\Tag;
 use Capell\Tests\Support\Concerns\TestingFrontend;
@@ -182,6 +183,32 @@ test('tag page returns not found when the tag slug is missing', function (): voi
 
     get($missingTagUrl)
         ->assertNotFound();
+});
+
+test('redirects a merged tag slug to the canonical tag url', function (): void {
+    $blogCreator = resolve(BlogCreator::class);
+
+    $language = Language::factory()->create();
+    $site = Site::factory()->recycle($language)->withTranslations()->create();
+
+    $blogPage = $blogCreator->createBlogPage($site);
+    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createWidgets: true);
+    $tagPage = $blogCreator->createTagPage($site, $tagsPage);
+    $target = Tag::factory()->site($site)->type(TagTypeEnum::Page)->create([
+        'name' => [$language->code => 'Canonical Topic'],
+        'slug' => [$language->code => 'canonical-topic'],
+    ]);
+    $source = Tag::factory()->site($site)->type(TagTypeEnum::Page)->create([
+        'name' => [$language->code => 'Old Topic'],
+        'slug' => [$language->code => 'old-topic'],
+    ]);
+    $oldUrl = $source->getUrl($tagPage, $language);
+
+    MergeTagsAction::run($target, collect([$source]));
+
+    get($oldUrl)
+        ->assertStatus(301)
+        ->assertRedirect($target->getUrl($tagPage, $language));
 });
 
 test('tag page renders public empty state when tag has no articles', function (): void {
