@@ -76,7 +76,7 @@ final class FrontendServiceProvider extends ServiceProvider
             $context = $event->context;
             $page = $context->page();
 
-            if (! $page instanceof Pageable || $page->type?->key !== BlogPageTypeEnum::Tag->value) {
+            if (! $page instanceof Pageable || $page->blueprint?->key !== BlogPageTypeEnum::Tag->value) {
                 return;
             }
 
@@ -111,7 +111,7 @@ final class FrontendServiceProvider extends ServiceProvider
             $context = $event->context;
             $page = $context->page();
 
-            if (! $page instanceof Pageable || $page->type?->key !== BlogPageTypeEnum::Archive->value) {
+            if (! $page instanceof Pageable || $page->blueprint?->key !== BlogPageTypeEnum::Archive->value) {
                 return;
             }
 
@@ -133,7 +133,7 @@ final class FrontendServiceProvider extends ServiceProvider
             $archives = BlogLoader::getArchives(
                 site: $site,
                 language: $language,
-                group: $page->type->meta['page_group'] ?? BlogTypeGroupEnum::Article->value,
+                group: $page->blueprint->meta['page_group'] ?? BlogTypeGroupEnum::Article->value,
                 pagination: false,
             );
 

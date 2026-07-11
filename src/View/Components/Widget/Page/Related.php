@@ -72,7 +72,7 @@ class Related extends AbstractPagesWidget
             language: $language,
             site: $site,
             limit: $limit,
-            withChildrenCount: $page->hasPageHierarchy() && ($page->type->meta['with_children_count'] ?? true),
+            withChildrenCount: $page->hasPageHierarchy() && ($page->blueprint->meta['with_children_count'] ?? true),
             withImage: $this->widget->meta['with_image'] ?? false,
             withParent: $this->widget->meta['with_parent'] ?? false,
             withDate: $this->widget->meta['with_date'] ?? false,

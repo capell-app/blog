@@ -22,7 +22,7 @@ it('creates the blog, archives, archive, tags, and tag pages for the site', func
 
     CreateBlogPagesAction::run($site);
 
-    $pages = Page::query()->where('site_id', $site->id)->with('type')->get();
+    $pages = Page::query()->where('site_id', $site->id)->with('blueprint')->get();
 
     expect($pages)->not()->toBeEmpty();
 
