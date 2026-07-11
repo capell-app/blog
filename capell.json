@@ -4,8 +4,8 @@
     "slug": "blog",
     "displayName": "Blog",
     "kind": "package",
-    "capellApiVersion": "^1.0",
-    "version": "1.x-dev",
+    "capellApiVersion": "^0.0.1",
+    "version": "0.0.x-dev",
     "description": "Blog adds premium article publishing, archive pages, tag pages, article widgets, optional discovery and analytics bridges, and frontend Livewire page components to Capell.",
     "product": {
         "group": "Capell Publishing Pro",
