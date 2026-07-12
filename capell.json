@@ -4,7 +4,7 @@
     "slug": "blog",
     "displayName": "Blog",
     "kind": "package",
-    "capellApiVersion": "^4.0",
+    "capellApiVersion": "^0.0",
     "version": "0.0.x-dev",
     "description": "Blog adds premium article publishing, archive pages, tag pages, article widgets, optional discovery and analytics bridges, and frontend Livewire page components to Capell.",
     "product": {
@@ -228,7 +228,7 @@
         "proposedLicense": "free",
         "requestedCertification": "first-party",
         "supportPolicy": "capell-first-party",
-        "privateDocsRequested": false
+        "privateDocsRequested": true
     },
     "marketplace": {
         "summary": "Publish articles, archives, tag pages, and related-article widgets with multilingual, multi-site output and optional growth bridges.",

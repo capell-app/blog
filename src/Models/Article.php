@@ -157,7 +157,7 @@ class Article extends Model implements Blueprintable, HasMedia, Pageable, Publis
 
     public function shouldLogVisit(): bool
     {
-        return (bool) ($this->type?->meta['disable_visit_logs'] ?? true);
+        return (bool) ($this->blueprint?->meta['disable_visit_logs'] ?? true);
     }
 
     /**
@@ -168,7 +168,7 @@ class Article extends Model implements Blueprintable, HasMedia, Pageable, Publis
      */
     public function getContentStructureAttribute(): ?ContentStructure
     {
-        return $this->type?->content_structure;
+        return $this->blueprint?->content_structure;
     }
 
     public function getActivitylogOptions(): LogOptions
@@ -397,7 +397,7 @@ class Article extends Model implements Blueprintable, HasMedia, Pageable, Publis
     /** @return array<array-key, mixed>|null */
     protected function getUrlParamsAttribute(): ?array
     {
-        return $this->type->meta['url_params'] ?? null;
+        return $this->blueprint->meta['url_params'] ?? null;
     }
 
     #[Override]

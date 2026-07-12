@@ -72,7 +72,7 @@ final class CreateBlogHeroDemoContentAction
         return Page::query()
             ->with(['layout', 'translations', 'blueprint'])
             ->where('site_id', $site->id)
-            ->whereRelation('type', 'key', 'blog')
+            ->whereRelation('blueprint', 'key', 'blog')
             ->first();
     }
 
