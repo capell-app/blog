@@ -130,7 +130,7 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
     {
         $version = InstalledVersions::getVersion('livewire/livewire');
 
-        return is_string($version) && version_compare($version, '4.0.0', '<');
+        return is_string($version) && version_compare($version, '0.0.0', '<');
     }
 
     private function bootInstalledPackage(): self
