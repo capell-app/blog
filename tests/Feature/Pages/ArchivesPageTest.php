@@ -1,0 +1,194 @@
+<?php
+
+declare(strict_types=1);
+
+use Capell\Blog\Actions\GenerateArchiveUrlAction;
+use Capell\Blog\Data\ArchiveMonthData;
+use Capell\Blog\Models\Article;
+use Capell\Blog\Support\Creator\BlogCreator;
+use Capell\Blog\Support\Sitemap\ArchivesSitemap;
+use Capell\Core\Models\Page;
+use Capell\Core\Models\SiteDomain;
+use Capell\Tests\Support\Concerns\TestingFrontend;
+use Carbon\CarbonImmutable;
+
+use function Pest\Laravel\get;
+
+use Sinnbeck\DomAssertions\Asserts\AssertElement;
+use Sinnbeck\DomAssertions\Asserts\BaseAssert;
+
+uses(TestingFrontend::class);
+
+test('archives page list articles archives by month/year', function (): void {
+    $blogCreator = resolve(BlogCreator::class);
+
+    $siteDomain = SiteDomain::factory()->default()->create();
+    $site = $siteDomain->site;
+
+    $blogCreator->createArticlePageType();
+    $blogPage = $blogCreator->createBlogPage($site);
+    $archivesPage = $blogCreator->createArchivesPage($blogPage);
+    $archivePage = $blogCreator->createArchivePage($archivesPage);
+    $articleLayout = $blogCreator->createArticleLayout();
+    $tagsPage = $blogCreator->createTagsPage($site, $blogPage);
+    $blogCreator->createTagPage($site, $tagsPage);
+    $archivesPageUrl = blogTestPageUrl($archivesPage->pageUrl);
+    $archivesPageTranslation = blogTestTranslation($archivesPage->translation);
+    $archivePageUrl = blogTestPageUrl($archivePage->pageUrl);
+
+    $articles = Article::factory()
+        ->site($site)
+        ->layout($articleLayout)
+        ->withTranslations($site->languages)
+        ->forEachSequence(
+            ['visible_from' => '2023-01-01'],
+            ['visible_from' => '2023-02-01'],
+            ['visible_from' => '2023-03-01'],
+        )
+        ->create();
+
+    expect($archivesPage)
+        ->toBeInstanceOf(Page::class)
+        ->blueprint->key->toBe('system')
+        ->layout->name->toBe('Archives')
+        ->parent->name->toBe('Blog');
+
+    get($archivesPageUrl->full_url)
+        ->assertOk()
+        ->assertElementExists(
+            'title',
+            fn (AssertElement $elm): BaseAssert => $elm->containsText((string) $archivesPageTranslation->meta_title),
+        )
+        ->assertElementExists(
+            'h1',
+            fn (AssertElement $elm): BaseAssert => $elm->containsText((string) $archivesPageTranslation->title),
+        )
+        ->assertElementExists(
+            '.widget-archives',
+            fn (AssertElement $elm): BaseAssert => $elm->contains('.widget-archives-month', count: 3)
+                ->each(
+                    '.widget-archives-month',
+                    fn (AssertElement $month, int $index): BaseAssert => $month->find(
+                        'a',
+                        fn (AssertElement $link): BaseAssert => $link->has(
+                            'href',
+                            GenerateArchiveUrlAction::run(
+                                $archivePageUrl,
+                                new ArchiveMonthData(
+                                    year: 2023,
+                                    month: 3 - $index,
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+        );
+});
+
+test('archive page list articles by month/year', function (): void {
+    $blogCreator = resolve(BlogCreator::class);
+
+    $siteDomain = SiteDomain::factory()->default()->create();
+    $site = $siteDomain->site;
+
+    $blogPage = $blogCreator->createBlogPage($site);
+    $archivesPage = $blogCreator->createArchivesPage($blogPage);
+    $archivePage = $blogCreator->createArchivePage($archivesPage);
+    $blogCreator->createArticlePageType();
+    $articleLayout = $blogCreator->createArticleLayout();
+    $archivePageUrl = blogTestPageUrl($archivePage->pageUrl);
+
+    $publishDate = CarbonImmutable::now()->subMonth();
+
+    $articles = Article::factory()
+        ->count(3)
+        ->site($siteDomain->site)
+        ->layout($articleLayout)
+        ->withTranslations($site->languages)
+        ->state([
+            'visible_from' => fake()->dateTimeBetween($publishDate->startOfMonth(), $publishDate->endOfMonth()),
+        ])
+        ->create();
+
+    expect($archivePage)
+        ->toBeInstanceOf(Page::class)
+        ->blueprint->name->toBe('Archive Page')
+        ->layout->name->toBe('Results')
+        ->parent->name->toBe('Archives')
+        ->pageUrl->url->toBe('/blog/archives/*')
+        ->and($archivePage->getAncestors(['name'])->pluck('name')->sort()->values()->toArray())
+        ->toEqual(['Archives', 'Blog']);
+
+    $archiveUrl = GenerateArchiveUrlAction::run($archivePageUrl, ArchiveMonthData::fromDate($publishDate));
+
+    get($archiveUrl)
+        ->assertOk()
+        ->assertElementExists(
+            'title',
+            fn (AssertElement $elm): BaseAssert => $elm->containsText(
+                __($archivePage->title, ['archive_month' => $publishDate->format('F'), 'archive_year' => $publishDate->year]),
+            ),
+        )
+        ->assertDontSeeText('no-results');
+});
+
+test('archive page returns not found when selected month has no articles', function (): void {
+    $blogCreator = resolve(BlogCreator::class);
+
+    $siteDomain = SiteDomain::factory()->default()->create();
+    $site = $siteDomain->site;
+
+    $blogPage = $blogCreator->createBlogPage($site);
+    $archivesPage = $blogCreator->createArchivesPage($blogPage);
+    $archivePage = $blogCreator->createArchivePage($archivesPage);
+    $articleLayout = $blogCreator->createArticleLayout();
+    $archivePageUrl = blogTestPageUrl($archivePage->pageUrl);
+
+    Article::factory()
+        ->site($site)
+        ->layout($articleLayout)
+        ->withTranslations($site->languages)
+        ->create(['visible_from' => '2024-10-01']);
+
+    $archiveUrl = GenerateArchiveUrlAction::run($archivePageUrl, new ArchiveMonthData(year: 2024, month: 11));
+
+    get($archiveUrl)
+        ->assertNotFound();
+});
+
+test('archives sitemap formats archive page urls without wildcard', function (): void {
+    $blogCreator = resolve(BlogCreator::class);
+
+    $siteDomain = SiteDomain::factory()->default()->create();
+    $site = $siteDomain->site;
+
+    $blogPage = $blogCreator->createBlogPage($site);
+    $archivesPage = $blogCreator->createArchivesPage($blogPage);
+    $archivePage = $blogCreator->createArchivePage($archivesPage);
+    $archivePageUrl = blogTestPageUrl($archivePage->pageUrl);
+    $archiveMonth = new ArchiveMonthData(year: 2025, month: 3);
+
+    $sitemap = new ArchivesSitemap($site, $siteDomain, $siteDomain->language);
+    $sitemapPage = $sitemap->format($archiveMonth, $archivePage);
+
+    expect($sitemapPage->url)
+        ->toBe(GenerateArchiveUrlAction::run($archivePageUrl, $archiveMonth))
+        ->not->toContain('*');
+});
+
+test('error page when no articles found for given month/year', function (string $slug): void {
+    $blogCreator = resolve(BlogCreator::class);
+
+    $siteDomain = SiteDomain::factory()->default()->create();
+    $site = $siteDomain->site;
+
+    $blogPage = $blogCreator->createBlogPage($site);
+    $archivesPage = $blogCreator->createArchivesPage($blogPage);
+    $archivePage = $blogCreator->createArchivePage($archivesPage);
+    $archivePageUrl = blogTestPageUrl($archivePage->pageUrl);
+
+    $archiveUrl = $archivePageUrl->full_url . $slug;
+
+    get($archiveUrl)
+        ->assertNotFound();
+})->with(['/2000-01', '/text-06']);

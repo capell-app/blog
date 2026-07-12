@@ -1,0 +1,76 @@
+{
+    "package": "blog",
+    "composerName": "capell-app/blog",
+    "generatedFor": "deployment-screenshot-runner",
+    "requiresInstalledPackage": true,
+    "outputDirectory": "packages/blog/docs/screenshots",
+    "entries": [
+        {
+            "id": "articles-admin-index",
+            "title": "Articles admin index.",
+            "package": "blog",
+            "surface": "admin",
+            "targetType": "admin-surface",
+            "target": "ArticleResource",
+            "required": true,
+            "notes": "Requires Blog plus its required Capell extensions installed, package migrations, and seeded draft/published articles with sites, layouts, URLs, translations, and tags.",
+            "useCase": "An editor reviews the article queue, publish windows, language coverage, and article status before editing content.",
+            "screenshotPath": "packages/blog/docs/screenshots/articles-admin-index.png",
+            "darkScreenshotPath": "packages/blog/docs/screenshots/articles-admin-index-dark.png"
+        },
+        {
+            "id": "create-edit-article-form",
+            "title": "Create/edit article form.",
+            "package": "blog",
+            "surface": "admin",
+            "targetType": "admin-surface",
+            "target": "ArticleResource.create",
+            "required": true,
+            "notes": "Requires seeded sites, article type, layouts, and tags so relationship fields are populated. The batch harness could not complete extension install until required dependency extensions were marked installed.",
+            "useCase": "An editor creates or updates an article with publishing windows, metadata, layout selection, media, and taxonomy.",
+            "screenshotPath": "packages/blog/docs/screenshots/create-edit-article-form.png",
+            "darkScreenshotPath": "packages/blog/docs/screenshots/create-edit-article-form-dark.png"
+        },
+        {
+            "id": "blog-page-frontend-output",
+            "title": "Blog page frontend output.",
+            "package": "blog",
+            "surface": "frontend",
+            "targetType": "frontend-url",
+            "target": null,
+            "url": "/blog",
+            "required": false,
+            "notes": "Optional Beta evidence target. The current file is an empty host shell rather than proof of Blog output; replace it with an independently captured seeded blog landing page before using it as release evidence.",
+            "useCase": "A visitor browses the public blog landing page and sees published article listings.",
+            "screenshotPath": "packages/blog/docs/screenshots/blog-page-frontend-output.png"
+        },
+        {
+            "id": "archive-page-frontend-output",
+            "title": "Archive page frontend output.",
+            "package": "blog",
+            "surface": "frontend",
+            "targetType": "frontend-url",
+            "target": null,
+            "url": "/screenshot-fixtures/blog/archive-page-frontend-output",
+            "waitFor": ".blog-archive-list",
+            "required": true,
+            "notes": "Requires archive pages created by setup/demo commands and articles with visible dates across at least two months.",
+            "useCase": "A visitor opens a monthly archive and sees articles filtered to that archive period.",
+            "screenshotPath": "packages/blog/docs/screenshots/archive-page-frontend-output.png"
+        },
+        {
+            "id": "tag-page-frontend-output",
+            "title": "Tag page frontend output.",
+            "package": "blog",
+            "surface": "frontend",
+            "targetType": "frontend-url",
+            "target": null,
+            "url": "/screenshot-fixtures/blog/tag-page-frontend-output",
+            "waitFor": ".blog-tag-list",
+            "required": true,
+            "notes": "Requires seeded tags attached to published articles and tag page URLs from the blog setup flow.",
+            "useCase": "A visitor opens a tag page and sees published articles associated with that tag.",
+            "screenshotPath": "packages/blog/docs/screenshots/tag-page-frontend-output.png"
+        }
+    ]
+}

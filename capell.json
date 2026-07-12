@@ -1,0 +1,267 @@
+{
+    "manifest-version": 3,
+    "name": "capell-app/blog",
+    "slug": "blog",
+    "displayName": "Blog",
+    "kind": "package",
+    "capellApiVersion": "^0.0.1",
+    "version": "0.0.x-dev",
+    "description": "Blog adds premium article publishing, archive pages, tag pages, article widgets, optional discovery and analytics bridges, and frontend Livewire page components to Capell.",
+    "product": {
+        "group": "Capell Publishing Pro",
+        "tier": "premium",
+        "bundle": "publishing-pro"
+    },
+    "namespace": "Capell\\Blog",
+    "surfaces": ["admin", "frontend", "console"],
+    "dependencies": {
+        "requires": [
+            "capell-app/admin",
+            "capell-app/content-sections",
+            "capell-app/core",
+            "capell-app/frontend",
+            "capell-app/html-cache",
+            "capell-app/layout-builder",
+            "capell-app/navigation",
+            "capell-app/tags"
+        ],
+        "supports": [
+            "capell-app/comments",
+            "capell-app/insights",
+            "capell-app/publishing-studio",
+            "capell-app/site-discovery",
+            "capell-app/url-manager"
+        ],
+        "conflicts": []
+    },
+    "providers": {
+        "metadata": [],
+        "install": ["Capell\\Blog\\Providers\\ConsoleServiceProvider"],
+        "runtime": ["Capell\\Blog\\Providers\\BlogServiceProvider"],
+        "admin": ["Capell\\Blog\\Providers\\AdminServiceProvider"],
+        "frontend": ["Capell\\Blog\\Providers\\FrontendServiceProvider"]
+    },
+    "contributes": [
+        {
+            "type": "admin-resource",
+            "class": "Capell\\Blog\\Manifest\\BlogAdminResourcesContribution",
+            "resourceClasses": [
+                "Capell\\Blog\\Filament\\Resources\\Articles\\ArticleResource",
+                "Capell\\Tags\\Filament\\Resources\\Tags\\TagResource"
+            ],
+            "groups": ["Page", "Tag"]
+        },
+        {
+            "type": "configurator",
+            "class": "Capell\\Blog\\Manifest\\BlogConfiguratorsContribution",
+            "configuratorClasses": [
+                "Capell\\Blog\\Filament\\Configurators\\Articles\\ArticlePageConfigurator",
+                "Capell\\Blog\\Filament\\Configurators\\Widgets\\ArticleWidgetConfigurator",
+                "Capell\\Blog\\Filament\\Configurators\\Widgets\\RelatedWidgetConfigurator"
+            ],
+            "groups": ["Page", "Widget"]
+        },
+        {
+            "type": "model",
+            "class": "Capell\\Blog\\Manifest\\BlogModelsContribution",
+            "modelClass": "Capell\\Blog\\Models\\Article"
+        },
+        {
+            "type": "page-type",
+            "class": "Capell\\Blog\\Manifest\\BlogPageTypesContribution",
+            "name": "article",
+            "modelClass": "Capell\\Blog\\Models\\Article"
+        },
+        {
+            "type": "page-variation",
+            "class": "Capell\\Blog\\Manifest\\BlogPageTypesContribution",
+            "name": "article",
+            "modelClass": "Capell\\Blog\\Models\\Article",
+            "resourceName": "article"
+        },
+        {
+            "type": "route",
+            "class": "Capell\\Blog\\Manifest\\BlogRoutesContribution",
+            "routes": [
+                "capell.blog.feed.xml",
+                "capell.blog.feed.rss",
+                "capell.blog.feed.atom"
+            ],
+            "prefix": "blog",
+            "middleware": ["web"]
+        }
+    ],
+    "database": {
+        "migrations": true,
+        "settings": false,
+        "requiredTables": ["articles"]
+    },
+    "commands": {
+        "install": "capell:blog-install",
+        "setup": "capell:blog-setup",
+        "demo": "capell:blog-demo",
+        "demoParams": ["sites", "languages", "force"],
+        "doctor": null
+    },
+    "actions": {
+        "install": "Capell\\Blog\\Actions\\InstallBlogPackageAction",
+        "sanitizeBlogHtml": "Capell\\Blog\\Actions\\SanitizeBlogHtmlAction"
+    },
+    "settings": [],
+    "permissions": [
+        "article.view",
+        "article.create",
+        "article.update",
+        "article.delete",
+        "article.restore",
+        "article.force_delete",
+        "tag.view",
+        "tag.create",
+        "tag.update",
+        "tag.delete",
+        "tag.restore",
+        "tag.force_delete"
+    ],
+    "capabilities": [
+        "blog",
+        "blog-admin",
+        "blog-frontend",
+        "blog-articles",
+        "blog-archives",
+        "blog-tags",
+        "blog-related-widgets",
+        "blog-rich-text-render-sanitization",
+        "blog-syndication-feeds",
+        "blog-url-manager-redirect-bridge",
+        "requires-livewire",
+        "blog-cache-invalidation",
+        "blog-publishing-studio-bridge",
+        "blog-comments-bridge"
+    ],
+    "security": {
+        "riskTier": "standard",
+        "publicSurface": {
+            "routeNames": [
+                "capell.blog.feed.atom",
+                "capell.blog.feed.rss",
+                "capell.blog.feed.xml"
+            ],
+            "auth": "public",
+            "csrfExemptRoutes": [],
+            "signedRoutes": [],
+            "tokenizedRoutes": [],
+            "webhookRoutes": [],
+            "throttledRoutes": []
+        },
+        "sensitiveData": {
+            "encryptedFields": [],
+            "hashedTokenFields": [],
+            "redactedOutputClasses": [],
+            "plaintextJustifications": []
+        },
+        "publicOutput": {
+            "cacheSafe": true,
+            "forbidAuthoringSurface": true,
+            "forbidSecrets": true,
+            "forbidPublicBladeQueries": true
+        },
+        "externalHttpClients": {
+            "requiresTimeouts": false,
+            "requiresSecretRedaction": false,
+            "clients": []
+        },
+        "adminSurface": {
+            "authorization": "permissions",
+            "permissions": [
+                "article.view",
+                "article.create",
+                "article.update",
+                "article.delete",
+                "article.restore",
+                "article.force_delete",
+                "tag.view",
+                "tag.create",
+                "tag.update",
+                "tag.delete",
+                "tag.restore",
+                "tag.force_delete"
+            ]
+        }
+    },
+    "performance": {
+        "frontendRenderBudgetMs": 20,
+        "adminQueryBudget": 40,
+        "cacheTags": ["blog"],
+        "cacheSafety": {
+            "cacheable": false,
+            "variesBy": ["site", "locale"],
+            "sensitiveOutput": false,
+            "invalidationSources": [
+                {
+                    "model": "Capell\\Blog\\Models\\Article",
+                    "events": [
+                        "created",
+                        "updated",
+                        "deleted",
+                        "restored",
+                        "forceDeleted"
+                    ]
+                },
+                {
+                    "model": "Capell\\Tags\\Models\\Tag",
+                    "events": ["created", "updated", "deleted"]
+                }
+            ],
+            "queueInvalidation": true
+        }
+    },
+    "healthChecks": [
+        {
+            "key": "blog.package-health",
+            "label": "Blog publishing, cache invalidation, rendering, sitemap, and static export diagnostics are discoverable by Diagnostics.",
+            "class": "Capell\\Blog\\Health\\BlogHealthCheck",
+            "severity": "critical",
+            "surface": "admin"
+        }
+    ],
+    "commercial": {
+        "proposedLicense": "free",
+        "requestedCertification": "first-party",
+        "supportPolicy": "capell-first-party",
+        "privateDocsRequested": true
+    },
+    "marketplace": {
+        "summary": "Publish articles, archives, tag pages, and related-article widgets with multilingual, multi-site output and optional growth bridges.",
+        "screenshots": [
+            {
+                "path": "docs/assets/marketplace/extension-card.jpg",
+                "alt": "Blog extension preview image",
+                "caption": "Blog extension preview"
+            },
+            {
+                "path": "docs/screenshots/articles-admin-index.png",
+                "alt": "Articles admin index showing article publishing status and editorial controls",
+                "caption": "Review the article queue, publish windows, language coverage, and status from the admin index."
+            },
+            {
+                "path": "docs/screenshots/articles-admin-index-dark.png",
+                "alt": "Articles admin index in dark mode",
+                "caption": "Manage the article queue in dark mode."
+            },
+            {
+                "path": "docs/screenshots/create-edit-article-form.png",
+                "alt": "Create and edit article form with publishing, metadata, layout, media, and taxonomy fields",
+                "caption": "Create or update an article with publishing windows, metadata, layout selection, media, and tags."
+            },
+            {
+                "path": "docs/screenshots/create-edit-article-form-dark.png",
+                "alt": "Create and edit article form in dark mode",
+                "caption": "Edit article publishing details in dark mode."
+            }
+        ],
+        "categories": ["admin", "console", "frontend", "publishing"]
+    },
+    "contributionTraceability": {
+        "deferredContributions": []
+    }
+}

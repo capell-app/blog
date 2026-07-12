@@ -1,0 +1,104 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Capell\Blog\Support\Creator;
+
+use Capell\Blog\Models\Article;
+use Capell\Core\Actions\UpdatePageUrlAction;
+use Capell\Core\Contracts\ModelInterceptors\PageInterceptorInterface;
+use Capell\Core\Contracts\Pageable;
+use Capell\Core\Enums\LayoutEnum;
+use Capell\Core\Enums\PageTypeEnum;
+use Capell\Core\Facades\CapellCore;
+use Capell\Core\Models\Language;
+use Capell\Core\Models\Page;
+use Capell\Core\Models\Site;
+use Capell\Core\Models\Translation;
+use Capell\Core\Support\Creator\PageCreator;
+use Illuminate\Support\Collection;
+use LogicException;
+use Override;
+
+class ArticleCreator extends PageCreator
+{
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->pageModel = Article::class;
+    }
+
+    #[Override]
+    public function createPage(array $data, Site $site, Collection $languages): Pageable
+    {
+        $defaults = [
+            'name' => $data['name'],
+            'layout_id' => $data['layout_id'] ?? $this->getLayout($data['layout_key'] ?? LayoutEnum::Default)->id,
+            'site_id' => $site->id,
+            'blueprint_id' => $data['blueprint_id'] ?? $this->getPageType($data['type_key'] ?? PageTypeEnum::Default)->id,
+            'meta' => [
+                'image_id' => $data['image_id'] ?? null,
+            ],
+            'visible_from' => $data['visible_from'] ?? null,
+        ];
+
+        /** @var Page $page */
+        $page = CapellCore::createOrUpdateModel(
+            $this->pageModel,
+            [
+                'name' => $data['name'],
+                'layout_id' => $defaults['layout_id'],
+                'site_id' => $site->id,
+                'blueprint_id' => $defaults['blueprint_id'],
+            ],
+            fn (array $data): array => CapellCore::mergeModelInterceptorData($defaults, $data),
+            PageInterceptorInterface::class,
+        );
+
+        $languages->each(function (Language $language) use ($data, $page): void {
+            $translation_data = $data['translations'][$language->code] ?? [];
+
+            $meta = $translation_data['meta'] ?? [];
+            $meta['summary'] = $translation_data['summary'] ?? null;
+
+            if (isset($translation_data['link_text'])) {
+                $meta['link_text'] = $translation_data['link_text'];
+            }
+
+            if (! isset($meta['slug'])) {
+                $meta['slug'] = $translation_data['slug'] ?? str($data['name'])->slug()->toString();
+            }
+
+            $attributes = [
+                'title' => $translation_data['title'] ?? $data['name'],
+                'content' => $translation_data['content'] ?? null,
+                'meta' => $meta,
+                'language_id' => $language->id,
+            ];
+
+            $translation = $page->translations()->firstOrNew(['language_id' => $language->id]);
+
+            throw_unless($translation instanceof Translation);
+
+            $translation->fill($attributes);
+
+            if (isset($data['user_id'])) {
+                $translation->forceFill([
+                    'created_by' => $data['user_id'],
+                    'updated_by' => $data['user_id'],
+                ]);
+            }
+
+            $translation->save();
+
+            $site = $page->site;
+
+            throw_unless($site instanceof Site, LogicException::class, 'Article page requires a site before URL generation.');
+
+            UpdatePageUrlAction::run($site, $translation, $page->getParentUrl($language));
+        });
+
+        return $page;
+    }
+}

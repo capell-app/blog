@@ -1,0 +1,60 @@
+{
+    "name": "capell-app/blog",
+    "description": "Premium editorial publishing for Capell: articles, archive and tag pages, related article widgets, multilingual output, and optional growth bridges.",
+    "keywords": [
+        "capell",
+        "blog",
+        "laravel",
+        "filamentphp",
+        "cms"
+    ],
+    "homepage": "https://github.com/capell-app/blog",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Howdu",
+            "email": "capell.app26@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.4",
+        "capell-app/admin": "^0.0.4 || 0.0.x-dev",
+        "capell-app/content-sections": "^0.0.4 || 0.0.x-dev",
+        "capell-app/frontend": "^0.0.4 || 0.0.x-dev",
+        "capell-app/html-cache": "^0.0.4 || 0.0.x-dev",
+        "capell-app/layout-builder": "^0.0.4 || 0.0.x-dev",
+        "capell-app/navigation": "^0.0.4 || 0.0.x-dev",
+        "capell-app/tags": "^0.0.4 || 0.0.x-dev"
+    },
+    "autoload": {
+        "psr-4": {
+            "Capell\\Blog\\": "src/",
+            "Capell\\Blog\\Database\\Factories\\": "database/factories"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Capell\\Blog\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Capell\\Blog\\Providers\\BlogServiceProvider"
+            ]
+        },
+        "branch-alias": {
+            "dev-main": "0.0.x-dev"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "prefer-stable": true,
+    "type": "library",
+    "support": {
+        "source": "https://github.com/capell-app/capell-packages",
+        "docs": "https://docs.capell.app/packages/blog"
+    }
+}

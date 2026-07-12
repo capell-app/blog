@@ -1,0 +1,115 @@
+<?php
+
+declare(strict_types=1);
+
+use Capell\Blog\Models\Article;
+use Capell\Blog\Support\Creator\BlogCreator;
+use Capell\Blog\Support\Sitemap\TagsSitemap;
+use Capell\Core\Models\Language;
+use Capell\Core\Models\Page;
+use Capell\Core\Models\Site;
+use Capell\Core\Models\SiteDomain;
+use Capell\Tags\Enums\TagTypeEnum;
+use Capell\Tags\Models\Tag;
+use Capell\Tests\Support\Concerns\TestingFrontend;
+use Illuminate\Support\Str;
+
+use function Pest\Laravel\get;
+
+use Sinnbeck\DomAssertions\Asserts\AssertElement;
+use Sinnbeck\DomAssertions\Asserts\BaseAssert;
+
+uses(TestingFrontend::class);
+
+test('tags page list tags', function (): void {
+    $blogCreator = resolve(BlogCreator::class);
+
+    $language = Language::factory()->create();
+    $site = Site::factory()->recycle($language)->withTranslations()->create();
+    $tagIds = collect([
+        'Visible Blog Topic One',
+        'Visible Blog Topic Two',
+        'Hidden Blog Topic Three',
+    ])->map(fn (string $tagName): int|string => Tag::factory()
+        ->type(TagTypeEnum::Page)
+        ->create([
+            'name' => [$language->code => $tagName],
+            'slug' => [$language->code => Str::slug($tagName)],
+        ])
+        ->getKey());
+    $tags = Tag::query()->whereKey($tagIds->all())->oldest('id')->get();
+    $articleType = $blogCreator->createArticlePageType();
+    Article::factory()
+        ->count(5)
+        ->recycle($site)
+        ->type($articleType)
+        ->withTranslations()
+        ->hasAttached($tags->slice(0, 2))
+        ->create();
+    $blogPage = $blogCreator->createBlogPage($site);
+    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createWidgets: true);
+    $tagPage = $blogCreator->createTagPage($site, $tagsPage);
+    $tagsPageUrl = blogTestPageUrl($tagsPage->pageUrl);
+    $tagsPageTranslation = blogTestTranslation($tagsPage->translation);
+    $visibleTagOne = $tags->get(0);
+    $visibleTagTwo = $tags->get(1);
+    $hiddenTag = $tags->get(2);
+
+    if (! $visibleTagOne instanceof Tag || ! $visibleTagTwo instanceof Tag || ! $hiddenTag instanceof Tag) {
+        throw new RuntimeException('Expected three deterministic tag fixtures.');
+    }
+
+    expect($tagsPage)
+        ->toBeInstanceOf(Page::class)
+        ->name->toBe('Tags Page')
+        ->blueprint->key->toBe('system')
+        ->layout->name->toBe('Tags')
+        ->translation->language->id->toBe($language->id)
+        ->pageUrl->language->id->toBe($language->id)
+        ->and($tagPage)
+        ->toBeInstanceOf(Page::class)
+        ->name->toBe('Tag Page')
+        ->blueprint->name->toBe('Tag Page')
+        ->layout->name->toBe('Tag Results')
+        ->translation->language->id->toBe($language->id)
+        ->pageUrl->language->id->toBe($language->id);
+
+    get($tagsPageUrl->full_url)
+        ->assertOk()
+        ->assertElementExists(
+            'title',
+            fn (AssertElement $elm): BaseAssert => $elm->containsText($tagsPageTranslation->title . ' | ' . $site->title),
+        )
+        ->assertElementExists(
+            'main',
+            fn (AssertElement $main): BaseAssert => $main->doesntContain('.no-results')
+                ->containsText('Visible Blog Topic One'),
+        )
+        ->assertElementExists('a[href="' . $visibleTagOne->getUrl($tagPage, $language) . '"]')
+        ->assertSee('Visible Blog Topic Two')
+        ->assertElementExists('a[href="' . $visibleTagTwo->getUrl($tagPage, $language) . '"]')
+        ->assertDontSeeText('Hidden Blog Topic Three');
+});
+
+test('tags sitemap formats tag urls from the generated tag results page', function (): void {
+    $blogCreator = resolve(BlogCreator::class);
+
+    $language = Language::factory()->create();
+    $siteDomain = SiteDomain::factory()->default()->recycle($language)->create();
+    $site = $siteDomain->site;
+    $tag = Tag::factory()->translate($language)->type(TagTypeEnum::Page)->create();
+    $tag->setAttribute('taggables_count', 4);
+
+    $blogPage = $blogCreator->createBlogPage($site);
+    $tagsPage = $blogCreator->createTagsPage($site, $blogPage);
+    $tagPage = $blogCreator->createTagPage($site, $tagsPage);
+
+    $sitemap = new TagsSitemap($site, $siteDomain, $language);
+    $sitemapPage = $sitemap->format($tagPage, $tag);
+
+    expect($sitemapPage->label)->toBe($tag->getTranslation('name', $language->code) . ' (4)')
+        ->and($sitemapPage->url)->toBe($tag->getUrl($tagPage, $language))
+        ->and($sitemapPage->editUrl)->toBeNull()
+        ->and($sitemapPage->pageableType)->toBe($tag->getMorphClass())
+        ->and($sitemapPage->pageId)->toBe($tag->id);
+});
