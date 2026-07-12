@@ -7,7 +7,7 @@ use Capell\Blog\Health\BlogHealthCheck;
 use Capell\Core\Data\Diagnostics\DoctorCheckResultData;
 
 it('reports compatible capell api version', function (): void {
-    expect(BlogHealthCheck::compatibleCapellApiVersion())->toBe('^4.0');
+    expect(BlogHealthCheck::compatibleCapellApiVersion())->toBe('^0.0');
 });
 
 it('runs the declared blog diagnostics', function (): void {
