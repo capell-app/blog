@@ -128,7 +128,7 @@ class Archives extends AbstractWidget
     private function buildContentData(mixed $page, mixed $theme): BlogWidgetContentData
     {
         $widgetTranslation = $this->widget->relationLoaded('translation') ? $this->widget->getRelation('translation') : null;
-        $widgetType = $this->widget->relationLoaded('blueprint') ? $this->widget->getRelation('type') : null;
+        $widgetType = $this->widget->relationLoaded('blueprint') ? $this->widget->getRelation('blueprint') : null;
         $pageTranslation = $page instanceof Model && $page->relationLoaded('translation') ? $page->getRelation('translation') : null;
         $showPageContent = (bool) ($this->widgetData['meta']['show_page_content'] ?? false);
         $showPageTitle = (bool) ($this->widgetData['meta']['show_page_title'] ?? false);

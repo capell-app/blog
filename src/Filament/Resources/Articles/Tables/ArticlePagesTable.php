@@ -95,7 +95,7 @@ class ArticlePagesTable implements TableConfigurator
 
         return $query
             ->whereHas('site', self::includeTrashedSite(...))
-            ->whereHas('type')
+            ->whereHas('blueprint')
             ->with([
                 'blueprint',
                 'canonicalPage',

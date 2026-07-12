@@ -68,7 +68,7 @@ final class BlogEditorialCalendarEventContributor implements EditorialCalendarEv
         SchedulerEventTypeEnum $eventType,
     ): Collection {
         return Article::query()
-            ->with(['site', 'type'])
+            ->with(['site', 'blueprint'])
             ->whereBetween($column, [$query->startsAt, $query->endsAt])
             ->when($query->siteIds !== null, fn (Builder $builder): Builder => $builder->whereIn('site_id', $query->siteIds))
             ->orderBy($column)

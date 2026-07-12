@@ -49,7 +49,7 @@ it('creates an archive placeholder page under the archives parent', function ():
 
     $archivePage = Page::query()
         ->where('site_id', $site->id)
-        ->whereHas('type', fn (Builder $query): Builder => $query->where('key', BlogPageTypeEnum::Archive->value))
+        ->whereHas('blueprint', fn (Builder $query): Builder => $query->where('key', BlogPageTypeEnum::Archive->value))
         ->first();
 
     expect($archivePage)->not()->toBeNull();
@@ -62,7 +62,7 @@ it('creates a tags page under the blog parent', function (): void {
 
     $tagPage = Page::query()
         ->where('site_id', $site->id)
-        ->whereHas('type', fn (Builder $query): Builder => $query->where('key', BlogPageTypeEnum::Tag->value))
+        ->whereHas('blueprint', fn (Builder $query): Builder => $query->where('key', BlogPageTypeEnum::Tag->value))
         ->first();
 
     expect($tagPage)->not()->toBeNull();
@@ -76,7 +76,7 @@ it('is safe to run twice for the same site without duplicating the blog root pag
 
     $blogPageCount = Page::query()
         ->where('site_id', $site->id)
-        ->whereHas('type', fn (Builder $query): Builder => $query->where('key', BlogPageTypeEnum::Blog->value))
+        ->whereHas('blueprint', fn (Builder $query): Builder => $query->where('key', BlogPageTypeEnum::Blog->value))
         ->count();
 
     expect($blogPageCount)->toBe(1);

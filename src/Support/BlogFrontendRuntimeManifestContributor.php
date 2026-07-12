@@ -139,7 +139,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
     {
         $site->loadMissing('siteDomain');
         $this->hydrateSiteNavigations($site);
-        $page->loadMissing(['creator', 'image.translations.language', 'pageUrl', 'tags', 'translation', 'type']);
+        $page->loadMissing(['creator', 'image.translations.language', 'pageUrl', 'tags', 'translation', 'blueprint']);
         $creator = $page->getRelation('creator');
 
         if ($creator instanceof Model && method_exists($creator, 'profileImage')) {
@@ -289,7 +289,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
     {
         $site->loadMissing('siteDomain');
         $this->hydrateSiteNavigations($site);
-        $page->loadMissing(['translation', 'pageUrl', 'type']);
+        $page->loadMissing(['translation', 'pageUrl', 'blueprint']);
 
         $this->prepareFoundationThemeRuntimeData($context, $page, $site, $language);
 
@@ -311,7 +311,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
     {
         $site->loadMissing('siteDomain');
         $this->hydrateSiteNavigations($site);
-        $page->loadMissing(['translation', 'pageUrl', 'type']);
+        $page->loadMissing(['translation', 'pageUrl', 'blueprint']);
 
         $this->prepareFoundationThemeRuntimeData($context, $page, $site, $language);
         $this->prepareArchiveSidebarData($context, $site, $language);
@@ -554,7 +554,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
 
     private function pageTypeKey(Model $page): ?string
     {
-        $type = $page->relationLoaded('blueprint') ? $page->getRelation('type') : null;
+        $type = $page->relationLoaded('blueprint') ? $page->getRelation('blueprint') : null;
         $key = $type instanceof Model ? $type->getAttribute('key') : null;
 
         return is_string($key) ? $key : null;
