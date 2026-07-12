@@ -14,6 +14,7 @@ use Capell\Blog\Enums\BlogLayoutEnum;
 use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Enums\BlogTypeGroupEnum;
 use Capell\Blog\Enums\ResourceEnum;
+use Capell\Blog\Enums\WidgetComponentEnum;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Loader\BlogLoader;
 use Capell\Blog\Support\Loader\TagLoader;
@@ -29,6 +30,7 @@ use Capell\Frontend\Contracts\FrontendRuntimeManifestContributor;
 use Capell\Frontend\Data\FrontendRuntimeManifestData;
 use Capell\Frontend\Support\Loader\PageLoader;
 use Capell\Frontend\Support\Loader\SiteLoader;
+use Capell\LayoutBuilder\Models\Widget;
 use Capell\Navigation\Models\Navigation;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -60,6 +62,10 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
             BlogLayoutEnum::Tags->value => $this->prepareTagsIndexPage($context, $page, $site, $language),
             default => null,
         };
+
+        if ($this->layoutUsesArchiveWidget($context)) {
+            $this->prepareArchiveWidget($context, $site, $language);
+        }
 
         $this->prepareFooterWidgetData($context, $site, $language);
     }
@@ -336,6 +342,10 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
 
     private function prepareArchiveWidget(FrontendContextReader $context, Site $site, Language $language): void
     {
+        if ($context->getFrontendData('blog.archives') !== null) {
+            return;
+        }
+
         $archivePage = BlogLoader::getArchivePage($site, $language);
 
         if ($archivePage instanceof Model) {
@@ -349,6 +359,35 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
             group: BlogTypeGroupEnum::Article->value,
             limit: $this->paginationLimit(),
         ));
+    }
+
+    private function layoutUsesArchiveWidget(FrontendContextReader $context): bool
+    {
+        $containers = $context->layout()?->containers;
+
+        if (! is_array($containers)) {
+            return false;
+        }
+
+        $widgetKeys = collect($containers)
+            ->flatMap(fn (mixed $container): array => is_array($container) && is_array($container['widgets'] ?? null)
+                ? $container['widgets']
+                : [])
+            ->map(fn (mixed $widget): mixed => is_array($widget) ? ($widget['widget_key'] ?? $widget['key'] ?? null) : $widget)
+            ->filter(fn (mixed $key): bool => is_string($key) || is_numeric($key))
+            ->map(fn (mixed $key): string => (string) $key)
+            ->unique()
+            ->values();
+
+        if ($widgetKeys->isEmpty()) {
+            return false;
+        }
+
+        return Widget::query()
+            ->with('blueprint')
+            ->whereIn('key', $widgetKeys)
+            ->get()
+            ->contains(fn (Widget $widget): bool => $widget->getMetaComponent() === WidgetComponentEnum::Archives->value);
     }
 
     private function prepareFoundationThemeRuntimeData(FrontendContextReader $context, Pageable&Model $page, Site $site, Language $language): void
