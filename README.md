@@ -2,7 +2,7 @@
 
 <!-- prettier-ignore-start -->
 
-## What This Extension Adds
+## What This Plugin Adds
 
 Blog is an **Available**, **Schema-owning** Capell package in the **Capell Publishing Pro** product group. It ships as `capell-app/blog` and extends these surfaces: admin, frontend, console.
 
@@ -29,9 +29,13 @@ Status details:
 
 Screenshot contract: `docs/screenshots.json`.
 
+![Articles admin index](docs/screenshots/articles-admin-index.png)
+
+![Create/edit article form](docs/screenshots/create-edit-article-form.png)
+
 - Articles admin index (admin, required).
 - Create/edit article form (admin, required).
-- Blog page frontend output (frontend, required).
+- Blog page frontend output (frontend, optional).
 - Archive page frontend output (frontend, required).
 - Tag page frontend output (frontend, required).
 
@@ -44,7 +48,7 @@ Screenshot contract: `docs/screenshots.json`.
 - Livewire components: `Archive`, `Blog`, `Tag`.
 - Policies: `ArticlePolicy`.
 - Listeners: `AddBlogPagesToNavigation`, `ArticleTranslationSavedListener`.
-- Actions: `AssignExampleArticleImageAction`, `BuildArticleMetaDataAction`, `BuildBlogFeedXmlAction`, `BuildBlogResultsViewDataAction`, `BuildTagListingDataAction`, `ClearBlogContentCacheAction`, `ClearBlogTagCacheAction`, `CreateBlogHeroDemoContentAction`, `CreateBlogPagesAction`, `EnsureArticlePublishingDefaultsAction`, `EnsureBlogPublishingSurfaceAction`, `GenerateArchiveUrl`, `SanitizeBlogHtmlAction`, `and 3 more`.
+- Actions: `ApplyArchiveDateFilterAction`, `AssignExampleArticleImageAction`, `BuildArticleMetaDataAction`, `BuildBlogFeedXmlAction`, `BuildBlogResultsViewDataAction`, `BuildTagListingDataAction`, `ClearBlogContentCacheAction`, `ClearBlogTagCacheAction`, `CreateBlogHeroDemoContentAction`, `CreateBlogPagesAction`, `EnsureArticlePublishingDefaultsAction`, `EnsureBlogPublishingSurfaceAction`, `and 6 more`.
 - Data objects: `ArchiveLinkData`, `ArchiveMonthData`, `ArticleMetaData`, `ArticleNeighborLinkData`, `ArticleWidgetRenderData`, `BlogPublishingSurfaceData`, `BlogResultItemData`, `BlogResultsViewData`, `BlogTagLinkData`, `BlogWidgetContentData`, `ArticleHealthData`, `LanguageCoverageData`, `and 6 more`.
 - Command signatures: `capell:blog-demo`, `capell:blog-install`, `capell:blog-setup`.
 - Console command classes: `CreateBlogPagesCommand`, `DemoCommand`, `FakerCommand`, `HeroDemoCommand`, `InstallCommand`, `SetupCommand`.
@@ -55,6 +59,7 @@ Screenshot contract: `docs/screenshots.json`.
 
 ## Data Model
 
+- Required tables: `articles`.
 - Models: `Article`.
 - Migration files: `2026_05_10_190842_01_create_articles_table.php`.
 - Migration impact: run host migrations through the package install flow before opening package surfaces.
@@ -73,7 +78,6 @@ Screenshot contract: `docs/screenshots.json`.
 
 ## Common Pitfalls
 
-- Admin-authored rich text rendered raw must pass through the package render-boundary sanitizer; Blog's no-results copy uses `@safeBlogHtml`.
 - Run migrations before opening package resources or public routes.
 - Keep public Blade and cached HTML free of authoring markers, model IDs, permissions, signed editor URLs, and lazy database queries.
 - Run package commands from the host app; in this repository use `vendor/bin/pest` for package tests.
