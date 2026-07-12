@@ -94,15 +94,15 @@ it('is idempotent for a site', function (): void {
 
     expect(Page::query()
         ->where('site_id', $site->id)
-        ->whereHas('type', fn (Builder $query): Builder => $query->where('key', BlogPageTypeEnum::Blog->value))
+        ->whereHas('blueprint', fn (Builder $query): Builder => $query->where('key', BlogPageTypeEnum::Blog->value))
         ->count())->toBe(1)
         ->and(Page::query()
             ->where('site_id', $site->id)
-            ->whereHas('type', fn (Builder $query): Builder => $query->where('key', BlogPageTypeEnum::Archive->value))
+            ->whereHas('blueprint', fn (Builder $query): Builder => $query->where('key', BlogPageTypeEnum::Archive->value))
             ->count())->toBe(1)
         ->and(Page::query()
             ->where('site_id', $site->id)
-            ->whereHas('type', fn (Builder $query): Builder => $query->where('key', BlogPageTypeEnum::Tag->value))
+            ->whereHas('blueprint', fn (Builder $query): Builder => $query->where('key', BlogPageTypeEnum::Tag->value))
             ->count())->toBe(1);
 });
 
@@ -150,7 +150,7 @@ it('updates existing tag pages to the tag results layout without duplicating the
 
     expect(Page::query()
         ->where('site_id', $site->id)
-        ->whereHas('type', fn (Builder $query): Builder => $query->where('key', BlogPageTypeEnum::Tag->value))
+        ->whereHas('blueprint', fn (Builder $query): Builder => $query->where('key', BlogPageTypeEnum::Tag->value))
         ->count())->toBe(1)
         ->and($updatedSurface->tagPage->is($surface->tagPage))->toBeTrue()
         ->and($updatedSurface->tagPage->layout_id)->toBe($tagResultsLayout->id);
