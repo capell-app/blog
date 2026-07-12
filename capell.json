@@ -228,7 +228,7 @@
         "proposedLicense": "free",
         "requestedCertification": "first-party",
         "supportPolicy": "capell-first-party",
-        "privateDocsRequested": false
+        "privateDocsRequested": true
     },
     "marketplace": {
         "summary": "Publish articles, archives, tag pages, and related-article widgets with multilingual, multi-site output and optional growth bridges.",

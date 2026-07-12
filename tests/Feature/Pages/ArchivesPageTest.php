@@ -49,7 +49,7 @@ test('archives page list articles archives by month/year', function (): void {
 
     expect($archivesPage)
         ->toBeInstanceOf(Page::class)
-        ->type->key->toBe('system')
+        ->blueprint->key->toBe('system')
         ->layout->name->toBe('Archives')
         ->parent->name->toBe('Blog');
 
@@ -112,7 +112,7 @@ test('archive page list articles by month/year', function (): void {
 
     expect($archivePage)
         ->toBeInstanceOf(Page::class)
-        ->type->name->toBe('Archive Page')
+        ->blueprint->name->toBe('Archive Page')
         ->layout->name->toBe('Results')
         ->parent->name->toBe('Archives')
         ->pageUrl->url->toBe('/blog/archives/*')
