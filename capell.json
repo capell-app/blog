@@ -4,13 +4,13 @@
     "slug": "blog",
     "displayName": "Blog",
     "kind": "package",
-    "capellApiVersion": "^1.0",
+    "capellApiVersion": "^4.0",
     "version": "1.x-dev",
     "description": "Blog adds premium article publishing, archive pages, tag pages, article widgets, optional discovery and analytics bridges, and frontend Livewire page components to Capell.",
     "product": {
-        "group": "Capell Publishing Pro",
+        "group": "Capell Publishing",
         "tier": "premium",
-        "bundle": "publishing-pro"
+        "bundle": "publishing"
     },
     "namespace": "Capell\\Blog",
     "surfaces": ["admin", "frontend", "console"],
@@ -22,11 +22,11 @@
             "capell-app/frontend",
             "capell-app/html-cache",
             "capell-app/layout-builder",
-            "capell-app/navigation",
             "capell-app/tags"
         ],
         "supports": [
             "capell-app/comments",
+            "capell-app/navigation",
             "capell-app/insights",
             "capell-app/publishing-studio",
             "capell-app/site-discovery",
