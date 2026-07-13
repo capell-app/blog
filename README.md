@@ -4,7 +4,7 @@
 
 ## What This Plugin Adds
 
-Blog is an **Available**, **Schema-owning** Capell package in the **Capell Publishing Pro** product group. It ships as `capell-app/blog` and extends these surfaces: admin, frontend, console.
+Blog is an **Available**, **Schema-owning** Capell package in the **Capell Publishing** product group. It ships as `capell-app/blog` and extends these surfaces: admin, frontend, console.
 
 Blog adds premium article publishing, archive pages, tag pages, article widgets, optional discovery and analytics bridges, and frontend Livewire page components to Capell.
 
@@ -14,7 +14,7 @@ Status details:
 
 - Status: Available
 - Tier: premium
-- Bundle: publishing-pro
+- Bundle: publishing
 - Composer package: `capell-app/blog`
 - Namespace: `Capell\Blog`
 - Theme key: not applicable
@@ -107,7 +107,7 @@ Screenshot contract: `docs/screenshots.json`.
 - [Capell content language plan](../../docs/CONTENT_LANGUAGE_PLAN.md)
 - [Capell documentation design system](../../docs/DESIGN_SYSTEM.md)
 - [Capell and package ERD notes](../../docs/erd/capell-and-package-erds.md)
-- Related packages: [Content Sections](../content-sections/README.md), [Html Cache](../html-cache/README.md), [Layout Builder](../layout-builder/README.md), [Navigation](../navigation/README.md), [Tags](../tags/README.md), [Comments](../comments/README.md), [Insights](../insights/README.md), [Publishing Studio](../publishing-studio/README.md), [Site Discovery](../site-discovery/README.md), [Url Manager](../url-manager/README.md).
+- Related packages: [Content Sections](../content-sections/README.md), [Html Cache](../html-cache/README.md), [Layout Builder](../layout-builder/README.md), [Tags](../tags/README.md), [Comments](../comments/README.md), [Navigation](../navigation/README.md), [Insights](../insights/README.md), [Publishing Studio](../publishing-studio/README.md), [Site Discovery](../site-discovery/README.md), [Url Manager](../url-manager/README.md).
 - Focused tests: `vendor/bin/pest packages/blog/tests --configuration=phpunit.xml`.
 
 <!-- prettier-ignore-end -->
