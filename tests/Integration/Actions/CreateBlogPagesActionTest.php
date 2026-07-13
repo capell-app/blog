@@ -26,7 +26,7 @@ it('creates the blog, archives, archive, tags, and tag pages for the site', func
 
     expect($pages)->not()->toBeEmpty();
 
-    $pageTypeKeys = $pages->pluck('type.key')->filter()->unique()->values()->all();
+    $pageTypeKeys = $pages->pluck('blueprint.key')->filter()->unique()->values()->all();
 
     expect($pageTypeKeys)->toContain(BlogPageTypeEnum::Blog->value);
 });

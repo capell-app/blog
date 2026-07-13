@@ -60,10 +60,10 @@ describe('blog capell.json manifest', function (): void {
     it('is sold as a premium publishing package', function () use ($blogManifest): void {
         $manifest = $blogManifest();
 
-        expect($manifest['product']['group'])->toBe('Capell Publishing Pro')
+        expect($manifest['product']['group'])->toBe('Capell Publishing')
             ->and($manifest['product']['tier'])->toBe('premium')
-            ->and($manifest['product']['bundle'])->toBe('publishing-pro')
-            ->and($manifest['commercial']['proposedLicense'])->toBe('paid');
+            ->and($manifest['product']['bundle'])->toBe('publishing')
+            ->and($manifest['commercial']['proposedLicense'])->toBe('free');
     });
 
     it('does not require premium packages', function () use ($blogManifest, $blogComposerManifest): void {

@@ -169,10 +169,15 @@ class TagLoader
 
         $resolution = CapellCore::rememberCache($key, function () use ($slug, $site, $language, &$fromCache): ?ResolvedTagSlugData {
             $fromCache = false;
+            $siteKey = $site->getKey();
+
+            if (! is_int($siteKey)) {
+                return null;
+            }
 
             return ResolveTagBySlugAction::run(
                 slug: $slug,
-                siteId: (int) $site->getKey(),
+                siteId: $siteKey,
                 locale: $language->code,
                 type: TagTypeEnum::Page->value,
             );
@@ -182,7 +187,7 @@ class TagLoader
             resolve(RenderedModelTracker::class)->track($resolution->tag);
         }
 
-        return $resolution;
+        return $resolution instanceof ResolvedTagSlugData ? $resolution : null;
     }
 
     private static function applyTaggableSiteLanguageScope(BuilderContract $query, Site $site, Language $language): BuilderContract

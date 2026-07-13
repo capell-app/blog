@@ -9,6 +9,7 @@ use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Support\Creator\BlogCreator;
 use Capell\Core\Actions\GetOrCreateResultsLayoutAction;
 use Capell\Core\Enums\PageTypeEnum;
+use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Layout;
@@ -18,6 +19,7 @@ use Capell\LayoutBuilder\Support\Creator\TypeCreator as LayoutTypeCreator;
 use Capell\LayoutBuilder\Support\Creator\WidgetCreator;
 use Capell\Navigation\Enums\NavigationHandle;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Schema;
 use LogicException;
 use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
@@ -79,12 +81,22 @@ class EnsureBlogPublishingSurfaceAction
             layout: $blogCreator->createTagResultsLayout(),
         );
 
-        $blogCreator->addPagesToNavigations(
-            [NavigationHandle::Main->value, NavigationHandle::Footer->value],
-            site: $site,
-            pages: [$blogPage],
-            languages: $languages,
-        );
+        if (
+            CapellCore::isPackageInstalled('capell-app/navigation')
+            && Schema::hasTable('navigations')
+            && class_exists(NavigationHandle::class)
+        ) {
+            $blogCreator->addPagesToNavigations(
+                [NavigationHandle::Main->value, NavigationHandle::Footer->value],
+                site: $site,
+                pages: [$blogPage],
+                languages: $languages,
+            );
+        }
+
+        foreach ([$blogPage, $archivesPage, $archivePage, $tagsPage, $tagPage] as $page) {
+            $page->loadMissing('type');
+        }
 
         return new BlogPublishingSurfaceData(
             blogPage: $blogPage,

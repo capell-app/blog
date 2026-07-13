@@ -7,7 +7,23 @@ use Capell\Blog\Support\PublishingStudio\Concerns\BelongsToOptionalWorkspace;
 use Capell\PublishingStudio\BelongsToWorkspace;
 use Symfony\Component\Finder\Finder;
 
-it('declares navigation as an explicit package dependency', function (): void {
+/** @return array<string, mixed> */
+function blogManifestSection(mixed $manifest, string $key): array
+{
+    if (! is_array($manifest) || ! is_array($manifest[$key] ?? null)) {
+        return [];
+    }
+
+    $section = [];
+
+    foreach ($manifest[$key] as $sectionKey => $value) {
+        $section[(string) $sectionKey] = $value;
+    }
+
+    return $section;
+}
+
+it('declares navigation as an optional package bridge', function (): void {
     $packagePath = dirname(__DIR__, 2);
     $capellManifestContents = file_get_contents($packagePath . '/capell.json');
     $composerManifestContents = file_get_contents($packagePath . '/composer.json');
@@ -23,8 +39,9 @@ it('declares navigation as an explicit package dependency', function (): void {
         flags: JSON_THROW_ON_ERROR,
     );
 
-    expect($capellManifest['dependencies']['requires'])->toContain('capell-app/navigation')
-        ->and($composerManifest['require'])->toHaveKey('capell-app/navigation');
+    expect(blogManifestSection(blogManifestSection($capellManifest, 'dependencies'), 'supports'))->toContain('capell-app/navigation')
+        ->and(blogManifestSection($composerManifest, 'suggest'))->toHaveKey('capell-app/navigation')
+        ->and(blogManifestSection($composerManifest, 'require'))->not->toHaveKey('capell-app/navigation');
 });
 
 it('declares site discovery as an optional package bridge', function (): void {
@@ -43,9 +60,11 @@ it('declares site discovery as an optional package bridge', function (): void {
         flags: JSON_THROW_ON_ERROR,
     );
 
-    expect($capellManifest['dependencies']['requires'])->not->toContain('capell-app/site-discovery')
-        ->and($capellManifest['dependencies']['supports'])->toContain('capell-app/site-discovery')
-        ->and($composerManifest['require'])->not->toHaveKey('capell-app/site-discovery');
+    $dependencies = blogManifestSection($capellManifest, 'dependencies');
+
+    expect(blogManifestSection($dependencies, 'requires'))->not->toContain('capell-app/site-discovery')
+        ->and(blogManifestSection($dependencies, 'supports'))->toContain('capell-app/site-discovery')
+        ->and(blogManifestSection($composerManifest, 'require'))->not->toHaveKey('capell-app/site-discovery');
 });
 
 it('keeps blog package references inside the blog source package except intentional bridges', function (): void {

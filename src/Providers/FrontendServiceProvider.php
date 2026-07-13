@@ -206,7 +206,10 @@ final class FrontendServiceProvider extends ServiceProvider
 
     private function registerStaticSiteExtensions(): void
     {
-        if (! app()->bound(StaticSiteExtensionRegistry::class)) {
+        if (
+            ! CapellCore::isPackageInstalled('capell-app/html-cache')
+            || ! app()->bound(StaticSiteExtensionRegistry::class)
+        ) {
             return;
         }
 

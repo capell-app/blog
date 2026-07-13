@@ -9,6 +9,7 @@ use Capell\Blog\Enums\BlogLayoutEnum;
 use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Core\Actions\SetupPageUrlsAction;
 use Capell\Core\Enums\LayoutEnum;
+use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\Page;
@@ -20,6 +21,7 @@ use Capell\Navigation\Enums\NavigationHandle;
 use Capell\Navigation\Enums\NavigationItemType;
 use Capell\Navigation\Models\Navigation;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Schema;
 
 beforeEach(function (): void {
     LayoutBuilderInstallPackageAction::run();
@@ -50,6 +52,26 @@ it('creates the blog publishing surface with translations and urls', function ()
         expect($page->translations()->whereIn('language_id', $siteLanguages)->count())->toBe($siteLanguages->count())
             ->and($page->pageUrls()->whereIn('language_id', $siteLanguages)->count())->toBe($siteLanguages->count());
     }
+});
+
+it('creates the blog publishing surface when navigation is disabled despite its table being available', function (): void {
+    expect(Schema::hasTable('navigations'))->toBeTrue();
+
+    CapellCore::forcePackageInstalled('capell-app/navigation', false);
+    $site = Site::factory()->withTranslations()->create();
+    $language = $site->languages()->firstOrFail();
+    $navigation = Navigation::factory()->site($site)->language($language)->create([
+        'key' => NavigationHandle::Main->value,
+    ]);
+
+    $surface = EnsureBlogPublishingSurfaceAction::run($site);
+
+    expect($surface->blogPage)->toBeInstanceOf(Page::class)
+        ->and($surface->archivesPage)->toBeInstanceOf(Page::class)
+        ->and($surface->archivePage)->toBeInstanceOf(Page::class)
+        ->and($surface->tagsPage)->toBeInstanceOf(Page::class)
+        ->and($surface->tagPage)->toBeInstanceOf(Page::class)
+        ->and($navigation->refresh()->items->toCollection())->toBeEmpty();
 });
 
 it('creates blog archive and tag pages with the expected urls', function (): void {

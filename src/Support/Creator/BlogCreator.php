@@ -25,6 +25,7 @@ use Capell\Core\Enums\LayoutEnum;
 use Capell\Core\Enums\LayoutGroupEnum;
 use Capell\Core\Enums\PageTypeEnum;
 use Capell\Core\Enums\UrlParamTypeEnum;
+use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Layout;
@@ -45,6 +46,7 @@ use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Schema;
 use LogicException;
 
 class BlogCreator
@@ -212,6 +214,15 @@ class BlogCreator
      */
     public function addPagesToNavigations(array $keys, Site $site, Collection|array $pages, Collection $languages): void
     {
+        if (
+            ! CapellCore::isPackageInstalled('capell-app/navigation')
+            || ! Schema::hasTable('navigations')
+            || ! class_exists(Navigation::class)
+            || ! class_exists(AddPageToNavigationAction::class)
+        ) {
+            return;
+        }
+
         Navigation::query()
             ->whereIn('key', $keys)
             ->where(

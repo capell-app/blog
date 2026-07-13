@@ -6,23 +6,27 @@ namespace Capell\Blog\Listeners;
 
 use Capell\Blog\Support\Loader\BlogLoader;
 use Capell\Core\Contracts\Pageable;
+use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Site;
 use Capell\Navigation\Actions\AddPageToNavigationAction;
-use Capell\Navigation\Enums\NavigationHandle;
 use Capell\Navigation\Events\NavigationCreating;
+use Illuminate\Support\Facades\Schema;
 
 class AddBlogPagesToNavigation
 {
-    /**
-     * @var array<array-key, mixed>
-     */
-    private array $keys = [
-        NavigationHandle::Main->value,
-        NavigationHandle::Footer->value,
-    ];
+    /** @var list<string> */
+    private array $keys = ['main', 'footer'];
 
     public function handle(NavigationCreating $event): void
     {
+        if (
+            ! CapellCore::isPackageInstalled('capell-app/navigation')
+            || ! Schema::hasTable('navigations')
+            || ! class_exists(AddPageToNavigationAction::class)
+        ) {
+            return;
+        }
+
         if (! in_array($event->navigation->key, $this->keys, true)) {
             return;
         }

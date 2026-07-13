@@ -83,6 +83,7 @@ class ListArticlesFilamentWidget extends BaseWidget
                             'site.siteDomains',
                             'translations.language',
                             'type',
+                            'blueprint',
                             'pageUrl.siteDomain',
                         ]);
                 },

@@ -6,6 +6,7 @@ namespace Capell\Blog\View\Components\Widget\Page;
 
 use Capell\Blog\Data\ArticleMetaData;
 use Capell\Blog\Data\ArticleWidgetRenderData;
+use Capell\Core\Contracts\Pageable;
 use Capell\FoundationTheme\View\Components\Widget\AbstractWidget;
 use Capell\Frontend\Facades\Frontend;
 use Closure;

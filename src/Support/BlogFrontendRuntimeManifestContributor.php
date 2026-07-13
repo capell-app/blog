@@ -21,6 +21,7 @@ use Capell\Blog\Support\Loader\TagLoader;
 use Capell\Core\Contracts\Pageable;
 use Capell\Core\Enums\BlueprintGroupEnum;
 use Capell\Core\Enums\PageOrderEnum;
+use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
@@ -36,6 +37,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeManifestContributor
 {
@@ -540,7 +542,12 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
 
     private function hydrateSiteNavigations(Site $site): void
     {
-        if ($site->relationLoaded('navigations') || ! class_exists(Navigation::class)) {
+        if (
+            $site->relationLoaded('navigations')
+            || ! CapellCore::isPackageInstalled('capell-app/navigation')
+            || ! Schema::hasTable('navigations')
+            || ! class_exists(Navigation::class)
+        ) {
             return;
         }
 

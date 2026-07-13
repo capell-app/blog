@@ -7,6 +7,8 @@ namespace Capell\Blog\Filament\Resources\Articles;
 use BackedEnum;
 use Capell\Admin\Enums\ConfiguratorTypeEnum;
 use Capell\Admin\Filament\Resources\Pages\PageResource;
+use Capell\Admin\Filament\Resources\Pages\RelationManagers\ChildrenRelationManager;
+use Capell\Admin\Filament\Resources\Pages\RelationManagers\SiblingsRelationManager;
 use Capell\Blog\Actions\GetArticleLayoutAction;
 use Capell\Blog\Enums\BlogTypeGroupEnum;
 use Capell\Blog\Enums\ResourceEnum;
@@ -114,6 +116,20 @@ class ArticleResource extends PageResource
             'create' => CreateArticle::route('/create'),
             'edit' => EditArticle::route('/{record}/edit'),
         ];
+    }
+
+    #[Override]
+    public static function getRelations(): array
+    {
+        $hierarchyManagers = [
+            ChildrenRelationManager::class,
+            SiblingsRelationManager::class,
+        ];
+
+        return array_values(array_filter(
+            parent::getRelations(),
+            static fn (mixed $manager): bool => ! is_string($manager) || ! in_array($manager, $hierarchyManagers, true),
+        ));
     }
 
     #[Override]

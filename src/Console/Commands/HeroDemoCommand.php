@@ -69,13 +69,6 @@ final class HeroDemoCommand extends Command
             ), static fn (string $siteName): bool => $siteName !== ''));
         }
 
-        if (is_array($siteOption)) {
-            return array_values(array_filter(array_map(
-                fn (mixed $siteName): string => is_string($siteName) ? trim($siteName) : '',
-                $siteOption,
-            ), static fn (string $siteName): bool => $siteName !== ''));
-        }
-
         return [];
     }
 }

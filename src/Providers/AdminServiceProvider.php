@@ -21,6 +21,7 @@ use Capell\LayoutBuilder\Enums\ComponentTypeEnum;
 use Capell\Navigation\Events\NavigationCreating;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
@@ -123,6 +124,14 @@ final class AdminServiceProvider extends ServiceProvider
 
     private function registerNavigationListener(): void
     {
+        if (
+            ! CapellCore::isPackageInstalled('capell-app/navigation')
+            || ! Schema::hasTable('navigations')
+            || ! class_exists(NavigationCreating::class)
+        ) {
+            return;
+        }
+
         Event::listen(NavigationCreating::class, AddBlogPagesToNavigation::class);
     }
 }
