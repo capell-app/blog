@@ -1,0 +1,38 @@
+{
+    "whatThisPluginAdds": {
+        "text": "Blog adds article publishing, archive and tag page types, related-article widgets, and RSS, Atom, and XML feed routes to Capell.",
+        "evidence": [
+            "capell.json",
+            "src/Manifest/BlogPageTypesContribution.php",
+            "src/Manifest/BlogRoutesContribution.php"
+        ]
+    },
+    "surfaceOutcome": {
+        "text": "Editors draft, schedule, tag, and publish articles from ArticleResource. Visitors can browse published article, archive, and tag pages or subscribe to a feed.",
+        "evidence": [
+            "docs/overview.admin.md",
+            "docs/screenshots.json",
+            "tests/Feature/Pages/ArticlePageTest.php",
+            "tests/Feature/BlogFeedTest.php"
+        ]
+    },
+    "whyItMatters": {
+        "developers": {
+            "text": "Blog registers the article page type, configurators, feed routes, and render-data Actions as package extension points instead of adding article behavior to core.",
+            "evidence": [
+                "capell.json",
+                "src/Filament/Configurators/Articles/ArticlePageConfigurator.php",
+                "src/Actions/BuildBlogFeedXmlAction.php",
+                "src/Actions/BuildBlogResultsViewDataAction.php"
+            ]
+        },
+        "teams": {
+            "text": "Editorial teams can keep work private as a draft, schedule publication, organize articles with tags, and reuse related content elsewhere on the site.",
+            "evidence": [
+                "docs/overview.admin.md",
+                "docs/screenshots.json",
+                "tests/Feature/Filament/Resources/Article/Pages/EditArticleTest.php"
+            ]
+        }
+    }
+}
