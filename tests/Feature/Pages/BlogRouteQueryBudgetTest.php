@@ -33,7 +33,9 @@ test('rich article route stays inside the public query budget', function (): voi
 
     $queryCount = blogMeasurePublicRouteQueries($fixture['article_url']);
 
-    expect($queryCount)->toBeLessThanOrEqual(140);
+    // Localized public media metadata adds bounded translation hydration to
+    // the page, site logo, and article image paths.
+    expect($queryCount)->toBeLessThanOrEqual(145);
 });
 
 test('rich blog archive and tag routes stay inside the public query budget', function (string $routeKey, int $budget): void {
@@ -43,11 +45,11 @@ test('rich blog archive and tag routes stay inside the public query budget', fun
 
     expect($queryCount)->toBeLessThanOrEqual($budget);
 })->with([
-    'blog index' => ['blog_url', 110],
+    'blog index' => ['blog_url', 115],
     // Includes the single cache-safe public widget snapshot lookup performed
     // for layout-native archive pages before falling back to live rendering.
-    'archive month' => ['archive_url', 116],
-    'tag result' => ['tag_url', 135],
+    'archive month' => ['archive_url', 125],
+    'tag result' => ['tag_url', 140],
 ]);
 
 /**
