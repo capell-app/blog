@@ -32,7 +32,7 @@ final class BlogTagLinkData extends Data
 
                 return new self(
                     url: $tag->getUrl($tagPage, $language),
-                    name: $tag->getTranslation('name', $language->code),
+                    name: (string) ($tag->getTranslations('name')[$language->code] ?? ''),
                     count: is_numeric($count) ? (int) $count : null,
                 );
             })
