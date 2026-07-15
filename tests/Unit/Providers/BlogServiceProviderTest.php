@@ -15,6 +15,14 @@ test('blog widget components are registered for blaze compilation with nested co
         ->and($blazeConfig->shouldCompile(__DIR__ . '/../../../resources/views/components/page/published-date.blade.php'))->toBeTrue();
 });
 
+test('blog sidebar widgets default to section-level headings', function (): void {
+    $archives = file_get_contents(__DIR__ . '/../../../src/View/Components/Widget/Page/Archives.php');
+    $tags = file_get_contents(__DIR__ . '/../../../src/View/Components/Widget/Tag/Tags.php');
+
+    expect($archives)->toContain("is_string(\$configuredHeadingTag) ? \$configuredHeadingTag : 'h2'")
+        ->and($tags)->toContain("is_string(\$configuredHeadingTag) ? \$configuredHeadingTag : 'h2'");
+});
+
 test('blog registers frontend cache invalidation dependencies for articles and tags', function (): void {
     $registry = resolve(CacheInvalidationRegistry::class);
 
