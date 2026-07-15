@@ -6,9 +6,11 @@
 
 Blog is an **Available**, **Schema-owning** Capell package in the **Capell Publishing** product group. It ships as `capell-app/blog` and extends these surfaces: admin, frontend, console.
 
-Blog adds premium article publishing, archive pages, tag pages, article widgets, optional discovery and analytics bridges, and frontend Livewire page components to Capell.
+Blog adds article publishing, archive and tag page types, related-article widgets, and RSS, Atom, and XML feed routes to Capell.
 
-After install, admins get package-owned management surfaces and public users may see package-owned frontend output or routes.
+Editors draft, schedule, tag, and publish articles from ArticleResource. Visitors can browse published article, archive, and tag pages or subscribe to a feed.
+
+Evidence: [`capell.json`](capell.json), [`src/Manifest/BlogPageTypesContribution.php`](src/Manifest/BlogPageTypesContribution.php), [`src/Manifest/BlogRoutesContribution.php`](src/Manifest/BlogRoutesContribution.php), [`docs/overview.admin.md`](docs/overview.admin.md), [`docs/screenshots.json`](docs/screenshots.json), [`tests/Feature/Pages/ArticlePageTest.php`](tests/Feature/Pages/ArticlePageTest.php), [`tests/Feature/BlogFeedTest.php`](tests/Feature/BlogFeedTest.php).
 
 Status details:
 
@@ -21,9 +23,11 @@ Status details:
 
 ## Why It Matters
 
-**For developers:** The package gives developers package-owned service providers, Actions, Data objects, models, Filament classes, and Blade views instead of pushing this behaviour into core or application code.
+**For developers:** Blog registers the article page type, configurators, feed routes, and render-data Actions as package extension points instead of adding article behavior to core.
 
-**For teams:** Publish articles, archives, tag pages, and related-article widgets with multilingual, multi-site output and optional growth bridges.
+**For teams:** Editorial teams can keep work private as a draft, schedule publication, organize articles with tags, and reuse related content elsewhere on the site.
+
+Evidence: [`capell.json`](capell.json), [`src/Filament/Configurators/Articles/ArticlePageConfigurator.php`](src/Filament/Configurators/Articles/ArticlePageConfigurator.php), [`src/Actions/BuildBlogFeedXmlAction.php`](src/Actions/BuildBlogFeedXmlAction.php), [`src/Actions/BuildBlogResultsViewDataAction.php`](src/Actions/BuildBlogResultsViewDataAction.php), [`docs/overview.admin.md`](docs/overview.admin.md), [`docs/screenshots.json`](docs/screenshots.json), [`tests/Feature/Filament/Resources/Article/Pages/EditArticleTest.php`](tests/Feature/Filament/Resources/Article/Pages/EditArticleTest.php).
 
 ## Screens And Workflow
 
@@ -51,6 +55,7 @@ Screenshot contract: `docs/screenshots.json`.
 - Actions: `ApplyArchiveDateFilterAction`, `AssignExampleArticleImageAction`, `BuildArticleMetaDataAction`, `BuildBlogFeedXmlAction`, `BuildBlogResultsViewDataAction`, `BuildTagListingDataAction`, `ClearBlogContentCacheAction`, `ClearBlogTagCacheAction`, `CreateBlogHeroDemoContentAction`, `CreateBlogPagesAction`, `EnsureArticlePublishingDefaultsAction`, `EnsureBlogPublishingSurfaceAction`, `and 6 more`.
 - Data objects: `ArchiveLinkData`, `ArchiveMonthData`, `ArticleMetaData`, `ArticleNeighborLinkData`, `ArticleWidgetRenderData`, `BlogPublishingSurfaceData`, `BlogResultItemData`, `BlogResultsViewData`, `BlogTagLinkData`, `BlogWidgetContentData`, `ArticleHealthData`, `LanguageCoverageData`, `and 6 more`.
 - Command signatures: `capell:blog-demo`, `capell:blog-install`, `capell:blog-setup`.
+- Manifest action API: `install: Capell\Blog\Actions\InstallBlogPackageAction`, `sanitizeBlogHtml: Capell\Blog\Actions\SanitizeBlogHtmlAction`.
 - Console command classes: `CreateBlogPagesCommand`, `DemoCommand`, `FakerCommand`, `HeroDemoCommand`, `InstallCommand`, `SetupCommand`.
 - Manifest contributions: `admin-resource: Capell\Blog\Manifest\BlogAdminResourcesContribution`, `configurator: Capell\Blog\Manifest\BlogConfiguratorsContribution`, `model: Capell\Blog\Manifest\BlogModelsContribution`, `page-type: Capell\Blog\Manifest\BlogPageTypesContribution`, `page-variation: Capell\Blog\Manifest\BlogPageTypesContribution`, `route: Capell\Blog\Manifest\BlogRoutesContribution`.
 - Health checks: `Capell\Blog\Health\BlogHealthCheck`.
@@ -61,27 +66,31 @@ Screenshot contract: `docs/screenshots.json`.
 
 - Required tables: `articles`.
 - Models: `Article`.
+- Core record references in migrations: `sites via site_id`, `layouts via layout_id`.
 - Migration files: `2026_05_10_190842_01_create_articles_table.php`.
 - Migration impact: run host migrations through the package install flow before opening package surfaces.
-- Deletion/retention behaviour: Docs gap unless the package has an explicit pruning command, retention setting, or tested cascade path.
+- Deletion/retention behaviour: migrations declare cascade-on-delete relationships; no timed pruning or retention schedule is declared in `capell.json`.
 
 ## Install Impact
 
-- Admin navigation: adds package-owned Filament classes when registered.
+- Required packages: `capell-app/admin`, `capell-app/content-sections`, `capell-app/core`, `capell-app/frontend`, `capell-app/html-cache`, `capell-app/layout-builder`, `capell-app/tags`.
+- Admin navigation: declares `admin-resource: BlogAdminResourcesContribution`; each Filament page or resource controls its own navigation visibility.
+- Admin/editor extensions: `configurator: BlogConfiguratorsContribution`.
 - Permissions: `article.view`, `article.create`, `article.update`, `article.delete`, `article.restore`, `article.force_delete`, `tag.view`, `tag.create`, `tag.update`, `tag.delete`, `tag.restore`, `tag.force_delete`.
-- Public routes: none detected in package route files.
+- Public routes: registers `BlogRoutesContribution`.
 - Database changes: package migrations are declared.
+- Config: no package config files.
 - Settings: no package settings declared.
-- Queues or schedules: none detected in standard package paths.
+- Queues or schedules: none declared.
 - Cache tags: `blog`.
 - Commands: `capell:blog-demo`, `capell:blog-install`, `capell:blog-setup`.
 
 ## Common Pitfalls
 
+- Install `capell-app/layout-builder` before Blog so its page types and widgets can register against the required editor surface.
 - Run migrations before opening package resources or public routes.
 - Keep public Blade and cached HTML free of authoring markers, model IDs, permissions, signed editor URLs, and lazy database queries.
-- Run package commands from the host app; in this repository use `vendor/bin/pest` for package tests.
-- Keep `composer.json`, `composer.local.json`, `capell.json`, docs, screenshots, and tests aligned when the package surface changes.
+- Custom write integrations must preserve invalidation for `blog` cache tags.
 
 ## Troubleshooting
 
@@ -89,19 +98,20 @@ Screenshot contract: `docs/screenshots.json`.
 | --- | --- | --- | --- |
 | Package surface is missing after install | Provider or manifest is not loaded | Confirm `capell.json`, package `composer.json`, and provider registration | Reinstall the package, refresh Composer autoload, and clear host caches |
 | Admin screen or command fails on missing table | Package migrations have not run | Check the tables listed in `Data Model` | Run host migrations and rerun the focused package test |
-| Background work does not run | Queue worker or scheduled command is not active | Check package jobs, commands, and host scheduler configuration | Start the queue or scheduler, then run the focused command or package test |
 | Public output leaks unexpected state | Render data, cache variation, or authoring boundary has regressed | Check public Blade, cache tags, and public-output safety tests | Move data loading out of Blade and rerun the package public-output tests |
 
 ## Quick Start
 
 1. Install the package: `composer require capell-app/blog`.
 2. Run the required setup: `php artisan capell:blog-setup`.
-3. Open the related Capell admin surface and verify Blog appears.
+3. Open the Articles admin index and confirm the admin workflow loads.
 
 ## Next Steps
 
 - [Package docs](docs/README.md)
 - [Overview](docs/overview.md)
+- [Admin guide](docs/admin-guide.md)
+- [Troubleshooting](#troubleshooting)
 - [Screenshot contract](docs/screenshots.json)
 - [Marketplace assets](docs/assets/marketplace/)
 - [Capell content language plan](../../docs/CONTENT_LANGUAGE_PLAN.md)

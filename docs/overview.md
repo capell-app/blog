@@ -34,6 +34,6 @@ Go to **Content > Articles** in the admin. Tags are set on each article as you w
 ---
 
 For how to use Blog, see the [admin guide](admin-guide.md).
-For developers: see the [README](../README.md), [blog-api.md](blog-api.md), [blog-database.md](blog-database.md).
+For developers: see the [README](../README.md).
 
 <!-- prettier-ignore-end -->
