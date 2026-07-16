@@ -23,7 +23,7 @@ Blog lets you write and publish articles on your site, with their own blog page,
 
 ## Where to find it
 
-Go to **Content > Articles** in the admin. Tags are set on each article as you write it.
+Open **Articles** in the admin navigation. Tags are set on each article as you write it.
 
 ## Good to know
 
