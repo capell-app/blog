@@ -6,6 +6,7 @@ namespace Capell\Blog\Actions;
 
 use Capell\Blog\Enums\BlogLayoutEnum;
 use Capell\Core\Models\Layout;
+use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 /**
@@ -13,6 +14,7 @@ use Lorisleiva\Actions\Concerns\AsObject;
  */
 class GetArticleLayoutAction
 {
+    use AsFake;
     use AsObject;
 
     public function handle(): ?Layout

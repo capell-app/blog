@@ -8,10 +8,12 @@ use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Tags\Data\ResolvedTagSlugData;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 final class RedirectMergedTagSlugAction
 {
+    use AsFake;
     use AsObject;
 
     public function handle(ResolvedTagSlugData $resolution, Page $tagPage, Language $language): void

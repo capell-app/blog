@@ -8,10 +8,12 @@ use Capell\Blog\Data\TagListingData;
 use Capell\Blog\Support\Loader\TagLoader;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Site;
+use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 final class BuildTagListingDataAction
 {
+    use AsFake;
     use AsObject;
 
     public function handle(

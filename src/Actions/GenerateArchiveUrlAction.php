@@ -6,6 +6,7 @@ namespace Capell\Blog\Actions;
 
 use Capell\Blog\Data\ArchiveMonthData;
 use Capell\Core\Models\PageUrl;
+use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 /**
@@ -13,6 +14,7 @@ use Lorisleiva\Actions\Concerns\AsObject;
  */
 class GenerateArchiveUrlAction
 {
+    use AsFake;
     use AsObject;
 
     public function handle(PageUrl $url, ArchiveMonthData $date): string

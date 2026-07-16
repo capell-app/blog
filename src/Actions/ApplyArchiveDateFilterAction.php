@@ -7,6 +7,7 @@ namespace Capell\Blog\Actions;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 /**
@@ -19,6 +20,7 @@ use Lorisleiva\Actions\Concerns\AsObject;
  */
 class ApplyArchiveDateFilterAction
 {
+    use AsFake;
     use AsObject;
 
     /**

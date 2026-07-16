@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Capell\Blog\Actions;
 
 use Capell\Blog\Models\Article;
-use Lorisleiva\Actions\Concerns\AsAction;
+use Lorisleiva\Actions\Concerns\AsFake;
+use Lorisleiva\Actions\Concerns\AsObject;
 
 final class AssignExampleArticleImageAction
 {
-    use AsAction;
+    use AsFake;
+    use AsObject;
 
     /**
      * @var list<string>
