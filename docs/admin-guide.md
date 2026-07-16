@@ -75,7 +75,7 @@ Your article is now live on the blog page.
 | Role            | First useful screen                                                                                  |
 | --------------- | ---------------------------------------------------------------------------------------------------- |
 | Writer / editor | **Content > Articles**: write, draft, schedule, publish                                              |
-| Site owner      | **Content > Articles** list: see what is published vs in progress, plus the **Article health** panel |
+| Site owner      | **Content > Articles** list: see what is published vs in progress, plus the **Article health** dashboard widget |
 
 ## Troubleshooting for editors
 
@@ -84,5 +84,5 @@ Your article is now live on the blog page.
 | My article isn't on the site                  | It is still a **Draft**, or its **Publish date** is in the future           | Open it, set it to **Published**, and check the publish date is not later than now                                    |
 | A scheduled article didn't appear             | The publish time hasn't been reached, or scheduled publishing isn't running | Re-check the **Publish date**; if it has clearly passed, ask your developer to confirm scheduled publishing is active |
 | My change isn't showing on the live page      | The public page is still serving a cached copy                              | Wait a moment, or ask whoever manages caching to clear it for that page                                               |
-| The **Article health** panel flags an article | It is missing something like a featured image, tags, or a translation       | Open the article and fill in what's flagged                                                                           |
+| The **Article health** widget shows an unexpected total | It summarizes article statuses, top tags, and language coverage across the blog | Review the article list or translation coverage to find the records behind the total                                  |
 | A tag or archive page is empty                | No published articles use that tag or fall in that month yet                | Publish articles with that tag, or hide the empty page                                                                |
