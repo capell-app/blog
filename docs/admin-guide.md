@@ -6,7 +6,7 @@ This guide is for the people who run the blog: editors who write and publish art
 
 ### How to write and publish an article
 
-1. Go to **Content > Articles**.
+1. Open **Articles** in the admin navigation.
 2. Click **New article**.
 3. Give it a **Title**. This is the headline readers see.
 4. Write your article in the body. You can add text, images, and other blocks just as you build any page.
@@ -22,7 +22,7 @@ Your article is now live on the blog page.
 
 1. While editing, leave the article as **Draft** instead of Published, then save.
 2. A draft stays private. Visitors never see it.
-3. Reopen it any time from **Content > Articles** (drafts are marked in the list) and keep working.
+3. Reopen it any time from **Articles** (drafts are marked in the list) and keep working.
 4. Switch it to **Published** when it is ready.
 
 ### How to schedule an article for later
@@ -39,7 +39,7 @@ Your article is now live on the blog page.
 
 ### How to find published, draft, and scheduled articles
 
-1. Go to **Content > Articles**.
+1. Open **Articles** in the admin navigation.
 2. The list shows each article's status: **Published**, **Draft**, or **Scheduled**.
 3. Use the filters at the top of the list to show only one status, or to filter by site or language.
 
@@ -74,8 +74,8 @@ Your article is now live on the blog page.
 
 | Role            | First useful screen                                                                                  |
 | --------------- | ---------------------------------------------------------------------------------------------------- |
-| Writer / editor | **Content > Articles**: write, draft, schedule, publish                                              |
-| Site owner      | **Content > Articles** list: see what is published vs in progress, plus the **Article health** dashboard widget |
+| Writer / editor | **Articles**: write, draft, schedule, publish                                              |
+| Site owner      | **Articles** list: see what is published vs in progress, plus the **Article health** dashboard widget |
 
 ## Troubleshooting for editors
 
