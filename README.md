@@ -52,7 +52,7 @@ Screenshot contract: `docs/screenshots.json`.
 - Livewire components: `Archive`, `Blog`, `Tag`.
 - Policies: `ArticlePolicy`.
 - Listeners: `AddBlogPagesToNavigation`, `ArticleTranslationSavedListener`.
-- Actions: `ApplyArchiveDateFilterAction`, `AssignExampleArticleImageAction`, `BuildArticleMetaDataAction`, `BuildBlogFeedXmlAction`, `BuildBlogResultsViewDataAction`, `BuildTagListingDataAction`, `ClearBlogContentCacheAction`, `ClearBlogTagCacheAction`, `CreateBlogHeroDemoContentAction`, `CreateBlogPagesAction`, `EnsureArticlePublishingDefaultsAction`, `EnsureBlogPublishingSurfaceAction`, `and 6 more`.
+- Actions: `ApplyArchiveDateFilterAction`, `AssignExampleArticleImageAction`, `BuildArticleMetaDataAction`, `BuildBlogFeedXmlAction`, `BuildBlogResultsViewDataAction`, `BuildTagListingDataAction`, `ClearBlogContentCacheAction`, `ClearBlogTagCacheAction`, `CreateBlogHeroDemoContentAction`, `CreateBlogPagesAction`, `EnsureArticlePublishingDefaultsAction`, `EnsureBlogPublishingSurfaceAction`, `and 7 more`.
 - Data objects: `ArchiveLinkData`, `ArchiveMonthData`, `ArticleMetaData`, `ArticleNeighborLinkData`, `ArticleWidgetRenderData`, `BlogPublishingSurfaceData`, `BlogResultItemData`, `BlogResultsViewData`, `BlogTagLinkData`, `BlogWidgetContentData`, `ArticleHealthData`, `LanguageCoverageData`, `and 6 more`.
 - Command signatures: `capell:blog-demo`, `capell:blog-install`, `capell:blog-setup`.
 - Manifest action API: `install: Capell\Blog\Actions\InstallBlogPackageAction`, `sanitizeBlogHtml: Capell\Blog\Actions\SanitizeBlogHtmlAction`.

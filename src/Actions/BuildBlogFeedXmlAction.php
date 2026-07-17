@@ -15,10 +15,12 @@ use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 final class BuildBlogFeedXmlAction
 {
+    use AsFake;
     use AsObject;
 
     public function handle(SiteDomain $domain, string $format = 'rss', int $limit = 20): string

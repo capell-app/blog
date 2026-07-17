@@ -6,6 +6,7 @@ use Capell\Blog\Actions\SeedBlogPublishingSurfaceAction;
 use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Enums\CacheEnum;
 use Capell\Blog\Models\Article;
+use Capell\Core\Contracts\DraftableContract;
 use Capell\Core\Enums\PageOrderEnum;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Blueprint;
@@ -65,25 +66,33 @@ it('returns an empty collection for draftRevisions', function (): void {
     expect($article->draftRevisions)->toBeEmpty();
 });
 
-it('shouldLogVisit returns true when disable_visit_logs is set to true in type meta', function (): void {
+it('exposes a stable draft key for publishing workspaces', function (): void {
+    $article = Article::factory()->create();
+
+    expect($article)
+        ->toBeInstanceOf(DraftableContract::class)
+        ->and($article->getDraftKey())->toBe((string) $article->getKey());
+});
+
+it('does not log visits when the article blueprint disables visit logs', function (): void {
     $type = Blueprint::factory()->page()->create(['meta' => ['disable_visit_logs' => true]]);
     $article = Article::factory()->type($type)->create();
 
-    expect($article->shouldLogVisit())->toBeTrue();
+    expect($article->shouldLogVisit())->toBeFalse();
 });
 
-it('shouldLogVisit returns true when disable_visit_logs is absent from type meta', function (): void {
+it('logs visits by default when the article blueprint does not configure visit logs', function (): void {
     $type = Blueprint::factory()->page()->create(['meta' => []]);
     $article = Article::factory()->type($type)->create();
 
     expect($article->shouldLogVisit())->toBeTrue();
 });
 
-it('shouldLogVisit returns false when disable_visit_logs is set to false in type meta', function (): void {
+it('logs visits when the article blueprint explicitly keeps visit logs enabled', function (): void {
     $type = Blueprint::factory()->page()->create(['meta' => ['disable_visit_logs' => false]]);
     $article = Article::factory()->type($type)->create();
 
-    expect($article->shouldLogVisit())->toBeFalse();
+    expect($article->shouldLogVisit())->toBeTrue();
 });
 
 it('clears cached blog content when articles are saved', function (): void {

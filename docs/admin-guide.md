@@ -6,7 +6,7 @@ This guide is for the people who run the blog: editors who write and publish art
 
 ### How to write and publish an article
 
-1. Go to **Content > Articles**.
+1. Open **Articles** in the admin navigation.
 2. Click **New article**.
 3. Give it a **Title**. This is the headline readers see.
 4. Write your article in the body. You can add text, images, and other blocks just as you build any page.
@@ -22,7 +22,7 @@ Your article is now live on the blog page.
 
 1. While editing, leave the article as **Draft** instead of Published, then save.
 2. A draft stays private. Visitors never see it.
-3. Reopen it any time from **Content > Articles** (drafts are marked in the list) and keep working.
+3. Reopen it any time from **Articles** (drafts are marked in the list) and keep working.
 4. Switch it to **Published** when it is ready.
 
 ### How to schedule an article for later
@@ -39,7 +39,7 @@ Your article is now live on the blog page.
 
 ### How to find published, draft, and scheduled articles
 
-1. Go to **Content > Articles**.
+1. Open **Articles** in the admin navigation.
 2. The list shows each article's status: **Published**, **Draft**, or **Scheduled**.
 3. Use the filters at the top of the list to show only one status, or to filter by site or language.
 
@@ -72,17 +72,17 @@ Your article is now live on the blog page.
 
 ### Who does what
 
-| Role            | First useful screen                                                                                  |
-| --------------- | ---------------------------------------------------------------------------------------------------- |
-| Writer / editor | **Content > Articles**: write, draft, schedule, publish                                              |
-| Site owner      | **Content > Articles** list: see what is published vs in progress, plus the **Article health** panel |
+| Role            | First useful screen                                                                                   |
+| --------------- | ----------------------------------------------------------------------------------------------------- |
+| Writer / editor | **Articles**: write, draft, schedule, publish                                                         |
+| Site owner      | **Articles** list: see what is published vs in progress, plus the **Article health** dashboard widget |
 
 ## Troubleshooting for editors
 
-| What you see                                  | What it means                                                               | What to do                                                                                                            |
-| --------------------------------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| My article isn't on the site                  | It is still a **Draft**, or its **Publish date** is in the future           | Open it, set it to **Published**, and check the publish date is not later than now                                    |
-| A scheduled article didn't appear             | The publish time hasn't been reached, or scheduled publishing isn't running | Re-check the **Publish date**; if it has clearly passed, ask your developer to confirm scheduled publishing is active |
-| My change isn't showing on the live page      | The public page is still serving a cached copy                              | Wait a moment, or ask whoever manages caching to clear it for that page                                               |
-| The **Article health** panel flags an article | It is missing something like a featured image, tags, or a translation       | Open the article and fill in what's flagged                                                                           |
-| A tag or archive page is empty                | No published articles use that tag or fall in that month yet                | Publish articles with that tag, or hide the empty page                                                                |
+| What you see                                            | What it means                                                                   | What to do                                                                                                            |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| My article isn't on the site                            | It is still a **Draft**, or its **Publish date** is in the future               | Open it, set it to **Published**, and check the publish date is not later than now                                    |
+| A scheduled article didn't appear                       | The publish time hasn't been reached, or scheduled publishing isn't running     | Re-check the **Publish date**; if it has clearly passed, ask your developer to confirm scheduled publishing is active |
+| My change isn't showing on the live page                | The public page is still serving a cached copy                                  | Wait a moment, or ask whoever manages caching to clear it for that page                                               |
+| The **Article health** widget shows an unexpected total | It summarizes article statuses, top tags, and language coverage across the blog | Review the article list or translation coverage to find the records behind the total                                  |
+| A tag or archive page is empty                          | No published articles use that tag or fall in that month yet                    | Publish articles with that tag, or hide the empty page                                                                |

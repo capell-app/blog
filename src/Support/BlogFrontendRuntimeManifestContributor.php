@@ -163,10 +163,6 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
             withAuthor: true,
         );
 
-        if (! $articleMeta instanceof ArticleMetaData) {
-            return;
-        }
-
         $context->setFrontendData('blog.article.meta', $articleMeta);
         $context->setFrontendData('blog.article.render_data', $this->articleRenderData($page, $site, $language, $articleMeta));
         $latestArticles = PageLoader::getPages(

@@ -6,10 +6,12 @@ namespace Capell\Blog\Actions;
 
 use Capell\Core\Support\Security\PublicHtmlSanitizer;
 use Capell\Frontend\Support\SafeHtml;
+use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 final class SanitizeBlogHtmlAction
 {
+    use AsFake;
     use AsObject;
 
     public function handle(mixed $html): SafeHtml

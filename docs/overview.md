@@ -11,7 +11,7 @@ Blog lets you write and publish articles on your site, with their own blog page,
 - **Articles**: the list of every article, showing what is published, draft, or scheduled.
 - **The article editor**: where you write an article, add a featured image, set tags, and choose when it goes live.
 - **Your blog page, archive pages, and tag pages**: the public pages visitors browse.
-- **Article health**: an admin panel that flags articles missing key details or translations.
+- **Article health**: a dashboard widget summarizing article statuses, top tags, and language coverage.
 
 ## What you can do
 
@@ -23,7 +23,7 @@ Blog lets you write and publish articles on your site, with their own blog page,
 
 ## Where to find it
 
-Go to **Content > Articles** in the admin. Tags are set on each article as you write it.
+Open **Articles** in the admin navigation. Tags are set on each article as you write it.
 
 ## Good to know
 

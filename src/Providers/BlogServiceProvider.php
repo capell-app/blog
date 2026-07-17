@@ -125,14 +125,6 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
         return CapellCore::getPackage(self::$packageName)->isInstalled();
     }
 
-    #[Override]
-    protected function isLivewireV3(): bool
-    {
-        $version = InstalledVersions::getVersion('livewire/livewire');
-
-        return is_string($version) && version_compare($version, '0.0.0', '<');
-    }
-
     private function bootInstalledPackage(): self
     {
         return $this

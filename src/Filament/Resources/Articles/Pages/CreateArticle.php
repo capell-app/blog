@@ -12,6 +12,7 @@ use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Filament\Resources\Articles\ArticleResource;
 use Capell\Core\Models\Blueprint;
+use Capell\Core\Models\Layout;
 use Override;
 
 class CreateArticle extends CreatePage
@@ -28,7 +29,8 @@ class CreateArticle extends CreatePage
     {
         parent::beforeFill();
 
-        $this->data['layout_id'] = GetArticleLayoutAction::run()?->id;
+        $articleLayout = GetArticleLayoutAction::run();
+        $this->data['layout_id'] = $articleLayout instanceof Layout ? $articleLayout->getKey() : null;
 
         /** @var class-string<Blueprint> $model */
         $model = Blueprint::class;

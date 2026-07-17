@@ -13,6 +13,7 @@ use Capell\Blog\Observers\ArticleObserver;
 use Capell\Blog\Support\Loader\BlogLoader;
 use Capell\Blog\Support\PublishingStudio\Concerns\BelongsToOptionalWorkspace;
 use Capell\Core\Concerns\HasCapellMedia;
+use Capell\Core\Contracts\DraftableContract;
 use Capell\Core\Contracts\Pageable;
 use Capell\Core\Enums\BlueprintGroupEnum;
 use Capell\Core\Enums\BlueprintSubjectEnum;
@@ -68,7 +69,7 @@ use Staudenmeir\EloquentJsonRelations\Relations\BelongsToJson;
  * @method HasOne<Translation, $this>|MorphOne<Translation, $this> translation()
  */
 #[ObservedBy(ArticleObserver::class)]
-class Article extends Model implements Blueprintable, HasMedia, Pageable, Publishable, Translatable, Userstampable
+class Article extends Model implements Blueprintable, DraftableContract, HasMedia, Pageable, Publishable, Translatable, Userstampable
 {
     use BelongsToOptionalWorkspace;
     use Cloneable;
@@ -157,7 +158,7 @@ class Article extends Model implements Blueprintable, HasMedia, Pageable, Publis
 
     public function shouldLogVisit(): bool
     {
-        return (bool) ($this->blueprint?->meta['disable_visit_logs'] ?? true);
+        return ! (bool) ($this->blueprint?->meta['disable_visit_logs'] ?? false);
     }
 
     /**
@@ -211,6 +212,15 @@ class Article extends Model implements Blueprintable, HasMedia, Pageable, Publis
         $date = $this->visible_from ?? $this->created_at;
 
         return $date !== null ? CarbonImmutable::make($date) : null;
+    }
+
+    public function getDraftKey(): string
+    {
+        $key = $this->getKey();
+
+        throw_unless(is_int($key) || is_string($key), LogicException::class, 'Article requires a persisted key for draft operations.');
+
+        return (string) $key;
     }
 
     /**

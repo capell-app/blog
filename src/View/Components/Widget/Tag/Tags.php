@@ -99,12 +99,6 @@ class Tags extends AbstractWidget
                 paginationKey: $paginationKey,
             );
 
-        if (! $tagListing instanceof TagListingData) {
-            $this->skipRender = true;
-
-            return;
-        }
-
         $this->tagListing = $tagListing;
         $this->tags = $this->tagListing->tags;
         $this->tagPage = $this->tagListing->tagPage;
@@ -148,6 +142,7 @@ class Tags extends AbstractWidget
         $showTitle = $this->widget->getMeta(sprintf('container_options.%s.hide_title', $this->containerKey)) !== true && $title !== null;
         $showContent = $this->widget->getMeta(sprintf('container_options.%s.hide_content', $this->containerKey)) !== true && $content !== null;
         $secondaryContainers = $theme instanceof Theme && is_array($theme->secondary_containers) ? $theme->secondary_containers : [];
+        $configuredHeadingTag = $this->widget->getMeta('heading_tag');
 
         return new BlogWidgetContentData(
             show: $showTitle || $showContent,
@@ -160,7 +155,7 @@ class Tags extends AbstractWidget
             textAlign: $this->widget->getMeta('align'),
             headingStyle: $this->widget->getMeta('heading_style'),
             muted: in_array($this->containerKey, $secondaryContainers, true),
-            headingTag: $showPageTitle ? 'h1' : null,
+            headingTag: $showPageTitle ? 'h1' : (is_string($configuredHeadingTag) ? $configuredHeadingTag : 'h2'),
         );
     }
 

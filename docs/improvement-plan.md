@@ -1,10 +1,10 @@
 # Blog - Improvement & Growth Plan
 
-> Package: capell-app/blog · Kind: package · Tier: premium · Product group: Capell Publishing Pro · Bundle: publishing-pro · Status: Active
+> Package: capell-app/blog · Kind: package · Tier: premium · Product group: Capell Publishing Pro · Bundle: publishing-pro · Status: Complete
 
 ## 1. Snapshot
 
-Blog is a premium publishing package for articles, archives, tag pages, article widgets, optional discovery/analytics bridges, and frontend Livewire page components. It owns article schema, admin resources, page/renderable registration, cache invalidation, publishing-surface setup, sitemap/static export bridges, screenshot coverage, and broad tests. Current implementation depth is strong, but the manifest repeats the same health check several times, archive/tag/article frontend behavior deserves explicit edge-case coverage, and docs should make cache and optional bridge behavior easier for package adopters to reason about.
+Blog is the premium publishing package for articles, archives, tag pages, article widgets, optional discovery/analytics bridges, and frontend Livewire page components. It owns article schema, admin resources, page/renderable registration, cache invalidation, publishing-surface setup, sitemap/static export bridges, screenshot coverage, and broad tests. The 2026-07-17 released-package review closed the remaining authorization, publishing-workspace, visit-logging, Livewire compatibility, split-theme CSS, and pagination-contract gaps. The package-local roadmap is reconciled; editorial workflow templates remain an optional future feature rather than a release blocker.
 
 ## 2. Improvements (existing functionality)
 
@@ -23,17 +23,17 @@ Capabilities declared include blog admin/frontend, articles, archives, tags, wid
 - **Shipped 2026-06-16: RSS/Atom feed support.** Blog now exposes anonymous `/blog/feed.xml`, `/blog/feed.rss`, and `/blog/feed.atom` public feeds scoped to the resolved site domain/language and published articles only.
 - **Shipped 2026-06-16: URL Manager redirect bridge is explicit.** Blog now declares URL Manager as an optional bridge, documents that article slug changes emit `PageUrlChanged`, and tests that changed article slugs update the canonical URL through the core event URL Manager consumes.
 - **Shipped 2026-06-16: editorial analytics adoption docs are explicit.** README and overview now explain how Insights and GA4 Reports can be used as optional growth bridges for article entrances, engaged sessions, archive/tag discovery, referrers, declining articles, and widget performance without making Blog depend on analytics packages.
-- **No package-local completion review.** The package has broad test coverage but no plan reconciliation yet.
+- **Shipped 2026-07-17: package-local completion review.** The released beta surface was reconciled against the current monorepo, with focused authorization, model-contract, compatibility, frontend-resource, and route coverage.
 
 ## 4. Issues / Risks
 
-1. **Important issue: duplicate health entries can confuse Marketplace/install tooling.** Recommended fix: de-dupe manifest health checks. - **P2**
-
-2. **Important risk: rich frontend data preparation can regress on unusual archive/tag inputs.** Recommended fix: edge-case tests around empty and invalid routes. - **P2**
-
-3. **Important risk: article pages can drift into N+1 behavior.** Recommended fix: query-budget tests with media, author, tags, and related content. - **P2**
-
-4. **Improvement: optional bridge behavior is under-explained for adopters.** Recommended fix: docs matrix for required/optional packages and degraded behavior. - **P3**
+- **Closed:** duplicate health entries were removed and manifest coverage prevents recurrence.
+- **Closed:** archive, tag, article, empty-state, invalid-input, and pagination branches now have route coverage, including the shipped simple-pagination URL shape.
+- **Closed:** article, blog, archive, and tag query budgets guard media, author, tag, and related-content loading.
+- **Closed:** required and optional bridge behavior is documented for package adopters.
+- **Closed 2026-07-17:** article creation resolves its site through an actor-scoped Action, rejects malformed or tampered site IDs, and denies missing actors.
+- **Closed 2026-07-17:** `Article` implements `DraftableContract`, visit logging now honours `disable_visit_logs`, and Blog inherits the canonical Livewire 3/4 version boundary.
+- **Closed 2026-07-17:** missing generated split-theme CSS is omitted safely instead of breaking public Blog rendering.
 
 ## 5. Marketplace & Positioning
 
@@ -59,7 +59,7 @@ Blog should be positioned as Capell's premium publishing layer for teams that ne
 | Add URL Manager redirect integration for slug changes      | Done   | M      | Medium | §3          |
 | Add analytics adoption docs tying widgets to Insights/GA4  | Done   | S      | Medium | §3          |
 | Add editorial workflow templates                           | Later  | M      | Medium | §5          |
-| Complete full package plan reconciliation                  | Later  | M      | Medium | §3          |
+| Complete full package plan reconciliation                  | Done   | M      | Medium | §3          |
 
 ## 7. Verification
 
@@ -81,6 +81,12 @@ Implementation slice 3 added route-level frontend edge coverage for empty archiv
 vendor/bin/pest packages/blog/tests/Feature/Pages/ArticlesPageTest.php packages/blog/tests/Feature/Pages/ArchivesPageTest.php packages/blog/tests/Feature/Pages/TagPageTest.php --configuration=phpunit.xml
 ```
 
+The 2026-07-17 released-package hardening pass adds direct Action/model/provider coverage plus the Foundation split-CSS guard. Verify with:
+
+```bash
+vendor/bin/pest packages/blog/tests/Integration/Actions/ResolveArticleCreateSiteActionTest.php packages/blog/tests/Integration/Models/ArticleMethodsTest.php packages/blog/tests/Unit/Providers/BlogServiceProviderTest.php packages/theme-foundation/tests/Unit/FoundationThemeResourceContributorTest.php --configuration=phpunit.xml
+```
+
 ## 8. Completion Checklist
 
 - [x] Package plan created from current code, manifest, docs, screenshots, and tests.
@@ -92,3 +98,8 @@ vendor/bin/pest packages/blog/tests/Feature/Pages/ArticlesPageTest.php packages/
 - [x] Focused Blog verification passed.
 - [x] Package tests passed.
 - [x] Repo preflight passed for changed files.
+- [x] Released-package authorization and tamper-resistance review completed.
+- [x] Publishing Studio draft contract and visit-logging semantics reconciled.
+- [x] Livewire 3/4 compatibility boundary reconciled with Core.
+- [x] Missing split-theme CSS no longer breaks public rendering.
+- [x] Simple-pagination links and route resolution verified end to end.

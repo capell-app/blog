@@ -14,10 +14,12 @@ use Capell\Frontend\Enums\CacheEnum as FrontendCacheEnum;
 use Capell\Frontend\Support\Cache\PublicPageRenderDataCache;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Cache;
+use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 final class ClearBlogContentCacheAction
 {
+    use AsFake;
     use AsObject;
 
     public function handle(Article $article): void

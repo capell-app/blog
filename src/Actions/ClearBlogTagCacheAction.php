@@ -13,10 +13,12 @@ use Capell\Tags\Models\Tag;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 final class ClearBlogTagCacheAction
 {
+    use AsFake;
     use AsObject;
 
     public function handle(Tag $tag): void

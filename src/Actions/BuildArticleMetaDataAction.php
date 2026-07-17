@@ -16,10 +16,12 @@ use Capell\Frontend\Contracts\RenderedModelTracker;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
+use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 final class BuildArticleMetaDataAction
 {
+    use AsFake;
     use AsObject;
 
     public function handle(

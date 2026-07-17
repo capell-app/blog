@@ -303,12 +303,12 @@ test('articles pagination', function (): void {
                 ->find(
                     '.wire-pagination-links a[rel="next"]',
                     fn (AssertElement $elm): BaseAssert => $elm
-                        ->has('href', $blogUrl->full_url . '/page/2')
+                        ->has('href', $blogUrl->full_url . '/2')
                         ->has('wire:navigate'),
                 ),
         );
 
-    get($blogUrl->full_url . '/page/2')
+    get($blogUrl->full_url . '/2')
         ->assertOk()
         ->assertElementExists(
             '.results',
@@ -339,13 +339,13 @@ test('articles pagination', function (): void {
                 ->find(
                     '.wire-pagination-links a[rel="next"]',
                     fn (AssertElement $elm): BaseAssert => $elm
-                        ->has('href', $blogUrl->full_url . '/page/3')
+                        ->has('href', $blogUrl->full_url . '/3')
                         ->has('wire:navigate'),
                 ),
         );
 
     // End the assertion chain before starting the next request
-    get($blogUrl->full_url . '/page/3')
+    get($blogUrl->full_url . '/3')
         ->assertOk()
         ->assertElementExists(
             '.results',
@@ -370,7 +370,7 @@ test('articles pagination', function (): void {
                 ->find(
                     '.wire-pagination-links a[rel="prev"]',
                     fn (AssertElement $elm): BaseAssert => $elm
-                        ->has('href', $blogUrl->full_url . '/page/2')
+                        ->has('href', $blogUrl->full_url . '/2')
                         ->has('wire:navigate'),
                 )
                 ->doesntContain('.wire-pagination-links a[rel="next"]'),

@@ -10,6 +10,7 @@ use Capell\Admin\Filament\Resources\Pages\PageResource;
 use Capell\Admin\Filament\Resources\Pages\RelationManagers\ChildrenRelationManager;
 use Capell\Admin\Filament\Resources\Pages\RelationManagers\SiblingsRelationManager;
 use Capell\Blog\Actions\GetArticleLayoutAction;
+use Capell\Blog\Actions\ResolveArticleCreateSiteAction;
 use Capell\Blog\Enums\BlogTypeGroupEnum;
 use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Filament\Resources\Articles\Pages\CreateArticle;
@@ -24,6 +25,7 @@ use Capell\Core\Actions\GetNameFromTranslationsAction;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Language;
+use Capell\Core\Models\Layout;
 use Capell\Core\Models\Site;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Database\Eloquent\Builder as BuilderContract;
@@ -165,7 +167,8 @@ class ArticleResource extends PageResource
             $data['order'] = 0;
         }
 
-        $data['layout_id'] = GetArticleLayoutAction::run()?->id;
+        $articleLayout = GetArticleLayoutAction::run();
+        $data['layout_id'] = $articleLayout instanceof Layout ? $articleLayout->getKey() : null;
 
         /* @var class-string<\Capell\Core\Models\Blueprint> $model */
         $model = Blueprint::class;
@@ -175,20 +178,8 @@ class ArticleResource extends PageResource
             ->where('group', BlogTypeGroupEnum::Article)
             ->value('id');
 
-        $siteId = is_scalar($data['site_id'] ?? null) ? (int) $data['site_id'] : null;
-
-        /* @var class-string<\Capell\Core\Models\Site> $model */
-        $model = Site::class;
-
-        $site = ($siteId !== null ? $model::query()->find($siteId) : null) ?? $model::query()->default()->first();
-
-        if ($site === null) {
-            return;
-        }
-
-        if (! isset($data['site_id']) || blank($data['site_id'])) {
-            $data['site_id'] = $site->id;
-        }
+        $site = ResolveArticleCreateSiteAction::run($data['site_id'] ?? null);
+        $data['site_id'] = $site->getKey();
 
         if ((! isset($data['name']) || blank($data['name'])) && isset($formData['translations'])) {
             $data['name'] = GetNameFromTranslationsAction::run(new Collection($formData['translations']), $site);

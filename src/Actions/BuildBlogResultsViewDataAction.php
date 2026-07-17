@@ -12,10 +12,12 @@ use Capell\Frontend\Support\View\PublicModelMeta;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 final class BuildBlogResultsViewDataAction
 {
+    use AsFake;
     use AsObject;
 
     /**
