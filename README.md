@@ -43,6 +43,15 @@ Screenshot contract: `docs/screenshots.json`.
 - Archive page frontend output (frontend, required).
 - Tag page frontend output (frontend, required).
 
+## Works With
+
+- [Comments](../comments/README.md): optional integration backed by the interop evidence map.
+- [Navigation](../navigation/README.md): optional integration backed by the interop evidence map.
+- [Insights](../insights/README.md): optional integration backed by the interop evidence map.
+- [Publishing Studio](../publishing-studio/README.md): optional integration backed by the interop evidence map.
+- [Site Discovery](../site-discovery/README.md): optional integration backed by the interop evidence map.
+- [Url Manager](../url-manager/README.md): optional integration backed by the interop evidence map.
+
 ## Technical Shape
 
 - Service providers: `Capell\Blog\Providers\ConsoleServiceProvider`, `Capell\Blog\Providers\BlogServiceProvider`, `Capell\Blog\Providers\AdminServiceProvider`, `Capell\Blog\Providers\FrontendServiceProvider`.

@@ -79,6 +79,10 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
 
     public function bootingPackage(): void
     {
+        if (! $this->isPackageInstalled()) {
+            return;
+        }
+
         Route::get('/blog/feed.xml', [BlogFeedController::class, '__invoke'])
             ->defaults('format', 'xml')
             ->name('capell.blog.feed.xml');

@@ -71,6 +71,7 @@ it('keeps blog package references inside the blog source package except intentio
     $rootPath = dirname(__DIR__, 4);
     $intentionalBridgePaths = [
         'packages/comments/src/Actions/RegisterDefaultCommentablesAction.php',
+        'packages/seo-suite/src/Support/Admin/BlogSeoAuditResourceHeaderActionExtender.php',
         'packages/theme-liquid-glass/src/Enums/WidgetComponentEnum.php',
         'packages/theme-liquid-glass/src/LiquidGlassThemeServiceProvider.php',
     ];

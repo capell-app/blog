@@ -67,6 +67,24 @@
             "modelClass": "Capell\\Blog\\Models\\Article"
         },
         {
+            "type": "permission",
+            "class": "Capell\\Blog\\Manifest\\BlogPermissionsContribution",
+            "permissions": [
+                "article.view",
+                "article.create",
+                "article.update",
+                "article.delete",
+                "article.restore",
+                "article.force_delete",
+                "tag.view",
+                "tag.create",
+                "tag.update",
+                "tag.delete",
+                "tag.restore",
+                "tag.force_delete"
+            ]
+        },
+        {
             "type": "page-type",
             "class": "Capell\\Blog\\Manifest\\BlogPageTypesContribution",
             "name": "article",
@@ -80,6 +98,42 @@
             "resourceName": "article"
         },
         {
+            "type": "frontend-component",
+            "class": "Capell\\Blog\\Manifest\\BlogFrontendComponentsContribution",
+            "componentClasses": [
+                "Capell\\Blog\\Livewire\\Page\\Archive",
+                "Capell\\Blog\\Livewire\\Page\\Blog",
+                "Capell\\Blog\\Livewire\\Page\\Tag"
+            ],
+            "keys": [
+                "capell-blog::page.archive",
+                "capell-blog::page.blog",
+                "capell-blog::page.tag",
+                "capell-blog::widget.page.archives",
+                "capell-blog::widget.page.article",
+                "capell-blog::widget.page.related",
+                "capell-blog::widget.tag.tags"
+            ]
+        },
+        {
+            "type": "render-hook",
+            "class": "Capell\\Blog\\Manifest\\BlogRenderHooksContribution",
+            "hookClasses": [
+                "Capell\\Blog\\Support\\RenderHooks\\FooterTagsRenderHook",
+                "Capell\\Blog\\Support\\RenderHooks\\FooterPagesRenderHook",
+                "Capell\\Blog\\Support\\RenderHooks\\ArticleMetaRenderHook",
+                "Capell\\Blog\\Support\\RenderHooks\\BeforeContentTagsRenderHook",
+                "Capell\\Blog\\Support\\RenderHooks\\AfterTitleRenderHook"
+            ],
+            "keys": [
+                "footer-tags",
+                "footer-pages",
+                "article-meta",
+                "before-content-tags",
+                "after-title"
+            ]
+        },
+        {
             "type": "route",
             "class": "Capell\\Blog\\Manifest\\BlogRoutesContribution",
             "routes": [
@@ -89,6 +143,35 @@
             ],
             "prefix": "blog",
             "middleware": ["web"]
+        },
+        {
+            "type": "migration",
+            "class": "Capell\\Blog\\Manifest\\BlogMigrationsContribution",
+            "tables": ["articles"]
+        },
+        {
+            "type": "console-command",
+            "class": "Capell\\Blog\\Manifest\\BlogConsoleCommandsContribution",
+            "commands": [
+                "capell:blog-create-pages",
+                "capell:blog-demo",
+                "capell:blog-faker",
+                "capell:hero-demo",
+                "capell:blog-install",
+                "capell:blog-setup"
+            ],
+            "commandClasses": [
+                "Capell\\Blog\\Console\\Commands\\CreateBlogPagesCommand",
+                "Capell\\Blog\\Console\\Commands\\DemoCommand",
+                "Capell\\Blog\\Console\\Commands\\FakerCommand",
+                "Capell\\Blog\\Console\\Commands\\HeroDemoCommand",
+                "Capell\\Blog\\Console\\Commands\\InstallCommand",
+                "Capell\\Blog\\Console\\Commands\\SetupCommand"
+            ]
+        },
+        {
+            "type": "health-check",
+            "class": "Capell\\Blog\\Health\\BlogHealthCheck"
         }
     ],
     "database": {
@@ -225,9 +308,9 @@
         }
     ],
     "commercial": {
-        "proposedLicense": "free",
+        "proposedLicense": "paid",
         "requestedCertification": "first-party",
-        "supportPolicy": "capell-first-party",
+        "supportPolicy": "priority",
         "privateDocsRequested": true
     },
     "marketplace": {

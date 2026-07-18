@@ -15,6 +15,7 @@ use Capell\Tags\Models\Tag;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 it('keeps paginated tag cache keys isolated by paginator name', function (): void {
     expect(CacheEnum::siteTags(1, 2, true, 10, 1, 'tags-main'))
@@ -110,6 +111,23 @@ it('uses a new tag listing cache key after the first invalidation', function ():
     $article->syncTagsWithType(['First tag', 'Second tag'], TagTypeEnum::Page->value);
 
     expect(TagLoader::getTags($site, $language, 10, true, null, false, 'tags-main'))->toHaveCount(2);
+});
+
+it('ignores page tags attached to models outside the blog article boundary', function (): void {
+    $site = Site::factory()->withTranslations()->create();
+    $language = $site->language;
+    $tag = Tag::factory()->site($site)->type(TagTypeEnum::Page)->create([
+        'name' => [$language->code => 'Shared page tag'],
+        'slug' => [$language->code => 'shared-page-tag'],
+    ]);
+
+    DB::table('taggables')->insert([
+        'tag_id' => $tag->getKey(),
+        'taggable_type' => $site->getMorphClass(),
+        'taggable_id' => $site->getKey(),
+    ]);
+
+    expect(TagLoader::getTags($site, $language, 10, true))->toBeEmpty();
 });
 
 it('tracks cached paginated tag listings for html cache invalidation', function (): void {

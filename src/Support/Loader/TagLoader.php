@@ -6,6 +6,7 @@ namespace Capell\Blog\Support\Loader;
 
 use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Enums\CacheEnum;
+use Capell\Blog\Models\Article;
 use Capell\Core\Contracts\Pageable;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Language;
@@ -192,11 +193,17 @@ class TagLoader
 
     private static function applyTaggableSiteLanguageScope(BuilderContract $query, Site $site, Language $language): BuilderContract
     {
-        return $query->whereHas(
-            'taggable',
-            fn (BuilderContract $query): BuilderContract => $query->where('site_id', $site->id)
-                ->whereRelation('translation', 'language_id', $language->id),
-        );
+        $article = new Article;
+
+        return $query
+            ->where('taggable_type', $article->getMorphClass())
+            ->whereIn(
+                'taggable_id',
+                Article::query()
+                    ->select($article->qualifyColumn($article->getKeyName()))
+                    ->where('site_id', $site->id)
+                    ->whereRelation('translation', 'language_id', $language->id),
+            );
     }
 
     /**

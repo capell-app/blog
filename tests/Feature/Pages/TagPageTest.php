@@ -9,8 +9,10 @@ use Capell\Core\Models\Site;
 use Capell\Tags\Actions\MergeTagsAction;
 use Capell\Tags\Enums\TagTypeEnum;
 use Capell\Tags\Models\Tag;
+use Capell\Tests\Fixtures\Models\User;
 use Capell\Tests\Support\Concerns\TestingFrontend;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Illuminate\Support\Facades\Gate;
 
 use function Pest\Laravel\get;
 
@@ -204,7 +206,10 @@ test('redirects a merged tag slug to the canonical tag url', function (): void {
     ]);
     $oldUrl = $source->getUrl($tagPage, $language);
 
-    MergeTagsAction::run($target, collect([$source]));
+    $actor = User::factory()->create();
+    Gate::before(static fn (): bool => true);
+
+    MergeTagsAction::run($target, collect([$source]), $actor);
 
     get($oldUrl)
         ->assertStatus(301)

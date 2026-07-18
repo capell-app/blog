@@ -21,13 +21,19 @@
         "php": "^8.4",
         "capell-app/admin": "^1.0",
         "capell-app/content-sections": "^1.0",
+        "capell-app/core": "^1.0",
         "capell-app/frontend": "^1.0",
         "capell-app/html-cache": "^1.0",
         "capell-app/layout-builder": "^1.0",
         "capell-app/tags": "^1.0"
     },
     "suggest": {
-        "capell-app/navigation": "Adds Blog pages to configured site navigation menus."
+        "capell-app/comments": "Adds comment threads to published articles.",
+        "capell-app/insights": "Adds article traffic reporting and insights widgets.",
+        "capell-app/navigation": "Adds Blog pages to configured site navigation menus.",
+        "capell-app/publishing-studio": "Adds articles to editorial workspaces and calendars.",
+        "capell-app/site-discovery": "Adds article URLs to discovery and sitemap outputs.",
+        "capell-app/url-manager": "Adds redirect support for changed article URLs."
     },
     "autoload": {
         "psr-4": {

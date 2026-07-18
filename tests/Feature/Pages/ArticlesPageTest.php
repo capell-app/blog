@@ -82,6 +82,10 @@ test('blog page lists articles', function (): void {
         )
         ->assertElementExists('img[src^="https://images.unsplash.com"]')
         ->assertElementExists(
+            'h1',
+            fn (AssertElement $elm): BaseAssert => $elm->containsText((string) blogTestTranslation($blogPage->translation)->title),
+        )
+        ->assertElementExists(
             '.results',
             fn (AssertElement $elm): BaseAssert => $elm->doesntContain('.no-results')
                 ->contains('.asset-index', count: $articles->count())
@@ -275,10 +279,6 @@ test('articles pagination', function (): void {
         ->assertElementExists(
             'title',
             fn (AssertElement $elm): BaseAssert => $elm->containsText(blogTestTranslation($blogPage->translation)->title . ' | ' . $site->title),
-        )
-        ->assertElementExists(
-            'h1',
-            fn (AssertElement $elm): BaseAssert => $elm->containsText((string) blogTestTranslation($blogPage->translation)->title),
         )
         ->assertElementExists(
             '.results',

@@ -9,12 +9,24 @@ use Capell\Blog\Filament\Resources\Articles\ArticleResource;
 use Capell\Blog\Health\BlogHealthCheck;
 use Capell\Blog\Manifest\BlogAdminResourcesContribution;
 use Capell\Blog\Manifest\BlogConfiguratorsContribution;
+use Capell\Blog\Manifest\BlogConsoleCommandsContribution;
+use Capell\Blog\Manifest\BlogFrontendComponentsContribution;
+use Capell\Blog\Manifest\BlogMigrationsContribution;
 use Capell\Blog\Manifest\BlogModelsContribution;
 use Capell\Blog\Manifest\BlogPageTypesContribution;
+use Capell\Blog\Manifest\BlogPermissionsContribution;
+use Capell\Blog\Manifest\BlogRenderHooksContribution;
+use Capell\Blog\Manifest\BlogRoutesContribution;
 use Capell\Blog\Models\Article;
+use Capell\Core\Contracts\Extensions\ChecksExtensionHealth;
 use Capell\Core\Contracts\Extensions\ExtensionContribution;
 use Capell\Core\Contracts\Extensions\RegistersExtensionAdminResource;
+use Capell\Core\Contracts\Extensions\RegistersExtensionFrontendComponent;
 use Capell\Core\Contracts\Extensions\RegistersExtensionPageType;
+use Capell\Core\Contracts\Extensions\RegistersExtensionPermission;
+use Capell\Core\Contracts\Extensions\RegistersExtensionRenderHook;
+use Capell\Core\Contracts\Extensions\RegistersExtensionRoute;
+use Capell\Core\Contracts\Extensions\RunsExtensionMigration;
 use Capell\Core\Support\Manifest\ManifestValidator;
 use Capell\Tags\Filament\Resources\Tags\TagResource;
 use Capell\Tags\Models\Tag;
@@ -57,13 +69,16 @@ describe('blog capell.json manifest', function (): void {
             ->toHaveKey('capell-app/layout-builder');
     });
 
-    it('is sold as a premium publishing package', function () use ($blogManifest): void {
+    it('is sold as a premium proprietary publishing package', function () use ($blogManifest, $blogComposerManifest): void {
         $manifest = $blogManifest();
+        $composerManifest = $blogComposerManifest();
 
         expect($manifest['product']['group'])->toBe('Capell Publishing')
             ->and($manifest['product']['tier'])->toBe('premium')
             ->and($manifest['product']['bundle'])->toBe('publishing')
-            ->and($manifest['commercial']['proposedLicense'])->toBe('free');
+            ->and($manifest['commercial']['proposedLicense'])->toBe('paid')
+            ->and($manifest['commercial']['supportPolicy'])->toBe('priority')
+            ->and($composerManifest['license'])->toBe('proprietary');
     });
 
     it('does not require premium packages', function () use ($blogManifest, $blogComposerManifest): void {
@@ -211,10 +226,33 @@ describe('blog capell.json manifest', function (): void {
                 'modelClass' => Article::class,
                 'resourceName' => 'article',
             ])
+            ->and(collect($contributions)->pluck('type')->all())->toBe([
+                'admin-resource',
+                'configurator',
+                'model',
+                'permission',
+                'page-type',
+                'page-variation',
+                'frontend-component',
+                'render-hook',
+                'route',
+                'migration',
+                'console-command',
+                'health-check',
+            ])
+            ->and(data_get(collect($contributions)->firstWhere('type', 'permission'), 'permissions'))->toBe($manifest['permissions'])
+            ->and(data_get(collect($contributions)->firstWhere('type', 'migration'), 'tables'))->toBe($manifest['database']['requiredTables'])
             ->and($manifest['contributionTraceability']['deferredContributions'])->toBe([])
             ->and(class_implements(BlogAdminResourcesContribution::class))->toContain(RegistersExtensionAdminResource::class)
             ->and(class_implements(BlogConfiguratorsContribution::class))->toContain(ExtensionContribution::class)
             ->and(class_implements(BlogModelsContribution::class))->toContain(ExtensionContribution::class)
-            ->and(class_implements(BlogPageTypesContribution::class))->toContain(RegistersExtensionPageType::class);
+            ->and(class_implements(BlogPageTypesContribution::class))->toContain(RegistersExtensionPageType::class)
+            ->and(class_implements(BlogPermissionsContribution::class))->toContain(RegistersExtensionPermission::class)
+            ->and(class_implements(BlogFrontendComponentsContribution::class))->toContain(RegistersExtensionFrontendComponent::class)
+            ->and(class_implements(BlogRenderHooksContribution::class))->toContain(RegistersExtensionRenderHook::class)
+            ->and(class_implements(BlogRoutesContribution::class))->toContain(RegistersExtensionRoute::class)
+            ->and(class_implements(BlogMigrationsContribution::class))->toContain(RunsExtensionMigration::class)
+            ->and(class_implements(BlogConsoleCommandsContribution::class))->toContain(ExtensionContribution::class)
+            ->and(class_implements(BlogHealthCheck::class))->toContain(ChecksExtensionHealth::class);
     });
 });

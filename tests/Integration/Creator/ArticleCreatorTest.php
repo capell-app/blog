@@ -15,8 +15,7 @@ use Capell\Core\Models\Language;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\PageUrl;
 use Capell\Core\Models\Site;
-use Capell\Frontend\Facades\Frontend;
-use Capell\Frontend\Support\CapellFrontendContext;
+use Capell\Frontend\Contracts\FrontendContextReader;
 use Capell\Frontend\Support\State\FrontendState;
 use Capell\Tags\Enums\TagTypeEnum;
 use Capell\Tags\Models\Tag;
@@ -136,13 +135,13 @@ it('loads related articles for the current tagged article without leaking the cu
         ],
     ]);
 
-    Frontend::clearResolvedInstance(CapellFrontendContext::class);
-    app()->instance(CapellFrontendContext::class, new CapellFrontendContext(
+    app()->instance(
+        FrontendContextReader::class,
         (new FrontendState)
             ->withSite($site)
             ->withLanguage($language)
             ->withPage($currentArticle),
-    ));
+    );
 
     $component = new Related(
         container: [],
