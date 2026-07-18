@@ -98,6 +98,8 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
 
     public function registeringPackage(): void
     {
+        parent::registeringPackage();
+
         $this->app->register(AdminServiceProvider::class);
         $this->app->register(ConsoleServiceProvider::class);
 
@@ -113,14 +115,6 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
                 $this->registerAdminResources();
             }
         });
-
-        $this->app->booted(function (): void {
-            if (! $this->isPackageInstalled()) {
-                return;
-            }
-
-            $this->bootInstalledPackage();
-        });
     }
 
     #[Override]
@@ -129,7 +123,8 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
         return CapellCore::getPackage(self::$packageName)->isInstalled();
     }
 
-    private function bootInstalledPackage(): self
+    #[Override]
+    protected function bootInstalledPackage(): self
     {
         return $this
             ->registerRelationships()
@@ -144,7 +139,7 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
             ->registerBladeComponents()
             ->registerPageRenderables()
             ->registerWidgetRenderables()
-            ->registerLivewireComponents()
+            ->registerPackageLivewireComponents()
             ->registerTypes()
             ->registerPublicUrlContributors()
             ->registerEditorialCalendarContributors()
@@ -229,7 +224,7 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
         return $this;
     }
 
-    private function registerLivewireComponents(): self
+    private function registerPackageLivewireComponents(): self
     {
         if ($this->isLivewireV3()) {
             foreach (LivewirePageComponentEnum::getComponents() as $name => $component) {
