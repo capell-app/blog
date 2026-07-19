@@ -4,13 +4,9 @@ declare(strict_types=1);
 
 namespace Capell\Blog\View\Components\Footer;
 
-use Capell\Blog\Enums\BlogTypeGroupEnum;
-use Capell\Blog\Models\Article;
-use Capell\Core\Enums\PageOrderEnum;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Site;
 use Capell\Frontend\Facades\Frontend;
-use Capell\Frontend\Support\Loader\PageLoader;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\View\View as ViewContract;
 use Illuminate\Support\Collection;
@@ -51,15 +47,7 @@ class Pages extends Component
             return;
         }
 
-        $this->pages = PageLoader::getPages(
-            language: $language,
-            site: $site,
-            limit: 3,
-            ordering: PageOrderEnum::Latest,
-            pageGroup: BlogTypeGroupEnum::Article,
-            withImage: true,
-            morphModel: Article::class,
-        );
+        $this->pages = collect();
     }
 
     public function render(): ViewContract

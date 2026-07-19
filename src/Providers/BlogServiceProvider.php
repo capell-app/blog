@@ -9,6 +9,7 @@ use Capell\Admin\Enums\ResourceEnum as AdminResourceEnum;
 use Capell\Admin\Facades\CapellAdmin;
 use Capell\Blog\Actions\ClearBlogContentCacheAction;
 use Capell\Blog\Actions\ClearBlogTagCacheAction;
+use Capell\Blog\Actions\PrepareBlogFooterRenderDataAction;
 use Capell\Blog\Actions\SanitizeBlogHtmlAction;
 use Capell\Blog\Enums\LivewirePageComponentEnum;
 use Capell\Blog\Enums\ResourceEnum;
@@ -29,12 +30,14 @@ use Capell\Core\Data\RenderableDefinitionData;
 use Capell\Core\Data\VendorAssetData;
 use Capell\Core\Enums\RenderableTypeEnum;
 use Capell\Core\Facades\CapellCore;
+use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\Translation;
 use Capell\Core\Support\Packages\AbstractPackageServiceProvider;
 use Capell\Core\Support\Renderables\RenderableRegistry;
 use Capell\Frontend\Contracts\FrontendRuntimeManifestContributor;
+use Capell\Frontend\Events\FrontendRenderPreparing;
 use Capell\Frontend\Support\Cache\CacheInvalidationRegistry;
 use Capell\LayoutBuilder\Contracts\LayoutSidebarWidgetContributor;
 use Capell\PublishingStudio\Contracts\EditorialCalendarEventContributor;
@@ -144,6 +147,7 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
             ->registerPublicUrlContributors()
             ->registerEditorialCalendarContributors()
             ->registerFrontendRuntimeManifestContributors()
+            ->registerFrontendRenderPreparation()
             ->registerCacheInvalidationDependencies()
             ->registerTranslationEvents()
             ->registerTagCacheEvents()
@@ -330,6 +334,22 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
         if (interface_exists(FrontendRuntimeManifestContributor::class)) {
             $this->app->tag([BlogFrontendRuntimeManifestContributor::class], FrontendRuntimeManifestContributor::TAG);
         }
+
+        return $this;
+    }
+
+    private function registerFrontendRenderPreparation(): self
+    {
+        Event::listen(FrontendRenderPreparing::class, static function (FrontendRenderPreparing $event): void {
+            $site = $event->renderContext->site;
+            $language = $event->renderContext->language;
+
+            if (! $site instanceof Site || ! $language instanceof Language) {
+                return;
+            }
+
+            PrepareBlogFooterRenderDataAction::run($event->context, $site, $language);
+        });
 
         return $this;
     }

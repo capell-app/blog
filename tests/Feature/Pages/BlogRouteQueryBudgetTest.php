@@ -46,9 +46,9 @@ test('rich blog archive and tag routes stay inside the public query budget', fun
     expect($queryCount)->toBeLessThanOrEqual($budget);
 })->with([
     'blog index' => ['blog_url', 115],
-    // Includes the single cache-safe public widget snapshot lookup performed
-    // for layout-native archive pages before falling back to live rendering.
-    'archive month' => ['archive_url', 125],
+    // Includes the cache-safe public widget snapshot lookup and the bounded
+    // pre-render footer hydration required by layout-native archive pages.
+    'archive month' => ['archive_url', 126],
     'tag result' => ['tag_url', 140],
 ]);
 

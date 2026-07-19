@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Capell\Blog\View\Components\Footer;
 
 use Capell\Blog\Data\BlogTagLinkData;
-use Capell\Blog\Support\Loader\TagLoader;
 use Capell\Core\Contracts\Pageable;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
@@ -46,16 +45,14 @@ class Tags extends Component
         $preparedTags = Frontend::getFrontendData('blog.sidebar_tags');
         $this->tags = $preparedTags instanceof Collection
             ? $preparedTags->take(5)
-            : TagLoader::getTags($site, $language, limit: 5, hasArticles: true);
+            : collect();
 
         if ($this->tags->isEmpty()) {
             return;
         }
 
         $preparedTagPage = Frontend::getFrontendData('blog.tag_page');
-        $tagPage = $preparedTagPage instanceof Page
-            ? $preparedTagPage
-            : TagLoader::getTagResultsPage($site, $language);
+        $tagPage = $preparedTagPage instanceof Page ? $preparedTagPage : null;
         if (! $tagPage instanceof Pageable) {
             return;
         }
