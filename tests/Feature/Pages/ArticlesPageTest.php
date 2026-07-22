@@ -25,7 +25,7 @@ use Sinnbeck\DomAssertions\Asserts\BaseAssert;
 uses(TestingFrontend::class);
 
 beforeEach(function (): void {
-    config(['capell-core.disable_cache_save_keys' => [CacheEnum::Pages->value . '-*']]);
+    config(['capell.disable_cache_save_keys' => [CacheEnum::Pages->value . '-*']]);
 });
 
 test('blog page lists articles', function (): void {

@@ -25,7 +25,7 @@ use function Pest\Laravel\get;
 uses(TestingFrontend::class);
 
 beforeEach(function (): void {
-    config(['capell-core.disable_cache_save_keys' => [CacheEnum::Pages->value . '-*']]);
+    config(['capell.disable_cache_save_keys' => [CacheEnum::Pages->value . '-*']]);
 });
 
 test('rich article route stays inside the public query budget', function (): void {
