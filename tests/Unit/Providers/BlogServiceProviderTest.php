@@ -32,10 +32,10 @@ test('blog registers frontend cache invalidation dependencies for articles and t
     $tagPlan = $registry->planForModel(Tag::class);
 
     expect(collect($articlePlan->rules)->contains(
-        fn (CacheInvalidationRule $rule): bool => $rule->kind === CacheInvalidationRule::KIND_FLUSH_FRONTEND_TAG,
+        fn (CacheInvalidationRule $rule): bool => $rule->kind === CacheInvalidationRule::KIND_INVALIDATE_PATTERN,
     ))->toBeTrue()
         ->and(collect($tagPlan->rules)->contains(
-            fn (CacheInvalidationRule $rule): bool => $rule->kind === CacheInvalidationRule::KIND_FLUSH_FRONTEND_TAG,
+            fn (CacheInvalidationRule $rule): bool => $rule->kind === CacheInvalidationRule::KIND_INVALIDATE_PATTERN,
         ))->toBeTrue();
 });
 
