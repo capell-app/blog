@@ -10,6 +10,7 @@ use Capell\Admin\Filament\Components\Tables\Columns\DateColumn;
 use Capell\Admin\Filament\Components\Tables\Columns\Page\PageNameColumn;
 use Capell\Admin\Filament\Resources\Sites\SiteResource;
 use Capell\Admin\Support\Loader\SiteLoader;
+use Capell\Blog\Actions\ApplyPreferredLanguageOrderAction;
 use Capell\Blog\Filament\Resources\Articles\ArticleResource;
 use Capell\Blog\Models\Article;
 use Capell\Core\Actions\GetEditPageResourceUrlAction;
@@ -26,7 +27,6 @@ use Illuminate\Contracts\Database\Eloquent\Builder as BuilderContract;
 use Illuminate\Contracts\Pagination\CursorPaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
 use LogicException;
 use Override;
 
@@ -53,17 +53,15 @@ class ListArticlesFilamentWidget extends BaseWidget
             return $query;
         }
 
+        if (! is_numeric($languageId)) {
+            return $query;
+        }
+
+        $languageId = (int) $languageId;
+
         return $query->with([
-            'translations' => fn (BuilderContract $query): BuilderContract => $query->when(
-                DB::getDriverName() === 'sqlite',
-                fn (BuilderContract $query): BuilderContract => $query->orderByRaw('CASE WHEN language_id = ? THEN 0 ELSE 1 END', [$languageId]),
-                fn (BuilderContract $query): BuilderContract => $query->orderByRaw('FIELD(language_id, ?) DESC', [$languageId]),
-            ),
-            'url' => fn (BuilderContract $query): BuilderContract => $query->when(
-                DB::getDriverName() === 'sqlite',
-                fn (BuilderContract $query): BuilderContract => $query->orderByRaw('CASE WHEN language_id = ? THEN 0 ELSE 1 END', [$languageId]),
-                fn (BuilderContract $query): BuilderContract => $query->orderByRaw('FIELD(language_id, ?) DESC', [$languageId]),
-            ),
+            'translations' => fn (BuilderContract $query): BuilderContract => ApplyPreferredLanguageOrderAction::run($query, $languageId),
+            'url' => fn (BuilderContract $query): BuilderContract => ApplyPreferredLanguageOrderAction::run($query, $languageId),
         ]);
     }
 

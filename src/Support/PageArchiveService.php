@@ -4,17 +4,19 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Support;
 
+use Capell\Blog\Actions\ApplyArchiveDateFilterAction;
 use Capell\Blog\Data\ArchiveMonthData;
 use Capell\Blog\Enums\CacheEnum;
 use Capell\Blog\Models\Article;
+use Capell\Core\Enums\Database\DatabaseDateOperation;
 use Capell\Core\Facades\CapellCore;
+use Capell\Core\Facades\CapellDatabase;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Site;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 use stdClass;
 
 class PageArchiveService
@@ -66,19 +68,16 @@ class PageArchiveService
         ?int $perPage,
         ?string $paginationKey,
     ): LengthAwarePaginator|Collection {
-        $query = Article::query()
-            ->selectRaw('COUNT(*) as `total`')
-            ->when(
-                DB::getDriverName() === 'sqlite',
-                fn (Builder $query): Builder => $query->addSelect([
-                    DB::raw("strftime('%Y', COALESCE(`visible_from`, `created_at`)) as year"),
-                    DB::raw("strftime('%m', COALESCE(`visible_from`, `created_at`)) as month"),
-                ]),
-                fn (Builder $query): Builder => $query->addSelect([
-                    DB::raw('YEAR(COALESCE(`visible_from`, `created_at`)) as year'),
-                    DB::raw('MONTH(COALESCE(`visible_from`, `created_at`)) as month'),
-                ]),
-            )
+        $query = Article::query();
+        $dialect = CapellDatabase::for($query->getModel())->queryDialect();
+        $publishedAt = (new ApplyArchiveDateFilterAction)->publishedAt($query);
+        $year = $dialect->date(DatabaseDateOperation::Year, $publishedAt);
+        $month = $dialect->date(DatabaseDateOperation::Month, $publishedAt);
+
+        $query
+            ->selectRaw('COUNT(*) as total')
+            ->selectRaw($year->sql . ' as year', $year->bindings)
+            ->selectRaw($month->sql . ' as month', $month->bindings)
             ->whereHas(
                 'blueprint',
                 function (Builder $query) use ($group): void {
@@ -93,12 +92,9 @@ class PageArchiveService
             )
             ->where('site_id', $site->id)
             ->publishedDate()
-            ->when(
-                DB::getDriverName() === 'sqlite',
-                fn (Builder $query): Builder => $query->groupByRaw("strftime('%Y', COALESCE(`visible_from`, `created_at`)), strftime('%m', COALESCE(`visible_from`, `created_at`))"),
-                fn (Builder $query): Builder => $query->groupByRaw('YEAR(COALESCE(`visible_from`, `created_at`)), MONTH(COALESCE(`visible_from`, `created_at`))'),
-            )
-            ->orderByRaw('COALESCE(`visible_from`, `created_at`) DESC');
+            ->groupByRaw($year->sql . ', ' . $month->sql, [...$year->bindings, ...$month->bindings])
+            ->orderByRaw($year->sql . ' DESC', $year->bindings)
+            ->orderByRaw($month->sql . ' DESC', $month->bindings);
 
         if ($paginate) {
             $paginator = $query->getQuery()->paginate($perPage ?? 15, pageName: $paginationKey ?? 'page');

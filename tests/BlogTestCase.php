@@ -123,6 +123,7 @@ class BlogTestCase extends AbstractTestCase
         CapellCore::forcePackageInstalled('capell-app/navigation');
 
         $app->make(Repository::class)->set('tags.tag_model', Tag::class);
+        $app->make(Repository::class)->set('paginateroute.mode', 'simple');
         $app->make(Repository::class)->set('media-library.media_model', Media::class);
         $app->make(Repository::class)->set('media-library.image_optimizers', [
             Svgo::class => [],

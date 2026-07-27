@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 use Capell\Blog\Actions\GenerateArchiveUrlAction;
 use Capell\Blog\Data\ArchiveMonthData;
+use Capell\Blog\Enums\BlogTypeGroupEnum;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Creator\BlogCreator;
+use Capell\Blog\Support\PageArchiveService;
 use Capell\Blog\Support\Sitemap\ArchivesSitemap;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\SiteDomain;
 use Capell\Tests\Support\Concerns\TestingFrontend;
 use Carbon\CarbonImmutable;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 use function Pest\Laravel\get;
 
@@ -18,6 +21,51 @@ use Sinnbeck\DomAssertions\Asserts\AssertElement;
 use Sinnbeck\DomAssertions\Asserts\BaseAssert;
 
 uses(TestingFrontend::class);
+
+test('archive service groups and orders article months portably', function (): void {
+    $blogCreator = resolve(BlogCreator::class);
+    $siteDomain = SiteDomain::factory()->default()->create();
+    $site = $siteDomain->site;
+    $articleType = $blogCreator->createArticlePageType();
+    $articleLayout = $blogCreator->createArticleLayout();
+    $articleType->forceFill([
+        'meta' => [
+            ...($articleType->meta ?? []),
+            'hidden' => false,
+        ],
+    ])->saveQuietly();
+
+    Article::factory()
+        ->site($site)
+        ->layout($articleLayout)
+        ->state(['blueprint_id' => $articleType->getKey()])
+        ->withTranslations($site->languages)
+        ->forEachSequence(
+            ['visible_from' => '2023-01-01'],
+            ['visible_from' => '2023-03-01'],
+            ['visible_from' => '2023-02-01'],
+            ['visible_from' => '2023-03-15'],
+        )
+        ->create();
+
+    $archives = resolve(PageArchiveService::class)->getArchivedCountsByMonth(
+        site: $site,
+        language: $siteDomain->language,
+        group: BlogTypeGroupEnum::Article->value,
+        paginate: true,
+        perPage: 10,
+    );
+
+    throw_unless($archives instanceof LengthAwarePaginator, LogicException::class);
+
+    expect(collect($archives->items())->map(
+        static fn (ArchiveMonthData $archive): array => [$archive->year, $archive->month, $archive->total],
+    )->all())->toBe([
+        [2023, 3, 2],
+        [2023, 2, 1],
+        [2023, 1, 1],
+    ]);
+});
 
 test('archives page list articles archives by month/year', function (): void {
     $blogCreator = resolve(BlogCreator::class);

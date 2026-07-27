@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Support;
 
+use Capell\Blog\Actions\ApplyArchiveDateFilterAction;
 use Capell\Blog\Actions\BuildArticleMetaDataAction;
 use Capell\Blog\Actions\BuildBlogResultsViewDataAction;
 use Capell\Blog\Actions\PrepareBlogFooterRenderDataAction;
@@ -37,7 +38,6 @@ use Capell\Navigation\Models\Navigation;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeManifestContributor
@@ -498,29 +498,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
      */
     private function filterArchiveQuery(Builder $query, int $year, ?int $month): Builder
     {
-        if (DB::getDriverName() === 'sqlite') {
-            $query
-                ->whereRaw("strftime('%Y', COALESCE(`visible_from`, `created_at`)) = ?", [(string) $year])
-                ->when(
-                    $month,
-                    fn (Builder $query): Builder => $query->whereRaw(
-                        "strftime('%m', COALESCE(`visible_from`, `created_at`)) = ?",
-                        [str_pad((string) $month, 2, '0', STR_PAD_LEFT)],
-                    ),
-                );
-
-            return $query;
-        }
-
-        return $query
-            ->whereRaw('YEAR(COALESCE(`visible_from`, `created_at`)) = ?', [$year])
-            ->when(
-                $month,
-                fn (Builder $query): Builder => $query->whereRaw(
-                    'MONTH(COALESCE(`visible_from`, `created_at`)) = ?',
-                    [$month],
-                ),
-            );
+        return ApplyArchiveDateFilterAction::run($query, $year, $month);
     }
 
     private function hydrateSiteNavigations(Site $site): void

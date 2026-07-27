@@ -4,17 +4,16 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Actions;
 
+use Capell\Core\Data\Database\SqlFragment;
+use Capell\Core\Enums\Database\DatabaseDateOperation;
+use Capell\Core\Facades\CapellDatabase;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
 use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 /**
- * Applies year/month archive filtering to an article query, branching on the
- * database driver because SQLite and MySQL expose different date functions.
- * Extracted from the Archive Livewire component to keep DB-portability logic
- * out of the frontend layer.
+ * Applies year/month archive filtering through Core's active database dialect.
  *
  * @method static Builder<Model> run(Builder<Model> $query, ?int $year, ?int $month)
  */
@@ -29,56 +28,43 @@ class ApplyArchiveDateFilterAction
      */
     public function handle(Builder $query, ?int $year, ?int $month): Builder
     {
-        if (DB::getDriverName() === 'sqlite') {
-            return $this->applySqlite($query, $year, $month);
-        }
+        $publishedAt = $this->publishedAt($query);
+        $dialect = CapellDatabase::for($query->getModel())->queryDialect();
 
-        return $this->applyMysql($query, $year, $month);
-    }
-
-    /**
-     * @param  Builder<Model>  $query
-     * @return Builder<Model>
-     */
-    private function applySqlite(Builder $query, ?int $year, ?int $month): Builder
-    {
         return $query
             ->when(
                 $year,
-                fn (Builder $query): Builder => $query->whereRaw(
-                    "strftime('%Y', COALESCE(`visible_from`, `created_at`)) = ?",
-                    [(string) $year],
-                ),
+                function (Builder $query) use ($dialect, $publishedAt, $year): Builder {
+                    $fragment = $dialect->date(DatabaseDateOperation::Year, $publishedAt);
+
+                    return $query->whereRaw($fragment->sql . ' = ?', [...$fragment->bindings, $year]);
+                },
             )
             ->when(
                 $month,
-                fn (Builder $query): Builder => $query->whereRaw(
-                    "strftime('%m', COALESCE(`visible_from`, `created_at`)) = ?",
-                    [str_pad((string) $month, 2, '0', STR_PAD_LEFT)],
-                ),
+                function (Builder $query) use ($dialect, $publishedAt, $month): Builder {
+                    $fragment = $dialect->date(DatabaseDateOperation::Month, $publishedAt);
+
+                    return $query->whereRaw($fragment->sql . ' = ?', [...$fragment->bindings, $month]);
+                },
             );
     }
 
     /**
-     * @param  Builder<Model>  $query
-     * @return Builder<Model>
+     * @template TModel of Model
+     *
+     * @param  Builder<TModel>  $query
      */
-    private function applyMysql(Builder $query, ?int $year, ?int $month): Builder
+    public function publishedAt(Builder $query): SqlFragment
     {
-        return $query
-            ->when(
-                $year,
-                fn (Builder $query): Builder => $query->whereRaw(
-                    'YEAR(COALESCE(`visible_from`, `created_at`)) = ?',
-                    [$year],
-                ),
-            )
-            ->when(
-                $month,
-                fn (Builder $query): Builder => $query->whereRaw(
-                    'MONTH(COALESCE(`visible_from`, `created_at`)) = ?',
-                    [$month],
-                ),
-            );
+        $grammar = $query->getQuery()->getGrammar();
+
+        return SqlFragment::raw(
+            sprintf(
+                'COALESCE(%s, %s)',
+                $grammar->wrap('visible_from'),
+                $grammar->wrap('created_at'),
+            ),
+        );
     }
 }

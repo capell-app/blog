@@ -23,6 +23,8 @@ use Capell\Blog\Models\Article;
 use Capell\Core\Actions\GetEditPageResourceUrlAction;
 use Capell\Core\Actions\PageDeletedAction;
 use Capell\Core\Contracts\Pageable;
+use Capell\Core\Data\Database\SqlFragment;
+use Capell\Core\Facades\CapellDatabase;
 use Capell\Core\Models\Language;
 use Capell\Tags\Models\Tag;
 use Filament\Actions\ActionGroup;
@@ -44,7 +46,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\LazyCollection;
 
@@ -252,12 +253,17 @@ class ArticlePagesTable implements TableConfigurator
      */
     protected static function applyNameSearch(Builder $query, string $search): Builder
     {
+        $name = SqlFragment::raw($query->getQuery()->getGrammar()->wrap('pages.name'));
+        $relevance = CapellDatabase::for($query->getModel())
+            ->queryDialect()
+            ->textRelevance($name, $search);
+
         return $query->where('name', 'like', sprintf('%%%s%%', $search))
             ->orWhereHas(
                 'translations',
                 fn (BuilderContract $query): BuilderContract => $query->where('title', 'like', sprintf('%%%s%%', $search)),
             )
-            ->orderByRaw("CAST(IFNULL(NULLIF(POSITION(? IN pages.name), 0), 'void') AS UNSIGNED)", [$search]);
+            ->orderByRaw($relevance->sql, $relevance->bindings);
     }
 
     /**
@@ -286,18 +292,16 @@ class ArticlePagesTable implements TableConfigurator
     protected static function applyFullUrlSearch(BuilderContract $query, string $search): BuilderContract
     {
         $query->whereColumn('site_domains.language_id', 'page_urls.language_id');
-
-        if (DB::getDriverName() === 'sqlite') {
-            return $query->whereRaw(
-                "site_domains.scheme || '://' || site_domains.domain || site_domains.path || page_urls.url like ?",
-                [sprintf('%%%s%%', $search)],
-            );
-        }
-
-        return $query->whereRaw(
-            "CONCAT(site_domains.scheme, '://', site_domains.domain, COALESCE(site_domains.path, ''), page_urls.url) like ?",
-            [sprintf('%%%s%%', $search)],
+        $grammar = $query->getQuery()->getGrammar();
+        $url = CapellDatabase::for($query->getModel())->queryDialect()->concatenate(
+            SqlFragment::raw($grammar->wrap('site_domains.scheme')),
+            SqlFragment::raw("'://'"),
+            SqlFragment::raw($grammar->wrap('site_domains.domain')),
+            SqlFragment::raw('COALESCE(' . $grammar->wrap('site_domains.path') . ", '')"),
+            SqlFragment::raw($grammar->wrap('page_urls.url')),
         );
+
+        return $query->whereRaw($url->sql . ' like ?', [...$url->bindings, sprintf('%%%s%%', $search)]);
     }
 
     /**
@@ -526,7 +530,11 @@ class ArticlePagesTable implements TableConfigurator
         $languageId = is_scalar($languageId) ? (int) $languageId : null;
         $code = $languageId !== null ? $model::query()->find($languageId, 'code')?->code : null;
         if ($code !== null && $code !== '') {
-            $query->whereRaw('JSON_EXTRACT(`tags`.`name`, ' . DB::getPdo()->quote('$.' . $code) . ') IS NOT NULL');
+            $name = SqlFragment::raw($query->getQuery()->getGrammar()->wrap('tags.name'));
+            $translation = CapellDatabase::for($query->getModel())
+                ->queryDialect()
+                ->jsonExtract($name, '$.' . $code);
+            $query->whereRaw($translation->sql . ' IS NOT NULL', $translation->bindings);
         }
     }
 
