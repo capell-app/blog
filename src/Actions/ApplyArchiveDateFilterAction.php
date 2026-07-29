@@ -36,16 +36,20 @@ class ApplyArchiveDateFilterAction
                 $year,
                 function (Builder $query) use ($dialect, $publishedAt, $year): Builder {
                     $fragment = $dialect->date(DatabaseDateOperation::Year, $publishedAt);
+                    $where = new SqlFragment($fragment->sql . ' = ?', [...$fragment->bindings, $year]);
+                    $where->applyWhere($query->getQuery());
 
-                    return $query->whereRaw($fragment->sql . ' = ?', [...$fragment->bindings, $year]);
+                    return $query;
                 },
             )
             ->when(
                 $month,
                 function (Builder $query) use ($dialect, $publishedAt, $month): Builder {
                     $fragment = $dialect->date(DatabaseDateOperation::Month, $publishedAt);
+                    $where = new SqlFragment($fragment->sql . ' = ?', [...$fragment->bindings, $month]);
+                    $where->applyWhere($query->getQuery());
 
-                    return $query->whereRaw($fragment->sql . ' = ?', [...$fragment->bindings, $month]);
+                    return $query;
                 },
             );
     }

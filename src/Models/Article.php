@@ -15,6 +15,7 @@ use Capell\Blog\Support\PublishingStudio\Concerns\BelongsToOptionalWorkspace;
 use Capell\Core\Concerns\HasCapellMedia;
 use Capell\Core\Contracts\DraftableContract;
 use Capell\Core\Contracts\Pageable;
+use Capell\Core\Data\Database\SqlFragment;
 use Capell\Core\Enums\BlueprintGroupEnum;
 use Capell\Core\Enums\BlueprintSubjectEnum;
 use Capell\Core\Enums\ContentStructure;
@@ -360,18 +361,33 @@ class Article extends Model implements Blueprintable, DraftableContract, HasMedi
         $effectivePublishDateExpression = $this->effectivePublishDateExpression();
         $currentPublishDate = $this->visible_from ?? $this->created_at;
 
-        return self::query()
+        $query = self::query()
             ->whereKeyNot($this->getKey())
             ->where('site_id', $this->site_id)
             ->where(function (Builder $query) use ($effectivePublishDateExpression, $currentPublishDate): void {
-                $query->whereRaw($effectivePublishDateExpression . ' > ?', [$currentPublishDate])
-                    ->orWhere(function (Builder $query) use ($effectivePublishDateExpression, $currentPublishDate): void {
-                        $query->whereRaw($effectivePublishDateExpression . ' = ?', [$currentPublishDate])
-                            ->where('id', '>', $this->getKey());
-                    });
-            })
-            ->orderByRaw($effectivePublishDateExpression . ' asc')
-            ->orderBy('id');
+                (new SqlFragment(
+                    $effectivePublishDateExpression->sql . ' > ?',
+                    [...$effectivePublishDateExpression->bindings, $currentPublishDate],
+                ))->applyWhere($query->getQuery());
+
+                $query->orWhere(function (Builder $query) use ($effectivePublishDateExpression, $currentPublishDate): void {
+                    (new SqlFragment(
+                        $effectivePublishDateExpression->sql . ' = ?',
+                        [...$effectivePublishDateExpression->bindings, $currentPublishDate],
+                    ))->applyWhere($query->getQuery());
+
+                    $query->where('id', '>', $this->getKey());
+                });
+            });
+
+        $order = new SqlFragment(
+            $effectivePublishDateExpression->sql,
+            $effectivePublishDateExpression->bindings,
+        );
+        $query->getQuery()->orderBy($order->expression());
+        $query->getQuery()->addBinding($order->bindings, 'order');
+
+        return $query->orderBy('id');
     }
 
     /** @return Builder<self> */
@@ -380,18 +396,33 @@ class Article extends Model implements Blueprintable, DraftableContract, HasMedi
         $effectivePublishDateExpression = $this->effectivePublishDateExpression();
         $currentPublishDate = $this->visible_from ?? $this->created_at;
 
-        return self::query()
+        $query = self::query()
             ->whereKeyNot($this->getKey())
             ->where('site_id', $this->site_id)
             ->where(function (Builder $query) use ($effectivePublishDateExpression, $currentPublishDate): void {
-                $query->whereRaw($effectivePublishDateExpression . ' < ?', [$currentPublishDate])
-                    ->orWhere(function (Builder $query) use ($effectivePublishDateExpression, $currentPublishDate): void {
-                        $query->whereRaw($effectivePublishDateExpression . ' = ?', [$currentPublishDate])
-                            ->where('id', '<', $this->getKey());
-                    });
-            })
-            ->orderByRaw($effectivePublishDateExpression . ' desc')
-            ->orderBy('id', 'desc');
+                (new SqlFragment(
+                    $effectivePublishDateExpression->sql . ' < ?',
+                    [...$effectivePublishDateExpression->bindings, $currentPublishDate],
+                ))->applyWhere($query->getQuery());
+
+                $query->orWhere(function (Builder $query) use ($effectivePublishDateExpression, $currentPublishDate): void {
+                    (new SqlFragment(
+                        $effectivePublishDateExpression->sql . ' = ?',
+                        [...$effectivePublishDateExpression->bindings, $currentPublishDate],
+                    ))->applyWhere($query->getQuery());
+
+                    $query->where('id', '<', $this->getKey());
+                });
+            });
+
+        $order = new SqlFragment(
+            $effectivePublishDateExpression->sql,
+            $effectivePublishDateExpression->bindings,
+        );
+        $query->getQuery()->orderBy($order->expression(), 'desc');
+        $query->getQuery()->addBinding($order->bindings, 'order');
+
+        return $query->orderBy('id', 'desc');
     }
 
     #[Override]
@@ -420,9 +451,11 @@ class Article extends Model implements Blueprintable, DraftableContract, HasMedi
         ];
     }
 
-    private function effectivePublishDateExpression(): string
+    private function effectivePublishDateExpression(): SqlFragment
     {
-        return sprintf('COALESCE(%s, %s)', $this->qualifyColumn('visible_from'), $this->qualifyColumn('created_at'));
+        return SqlFragment::raw(
+            sprintf('COALESCE(%s, %s)', $this->qualifyColumn('visible_from'), $this->qualifyColumn('created_at')),
+        );
     }
 
     private function clearBlogContentCache(): void

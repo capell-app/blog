@@ -8,6 +8,7 @@ use Capell\Blog\Actions\ApplyArchiveDateFilterAction;
 use Capell\Blog\Data\ArchiveMonthData;
 use Capell\Blog\Enums\CacheEnum;
 use Capell\Blog\Models\Article;
+use Capell\Core\Data\Database\SqlFragment;
 use Capell\Core\Enums\Database\DatabaseDateOperation;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Facades\CapellDatabase;
@@ -76,8 +77,6 @@ class PageArchiveService
 
         $query
             ->selectRaw('COUNT(*) as total')
-            ->selectRaw($year->sql . ' as year', $year->bindings)
-            ->selectRaw($month->sql . ' as month', $month->bindings)
             ->whereHas(
                 'blueprint',
                 function (Builder $query) use ($group): void {
@@ -91,10 +90,24 @@ class PageArchiveService
                 },
             )
             ->where('site_id', $site->id)
-            ->publishedDate()
-            ->groupByRaw($year->sql . ', ' . $month->sql, [...$year->bindings, ...$month->bindings])
-            ->orderByRaw($year->sql . ' DESC', $year->bindings)
-            ->orderByRaw($month->sql . ' DESC', $month->bindings);
+            ->publishedDate();
+
+        (new SqlFragment($year->sql . ' as year', $year->bindings))
+            ->applySelect($query->getQuery());
+        (new SqlFragment($month->sql . ' as month', $month->bindings))
+            ->applySelect($query->getQuery());
+
+        $group = new SqlFragment(
+            $year->sql . ', ' . $month->sql,
+            [...$year->bindings, ...$month->bindings],
+        );
+        $query->getQuery()->groupBy($group->expression());
+        $query->getQuery()->addBinding($group->bindings, 'groupBy');
+
+        $query->getQuery()->orderBy($year->expression(), 'desc');
+        $query->getQuery()->addBinding($year->bindings, 'order');
+        $query->getQuery()->orderBy($month->expression(), 'desc');
+        $query->getQuery()->addBinding($month->bindings, 'order');
 
         if ($paginate) {
             $paginator = $query->getQuery()->paginate($perPage ?? 15, pageName: $paginationKey ?? 'page');

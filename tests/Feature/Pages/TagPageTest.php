@@ -96,8 +96,20 @@ test('tag page list articles by tag', function (): void {
                 ),
         );
 
+    $html = $response->getContent();
+    if ($html === '') {
+        throw new RuntimeException('Expected the tag page response to contain HTML.');
+    }
+
     $document = new DOMDocument;
-    @$document->loadHTML($response->getContent());
+    $previousLibxmlErrorHandling = libxml_use_internal_errors(true);
+
+    try {
+        $document->loadHTML($html);
+    } finally {
+        libxml_clear_errors();
+        libxml_use_internal_errors($previousLibxmlErrorHandling);
+    }
 
     $breadcrumbNodeList = (new DOMXPath($document))
         ->query('//nav[contains(concat(" ", normalize-space(@class), " "), " breadcrumbs ")]');

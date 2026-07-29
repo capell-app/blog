@@ -258,12 +258,15 @@ class ArticlePagesTable implements TableConfigurator
             ->queryDialect()
             ->textRelevance($name, $search);
 
-        return $query->where('name', 'like', sprintf('%%%s%%', $search))
+        $query->where('name', 'like', sprintf('%%%s%%', $search))
             ->orWhereHas(
                 'translations',
                 fn (BuilderContract $query): BuilderContract => $query->where('title', 'like', sprintf('%%%s%%', $search)),
-            )
-            ->orderByRaw($relevance->sql, $relevance->bindings);
+            );
+
+        $relevance->applyOrder($query->getQuery());
+
+        return $query;
     }
 
     /**
@@ -300,8 +303,12 @@ class ArticlePagesTable implements TableConfigurator
             SqlFragment::raw('COALESCE(' . $grammar->wrap('site_domains.path') . ", '')"),
             SqlFragment::raw($grammar->wrap('page_urls.url')),
         );
+        (new SqlFragment(
+            $url->sql . ' like ?',
+            [...$url->bindings, sprintf('%%%s%%', $search)],
+        ))->applyWhere($query->getQuery());
 
-        return $query->whereRaw($url->sql . ' like ?', [...$url->bindings, sprintf('%%%s%%', $search)]);
+        return $query;
     }
 
     /**
@@ -534,7 +541,10 @@ class ArticlePagesTable implements TableConfigurator
             $translation = CapellDatabase::for($query->getModel())
                 ->queryDialect()
                 ->jsonExtract($name, '$.' . $code);
-            $query->whereRaw($translation->sql . ' IS NOT NULL', $translation->bindings);
+            (new SqlFragment(
+                $translation->sql . ' IS NOT NULL',
+                $translation->bindings,
+            ))->applyWhere($query->getQuery());
         }
     }
 

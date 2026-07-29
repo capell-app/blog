@@ -16,7 +16,7 @@ final class ArticleMetaRenderHook implements RenderHookExtensionInterface
         $item = is_array($context->item) ? $context->item : [];
 
         $view = resolve(ArticleMeta::class, [
-            'item' => $context->item ?? null,
+            'item' => $context->item,
             'withAuthor' => $item['withAuthor'] ?? false,
             'author' => $item['author'] ?? null,
             'articleMetaData' => $item['articleMetaData'] ?? null,
