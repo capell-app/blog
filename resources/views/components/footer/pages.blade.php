@@ -1,4 +1,4 @@
-@props ([
+@props([
     'headingClass',
     'pages',
 ])
@@ -12,7 +12,7 @@
                 $url = $page->pageUrl->full_url;
             @endphp
 
-            <div @class (['grid', 'grid-cols-4 gap-x-3' => $page->image])>
+            <div @class(['grid', 'grid-cols-4 gap-x-3' => $page->image])>
                 @if ($page->image)
                     <a
                         href="{{ $url }}"
@@ -30,7 +30,7 @@
 
                 <a
                     href="{{ $url }}"
-                    @class ([
+                    @class([
                         'focus:text-primary flex flex-col justify-center gap-y-1 text-inherit hover:text-gray-400',
                         'col-span-3 py-0.5' => $page->image,
                     ])

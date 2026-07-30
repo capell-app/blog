@@ -9,13 +9,14 @@ use Capell\Blog\Data\BlogResultsViewData;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Loader\TagLoader;
 use Capell\Core\Enums\PageOrderEnum;
+use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
+use Capell\Frontend\Data\PageListingRequestData;
 use Capell\Frontend\Facades\Frontend;
 use Capell\Frontend\Livewire\Page\AbstractPage;
 use Capell\Frontend\Support\Loader\PageLoader;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Override;
@@ -38,7 +39,11 @@ class Blog extends AbstractPage
         $language = Frontend::language();
         $site = Frontend::site();
 
-        abort_unless($language instanceof Language && $site instanceof Site, 404);
+        abort_unless($page instanceof Page && $language instanceof Language && $site instanceof Site, 404);
+
+        $blueprint = $page->blueprint;
+
+        abort_unless($blueprint instanceof Blueprint, 404);
 
         $preparedResults = Frontend::getFrontendData('blog.results');
         $preparedViewData = Frontend::getFrontendData('blog.results_view_data');
@@ -55,45 +60,54 @@ class Blog extends AbstractPage
             return;
         }
 
-        $paginationPage = config('capell-admin.page_query', 'pageQuery');
+        $configuredPaginationKey = config('capell-admin.page_query', 'pageQuery');
+        $paginationKey = is_string($configuredPaginationKey) ? $configuredPaginationKey : 'pageQuery';
+        $configuredLimit = $page->meta['limit']
+            ?? $blueprint->meta['limit']
+            ?? config('capell-frontend.pagination_limit', 12);
+        $limit = is_numeric($configuredLimit) ? (int) $configuredLimit : 12;
+        $configuredOrdering = $blueprint->meta['ordering'] ?? null;
+        $ordering = $configuredOrdering instanceof PageOrderEnum
+            ? $configuredOrdering
+            : (is_string($configuredOrdering) ? PageOrderEnum::tryFrom($configuredOrdering) : null);
+        $pageGroup = is_string($blueprint->meta['page_group'] ?? null)
+            ? $blueprint->meta['page_group']
+            : null;
+        $typeKey = is_string($blueprint->meta['page_type'] ?? null)
+            ? $blueprint->meta['page_type']
+            : null;
 
-        $this->results = PageLoader::getPages(
+        $this->results = PageLoader::list(new PageListingRequestData(
             language: $language,
             site: $site,
-            limit: $page->meta['limit'] ?? $page->blueprint->meta['limit'] ?? config('capell-frontend.pagination_limit', 12),
-            paginationPage: (int) $this->getPage($paginationPage),
-            ordering: $page->blueprint->meta['ordering'] ?? PageOrderEnum::Latest,
-            pageGroup: $page->blueprint->meta['page_group'] ?? null,
-            typeKey: $page->blueprint->meta['page_type'] ?? null,
-            withImage: $page->blueprint->meta['with_image'] ?? false,
-            withPagination: $page->blueprint->meta['pagination'] ?? true,
-            withParent: $page->blueprint->meta['with_parent'] ?? false,
-            withDate: $page->blueprint->meta['with_date'] ?? false,
+            limit: $limit,
+            paginationPage: (int) $this->getPage($paginationKey),
+            ordering: $ordering ?? PageOrderEnum::Latest,
+            pageGroup: $pageGroup,
+            typeKey: $typeKey,
+            withImage: (bool) ($blueprint->meta['with_image'] ?? false),
+            withPagination: (bool) ($blueprint->meta['pagination'] ?? true),
+            withParent: (bool) ($blueprint->meta['with_parent'] ?? false),
+            withDate: (bool) ($blueprint->meta['with_date'] ?? false),
             paginationKey: 'articles',
             morphModel: Article::class,
-            modifyQuery: function (Builder $query): void {
-                $query->with(['tags']);
-            },
-        );
+        ));
 
         Frontend::setFrontendData('pagination_results', $this->results);
 
-        $this->latestArticles = PageLoader::getPages(
+        $this->latestArticles = PageLoader::list(new PageListingRequestData(
             language: $language,
             site: $site,
             limit: 4,
-            ordering: $page->blueprint->meta['ordering'] ?? PageOrderEnum::Latest,
-            pageGroup: $page->blueprint->meta['page_group'] ?? null,
-            typeKey: $page->blueprint->meta['page_type'] ?? null,
+            ordering: $ordering ?? PageOrderEnum::Latest,
+            pageGroup: $pageGroup,
+            typeKey: $typeKey,
             withImage: true,
             withPagination: false,
             withParent: false,
             withDate: true,
             morphModel: Article::class,
-            modifyQuery: function (Builder $query): void {
-                $query->with(['tags']);
-            },
-        );
+        ));
 
         $this->sidebarTags = TagLoader::getTags($site, $language, limit: 12, hasArticles: true);
         $this->tagPage = TagLoader::getTagResultsPage($site, $language);

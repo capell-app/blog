@@ -31,6 +31,7 @@ use Capell\FoundationTheme\Actions\ResolveFoundationThemeTokensAction;
 use Capell\Frontend\Contracts\FrontendContextReader;
 use Capell\Frontend\Contracts\FrontendRuntimeManifestContributor;
 use Capell\Frontend\Data\FrontendRuntimeManifestData;
+use Capell\Frontend\Data\PageListingRequestData;
 use Capell\Frontend\Support\Loader\PageLoader;
 use Capell\Frontend\Support\Loader\SiteLoader;
 use Capell\LayoutBuilder\Models\Widget;
@@ -107,7 +108,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
 
         $requestedPage = request()->query($this->pageQueryKey(), 1);
 
-        $results = PageLoader::getPages(
+        $results = PageLoader::list(new PageListingRequestData(
             language: $language,
             site: $site,
             limit: $this->metaInt($pageMeta, 'limit') ?? $this->metaInt($typeMeta, 'limit') ?? $this->paginationLimit(),
@@ -117,14 +118,12 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
             withPagination: $this->metaBool($typeMeta, 'pagination', true),
             withDate: $this->metaBool($typeMeta, 'with_date', false),
             paginationKey: 'article-archives',
-            cacheKeyPrepend: sprintf('year-%s-month-%s', $archiveDate['year'], $archiveDate['month']),
+            cacheKeySuffix: sprintf('year-%s-month-%s', $archiveDate['year'], $archiveDate['month']),
             morphModel: Article::class,
             modifyQuery: function (Builder $query) use ($archiveDate): void {
-                $query->with(['tags']);
-
                 $this->filterArchiveQuery($query, $archiveDate['year'], $archiveDate['month']);
             },
-        );
+        ));
 
         $context->setFrontendData('blog.results', $results);
         $context->setFrontendData('blog.results_view_data', BuildBlogResultsViewDataAction::run($results));
@@ -152,7 +151,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
 
         $context->setFrontendData('blog.article.meta', $articleMeta);
         $context->setFrontendData('blog.article.render_data', $this->articleRenderData($page, $site, $language, $articleMeta));
-        $latestArticles = PageLoader::getPages(
+        $latestArticles = PageLoader::list(new PageListingRequestData(
             language: $language,
             site: $site,
             limit: 3,
@@ -160,7 +159,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
             pageGroup: BlogTypeGroupEnum::Article,
             withImage: true,
             morphModel: Article::class,
-        );
+        ));
         $this->loadPageMediaTranslations($latestArticles);
         $context->setFrontendData('blog.latest_articles', $latestArticles);
         $context->setFrontendData('blog.sidebar_tags', TagLoader::getTags($site, $language, limit: 5, hasArticles: true));
@@ -177,7 +176,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
 
         $requestedPage = request()->query($this->pageQueryKey(), 1);
 
-        $results = PageLoader::getPages(
+        $results = PageLoader::list(new PageListingRequestData(
             language: $language,
             site: $site,
             limit: $this->metaInt($pageMeta, 'limit') ?? $this->metaInt($typeMeta, 'limit') ?? $this->paginationLimit(),
@@ -191,15 +190,12 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
             withDate: $this->metaBool($typeMeta, 'with_date', false),
             paginationKey: 'articles',
             morphModel: Article::class,
-            modifyQuery: function (Builder $query): void {
-                $query->with(['tags']);
-            },
-        );
+        ));
         $this->loadPageMediaTranslations($results);
 
         $context->setFrontendData('blog.results', $results);
         $context->setFrontendData('pagination_results', $results);
-        $latestArticles = PageLoader::getPages(
+        $latestArticles = PageLoader::list(new PageListingRequestData(
             language: $language,
             site: $site,
             limit: 4,
@@ -211,10 +207,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
             withParent: false,
             withDate: true,
             morphModel: Article::class,
-            modifyQuery: function (Builder $query): void {
-                $query->with(['tags']);
-            },
-        );
+        ));
         $this->loadPageMediaTranslations($latestArticles);
         $context->setFrontendData('blog.latest_articles', $latestArticles);
         $context->setFrontendData('blog.sidebar_tags', TagLoader::getTags($site, $language, limit: 12, hasArticles: true));
@@ -249,7 +242,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
 
         $requestedPage = request()->query($this->pageQueryKey(), 1);
 
-        $results = PageLoader::getPages(
+        $results = PageLoader::list(new PageListingRequestData(
             language: $language,
             site: $site,
             limit: $this->metaInt($pageMeta, 'limit') ?? $this->metaInt($typeMeta, 'limit') ?? $this->paginationLimit(),
@@ -258,15 +251,15 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
             withPagination: $this->metaBool($typeMeta, 'pagination', true),
             withDate: $this->metaBool($typeMeta, 'with_date', true),
             paginationKey: 'tag-pages',
-            cacheKeyPrepend: 'tagged-' . $tag->id,
+            cacheKeySuffix: 'tagged-' . $tag->id,
             morphModel: Article::class,
             modifyQuery: function (Builder $query) use ($tag): void {
-                $query->with(['tags'])->whereHas(
+                $query->whereHas(
                     'tags',
                     fn (Builder $query): Builder => $query->whereKey($tag->id),
                 );
             },
-        );
+        ));
         $this->loadPageMediaTranslations($results);
 
         $context->setFrontendData('blog.tag', $tag);
@@ -284,14 +277,14 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
 
         $this->prepareFoundationThemeRuntimeData($context, $page, $site, $language);
 
-        $latestArticles = PageLoader::getPages(
+        $latestArticles = PageLoader::list(new PageListingRequestData(
             language: $language,
             site: $site,
             limit: 4,
             ordering: PageOrderEnum::Latest,
             withImage: true,
             morphModel: Article::class,
-        );
+        ));
         $this->loadPageMediaTranslations($latestArticles);
         $context->setFrontendData('blog.latest_articles', $latestArticles);
         $context->setFrontendData('blog.sidebar_tags', TagLoader::getTags($site, $language, hasArticles: true));
@@ -311,14 +304,14 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
 
     private function prepareArchiveSidebarData(FrontendContextReader $context, Site $site, Language $language): void
     {
-        $latestArticles = PageLoader::getPages(
+        $latestArticles = PageLoader::list(new PageListingRequestData(
             language: $language,
             site: $site,
             limit: 4,
             ordering: PageOrderEnum::Latest,
             withImage: true,
             morphModel: Article::class,
-        );
+        ));
         $this->loadPageMediaTranslations($latestArticles);
         $context->setFrontendData('blog.latest_articles', $latestArticles);
         $context->setFrontendData('blog.sidebar_tags', TagLoader::getTags($site, $language, limit: 5, hasArticles: true));
@@ -383,13 +376,13 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
         ));
         $context->setFrontendData('foundation.footer.contact_page', Page::getFirstPageByTypeForSite('contact', $site, $language));
         $context->setFrontendData('foundation.footer.site_languages', SiteLoader::pageLanguages($site, $language, $page));
-        $context->setFrontendData('foundation.footer.latest_pages', PageLoader::getPages(
+        $context->setFrontendData('foundation.footer.latest_pages', PageLoader::list(new PageListingRequestData(
             language: $language,
             site: $site,
             limit: 4,
             ordering: PageOrderEnum::Latest,
             pageGroup: BlueprintGroupEnum::Default,
-        ));
+        )));
         $context->setFrontendData('foundation.footer.related_sites', SiteLoader::related($site, $language)
             ->map(function (Site $relatedSite): array {
                 $relations = $relatedSite->getRelations();
@@ -420,16 +413,21 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
             ->pluck('id')
             ->filter(fn (mixed $tagId): bool => is_int($tagId) || is_string($tagId))
             ->map(fn (int|string $tagId): string => (string) $tagId)
+            ->sort()
             ->values()
             ->all();
+        $pageKey = $page->getKey();
+        $cacheKeySuffix = is_int($pageKey) || is_string($pageKey)
+            ? sprintf('related-page-%s-tags-%s', $pageKey, implode('-', $tagIds))
+            : '';
 
-        $relatedArticles = PageLoader::getPages(
+        $relatedArticles = PageLoader::list(new PageListingRequestData(
             language: $language,
             site: $site,
             limit: $this->paginationLimit(),
             withImage: true,
             withDate: true,
-            cacheKeyPrepend: 'tags-' . implode('-', $tagIds),
+            cacheKeySuffix: $cacheKeySuffix,
             morphModel: Article::class,
             modifyQuery: function (Builder $query) use ($page, $tagIds): void {
                 $idColumn = $query->getModel()->qualifyColumn('id');
@@ -443,7 +441,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
                         ),
                     );
             },
-        );
+        ));
         $this->loadPageMediaTranslations($relatedArticles);
         $context->setFrontendData('blog.related_articles', $relatedArticles);
     }

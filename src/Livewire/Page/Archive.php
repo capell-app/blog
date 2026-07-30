@@ -9,8 +9,11 @@ use Capell\Blog\Actions\BuildBlogResultsViewDataAction;
 use Capell\Blog\Data\BlogResultsViewData;
 use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Models\Article;
+use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Language;
+use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
+use Capell\Frontend\Data\PageListingRequestData;
 use Capell\Frontend\Facades\Frontend;
 use Capell\Frontend\Livewire\Page\AbstractPage;
 use Capell\Frontend\Support\Loader\PageLoader;
@@ -43,7 +46,11 @@ class Archive extends AbstractPage
         $language = Frontend::language();
         $site = Frontend::site();
 
-        abort_unless($language instanceof Language && $site instanceof Site, 404);
+        abort_unless($page instanceof Page && $language instanceof Language && $site instanceof Site, 404);
+
+        $blueprint = $page->blueprint;
+
+        abort_unless($blueprint instanceof Blueprint, 404);
 
         $preparedResults = Frontend::getFrontendData('blog.results');
         $preparedViewData = Frontend::getFrontendData('blog.results_view_data');
@@ -63,24 +70,32 @@ class Archive extends AbstractPage
             return;
         }
 
-        $paginationPage = config('capell-admin.page_query', 'pageQuery');
+        $configuredPaginationKey = config('capell-admin.page_query', 'pageQuery');
+        $paginationKey = is_string($configuredPaginationKey) ? $configuredPaginationKey : 'pageQuery';
+        $configuredLimit = $page->meta['limit']
+            ?? $blueprint->meta['limit']
+            ?? config('capell-frontend.pagination_limit', 12);
+        $limit = is_numeric($configuredLimit) ? (int) $configuredLimit : 12;
+        $typeKey = is_string($blueprint->meta['page_group'] ?? null)
+            ? $blueprint->meta['page_group']
+            : strtolower(ResourceEnum::Article->name);
 
-        $this->results = PageLoader::getPages(
+        $this->results = PageLoader::list(new PageListingRequestData(
             language: $language,
             site: $site,
-            limit: $page->meta['limit'] ?? $page->blueprint->meta['limit'] ?? config('capell-frontend.pagination_limit', 12),
-            paginationPage: (int) $this->getPage($paginationPage),
-            typeKey: $page->blueprint->meta['page_group'] ?? strtolower(ResourceEnum::Article->name),
-            withImage: $page->blueprint->meta['with_image'] ?? false,
-            withPagination: $page->blueprint->meta['pagination'] ?? true,
-            withDate: $page->blueprint->meta['with_date'] ?? false,
+            limit: $limit,
+            paginationPage: (int) $this->getPage($paginationKey),
+            typeKey: $typeKey,
+            withImage: (bool) ($blueprint->meta['with_image'] ?? false),
+            withPagination: (bool) ($blueprint->meta['pagination'] ?? true),
+            withDate: (bool) ($blueprint->meta['with_date'] ?? false),
             paginationKey: 'article-archives',
-            cacheKeyPrepend: sprintf('year-%s-month-%s', $this->year, $this->month),
+            cacheKeySuffix: sprintf('year-%s-month-%s', $this->year, $this->month),
             morphModel: Article::class,
             modifyQuery: function (Builder $query): void {
                 ApplyArchiveDateFilterAction::run($query, $this->year, $this->month);
             },
-        );
+        ));
 
         abort_if($this->results->isEmpty(), 404);
 

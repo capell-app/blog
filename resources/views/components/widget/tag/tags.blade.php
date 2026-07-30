@@ -1,4 +1,4 @@
-@props ([
+@props([
     'container',
     'containerKey',
     'containerWidth' => null,

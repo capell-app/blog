@@ -1,9 +1,9 @@
 <div
-    @class ([
-        'capell-article-meta article-meta mt-10 flex flex-col gap-5 md:flex-row md:items-center md:justify-between',
-        'border-y border-slate-200 py-6' => $withAuthor && $author,
-        'pt-2' => ! ($withAuthor && $author) && $tags->isNotEmpty(),
-    ])
+    @class([
+    'capell-article-meta article-meta mt-10 flex flex-col gap-5 md:flex-row md:items-center md:justify-between',
+    'border-y border-slate-200 py-6' => $withAuthor && $author,
+    'pt-2' => ! ($withAuthor && $author) && $tags->isNotEmpty(),
+])
 >
     @if ($withAuthor && $author)
         <x-capell-blog::page.author

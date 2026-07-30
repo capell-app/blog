@@ -5,9 +5,7 @@
         </x-slot>
 
         @if ($data->pages->isEmpty())
-            <p class="text-sm text-gray-500">
-                {{ __('capell-blog::generic.admin_widgets.no_page_views') }}
-            </p>
+            <p class="text-sm text-gray-500">{{ __('capell-blog::generic.admin_widgets.no_page_views') }}</p>
         @else
             <div class="divide-y divide-gray-100 dark:divide-gray-800">
                 @foreach ($data->pages as $page)

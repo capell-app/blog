@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Actions;
 
+use Capell\Blog\Support\ArchivePublishedAtExpression;
 use Capell\Core\Data\Database\SqlFragment;
 use Capell\Core\Enums\Database\DatabaseDateOperation;
 use Capell\Core\Facades\CapellDatabase;
@@ -28,7 +29,7 @@ class ApplyArchiveDateFilterAction
      */
     public function handle(Builder $query, ?int $year, ?int $month): Builder
     {
-        $publishedAt = $this->publishedAt($query);
+        $publishedAt = ArchivePublishedAtExpression::for($query);
         $dialect = CapellDatabase::for($query->getModel())->queryDialect();
 
         return $query
@@ -52,23 +53,5 @@ class ApplyArchiveDateFilterAction
                     return $query;
                 },
             );
-    }
-
-    /**
-     * @template TModel of Model
-     *
-     * @param  Builder<TModel>  $query
-     */
-    public function publishedAt(Builder $query): SqlFragment
-    {
-        $grammar = $query->getQuery()->getGrammar();
-
-        return SqlFragment::raw(
-            sprintf(
-                'COALESCE(%s, %s)',
-                $grammar->wrap('visible_from'),
-                $grammar->wrap('created_at'),
-            ),
-        );
     }
 }

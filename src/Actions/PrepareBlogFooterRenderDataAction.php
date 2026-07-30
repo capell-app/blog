@@ -11,6 +11,7 @@ use Capell\Core\Enums\PageOrderEnum;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Site;
 use Capell\Frontend\Contracts\FrontendContextReader;
+use Capell\Frontend\Data\PageListingRequestData;
 use Capell\Frontend\Support\Loader\PageLoader;
 use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
@@ -28,7 +29,7 @@ final class PrepareBlogFooterRenderDataAction
 
         $context->setFrontendData('blog.sidebar_tags', TagLoader::getTags($site, $language, limit: 5, hasArticles: true));
         $context->setFrontendData('blog.tag_page', TagLoader::getTagResultsPage($site, $language));
-        $context->setFrontendData('blog.latest_articles', PageLoader::getPages(
+        $context->setFrontendData('blog.latest_articles', PageLoader::list(new PageListingRequestData(
             language: $language,
             site: $site,
             limit: 4,
@@ -36,6 +37,6 @@ final class PrepareBlogFooterRenderDataAction
             pageGroup: BlogTypeGroupEnum::Article,
             withImage: true,
             morphModel: Article::class,
-        ));
+        )));
     }
 }

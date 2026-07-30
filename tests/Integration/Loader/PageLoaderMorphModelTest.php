@@ -7,6 +7,7 @@ use Capell\Blog\Support\Creator\BlogCreator;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
+use Capell\Frontend\Data\PageListingRequestData;
 use Capell\Frontend\Support\Loader\PageLoader;
 use Capell\Tests\Support\Concerns\TestingFrontend;
 
@@ -30,24 +31,24 @@ beforeEach(function (): void {
 });
 
 it('returns Article instances not Page instances when morphModel is Article class', function (): void {
-    $results = PageLoader::getPages(
+    $results = PageLoader::list(new PageListingRequestData(
         language: $this->language,
         site: $this->site,
         morphModel: Article::class,
         useCache: false,
-    );
+    ));
 
     expect($results)->not->toBeEmpty()
         ->each(fn ($item) => $item->toBeInstanceOf(Article::class)->not->toBeInstanceOf(Page::class));
 });
 
 it('returns Article instances not Page instances when morphModel is Article class consistently', function (): void {
-    $results = PageLoader::getPages(
+    $results = PageLoader::list(new PageListingRequestData(
         language: $this->language,
         site: $this->site,
         morphModel: Article::class,
         useCache: false,
-    );
+    ));
 
     expect($results)->not->toBeEmpty()
         ->each(fn ($item) => $item->toBeInstanceOf(Article::class)->not->toBeInstanceOf(Page::class));

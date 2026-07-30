@@ -1,4 +1,4 @@
-@props (['date'])
+@props(['date'])
 <time
     datetime="{{ $date->toW3cString() }}"
     {{ $attributes->class('published-date text-sm leading-none font-medium tracking-tight text-gray-400') }}

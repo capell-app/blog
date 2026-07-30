@@ -6,12 +6,14 @@ use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Creator\BlogCreator;
 use Capell\Core\Enums\MediaCollectionEnum;
 use Capell\Core\Models\Site;
+use Capell\Frontend\Facades\Frontend;
 use Capell\Tags\Enums\TagTypeEnum;
 use Capell\Tags\Models\Tag;
 use Capell\Tests\Fixtures\Models\User;
 use Capell\Tests\Support\Concerns\TestingFrontend;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Illuminate\Support\Collection;
 
 use function Pest\Laravel\get;
 
@@ -171,4 +173,76 @@ test('article page renders without lazy-loading public blade relations', functio
     } finally {
         EloquentModel::preventLazyLoading($previous);
     }
+});
+
+test('related article cache keeps current-page and tag-set listings isolated', function (): void {
+    $site = Site::factory()->withTranslations()->create();
+    $language = blogTestLanguage($site->language);
+    $user = User::factory()->create();
+    $blogCreator = resolve(BlogCreator::class);
+    $blogCreator->createTagPage($site);
+    $articleType = $blogCreator->createArticlePageType();
+    $articleLayout = $blogCreator->createArticleLayout();
+    $firstTag = Tag::factory()->translate($language)->type(TagTypeEnum::Page)->site($site)->create();
+    $secondTag = Tag::factory()->translate($language)->type(TagTypeEnum::Page)->site($site)->create();
+
+    $firstCurrent = Article::factory()
+        ->site($site)
+        ->layout($articleLayout)
+        ->type($articleType)
+        ->state(['created_by' => $user->id])
+        ->withTranslations($language, ['title' => 'First current article'])
+        ->create(['visible_from' => now()->subDays(4)]);
+    $firstRelated = Article::factory()
+        ->site($site)
+        ->layout($articleLayout)
+        ->type($articleType)
+        ->state(['created_by' => $user->id])
+        ->withTranslations($language, ['title' => 'First related article'])
+        ->create(['visible_from' => now()->subDays(3)]);
+    $secondCurrent = Article::factory()
+        ->site($site)
+        ->layout($articleLayout)
+        ->type($articleType)
+        ->state(['created_by' => $user->id])
+        ->withTranslations($language, ['title' => 'Second current article'])
+        ->create(['visible_from' => now()->subDays(2)]);
+    $secondRelated = Article::factory()
+        ->site($site)
+        ->layout($articleLayout)
+        ->type($articleType)
+        ->state(['created_by' => $user->id])
+        ->withTranslations($language, ['title' => 'Second related article'])
+        ->create(['visible_from' => now()->subDay()]);
+
+    $firstCurrent->tags()->attach($firstTag);
+    $firstRelated->tags()->attach($firstTag);
+    $secondCurrent->tags()->attach($secondTag);
+    $secondRelated->tags()->attach($secondTag);
+
+    /** @return array<int, int> */
+    $relatedIdsFor = function (Article $article): array {
+        get(blogTestPageUrl($article->pageUrl)->full_url)->assertOk();
+
+        $relatedArticles = Frontend::getFrontendData('blog.related_articles');
+
+        expect($relatedArticles)->toBeInstanceOf(Collection::class);
+
+        /** @var Collection<int, Article> $relatedArticles */
+        return $relatedArticles->pluck('id')->all();
+    };
+
+    $firstRelatedIds = $relatedIdsFor($firstCurrent);
+    $secondRelatedIds = $relatedIdsFor($secondCurrent);
+    $firstCacheHitIds = $relatedIdsFor($firstCurrent);
+
+    expect($firstRelatedIds)
+        ->toContain($firstRelated->id)
+        ->not->toContain($firstCurrent->id, $secondRelated->id)
+        ->and($secondRelatedIds)
+        ->toContain($secondRelated->id)
+        ->not->toContain($secondCurrent->id, $firstRelated->id)
+        ->and($firstCacheHitIds)
+        ->toBe($firstRelatedIds)
+        ->not->toContain($firstCurrent->id);
 });

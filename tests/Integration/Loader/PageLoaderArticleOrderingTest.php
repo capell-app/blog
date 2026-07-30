@@ -7,6 +7,7 @@ use Capell\Blog\Support\Creator\BlogCreator;
 use Capell\Core\Enums\PageOrderEnum;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Site;
+use Capell\Frontend\Data\PageListingRequestData;
 use Capell\Frontend\Support\Loader\PageLoader;
 use Capell\Tests\Support\Concerns\TestingFrontend;
 use Carbon\CarbonImmutable;
@@ -65,7 +66,7 @@ function loadArticlesForOrderingTest(
     ?PageOrderEnum $ordering,
 ): Collection {
     /** @var Collection<int, Article> */
-    return PageLoader::getPages(
+    return PageLoader::list(new PageListingRequestData(
         language: $language,
         site: $site,
         ordering: $ordering,
@@ -74,7 +75,7 @@ function loadArticlesForOrderingTest(
         modifyQuery: function (Builder $query) use ($articleIds): void {
             $query->whereIn('id', $articleIds);
         },
-    );
+    ));
 }
 
 it('orders articles by newest published date when ordering is latest', function (): void {

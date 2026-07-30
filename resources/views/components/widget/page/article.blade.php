@@ -3,7 +3,7 @@
     use Capell\Frontend\Support\Render\RenderHookRegistry;
 @endphp
 
-@props ([
+@props([
     'container',
     'containerKey',
     'containerWidth' => null,
@@ -133,9 +133,7 @@
                 </{{ $headingTag }}>
 
                 @if ($summary)
-                    <p class="mt-6 max-w-3xl text-xl leading-9 text-slate-600">
-                        {{ $summary }}
-                    </p>
+                    <p class="mt-6 max-w-3xl text-xl leading-9 text-slate-600">{{ $summary }}</p>
                 @endif
 
                 @if ($articleImage)
@@ -173,11 +171,11 @@
             {!! $articleMeta !!}
         @elseif ($hasDefaultArticleMeta)
             <div
-                @class ([
-                    'article-meta flex max-w-3xl flex-col gap-5 rounded-lg bg-slate-50/80 p-5 md:flex-row md:items-center md:justify-between dark:bg-slate-900/60',
-                    'py-6' => $hasAuthorMeta,
-                    'pt-2' => ! $hasAuthorMeta && $hasTagMeta,
-                ])
+                @class([
+                'article-meta flex max-w-3xl flex-col gap-5 rounded-lg bg-slate-50/80 p-5 md:flex-row md:items-center md:justify-between dark:bg-slate-900/60',
+                'py-6' => $hasAuthorMeta,
+                'pt-2' => ! $hasAuthorMeta && $hasTagMeta,
+            ])
             >
                 @if ($hasAuthorMeta)
                     <x-capell-blog::page.author
@@ -236,7 +234,7 @@
                     <a
                         href="{{ $articleRenderData->next->url }}"
                         title="{{ strip_tags($articleRenderData->next->title) }}"
-                        @class ([
+                        @class([
                             'group flex flex-col text-left md:text-right',
                             'md:col-start-2' => ! $hasPreviousArticleLink,
                         ])

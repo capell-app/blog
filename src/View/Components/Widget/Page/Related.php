@@ -10,6 +10,7 @@ use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
 use Capell\FoundationTheme\View\Components\Widget\Page\AbstractPagesWidget;
+use Capell\Frontend\Data\PageListingRequestData;
 use Capell\Frontend\Facades\Frontend;
 use Capell\Frontend\Support\Loader\PageLoader;
 use Illuminate\Contracts\Database\Eloquent\Builder as BuilderContract;
@@ -59,7 +60,7 @@ class Related extends AbstractPagesWidget
 
         $modelClass = null;
 
-        if ($morphModel !== null) {
+        if (is_string($morphModel)) {
             $resolvedModelClass = Relation::getMorphedModel($morphModel);
 
             if (is_string($resolvedModelClass) && is_subclass_of($resolvedModelClass, Pageable::class)) {
@@ -68,16 +69,16 @@ class Related extends AbstractPagesWidget
             }
         }
 
-        $this->pages = PageLoader::getPages(
+        $this->pages = PageLoader::list(new PageListingRequestData(
             language: $language,
             site: $site,
             limit: $limit,
-            withChildrenCount: $page->hasPageHierarchy() && ($page->blueprint->meta['with_children_count'] ?? true),
-            withImage: $this->widget->meta['with_image'] ?? false,
-            withParent: $this->widget->meta['with_parent'] ?? false,
-            withDate: $this->widget->meta['with_date'] ?? false,
-            cacheKeyPrepend: 'tags-' . implode('-', $tagIds),
+            withChildrenCount: $page->hasPageHierarchy() && (bool) ($page->blueprint->meta['with_children_count'] ?? true),
+            withImage: (bool) ($this->widget->meta['with_image'] ?? false),
+            withParent: (bool) ($this->widget->meta['with_parent'] ?? false),
+            withDate: (bool) ($this->widget->meta['with_date'] ?? false),
             morphModel: $modelClass,
+            useCache: false,
             /**
              * @param  Builder<Page>  $query
              */
@@ -110,7 +111,7 @@ class Related extends AbstractPagesWidget
                         ),
                     );
             },
-        );
+        ));
 
         $this->skipRender = $this->pages->isEmpty();
     }

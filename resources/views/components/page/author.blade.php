@@ -1,4 +1,4 @@
-@props ([
+@props([
     'author',
     'profileImage' => null,
 ])
@@ -35,10 +35,10 @@
 
             @if ($author->bio)
                 <div
-                    @class ([
-                        'prose text-sm leading-tight font-light text-gray-500 [&>:first-child]:mt-0 [&>:last-child]:mb-0',
-                        'dark:prose-invert' => $withDarkMode,
-                    ])
+                    @class([
+                    'prose text-sm leading-tight font-light text-gray-500 [&>:first-child]:mt-0 [&>:last-child]:mb-0',
+                    'dark:prose-invert' => $withDarkMode,
+                ])
                 >
                     {!! nl2br(e($author->bio)) !!}
                 </div>

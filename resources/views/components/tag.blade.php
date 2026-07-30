@@ -1,4 +1,4 @@
-@props ([
+@props([
     'count' => null,
     'color' => 'light',
     'size' => 'sm',

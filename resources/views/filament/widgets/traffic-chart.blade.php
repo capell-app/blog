@@ -15,9 +15,7 @@
             </div>
 
             @if ($data->points->isEmpty())
-                <p class="text-sm text-gray-500">
-                    {{ __('capell-blog::generic.admin_widgets.no_traffic_data') }}
-                </p>
+                <p class="text-sm text-gray-500">{{ __('capell-blog::generic.admin_widgets.no_traffic_data') }}</p>
             @else
                 <div class="flex h-32 items-end gap-1">
                     @foreach ($data->points as $point)

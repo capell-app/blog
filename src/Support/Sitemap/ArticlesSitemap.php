@@ -9,6 +9,7 @@ use Capell\Blog\Models\Article;
 use Capell\Core\Contracts\Pageable;
 use Capell\Core\Enums\PageOrderEnum;
 use Capell\Core\Models\Page;
+use Capell\Frontend\Data\PageListingRequestData;
 use Capell\Frontend\Support\Loader\PageLoader;
 use Capell\SiteDiscovery\Data\SitemapPageData;
 use Capell\SiteDiscovery\Support\Sitemap\AbstractSitemapPages;
@@ -32,14 +33,14 @@ class ArticlesSitemap extends AbstractSitemapPages
         // Build recursive node: blog page with articles children
         $node = SitemapPageData::fromPage($blogPage, withEditUrl: $this->withEditUrl);
 
-        $articles = PageLoader::getPages(
+        $articles = PageLoader::list(new PageListingRequestData(
             language: $this->language,
             site: $this->site,
             limit: null,
             ordering: PageOrderEnum::Latest,
             pageGroup: BlogTypeGroupEnum::Article->value,
             morphModel: Article::class,
-        );
+        ));
         $articles->loadMissing(['translation', 'blueprint', 'pageUrl.siteDomain']);
 
         $node->children = $articles->map(

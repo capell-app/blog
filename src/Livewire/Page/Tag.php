@@ -9,9 +9,11 @@ use Capell\Blog\Actions\RedirectMergedTagSlugAction;
 use Capell\Blog\Data\BlogResultsViewData;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Loader\TagLoader;
+use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
+use Capell\Frontend\Data\PageListingRequestData;
 use Capell\Frontend\Facades\Frontend;
 use Capell\Frontend\Livewire\Page\AbstractPage;
 use Capell\Frontend\Support\Loader\PageLoader;
@@ -45,7 +47,11 @@ class Tag extends AbstractPage
         $page = Frontend::page();
         $site = Frontend::site();
 
-        abort_unless($language instanceof Language && $site instanceof Site, 404);
+        abort_unless($page instanceof Page && $language instanceof Language && $site instanceof Site, 404);
+
+        $blueprint = $page->blueprint;
+
+        abort_unless($blueprint instanceof Blueprint, 404);
 
         $preparedTag = Frontend::getFrontendData('blog.tag');
         $preparedResults = Frontend::getFrontendData('blog.results');
@@ -70,28 +76,34 @@ class Tag extends AbstractPage
 
         $resolution = TagLoader::tagPageResolution($this->tagSlug, $site, $language);
 
-        abort_unless($resolution !== null && $page instanceof Page, 404);
+        abort_unless($resolution !== null, 404);
 
         RedirectMergedTagSlugAction::run($resolution, $page, $language);
 
         $this->tag = $resolution->tag;
 
-        $this->tagName = $this->tag->getTranslation('name', $language->code);
+        $translatedTagName = $this->tag->getTranslation('name', $language->code);
+        $this->tagName = is_string($translatedTagName) ? $translatedTagName : null;
 
-        $paginationPage = config('capell-admin.page_query', 'pageQuery');
+        $configuredPaginationKey = config('capell-admin.page_query', 'pageQuery');
+        $paginationKey = is_string($configuredPaginationKey) ? $configuredPaginationKey : 'pageQuery';
+        $configuredLimit = $page->meta['limit']
+            ?? $blueprint->meta['limit']
+            ?? config('capell-frontend.pagination_limit', 12);
+        $limit = is_numeric($configuredLimit) ? (int) $configuredLimit : 12;
 
         $model = Article::class;
 
-        $this->results = PageLoader::getPages(
+        $this->results = PageLoader::list(new PageListingRequestData(
             language: $language,
             site: $site,
-            limit: $page->meta['limit'] ?? $page->blueprint->meta['limit'] ?? config('capell-frontend.pagination_limit', 12),
-            paginationPage: (int) $this->getPage($paginationPage),
-            withImage: $page->blueprint->meta['with_image'] ?? true,
-            withPagination: $page->blueprint->meta['pagination'] ?? true,
-            withDate: $page->blueprint->meta['with_date'] ?? true,
+            limit: $limit,
+            paginationPage: (int) $this->getPage($paginationKey),
+            withImage: (bool) ($blueprint->meta['with_image'] ?? true),
+            withPagination: (bool) ($blueprint->meta['pagination'] ?? true),
+            withDate: (bool) ($blueprint->meta['with_date'] ?? true),
             paginationKey: 'tag-pages',
-            cacheKeyPrepend: 'tagged-' . $this->tag->id,
+            cacheKeySuffix: 'tagged-' . $this->tag->id,
             morphModel: $model,
             modifyQuery: function (Builder $query): void {
                 $query->whereHas(
@@ -99,7 +111,7 @@ class Tag extends AbstractPage
                     fn (Builder $query): Builder => $query->whereKey($this->tag->id),
                 );
             },
-        );
+        ));
 
         $this->blogResultsViewData = BuildBlogResultsViewDataAction::run($this->results);
         $this->params = $this->getReplacementData();

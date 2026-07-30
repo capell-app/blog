@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Support;
 
-use Capell\Blog\Actions\ApplyArchiveDateFilterAction;
 use Capell\Blog\Data\ArchiveMonthData;
 use Capell\Blog\Enums\CacheEnum;
 use Capell\Blog\Models\Article;
@@ -71,7 +70,7 @@ class PageArchiveService
     ): LengthAwarePaginator|Collection {
         $query = Article::query();
         $dialect = CapellDatabase::for($query->getModel())->queryDialect();
-        $publishedAt = (new ApplyArchiveDateFilterAction)->publishedAt($query);
+        $publishedAt = ArchivePublishedAtExpression::for($query);
         $year = $dialect->date(DatabaseDateOperation::Year, $publishedAt);
         $month = $dialect->date(DatabaseDateOperation::Month, $publishedAt);
 
@@ -92,9 +91,9 @@ class PageArchiveService
             ->where('site_id', $site->id)
             ->publishedDate();
 
-        (new SqlFragment($year->sql . ' as year', $year->bindings))
+        new SqlFragment($year->sql . ' as year', $year->bindings)
             ->applySelect($query->getQuery());
-        (new SqlFragment($month->sql . ' as month', $month->bindings))
+        new SqlFragment($month->sql . ' as month', $month->bindings)
             ->applySelect($query->getQuery());
 
         $group = new SqlFragment(

@@ -26,11 +26,7 @@
         class="scroll-mt-24"
     ></div>
 
-    <p
-        class="sr-only"
-        role="status"
-        aria-live="polite"
-    >
+    <p class="sr-only" role="status" aria-live="polite">
         {{ $total }} {{ __('capell-frontend::messages.results_found') }}
     </p>
 
@@ -46,12 +42,12 @@
                     class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm md:p-8"
                 >
                     <x-capell::no-results>
-                        @safeBlogHtml ($noResultsText)
+                        @safeBlogHtml($noResultsText)
                     </x-capell::no-results>
                 </div>
             @else
                 <div
-                    @class ([
+                    @class([
                         'grid w-full max-w-full min-w-0 gap-5 overflow-hidden transition-opacity duration-150',
                         '@3xl:grid-cols-2' => $columns >= 2,
                         '@7xl:grid-cols-3' => $columns >= 3,
