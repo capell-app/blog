@@ -4,21 +4,24 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Actions;
 
-use Capell\Blog\Data\BlogPublishingSurfaceData;
+use Capell\Blog\Data\BlogPublishingSurfaceRequestData;
+use Capell\Blog\Data\BlogPublishingSurfaceResultData;
 use Capell\Core\Models\Site;
 use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 /**
- * @method static BlogPublishingSurfaceData run(Site $site)
+ * @method static BlogPublishingSurfaceResultData run(Site $site)
  */
 class CreateBlogPagesAction
 {
     use AsFake;
     use AsObject;
 
-    public function handle(Site $site): BlogPublishingSurfaceData
+    public function handle(Site $site): BlogPublishingSurfaceResultData
     {
-        return EnsureBlogPublishingSurfaceAction::run($site);
+        return EnsureBlogPublishingSurfaceAction::run(
+            new BlogPublishingSurfaceRequestData(site: $site),
+        );
     }
 }

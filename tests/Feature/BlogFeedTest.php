@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Capell\Blog\Actions\EnsureBlogPublishingSurfaceAction;
+use Capell\Blog\Data\BlogPublishingSurfaceRequestData;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Creator\BlogCreator;
 use Capell\Core\Models\Site;
@@ -60,7 +62,9 @@ function blogFeedFixture(): array
         ]);
     $site = $siteDomain->site;
 
-    $blogCreator->createBlogPage($site);
+    EnsureBlogPublishingSurfaceAction::run(
+        new BlogPublishingSurfaceRequestData(site: $site),
+    );
     $articleType = $blogCreator->createArticlePageType();
     $articleLayout = $blogCreator->createArticleLayout();
 

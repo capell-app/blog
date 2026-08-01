@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
+use Capell\Blog\Actions\AttachBlogPublishingSurfaceToNavigationAction;
 use Capell\Blog\Actions\EnsureArticlePublishingDefaultsAction;
 use Capell\Blog\Actions\EnsureBlogPublishingSurfaceAction;
 use Capell\Blog\Data\BlogPublishingSurfaceData;
+use Capell\Blog\Data\BlogPublishingSurfaceRequestData;
+use Capell\Blog\Data\BlogPublishingSurfaceResultData;
 use Capell\Blog\Enums\BlogLayoutEnum;
 use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Core\Actions\SetupPageUrlsAction;
@@ -31,7 +34,9 @@ beforeEach(function (): void {
 it('creates the blog publishing surface with translations and urls', function (): void {
     $site = Site::factory()->withTranslations()->create();
 
-    $surface = EnsureBlogPublishingSurfaceAction::run($site);
+    $surface = EnsureBlogPublishingSurfaceAction::run(
+        new BlogPublishingSurfaceRequestData(site: $site),
+    );
 
     expect($surface)->toBeInstanceOf(BlogPublishingSurfaceData::class)
         ->and($surface->blogPage)->toBeInstanceOf(Page::class)
@@ -52,6 +57,28 @@ it('creates the blog publishing surface with translations and urls', function ()
         expect($page->translations()->whereIn('language_id', $siteLanguages)->count())->toBe($siteLanguages->count())
             ->and($page->pageUrls()->whereIn('language_id', $siteLanguages)->count())->toBe($siteLanguages->count());
     }
+});
+
+it('rolls back the complete surface when downstream provisioning fails', function (): void {
+    $site = Site::factory()->withTranslations()->create();
+
+    AttachBlogPublishingSurfaceToNavigationAction::shouldRun()
+        ->once()
+        ->andThrow(new RuntimeException('Navigation provisioning failed.'));
+
+    expect(fn (): BlogPublishingSurfaceResultData => EnsureBlogPublishingSurfaceAction::run(
+        new BlogPublishingSurfaceRequestData(site: $site),
+    ))->toThrow(RuntimeException::class, 'Navigation provisioning failed.');
+
+    expect(Page::query()->where('site_id', $site->id)->count())->toBe(0);
+});
+
+it('retains the site argument as a compatibility adapter', function (): void {
+    $site = Site::factory()->withTranslations()->create();
+
+    $surface = EnsureBlogPublishingSurfaceAction::run($site);
+
+    expect($surface->blogPage->site_id)->toBe($site->id);
 });
 
 it('creates the blog publishing surface when navigation is disabled despite its table being available', function (): void {

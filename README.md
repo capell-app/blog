@@ -37,11 +37,11 @@ Screenshot contract: `docs/screenshots.json`.
 
 ![Create/edit article form](docs/screenshots/create-edit-article-form.png)
 
-- Articles admin index (admin, required).
-- Create/edit article form (admin, required).
-- Blog page frontend output (frontend, optional).
-- Archive page frontend output (frontend, required).
-- Tag page frontend output (frontend, required).
+- Articles admin index (admin, required evidence).
+- Create/edit article form (admin, required evidence).
+- Blog page frontend output (frontend, supplementary evidence).
+- Archive page frontend output (frontend, required evidence).
+- Tag page frontend output (frontend, required evidence).
 
 ## Works With
 
@@ -61,8 +61,8 @@ Screenshot contract: `docs/screenshots.json`.
 - Livewire components: `Archive`, `Blog`, `Tag`.
 - Policies: `ArticlePolicy`.
 - Listeners: `AddBlogPagesToNavigation`, `ArticleTranslationSavedListener`.
-- Actions: `ApplyArchiveDateFilterAction`, `AssignExampleArticleImageAction`, `BuildArticleMetaDataAction`, `BuildBlogFeedXmlAction`, `BuildBlogResultsViewDataAction`, `BuildTagListingDataAction`, `ClearBlogContentCacheAction`, `ClearBlogTagCacheAction`, `CreateBlogHeroDemoContentAction`, `CreateBlogPagesAction`, `EnsureArticlePublishingDefaultsAction`, `EnsureBlogPublishingSurfaceAction`, `and 8 more`.
-- Data objects: `ArchiveLinkData`, `ArchiveMonthData`, `ArticleMetaData`, `ArticleNeighborLinkData`, `ArticleWidgetRenderData`, `BlogPublishingSurfaceData`, `BlogResultItemData`, `BlogResultsViewData`, `BlogTagLinkData`, `BlogWidgetContentData`, `ArticleHealthData`, `LanguageCoverageData`, `and 6 more`.
+- Actions: `ApplyArchiveDateFilterAction`, `ApplyPreferredLanguageOrderAction`, `AssignExampleArticleImageAction`, `AttachBlogPublishingSurfaceToNavigationAction`, `BuildArticleMetaDataAction`, `BuildBlogFeedXmlAction`, `BuildBlogResultsViewDataAction`, `BuildTagListingDataAction`, `ClearBlogContentCacheAction`, `ClearBlogTagCacheAction`, `CreateBlogHeroDemoContentAction`, `CreateBlogPagesAction`, `and 12 more`.
+- Data objects: `ArchiveLinkData`, `ArchiveMonthData`, `ArticleMetaData`, `ArticleNeighborLinkData`, `ArticleWidgetRenderData`, `BlogPublishingSurfaceData`, `BlogPublishingSurfaceRequestData`, `BlogPublishingSurfaceResultData`, `BlogResultItemData`, `BlogResultsViewData`, `BlogTagLinkData`, `BlogWidgetContentData`, `and 8 more`.
 - Command signatures: `capell:blog-demo`, `capell:blog-install`, `capell:blog-setup`.
 - Manifest action API: `install: Capell\Blog\Actions\InstallBlogPackageAction`, `sanitizeBlogHtml: Capell\Blog\Actions\SanitizeBlogHtmlAction`.
 - Console command classes: `CreateBlogPagesCommand`, `DemoCommand`, `FakerCommand`, `HeroDemoCommand`, `InstallCommand`, `SetupCommand`.
@@ -113,7 +113,7 @@ Screenshot contract: `docs/screenshots.json`.
 
 1. Install the package: `composer require capell-app/blog`.
 2. Run the required setup: `php artisan capell:blog-setup`.
-3. Open the Articles admin index and confirm the admin workflow loads.
+3. Open a verified package admin surface and confirm Blog is available.
 
 ## Next Steps
 

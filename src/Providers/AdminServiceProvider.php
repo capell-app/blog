@@ -9,6 +9,7 @@ use Capell\Admin\Enums\ConfiguratorTypeEnum;
 use Capell\Admin\Enums\ResourceEnum as AdminResourceEnum;
 use Capell\Admin\Facades\CapellAdmin;
 use Capell\Blog\Actions\EnsureBlogPublishingSurfaceAction;
+use Capell\Blog\Data\BlogPublishingSurfaceRequestData;
 use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Enums\WidgetComponentEnum;
 use Capell\Blog\Enums\WidgetConfiguratorEnum;
@@ -113,11 +114,15 @@ final class AdminServiceProvider extends ServiceProvider
     {
         CapellAdmin::serving(function (): void {
             CapellCore::addDefaultPage('blog', 'Blog', function (Site $site, ?Collection $languages): void {
-                EnsureBlogPublishingSurfaceAction::run($site, $languages);
+                EnsureBlogPublishingSurfaceAction::run(
+                    new BlogPublishingSurfaceRequestData(site: $site, languages: $languages),
+                );
             });
 
             CapellCore::addDefaultPage('archives', 'Blog Archives', function (Site $site, ?Collection $languages): void {
-                EnsureBlogPublishingSurfaceAction::run($site, $languages);
+                EnsureBlogPublishingSurfaceAction::run(
+                    new BlogPublishingSurfaceRequestData(site: $site, languages: $languages),
+                );
             });
         });
     }

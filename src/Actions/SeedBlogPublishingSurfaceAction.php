@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Actions;
 
+use Capell\Blog\Data\BlogPublishingSurfaceRequestData;
 use Capell\Core\Models\Site;
 use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
@@ -21,7 +22,12 @@ class SeedBlogPublishingSurfaceAction
         EnsureArticlePublishingDefaultsAction::run();
 
         Site::with('languages')->each(function (Site $site): void {
-            EnsureBlogPublishingSurfaceAction::run($site);
+            EnsureBlogPublishingSurfaceAction::run(
+                new BlogPublishingSurfaceRequestData(
+                    site: $site,
+                    languages: $site->getAllLanguages(),
+                ),
+            );
         });
     }
 }

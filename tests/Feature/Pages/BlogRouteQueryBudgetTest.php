@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use Capell\Blog\Actions\EnsureBlogPublishingSurfaceAction;
 use Capell\Blog\Actions\GenerateArchiveUrlAction;
 use Capell\Blog\Data\ArchiveMonthData;
+use Capell\Blog\Data\BlogPublishingSurfaceRequestData;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Creator\BlogCreator;
 use Capell\Core\Enums\MediaCollectionEnum;
@@ -76,11 +78,12 @@ function blogRichRouteQueryBudgetFixture(int $articleCount): array
             'scheme' => null,
         ]);
 
-    $blogPage = $blogCreator->createBlogPage($site, meta: ['limit' => 6]);
-    $archivesPage = $blogCreator->createArchivesPage($blogPage);
-    $archivePage = $blogCreator->createArchivePage($archivesPage);
-    $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createWidgets: true);
-    $tagPage = $blogCreator->createTagPage($site, $tagsPage);
+    $surface = EnsureBlogPublishingSurfaceAction::run(
+        new BlogPublishingSurfaceRequestData(site: $site),
+    );
+    $surface->blogPage->mergeMeta(['limit' => 6]);
+    $surface->blogPage->save();
+
     $articleType = $blogCreator->createArticlePageType();
     $articleLayout = $blogCreator->createArticleLayout();
     $author = User::factory()->create(['bio' => 'Writes useful publishing notes.']);
@@ -121,9 +124,12 @@ function blogRichRouteQueryBudgetFixture(int $articleCount): array
 
     return [
         'article_url' => blogTestPageUrl($article->pageUrl)->full_url,
-        'blog_url' => blogTestPageUrl($blogPage->pageUrl)->full_url,
-        'archive_url' => GenerateArchiveUrlAction::run(blogTestPageUrl($archivePage->pageUrl), $archiveDate),
-        'tag_url' => $tag->getUrl($tagPage, $language),
+        'blog_url' => blogTestPageUrl($surface->blogPage->pageUrl)->full_url,
+        'archive_url' => GenerateArchiveUrlAction::run(
+            blogTestPageUrl($surface->archivePage->pageUrl),
+            $archiveDate,
+        ),
+        'tag_url' => $tag->getUrl($surface->tagPage, $language),
     ];
 }
 
@@ -132,7 +138,12 @@ function blogMeasurePublicRouteQueries(string $url): int
     DB::flushQueryLog();
     DB::enableQueryLog();
 
-    get($url)->assertOk();
+    get($url)
+        ->assertOk()
+        ->assertDontSee('frontend-authoring', false)
+        ->assertDontSee('data-authoring', false)
+        ->assertDontSee('data-editable', false)
+        ->assertDontSee('signed-editor-url', false);
 
     $queryCount = count(DB::getQueryLog());
     DB::disableQueryLog();

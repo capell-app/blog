@@ -8,6 +8,7 @@ use Capell\Admin\Filament\Configurators\Blueprints\PageBlueprintConfigurator;
 use Capell\Admin\Filament\Configurators\Pages\ResultsPageConfigurator;
 use Capell\Blog\Actions\EnsureArticlePublishingDefaultsAction;
 use Capell\Blog\Actions\EnsureBlogPublishingSurfaceAction;
+use Capell\Blog\Data\BlogPublishingSurfaceRequestData;
 use Capell\Blog\Enums\BlogLayoutEnum;
 use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Enums\BlogTypeGroupEnum;
@@ -54,7 +55,13 @@ class BlogCreator
     public function setup(Site $site, bool $createWidgets = true): void
     {
         EnsureArticlePublishingDefaultsAction::run($createWidgets);
-        EnsureBlogPublishingSurfaceAction::run($site, $site->getAllLanguages(), $createWidgets);
+        EnsureBlogPublishingSurfaceAction::run(
+            new BlogPublishingSurfaceRequestData(
+                site: $site,
+                languages: $site->getAllLanguages(),
+                createWidgets: $createWidgets,
+            ),
+        );
     }
 
     public function createTagPageType(): Blueprint
@@ -112,7 +119,7 @@ class BlogCreator
     }
 
     /**
-     * @param  Collection<array-key, mixed>  $languages
+     * @param  Collection<int, Language>  $languages
      */
     public function createTagPage(Site $site, ?Page $parent = null, ?Collection $languages = null, ?Blueprint $type = null, ?Layout $layout = null): Page
     {
@@ -159,7 +166,7 @@ class BlogCreator
     }
 
     /**
-     * @param  Collection<array-key, mixed>  $languages
+     * @param  Collection<int, Language>  $languages
      */
     public function createTagsPage(Site $site, ?Page $parent, ?Collection $languages = null, ?Blueprint $type = null, ?Layout $layout = null, bool $createWidgets = false): Page
     {
@@ -173,7 +180,14 @@ class BlogCreator
         if ($createWidgets) {
             $this->createTagsWidget($languages);
             $resultsWidgetType = resolve(LayoutTypeCreator::class)->resultsWidgetType();
-            resolve(WidgetCreator::class)->latestPagesWidget($resultsWidgetType, $languages);
+
+            $legacyLanguages = new Collection;
+
+            foreach ($languages as $language) {
+                $legacyLanguages->push($language);
+            }
+
+            resolve(WidgetCreator::class)->latestPagesWidget($resultsWidgetType, $legacyLanguages);
         }
 
         $pageModel = Page::class;
@@ -242,7 +256,7 @@ class BlogCreator
     }
 
     /**
-     * @param  Collection<array-key, mixed>  $languages
+     * @param  Collection<int, Language>  $languages
      */
     public function createArchivePage(
         Page $parent,
@@ -600,7 +614,7 @@ class BlogCreator
     }
 
     /**
-     * @param  Collection<array-key, mixed>  $languages
+     * @param  Collection<int, Language>  $languages
      */
     public function createArchivesWidget(?Collection $languages = null): Widget
     {
@@ -648,7 +662,7 @@ class BlogCreator
     }
 
     /**
-     * @param  Collection<array-key, mixed>  $languages
+     * @param  Collection<int, Language>  $languages
      */
     public function createTagsWidget(Collection $languages): void
     {
@@ -690,7 +704,7 @@ class BlogCreator
     }
 
     /**
-     * @param  Collection<array-key, mixed>  $languages
+     * @param  Collection<int, Language>  $languages
      */
     public function createArchivesPage(
         Page $parent,
@@ -879,7 +893,7 @@ class BlogCreator
     }
 
     /**
-     * @param  Collection<array-key, mixed>  $languages
+     * @param  Collection<int, Language>  $languages
      */
     public function relatedArticlesWidget(?Blueprint $type = null, ?Collection $languages = null): Widget
     {
@@ -953,7 +967,7 @@ class BlogCreator
     }
 
     /**
-     * @param  Collection<array-key, mixed>  $languages
+     * @param  Collection<int, Language>  $languages
      * @param  array<array-key, mixed>  $meta
      */
     public function createBlogPage(
@@ -1085,7 +1099,7 @@ class BlogCreator
     }
 
     /**
-     * @param  Collection<array-key, mixed>  $languages
+     * @param  Collection<int, Language>  $languages
      */
     public function createLatestArticlesWidget(?Collection $languages = null): Widget
     {
@@ -1099,7 +1113,7 @@ class BlogCreator
     }
 
     /**
-     * @param  Collection<array-key, mixed>  $languages
+     * @param  Collection<int, Language>  $languages
      */
     public function createPopularArticlesWidget(?Collection $languages = null): Widget
     {
@@ -1125,7 +1139,7 @@ class BlogCreator
     }
 
     /**
-     * @param  Collection<array-key, mixed>|null  $languages
+     * @param  Collection<int, Language>|null  $languages
      */
     private function createArticlesListWidget(
         string $key,
