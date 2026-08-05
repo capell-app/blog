@@ -69,14 +69,14 @@ describe('blog capell.json manifest', function (): void {
             ->toHaveKey('capell-app/layout-builder');
     });
 
-    it('is sold as a premium proprietary publishing package', function () use ($blogManifest, $blogComposerManifest): void {
+    it('is available as a free proprietary publishing package', function () use ($blogManifest, $blogComposerManifest): void {
         $manifest = $blogManifest();
         $composerManifest = $blogComposerManifest();
 
         expect($manifest['product']['group'])->toBe('Capell Publishing')
-            ->and($manifest['product']['tier'])->toBe('premium')
+            ->and($manifest['product']['tier'])->toBe('free')
             ->and($manifest['product']['bundle'])->toBe('publishing')
-            ->and($manifest['commercial']['proposedLicense'])->toBe('paid')
+            ->and($manifest['commercial']['proposedLicense'])->toBe('free')
             ->and($manifest['commercial']['supportPolicy'])->toBe('priority')
             ->and($composerManifest['license'])->toBe('proprietary');
     });

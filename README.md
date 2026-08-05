@@ -15,7 +15,7 @@ Evidence: [`capell.json`](capell.json), [`src/Manifest/BlogPageTypesContribution
 Status details:
 
 - Status: Available
-- Tier: premium
+- Tier: free
 - Bundle: publishing
 - Composer package: `capell-app/blog`
 - Namespace: `Capell\Blog`

@@ -9,7 +9,7 @@
     "description": "Blog adds premium article publishing, archive pages, tag pages, article widgets, optional discovery and analytics bridges, and frontend Livewire page components to Capell.",
     "product": {
         "group": "Capell Publishing",
-        "tier": "premium",
+        "tier": "free",
         "bundle": "publishing"
     },
     "namespace": "Capell\\Blog",
@@ -309,7 +309,7 @@
         }
     ],
     "commercial": {
-        "proposedLicense": "paid",
+        "proposedLicense": "free",
         "requestedCertification": "first-party",
         "supportPolicy": "priority",
         "privateDocsRequested": true
@@ -321,6 +321,12 @@
                 "path": "docs/assets/marketplace/extension-card.jpg",
                 "alt": "Blog extension preview image",
                 "caption": "Blog extension preview"
+            },
+            {
+                "path": "docs/screenshots/blog-page-frontend-output.png",
+                "alt": "Published blog landing page rendered on the public frontend",
+                "caption": "Route-backed public blog output",
+                "required": true
             },
             {
                 "path": "docs/screenshots/articles-admin-index.png",
