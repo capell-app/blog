@@ -19,6 +19,7 @@
             "capell-app/admin",
             "capell-app/content-sections",
             "capell-app/core",
+            "capell-app/discovery-foundation",
             "capell-app/frontend",
             "capell-app/html-cache",
             "capell-app/layout-builder",

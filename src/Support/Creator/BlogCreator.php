@@ -950,7 +950,7 @@ class BlogCreator
     {
         return Blueprint::query()->firstOrCreate([
             'key' => 'article',
-            'type' => LayoutTypeEnum::Widget,
+            'type' => LayoutTypeEnum::Widget->value,
         ], [
             'name' => __('capell-blog::generic.article'),
             'group' => BlueprintGroupEnum::System->value,

@@ -19,7 +19,7 @@ use Capell\Core\Contracts\Extensions\ChecksExtensionHealth;
 use Capell\Core\Data\Diagnostics\DoctorCheckResultData;
 use Capell\Core\Enums\BlueprintSubjectEnum;
 use Capell\Core\Models\Blueprint;
-use Capell\SiteDiscovery\Contracts\PublicUrlContributor;
+use Capell\DiscoveryFoundation\Contracts\PublicUrlContributor;
 use Capell\Tags\Models\Tag;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;

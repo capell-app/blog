@@ -11,10 +11,10 @@ use Capell\Blog\Support\Sitemap\TagsSitemap;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\SiteDomain;
-use Capell\SiteDiscovery\Contracts\PublicUrlContributor;
-use Capell\SiteDiscovery\Data\PublicUrlData;
+use Capell\DiscoveryFoundation\Contracts\PublicUrlContributor;
+use Capell\DiscoveryFoundation\Data\PublicUrlData;
+use Capell\DiscoveryFoundation\Enums\PublicUrlContentType;
 use Capell\SiteDiscovery\Data\SitemapPageData;
-use Capell\SiteDiscovery\Enums\PublicUrlContentType;
 use Illuminate\Support\Collection;
 
 final class BlogPublicUrlContributor implements PublicUrlContributor

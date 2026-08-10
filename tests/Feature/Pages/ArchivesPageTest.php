@@ -95,11 +95,10 @@ test('archives page list articles archives by month/year', function (): void {
         )
         ->create();
 
-    expect($archivesPage)
-        ->toBeInstanceOf(Page::class)
-        ->blueprint->key->toBe('system')
-        ->layout->name->toBe('Archives')
-        ->parent->name->toBe('Blog');
+    expect($archivesPage)->toBeInstanceOf(Page::class);
+    expect($archivesPage->blueprint?->key)->toBe('system');
+    expect($archivesPage->layout?->name)->toBe('Archives');
+    expect($archivesPage->parent->name)->toBe('Blog');
 
     get($archivesPageUrl->full_url)
         ->assertOk()
@@ -158,13 +157,12 @@ test('archive page list articles by month/year', function (): void {
         ])
         ->create();
 
-    expect($archivePage)
-        ->toBeInstanceOf(Page::class)
-        ->blueprint->name->toBe('Archive Page')
-        ->layout->name->toBe('Results')
-        ->parent->name->toBe('Archives')
-        ->pageUrl->url->toBe('/blog/archives/*')
-        ->and($archivePage->getAncestors(['name'])->pluck('name')->sort()->values()->toArray())
+    expect($archivePage)->toBeInstanceOf(Page::class);
+    expect($archivePage->blueprint?->name)->toBe('Archive Page');
+    expect($archivePage->layout?->name)->toBe('Results');
+    expect($archivePage->parent->name)->toBe('Archives');
+    expect($archivePage->pageUrl?->url)->toBe('/blog/archives/*');
+    expect($archivePage->getAncestors(['name'])->pluck('name')->sort()->values()->toArray())
         ->toEqual(['Archives', 'Blog']);
 
     $archiveUrl = GenerateArchiveUrlAction::run($archivePageUrl, ArchiveMonthData::fromDate($publishDate));

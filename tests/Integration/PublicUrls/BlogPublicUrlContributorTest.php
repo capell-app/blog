@@ -7,9 +7,9 @@ use Capell\Blog\Providers\BlogServiceProvider;
 use Capell\Blog\Support\Creator\BlogCreator;
 use Capell\Blog\Support\PublicUrls\BlogPublicUrlContributor;
 use Capell\Core\Models\SiteDomain;
-use Capell\SiteDiscovery\Contracts\PublicUrlContributor;
-use Capell\SiteDiscovery\Data\PublicUrlData;
-use Capell\SiteDiscovery\Enums\PublicUrlContentType;
+use Capell\DiscoveryFoundation\Contracts\PublicUrlContributor;
+use Capell\DiscoveryFoundation\Data\PublicUrlData;
+use Capell\DiscoveryFoundation\Enums\PublicUrlContentType;
 
 it('contributes blog article and listing URLs to the public URL registry contract', function (): void {
     $blogCreator = resolve(BlogCreator::class);

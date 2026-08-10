@@ -93,14 +93,18 @@ test('article page with layout', function (): void {
         )
         ->assertElementExists(
             '.article-meta',
-            fn (AssertElement $elm): BaseAssert => $elm->find(
-                '.article-tags',
-                fn (AssertElement $elm): BaseAssert => $elm->contains('.tag-item', count: 3)
-                    ->each(
-                        '.tag-item',
-                        fn (AssertElement $elm, int $index): BaseAssert => $elm->containsText($articleTags[$index]->translate('name', $language->code)),
-                    ),
-            ),
+            function (AssertElement $elm) use ($articleTags, $language): BaseAssert {
+                $assertion = $elm->find(
+                    '.article-tags',
+                    fn (AssertElement $tags): BaseAssert => $tags->contains('.tag-item', count: 3),
+                );
+
+                foreach ($articleTags as $tag) {
+                    $assertion->containsText((string) $tag->translate('name', $language->code));
+                }
+
+                return $assertion;
+            },
         )
         ->assertElementExists(
             '.article-meta .page-author',

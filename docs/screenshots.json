@@ -13,6 +13,7 @@
             "targetType": "admin-surface",
             "target": "ArticleResource",
             "required": true,
+            "url": "/blog/article",
             "notes": "Requires Blog plus its required Capell extensions installed, package migrations, and seeded draft/published articles with sites, layouts, URLs, translations, and tags.",
             "useCase": "An editor reviews the article queue, publish windows, language coverage, and article status before editing content.",
             "screenshotPath": "packages/blog/docs/screenshots/articles-admin-index.png",
@@ -71,6 +72,27 @@
             "notes": "Requires seeded tags attached to published articles and tag page URLs from the blog setup flow.",
             "useCase": "A visitor opens a tag page and sees published articles associated with that tag.",
             "screenshotPath": "packages/blog/docs/screenshots/tag-page-frontend-output.png"
+        },
+        {
+            "id": "blog-admin-sidebar-menu-open",
+            "title": "Articles admin index with admin sidebar menu open.",
+            "package": "blog",
+            "surface": "admin",
+            "targetType": "admin-surface",
+            "target": "ArticleResource",
+            "url": "/blog/article",
+            "waitFor": "table",
+            "required": false,
+            "notes": "Requires Blog plus its required Capell extensions installed, package migrations, and seeded draft/published articles with sites, layouts, URLs, translations, and tags. Capture this same admin surface with the fully collapsible sidebar opened.",
+            "useCase": "An editor reviews the article queue, publish windows, language coverage, and article status before editing content.",
+            "screenshotPath": "packages/blog/docs/screenshots/blog-admin-sidebar-menu-open.png",
+            "darkScreenshotPath": "packages/blog/docs/screenshots/blog-admin-sidebar-menu-open-dark.png",
+            "interactions": [
+                {
+                    "type": "click",
+                    "selector": ".fi-topbar-open-collapse-sidebar-btn"
+                }
+            ]
         }
     ]
 }
