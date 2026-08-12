@@ -39,9 +39,10 @@ Screenshot contract: `docs/screenshots.json`.
 
 - Articles admin index (admin, required evidence).
 - Create/edit article form (admin, required evidence).
-- Blog page frontend output (frontend, supplementary evidence).
+- Blog page frontend output (frontend, required evidence).
 - Archive page frontend output (frontend, required evidence).
 - Tag page frontend output (frontend, required evidence).
+- Articles admin index with admin sidebar menu open (admin, supplementary evidence).
 
 ## Works With
 
@@ -82,7 +83,7 @@ Screenshot contract: `docs/screenshots.json`.
 
 ## Install Impact
 
-- Required packages: `capell-app/admin`, `capell-app/content-sections`, `capell-app/core`, `capell-app/frontend`, `capell-app/html-cache`, `capell-app/layout-builder`, `capell-app/tags`.
+- Required packages: `capell-app/admin`, `capell-app/content-sections`, `capell-app/core`, `capell-app/discovery-foundation`, `capell-app/frontend`, `capell-app/html-cache`, `capell-app/layout-builder`, `capell-app/tags`.
 - Admin navigation: declares `admin-resource: BlogAdminResourcesContribution`; each Filament page or resource controls its own navigation visibility.
 - Admin/editor extensions: `configurator: BlogConfiguratorsContribution`.
 - Permissions: `article.view`, `article.create`, `article.update`, `article.delete`, `article.restore`, `article.force_delete`, `tag.view`, `tag.create`, `tag.update`, `tag.delete`, `tag.restore`, `tag.force_delete`.
@@ -113,7 +114,7 @@ Screenshot contract: `docs/screenshots.json`.
 
 1. Install the package: `composer require capell-app/blog`.
 2. Run the required setup: `php artisan capell:blog-setup`.
-3. Open a verified package admin surface and confirm Blog is available.
+3. Open the package admin surface at `/blog/article` and confirm Blog is available.
 
 ## Next Steps
 
@@ -126,7 +127,7 @@ Screenshot contract: `docs/screenshots.json`.
 - [Capell content language plan](../../docs/CONTENT_LANGUAGE_PLAN.md)
 - [Capell documentation design system](../../docs/DESIGN_SYSTEM.md)
 - [Capell and package ERD notes](../../docs/erd/capell-and-package-erds.md)
-- Related packages: [Content Sections](../content-sections/README.md), [Html Cache](../html-cache/README.md), [Layout Builder](../layout-builder/README.md), [Tags](../tags/README.md), [Comments](../comments/README.md), [Navigation](../navigation/README.md), [Insights](../insights/README.md), [Publishing Studio](../publishing-studio/README.md), [Site Discovery](../site-discovery/README.md), [Url Manager](../url-manager/README.md).
+- Related packages: [Content Sections](../content-sections/README.md), [Discovery Foundation](../discovery-foundation/README.md), [Html Cache](../html-cache/README.md), [Layout Builder](../layout-builder/README.md), [Tags](../tags/README.md), [Comments](../comments/README.md), [Navigation](../navigation/README.md), [Insights](../insights/README.md), [Publishing Studio](../publishing-studio/README.md), [Site Discovery](../site-discovery/README.md), [Url Manager](../url-manager/README.md).
 - Focused tests: `vendor/bin/pest packages/blog/tests --configuration=phpunit.xml`.
 
 <!-- prettier-ignore-end -->
