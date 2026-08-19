@@ -99,9 +99,10 @@ class Archives extends AbstractWidget
                 limit: $limit,
             );
 
+        /** @var PageUrl|null $archivePageUrl */
         $archivePageUrl = $this->archivePage->relationLoaded('pageUrl') ? $this->archivePage->getRelation('pageUrl') : null;
         $activeArchive = $this->activeArchive();
-        if ($archivePageUrl instanceof PageUrl) {
+        if ($archivePageUrl !== null) {
             $archiveItems = $this->archives instanceof LengthAwarePaginator
                 ? collect($this->archives->items())
                 : $this->archives;

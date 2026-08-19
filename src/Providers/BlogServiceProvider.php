@@ -15,6 +15,7 @@ use Capell\Blog\Enums\LivewirePageComponentEnum;
 use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Enums\WidgetComponentEnum;
 use Capell\Blog\Http\Controllers\BlogFeedController;
+use Capell\Blog\Http\Controllers\BlogTagFeedController;
 use Capell\Blog\Listeners\ArticleTranslationSavedListener;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Policies\ArticlePolicy;
@@ -97,6 +98,18 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
         Route::get('/blog/feed.atom', [BlogFeedController::class, '__invoke'])
             ->defaults('format', 'atom')
             ->name('capell.blog.feed.atom');
+
+        Route::get('/blog/tag/{slug}/feed.xml', [BlogTagFeedController::class, '__invoke'])
+            ->defaults('format', 'xml')
+            ->name('capell.blog.tag.feed.xml');
+
+        Route::get('/blog/tag/{slug}/feed.rss', [BlogTagFeedController::class, '__invoke'])
+            ->defaults('format', 'rss')
+            ->name('capell.blog.tag.feed.rss');
+
+        Route::get('/blog/tag/{slug}/feed.atom', [BlogTagFeedController::class, '__invoke'])
+            ->defaults('format', 'atom')
+            ->name('capell.blog.tag.feed.atom');
     }
 
     public function registeringPackage(): void

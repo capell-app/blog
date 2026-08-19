@@ -12,6 +12,7 @@ use Capell\Core\Contracts\Pageable;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
+use Capell\Core\Models\PageUrl;
 use Capell\Core\Models\Site;
 use Capell\Frontend\Contracts\RenderedModelTracker;
 use Illuminate\Database\Eloquent\Model;
@@ -106,7 +107,11 @@ class BlogLoader
     public static function getBlogPageUrl(Site $site, Language $language, bool $fullUrl = true): string
     {
         $page = self::getBlogPage($site, language: $language);
+        /** @var PageUrl|null $pageUrl */
+        $pageUrl = $page?->getRelationValue('pageUrl');
 
-        return $fullUrl ? ($page->pageUrl->full_url ?? '') : ($page->pageUrl->url ?? '');
+        return $fullUrl
+            ? ($pageUrl === null ? '' : ($pageUrl->full_url ?? ''))
+            : ($pageUrl === null ? '' : ($pageUrl->url ?? ''));
     }
 }

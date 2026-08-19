@@ -59,11 +59,11 @@ Screenshot contract: `docs/screenshots.json`.
 - Migrations: `packages/blog/database/migrations/2026_05_10_190842_01_create_articles_table.php`.
 - Models: `Article`.
 - Filament classes: `ArticleSelect`, `SettingsTab`, `TagsInput`, `ArticlePageConfigurator`, `ArticleWidgetConfigurator`, `RelatedWidgetConfigurator`, `ArticleResource`, `CreateArticle`, `EditArticle`, `ListArticles`, `ArticleForm`, `ArticlePagesTable`, `and 4 more`.
-- Livewire components: `Archive`, `Blog`, `Tag`.
+- Livewire components: `Archive`, `Author`, `Blog`, `Tag`.
 - Policies: `ArticlePolicy`.
 - Listeners: `AddBlogPagesToNavigation`, `ArticleTranslationSavedListener`.
-- Actions: `ApplyArchiveDateFilterAction`, `ApplyPreferredLanguageOrderAction`, `AssignExampleArticleImageAction`, `AttachBlogPublishingSurfaceToNavigationAction`, `BuildArticleMetaDataAction`, `BuildBlogFeedXmlAction`, `BuildBlogResultsViewDataAction`, `BuildTagListingDataAction`, `ClearBlogContentCacheAction`, `ClearBlogTagCacheAction`, `CreateBlogHeroDemoContentAction`, `CreateBlogPagesAction`, `and 12 more`.
-- Data objects: `ArchiveLinkData`, `ArchiveMonthData`, `ArticleMetaData`, `ArticleNeighborLinkData`, `ArticleWidgetRenderData`, `BlogPublishingSurfaceData`, `BlogPublishingSurfaceRequestData`, `BlogPublishingSurfaceResultData`, `BlogResultItemData`, `BlogResultsViewData`, `BlogTagLinkData`, `BlogWidgetContentData`, `and 8 more`.
+- Actions: `ApplyArchiveDateFilterAction`, `ApplyPreferredLanguageOrderAction`, `AssignExampleArticleImageAction`, `AttachBlogPublishingSurfaceToNavigationAction`, `BuildArticleMetaDataAction`, `BuildBlogFeedXmlAction`, `BuildBlogResultsViewDataAction`, `BuildTagListingDataAction`, `ClearBlogContentCacheAction`, `ClearBlogTagCacheAction`, `CreateBlogHeroDemoContentAction`, `CreateBlogPagesAction`, `and 15 more`.
+- Data objects: `ArchiveLinkData`, `ArchiveMonthData`, `ArticleMetaData`, `ArticleNeighborLinkData`, `ArticleWidgetRenderData`, `BlogAuthorData`, `BlogPublishingSurfaceData`, `BlogPublishingSurfaceRequestData`, `BlogPublishingSurfaceResultData`, `BlogResultItemData`, `BlogResultsViewData`, `BlogTagLinkData`, `and 9 more`.
 - Command signatures: `capell:blog-demo`, `capell:blog-install`, `capell:blog-setup`.
 - Manifest action API: `install: Capell\Blog\Actions\InstallBlogPackageAction`, `sanitizeBlogHtml: Capell\Blog\Actions\SanitizeBlogHtmlAction`.
 - Console command classes: `CreateBlogPagesCommand`, `DemoCommand`, `FakerCommand`, `HeroDemoCommand`, `InstallCommand`, `SetupCommand`.

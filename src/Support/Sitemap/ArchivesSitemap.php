@@ -10,7 +10,6 @@ use Capell\Blog\Enums\BlogTypeGroupEnum;
 use Capell\Blog\Support\Loader\BlogLoader;
 use Capell\Core\Contracts\Pageable;
 use Capell\Core\Models\Page;
-use Capell\Core\Models\PageUrl;
 use Capell\SiteDiscovery\Data\SitemapPageData;
 use Capell\SiteDiscovery\Support\Sitemap\AbstractSitemapPages;
 use Capell\SiteDiscovery\Support\Sitemap\SitemapChainBuilder;
@@ -48,7 +47,7 @@ class ArchivesSitemap extends AbstractSitemapPages
     {
         $pageUrl = $archivePage->pageUrl;
 
-        throw_unless($pageUrl instanceof PageUrl, LogicException::class, 'Archive page requires a URL for sitemap generation.');
+        throw_unless($pageUrl !== null, LogicException::class, 'Archive page requires a URL for sitemap generation.');
 
         return new SitemapPageData(
             label: $monthData->getDate()->format('F Y') . ' (' . $monthData->total . ')',

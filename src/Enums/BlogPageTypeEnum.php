@@ -8,6 +8,7 @@ enum BlogPageTypeEnum: string
 {
     case Archive = 'archive';
     case Article = 'article';
+    case Author = 'author';
     case Blog = 'blog';
     case Tag = 'tag';
 }

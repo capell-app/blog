@@ -15,6 +15,7 @@ class BlogPublishingSurfaceResultData extends Data
         public Page $archivePage,
         public Page $tagsPage,
         public Page $tagPage,
+        public Page $authorPage,
     ) {}
 
     /**
@@ -28,6 +29,7 @@ class BlogPublishingSurfaceResultData extends Data
             $this->archivePage,
             $this->tagsPage,
             $this->tagPage,
+            $this->authorPage,
         ];
     }
 }

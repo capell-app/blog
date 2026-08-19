@@ -30,15 +30,26 @@ it('contributes blog article and listing URLs to the public URL registry contrac
     $blogPageUrl = $blogPage->pageUrl;
     $articlePageUrl = $article->pageUrl;
 
+    $articleWithoutUrl = Article::factory()
+        ->site($site)
+        ->layout($articleLayout)
+        ->type($articleType)
+        ->withTranslations($site->languages)
+        ->create(['name' => 'Unlinked article']);
+    $articleWithoutUrl->pageUrls()->delete();
+    $articleWithoutUrl->unsetRelation('pageUrl');
+
     throw_if($blogPageUrl === null || $articlePageUrl === null, RuntimeException::class, 'Expected blog fixtures to create page URLs.');
 
     $urls = (new BlogPublicUrlContributor)->publicUrls();
 
-    expect($urls->first())->toBeInstanceOf(PublicUrlData::class)
+    expect($articleWithoutUrl->pageUrl)->toBeNull()
+        ->and($urls->first())->toBeInstanceOf(PublicUrlData::class)
         ->and($urls->pluck('canonicalUrl')->all())->toContain(
             $blogPageUrl->full_url,
             $articlePageUrl->full_url,
         )
+        ->and($urls->pluck('title')->all())->not->toContain('Unlinked article')
         ->and($urls->first(fn (PublicUrlData $url): bool => $url->canonicalUrl === $articlePageUrl->full_url)?->sourcePackage)
         ->toBe(BlogServiceProvider::$packageName)
         ->and($urls->first(fn (PublicUrlData $url): bool => $url->canonicalUrl === $articlePageUrl->full_url)?->contentType)

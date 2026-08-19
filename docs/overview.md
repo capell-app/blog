@@ -32,9 +32,19 @@ Saving an article, its translation, tags, or featured media clears the package's
 
 ## Public pages, tags, and archives
 
-The setup surface creates the Blog index, `/blog/archives`, an archive wildcard below it, `/blog/tags`, and a tag wildcard below it. Do not delete or repurpose those system pages while their routes are in use. Diagnostics checks the publishing surface, cache wiring, author/related rendering, sitemap, and static-export integration.
+The setup surface creates the Blog index, `/blog/archives`, an archive wildcard below it, `/blog/tags`, a tag wildcard below it, and an author archive wildcard at `/blog/author/{author-slug}`. Do not delete or repurpose those system pages while their routes are in use. Diagnostics checks the publishing surface, cache wiring, author/related rendering, sitemap, and static-export integration.
 
 Adding or removing tags updates tag listings and related widgets. A tag change can affect several sites when the tag is installation-wide or attached to articles on those sites, so review the affected tag URLs. Article public content is passed through Capell's public HTML sanitizer before rendering; unsafe markup may be removed even when it remains in the editor's stored content.
+
+## Author archives
+
+`/blog/author/{author-slug}` lists the published articles created by one author on that site and language. The page is a system wildcard page like the tag and archive wildcards; it is not selectable as a page type and is not listed in navigation.
+
+Capell's users table is owned by Core and has no slug, username, or public profile route, and a package must not add columns to it. The author's public slug is therefore derived from their display name at request time, and an incoming slug is matched only against authors who actually have published articles on the requested site and language. Nothing that identifies the account is published: the user id and email address never appear in the URL or in the rendered page.
+
+Two consequences follow from deriving the slug from the name. Renaming an author changes their archive URL and leaves the old URL returning 404, so treat author renames like a slug change and add a redirect if the old URL was linked. When two authors' names slugify to the same value, the account with the lowest user id wins that URL and the other author has no reachable archive; give one of them a distinguishing display name if that matters.
+
+An unknown slug, an ambiguous slug that loses the tie-break, and an author with no published articles all return 404.
 
 Soft-deleting an article removes it from normal public queries and keeps it available to restore. Force-delete is the irreversible content-removal path. Blog has no age-based archive or deletion schedule.
 

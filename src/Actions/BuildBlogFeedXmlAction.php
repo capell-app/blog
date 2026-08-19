@@ -4,17 +4,22 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Actions;
 
+use Capell\Blog\Data\BlogTagLinkData;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Loader\BlogLoader;
+use Capell\Blog\Support\Loader\TagLoader;
 use Capell\Core\Models\Language;
+use Capell\Core\Models\Page;
 use Capell\Core\Models\PageUrl;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\SiteDomain;
 use Capell\Core\Models\Translation;
+use Capell\Tags\Models\Tag;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Collection as SupportCollection;
 use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
@@ -23,13 +28,13 @@ final class BuildBlogFeedXmlAction
     use AsFake;
     use AsObject;
 
-    public function handle(SiteDomain $domain, string $format = 'rss', int $limit = 20): string
+    public function handle(SiteDomain $domain, string $format = 'rss', int $limit = 20, ?Tag $tag = null): string
     {
         $site = $domain->site;
         $language = $domain->language;
 
         if (! $site instanceof Site || ! $language instanceof Language) {
-            return $this->emptyFeed($domain, $format);
+            return $this->emptyFeed($domain, $format, $tag);
         }
 
         /** @var EloquentCollection<int, Article> $articles */
@@ -50,6 +55,13 @@ final class BuildBlogFeedXmlAction
                 ->where('language_id', $language->id)
                 ->where('site_id', $site->id)
                 ->where('status', true))
+            ->when(
+                $tag instanceof Tag,
+                fn (Builder $query): Builder => $query->whereHas(
+                    'tags',
+                    fn (Builder $tagQuery): Builder => $tagQuery->whereKey($tag?->getKey()),
+                ),
+            )
             ->publishedDate()
             ->publishedLatest()
             ->limit(max(1, min(100, $limit)))
@@ -64,24 +76,24 @@ final class BuildBlogFeedXmlAction
         });
 
         return $format === 'atom'
-            ? $this->atom($domain, $articles)
-            : $this->rss($domain, $articles);
+            ? $this->atom($domain, $articles, $tag)
+            : $this->rss($domain, $articles, $tag);
     }
 
-    private function emptyFeed(SiteDomain $domain, string $format): string
+    private function emptyFeed(SiteDomain $domain, string $format, ?Tag $tag = null): string
     {
         return $format === 'atom'
-            ? $this->atom($domain, new EloquentCollection)
-            : $this->rss($domain, new EloquentCollection);
+            ? $this->atom($domain, new EloquentCollection, $tag)
+            : $this->rss($domain, new EloquentCollection, $tag);
     }
 
     /**
      * @param  EloquentCollection<int, Article>  $articles
      */
-    private function rss(SiteDomain $domain, EloquentCollection $articles): string
+    private function rss(SiteDomain $domain, EloquentCollection $articles, ?Tag $tag = null): string
     {
-        $title = $this->feedTitle($domain);
-        $feedUrl = $this->feedUrl($domain, 'xml');
+        $title = $this->feedTitle($domain, $tag);
+        $feedUrl = $this->feedUrl($domain, 'xml', $tag);
         $updatedAt = $this->updatedAt($articles);
 
         $items = $articles
@@ -93,7 +105,7 @@ final class BuildBlogFeedXmlAction
 <rss version="2.0">
   <channel>
     <title>{$this->escape($title)}</title>
-    <link>{$this->escape($this->blogUrl($domain))}</link>
+    <link>{$this->escape($this->channelUrl($domain, $tag))}</link>
     <description>{$this->escape($title . ' latest articles')}</description>
     <lastBuildDate>{$this->escape($updatedAt->toRfc2822String())}</lastBuildDate>
     <atom:link xmlns:atom="http://www.w3.org/2005/Atom" href="{$this->escape($feedUrl)}" rel="self" type="application/rss+xml" />
@@ -109,7 +121,7 @@ XML;
         $pageUrl = $article->pageUrl;
         $url = $pageUrl instanceof PageUrl ? $pageUrl->full_url : '';
         $publishedAt = $article->getPublishDate() ?? $article->created_at;
-        $description = $translation instanceof Translation ? (string) ($translation->summary ?? '') : '';
+        $description = ResolveArticleExcerptAction::run($translation instanceof Translation ? $translation : null);
 
         return <<<XML
     <item>
@@ -125,10 +137,10 @@ XML;
     /**
      * @param  EloquentCollection<int, Article>  $articles
      */
-    private function atom(SiteDomain $domain, EloquentCollection $articles): string
+    private function atom(SiteDomain $domain, EloquentCollection $articles, ?Tag $tag = null): string
     {
-        $title = $this->feedTitle($domain);
-        $feedUrl = $this->feedUrl($domain, 'atom');
+        $title = $this->feedTitle($domain, $tag);
+        $feedUrl = $this->feedUrl($domain, 'atom', $tag);
         $updatedAt = $this->updatedAt($articles);
 
         $entries = $articles
@@ -139,7 +151,7 @@ XML;
 <?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title>{$this->escape($title)}</title>
-  <link href="{$this->escape($this->blogUrl($domain))}" />
+  <link href="{$this->escape($this->channelUrl($domain, $tag))}" />
   <link href="{$this->escape($feedUrl)}" rel="self" type="application/atom+xml" />
   <id>{$this->escape($feedUrl)}</id>
   <updated>{$this->escape($updatedAt->toAtomString())}</updated>
@@ -154,7 +166,7 @@ XML;
         $pageUrl = $article->pageUrl;
         $url = $pageUrl instanceof PageUrl ? $pageUrl->full_url : '';
         $publishedAt = $this->date($article->getPublishDate() ?? $article->created_at);
-        $summary = $translation instanceof Translation ? (string) ($translation->summary ?? '') : '';
+        $summary = ResolveArticleExcerptAction::run($translation instanceof Translation ? $translation : null);
 
         return <<<XML
   <entry>
@@ -188,11 +200,105 @@ XML;
         return now();
     }
 
-    private function feedTitle(SiteDomain $domain): string
+    private function feedTitle(SiteDomain $domain, ?Tag $tag = null): string
     {
         $site = $domain->site;
+        $title = ($site instanceof Site ? $site->title : config('app.name', 'Capell')) . ' Blog';
 
-        return ($site instanceof Site ? $site->title : config('app.name', 'Capell')) . ' Blog';
+        if (! $tag instanceof Tag) {
+            return $title;
+        }
+
+        $tagName = $this->tagName($domain, $tag);
+
+        if ($tagName === '') {
+            return $title;
+        }
+
+        return (string) trans('capell-blog::generic.tag_feed_title', [
+            'feed_title' => $title,
+            'tag_name' => $tagName,
+        ]);
+    }
+
+    private function tagName(SiteDomain $domain, Tag $tag): string
+    {
+        $language = $domain->language;
+        $name = $language instanceof Language
+            ? $tag->getTranslation('name', $language->code)
+            : null;
+
+        return is_string($name) ? $name : '';
+    }
+
+    private function tagSlug(SiteDomain $domain, Tag $tag): string
+    {
+        $language = $domain->language;
+
+        if (! $language instanceof Language) {
+            return '';
+        }
+
+        $slug = $tag->getTranslations('slug')[$language->code] ?? '';
+
+        return is_string($slug) ? $slug : '';
+    }
+
+    private function channelUrl(SiteDomain $domain, ?Tag $tag = null): string
+    {
+        return $tag instanceof Tag
+            ? $this->tagPageUrl($domain, $tag)
+            : $this->blogUrl($domain);
+    }
+
+    /**
+     * Human-readable tag page URL for the feed's non-self link.
+     *
+     * Falls back to the blog index whenever the tag results page or its
+     * published page URL cannot be resolved; never to the feed URL itself.
+     */
+    private function tagPageUrl(SiteDomain $domain, Tag $tag): string
+    {
+        $site = $domain->site;
+        $language = $domain->language;
+
+        if (! $site instanceof Site || ! $language instanceof Language) {
+            return $this->blogUrl($domain);
+        }
+
+        $tagPage = TagLoader::getTagResultsPage($site, $language);
+
+        if (! $tagPage instanceof Page) {
+            return $this->blogUrl($domain);
+        }
+
+        $tagPage = clone $tagPage;
+
+        $tagPage->load([
+            'pageUrl' => static function (Relation $query) use ($language, $site): void {
+                $query->where('language_id', $language->id)
+                    ->where('site_id', $site->id)
+                    ->where('status', true);
+            },
+        ]);
+
+        $pageUrl = $tagPage->pageUrl;
+
+        if (! $pageUrl instanceof PageUrl || ! $pageUrl->exists) {
+            return $this->blogUrl($domain);
+        }
+
+        $pageUrl->setRelation('siteDomain', $domain);
+
+        $tags = (new SupportCollection)->push($tag);
+
+        $link = BlogTagLinkData::collectionFromTags($tags, $tagPage, $language)[0] ?? null;
+
+        if (! $link instanceof BlogTagLinkData || $link->url === '') {
+            return $this->blogUrl($domain);
+        }
+
+        return $link->url;
     }
 
     private function blogUrl(SiteDomain $domain): string
@@ -207,9 +313,13 @@ XML;
         return rtrim($domain->full_url, '/');
     }
 
-    private function feedUrl(SiteDomain $domain, string $extension): string
+    private function feedUrl(SiteDomain $domain, string $extension, ?Tag $tag = null): string
     {
-        return rtrim($domain->full_url, '/') . '/blog/feed.' . $extension;
+        $base = rtrim($domain->full_url, '/');
+
+        return $tag instanceof Tag
+            ? $base . '/blog/tag/' . $this->tagSlug($domain, $tag) . '/feed.' . $extension
+            : $base . '/blog/feed.' . $extension;
     }
 
     private function escape(string $value): string

@@ -222,6 +222,30 @@ test('archives sitemap formats archive page urls without wildcard', function ():
         ->not->toContain('*');
 });
 
+test('archives sitemap rejects an archive page without a persisted url', function (): void {
+    $blogCreator = resolve(BlogCreator::class);
+
+    $siteDomain = SiteDomain::factory()->default()->create();
+    $site = $siteDomain->site;
+
+    $blogPage = $blogCreator->createBlogPage($site);
+    $archivesPage = $blogCreator->createArchivesPage($blogPage);
+    $archivePage = $blogCreator->createArchivePage($archivesPage);
+
+    $archivePage->pageUrls()->delete();
+    $archivePage->unsetRelation('pageUrl');
+
+    // The relation must report a missing URL as null. It previously used
+    // withDefault(), which hydrated an unsaved placeholder and made every
+    // downstream existence check silently pass.
+    expect($archivePage->pageUrl)->toBeNull();
+
+    $sitemap = new ArchivesSitemap($site, $siteDomain, $siteDomain->language);
+
+    expect(fn (): mixed => $sitemap->format(new ArchiveMonthData(year: 2025, month: 3), $archivePage))
+        ->toThrow(LogicException::class);
+});
+
 test('error page when no articles found for given month/year', function (string $slug): void {
     $blogCreator = resolve(BlogCreator::class);
 

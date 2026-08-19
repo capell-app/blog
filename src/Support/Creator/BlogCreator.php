@@ -52,6 +52,15 @@ use LogicException;
 
 class BlogCreator
 {
+    /**
+     * Slug of the author archive page.
+     *
+     * The trailing wildcard segment carries the derived author slug, so the
+     * public url resolves as `/blog/author/{author-slug}` without needing a
+     * separate (and contentless) author index page.
+     */
+    public const string AUTHOR_PAGE_SLUG = 'author/*';
+
     public function setup(Site $site, bool $createWidgets = true): void
     {
         EnsureArticlePublishingDefaultsAction::run($createWidgets);
@@ -62,6 +71,151 @@ class BlogCreator
                 createWidgets: $createWidgets,
             ),
         );
+    }
+
+    /**
+     * Blueprint for the public author archive at `/blog/author/{slug}`.
+     */
+    public function createAuthorPageType(): Blueprint
+    {
+        $meta = [
+            'accessible' => false,
+            'component' => LivewirePageComponentEnum::AuthorPage->value,
+            'livewire' => true,
+            'hidden_from_selection' => true,
+            'limit' => 10,
+            'listable' => false,
+            'pagination' => true,
+            'rendering_strategy' => RenderingStrategyEnum::FullLivewire->value,
+            'url_params' => ['author' => UrlParamTypeEnum::String->value],
+            'with_date' => true,
+            'with_image' => true,
+            'with_summary' => true,
+        ];
+
+        $blueprint = Blueprint::query()->firstOrCreate([
+            'key' => BlogPageTypeEnum::Author->value,
+            'type' => BlueprintSubjectEnum::Page,
+        ], [
+            'name' => __('capell-blog::generic.author_page'),
+            'group' => BlueprintGroupEnum::System->value,
+            'admin' => [
+                'type_configurator' => PageBlueprintConfigurator::getKey(),
+                'configurator' => ResultsPageConfigurator::getKey(),
+                'icon' => 'heroicon-o-user-circle',
+                'required_fields' => ['title'],
+            ],
+            'meta' => $meta,
+        ]);
+
+        $blueprint->forceFill([
+            'component' => LivewirePageComponentEnum::AuthorPage->value,
+            'name' => __('capell-blog::generic.author_page'),
+            'group' => BlueprintGroupEnum::System->value,
+            'is_livewire' => true,
+            'admin' => [
+                'type_configurator' => PageBlueprintConfigurator::getKey(),
+                'configurator' => ResultsPageConfigurator::getKey(),
+                'icon' => 'heroicon-o-user-circle',
+                'required_fields' => ['title'],
+            ],
+            'meta' => [
+                ...($blueprint->meta ?? []),
+                ...$meta,
+            ],
+        ])->save();
+
+        return $blueprint;
+    }
+
+    /**
+     * @param  Collection<int, Language>  $languages
+     */
+    public function createAuthorPage(
+        Site $site,
+        ?Page $parent = null,
+        ?Collection $languages = null,
+        ?Blueprint $type = null,
+        ?Layout $layout = null,
+    ): Page {
+        $site->unsetRelation('siteDomains');
+        $site->loadMissing(['language', 'siteDomains.language']);
+
+        $type ??= $this->createAuthorPageType();
+        $layout ??= $this->createAuthorResultsLayout();
+        $languages ??= $site->getAllLanguages();
+        $parent ??= $this->createBlogPage($site);
+
+        $page = Page::query()->firstOrNew([
+            'site_id' => $site->id,
+            'blueprint_id' => $type->id,
+            'parent_id' => $parent->getKey(),
+        ], [
+            'name' => __('capell-blog::generic.author_page'),
+        ]);
+
+        $page->layout()->associate($layout);
+        $page->meta = [
+            ...($page->meta ?? []),
+            'component' => LivewirePageComponentEnum::AuthorPage->value,
+            'rendering_strategy' => RenderingStrategyEnum::FullLivewire->value,
+        ];
+
+        $page->save();
+
+        foreach ($languages as $language) {
+            $page->translations()->firstOrCreate([
+                'language_id' => $language->id,
+            ], [
+                'title' => __('capell-blog::generic.author_page_title'),
+                'meta' => ['slug' => self::AUTHOR_PAGE_SLUG],
+            ]);
+        }
+
+        SetupPageUrlsAction::run($page);
+        $page->load('pageUrl.siteDomain');
+
+        return $page;
+    }
+
+    public function createAuthorResultsLayout(): Layout
+    {
+        $containers = [
+            'main' => [
+                'meta' => [
+                    'colspan' => 9,
+                ],
+                'widgets' => [
+                    ['widget_key' => 'breadcrumbs'],
+                    ['widget_key' => 'page-content'],
+                    ['widget_key' => 'page-slot'],
+                ],
+            ],
+            'sidebar' => [
+                'meta' => [
+                    'colspan' => 3,
+                    'override_columns' => 1,
+                    'container' => 'full',
+                    'padding' => ['md'],
+                    'html_class' => 'sidebar-sticky space-y-8',
+                ],
+                'widgets' => [
+                    ['widget_key' => 'latest-articles', 'meta' => ['hide_no_results' => true]],
+                    ['widget_key' => 'tags', 'meta' => ['hide_no_results' => true]],
+                    ['widget_key' => 'archives', 'meta' => ['hide_no_results' => true]],
+                ],
+            ],
+        ];
+
+        $layout = Layout::query()->firstOrNew(['key' => BlogLayoutEnum::AuthorResults->value]);
+
+        $layout->forceFill([
+            'name' => __('capell-blog::generic.author_results'),
+            'group' => LayoutGroupEnum::System->value,
+            'containers' => $containers,
+        ])->save();
+
+        return $layout;
     }
 
     public function createTagPageType(): Blueprint

@@ -14,6 +14,7 @@ use Capell\Blog\Support\RenderHooks\ArticleMetaRenderHook;
 use Capell\Blog\Support\RenderHooks\BeforeContentTagsRenderHook;
 use Capell\Blog\Support\RenderHooks\FooterPagesRenderHook;
 use Capell\Blog\Support\RenderHooks\FooterTagsRenderHook;
+use Capell\Blog\Support\RenderHooks\PaginationRelLinksRenderHook;
 use Capell\Blog\Support\Sitemap\ArchivesSitemap;
 use Capell\Blog\Support\Sitemap\ArticlesSitemap;
 use Capell\Blog\Support\Sitemap\TagsSitemap;
@@ -192,6 +193,16 @@ final class FrontendServiceProvider extends ServiceProvider
             extension: new BeforeContentTagsRenderHook,
             owner: 'capell-app/blog',
             key: 'before-content-tags',
+            cacheSafe: true,
+        );
+
+        // Path-based pagination gives each page number its own URL, so the
+        // emitted rel links vary with the cache key rather than within it.
+        $registrar->contribute(
+            location: RenderHookLocation::HeadClose,
+            extension: new PaginationRelLinksRenderHook,
+            owner: 'capell-app/blog',
+            key: 'pagination-rel-links',
             cacheSafe: true,
         );
 

@@ -123,11 +123,20 @@ test('articles sitemap nests published articles below the blog page', function (
         ->type($articleType)
         ->withTranslations($site->languages)
         ->create();
+    $articleWithoutUrl = Article::factory()
+        ->site($site)
+        ->layout($articleLayout)
+        ->type($articleType)
+        ->withTranslations($site->languages)
+        ->create(['name' => 'Unlinked article']);
+    $articleWithoutUrl->pageUrls()->delete();
+    $articleWithoutUrl->unsetRelation('pageUrl');
 
     $sitemapPages = (new ArticlesSitemap($site, $siteDomain, $siteDomain->language))->fetch();
     $blogNode = $sitemapPages->first();
 
     expect($sitemapPages)->toHaveCount(1)
+        ->and($articleWithoutUrl->pageUrl)->toBeNull()
         ->and($blogNode->pageId)->toBe($blogPage->id)
         ->and($blogNode->children)->toHaveCount(1)
         ->and($blogNode->children->first()->pageId)->toBe($article->id)

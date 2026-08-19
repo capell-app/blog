@@ -43,9 +43,11 @@ class EnsureArticlePublishingDefaultsAction
         $blogCreator->createBlogPageLayout();
         $blogCreator->createTagResultsLayout();
         $blogCreator->createTagsLayout();
+        $blogCreator->createAuthorResultsLayout();
 
         $blogCreator->createArticlePageType();
         $blogCreator->createArchivePageType();
+        $blogCreator->createAuthorPageType();
         $blogCreator->createBlogPageType();
         $blogCreator->createTagPageType();
     }

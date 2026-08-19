@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Capell\Blog\Enums;
 
 use Capell\Blog\Livewire\Page\Archive;
+use Capell\Blog\Livewire\Page\Author;
 use Capell\Blog\Livewire\Page\Blog;
 use Capell\Blog\Livewire\Page\Tag;
 use Capell\Core\Enums\Attribute\Component;
@@ -20,6 +21,9 @@ enum LivewirePageComponentEnum: string implements EnumAttributeInterface
 
     #[Component(Archive::class)]
     case ArchivePage = 'capell-blog::page.archive';
+
+    #[Component(Author::class)]
+    case AuthorPage = 'capell-blog::page.author';
 
     #[Component(Blog::class)]
     case BlogPage = 'capell-blog::page.blog';

@@ -253,7 +253,10 @@ class Article extends Model implements Blueprintable, DraftableContract, HasMedi
     /** @return MorphOne<PageUrl, Model> */
     public function pageUrl(): MorphOne
     {
-        return $this->morphOne(PageUrl::class, 'pageable')->withDefault(['site_id' => $this->site_id]);
+        /** @var MorphOne<PageUrl, Model> $relation */
+        $relation = $this->morphOne(PageUrl::class, 'pageable');
+
+        return $relation;
     }
 
     /** @return MorphMany<PageUrl, Model> */

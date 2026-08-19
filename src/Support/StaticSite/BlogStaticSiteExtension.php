@@ -41,14 +41,15 @@ class BlogStaticSiteExtension
             return;
         }
 
-        if ($tagPage->pageUrl === null) {
+        $tagPageUrl = $tagPage->pageUrl;
+        if ($tagPageUrl === null || ! is_string($tagPageUrl->url) || $tagPageUrl->url === '') {
             return;
         }
 
+        $base = rtrim($tagPageUrl->url, '/*');
         $tagsQuery = TagLoader::getTagsQuery($site, $language);
-        $tagsQuery->chunk(100, function (Collection $tags) use ($tagPage, $language, $visit): void {
-            $tags->each(function (Tag $tag) use ($tagPage, $language, $visit): void {
-                $base = rtrim($tagPage->pageUrl->url, '/*');
+        $tagsQuery->chunk(100, function (Collection $tags) use ($base, $language, $visit): void {
+            $tags->each(function (Tag $tag) use ($base, $language, $visit): void {
                 $slug = $tag->getTranslation('slug', $language->code);
                 $url = $base . '/' . $slug;
                 $visit($url);
@@ -74,11 +75,16 @@ class BlogStaticSiteExtension
 
         $archives->each(function (ArchiveMonthData $archive) use ($pageModel, $site, $language, $visit): void {
             $archivePage = $pageModel::getFirstPageByTypeForSite('archive', $site, $language);
-            if ($archivePage === null || $archivePage->pageUrl === null) {
+            if ($archivePage === null) {
                 return;
             }
 
-            $base = rtrim($archivePage->pageUrl->url, '/*');
+            $archivePageUrl = $archivePage->pageUrl;
+            if ($archivePageUrl === null || ! is_string($archivePageUrl->url) || $archivePageUrl->url === '') {
+                return;
+            }
+
+            $base = rtrim($archivePageUrl->url, '/*');
             $url = $base . '/' . $archive->year . '/' . str_pad((string) $archive->month, 2, '0', STR_PAD_LEFT);
             $visit($url);
         });

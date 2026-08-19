@@ -46,6 +46,42 @@ it('renders an Atom feed variant for published blog articles', function (): void
         ->not->toContain('Future article');
 });
 
+it('falls back to a short body excerpt when no summary was authored', function (): void {
+    blogFeedFixture();
+
+    $xml = get('https://example.com/blog/feed.xml')->assertOk()->content();
+
+    expect($xml)
+        ->toContain('<description>Summary with markup for XML escaping.</description>')
+        ->not->toContain('<description></description>');
+});
+
+it('skips published articles without persisted page URLs from the blog feed', function (): void {
+    $fixture = blogFeedFixture();
+
+    $article = Article::factory()
+        ->site($fixture['site'])
+        ->withTranslations($fixture['site']->languages)
+        ->create([
+            'name' => 'Unlinked article',
+            'visible_from' => CarbonImmutable::parse('2026-01-17 10:00:00'),
+        ]);
+    $article->translation()->update([
+        'title' => 'Unlinked article',
+        'content' => 'This article has no public URL.',
+    ]);
+    $article->pageUrls()->delete();
+    $article->unsetRelation('pageUrl');
+
+    expect($article->pageUrl)->toBeNull();
+
+    $xml = get('https://example.com/blog/feed.xml')->assertOk()->content();
+
+    expect($xml)
+        ->not->toContain('Unlinked article')
+        ->and(substr_count($xml, '<item>'))->toBe(1);
+});
+
 /**
  * @return array{site: Site}
  */

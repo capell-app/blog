@@ -68,12 +68,21 @@ class ProvisionBlogPublishingPagesAction
             layout: $blogCreator->createTagResultsLayout(),
         );
 
+        $authorPage = $blogCreator->createAuthorPage(
+            $request->site,
+            $blogPage,
+            languages: $request->languages,
+            type: $this->getPageType($blogCreator, BlogPageTypeEnum::Author->value),
+            layout: $blogCreator->createAuthorResultsLayout(),
+        );
+
         $surface = new BlogPublishingSurfaceData(
             blogPage: $blogPage,
             archivesPage: $archivesPage,
             archivePage: $archivePage,
             tagsPage: $tagsPage,
             tagPage: $tagPage,
+            authorPage: $authorPage,
         );
 
         foreach ($surface->pages() as $page) {
@@ -93,6 +102,7 @@ class ProvisionBlogPublishingPagesAction
 
         $createdType = match ($key) {
             BlogPageTypeEnum::Archive->value => $blogCreator->createArchivePageType(),
+            BlogPageTypeEnum::Author->value => $blogCreator->createAuthorPageType(),
             BlogPageTypeEnum::Blog->value => $blogCreator->createBlogPageType(),
             BlogPageTypeEnum::Tag->value => $blogCreator->createTagPageType(),
             PageTypeEnum::System->value => resolve(BlueprintCreator::class)->systemPageType(),

@@ -43,7 +43,8 @@ it('creates the blog publishing surface with translations and urls', function ()
         ->and($surface->archivesPage->parent_id)->toBe($surface->blogPage->id)
         ->and($surface->archivePage->parent_id)->toBe($surface->archivesPage->id)
         ->and($surface->tagsPage->parent_id)->toBe($surface->blogPage->id)
-        ->and($surface->tagPage->parent_id)->toBe($surface->tagsPage->id);
+        ->and($surface->tagPage->parent_id)->toBe($surface->tagsPage->id)
+        ->and($surface->authorPage->parent_id)->toBe($surface->blogPage->id);
 
     $siteLanguages = $site->languages()->pluck('languages.id');
 
@@ -53,6 +54,7 @@ it('creates the blog publishing surface with translations and urls', function ()
         $surface->archivePage,
         $surface->tagsPage,
         $surface->tagPage,
+        $surface->authorPage,
     ] as $page) {
         expect($page->translations()->whereIn('language_id', $siteLanguages)->count())->toBe($siteLanguages->count())
             ->and($page->pageUrls()->whereIn('language_id', $siteLanguages)->count())->toBe($siteLanguages->count());
@@ -98,6 +100,7 @@ it('creates the blog publishing surface when navigation is disabled despite its 
         ->and($surface->archivePage)->toBeInstanceOf(Page::class)
         ->and($surface->tagsPage)->toBeInstanceOf(Page::class)
         ->and($surface->tagPage)->toBeInstanceOf(Page::class)
+        ->and($surface->authorPage->site_id)->toBe($site->id)
         ->and($navigation->refresh()->items->toCollection())->toBeEmpty();
 });
 
@@ -110,7 +113,8 @@ it('creates blog archive and tag pages with the expected urls', function (): voi
         ->and($surface->archivesPage->pageUrls()->pluck('url')->all())->toContain('/blog/archives')
         ->and($surface->archivePage->pageUrls()->pluck('url')->all())->toContain('/blog/archives/*')
         ->and($surface->tagsPage->pageUrls()->pluck('url')->all())->toContain('/blog/tags')
-        ->and($surface->tagPage->pageUrls()->pluck('url')->all())->toContain('/blog/tags/*');
+        ->and($surface->tagPage->pageUrls()->pluck('url')->all())->toContain('/blog/tags/*')
+        ->and($surface->authorPage->pageUrls()->pluck('url')->all())->toContain('/blog/author/*');
 });
 
 it('links the blog page into main and footer navigation', function (): void {
@@ -152,6 +156,33 @@ it('is idempotent for a site', function (): void {
         ->and(Page::query()
             ->where('site_id', $site->id)
             ->whereHas('blueprint', fn (Builder $query): Builder => $query->where('key', BlogPageTypeEnum::Tag->value))
+            ->count())->toBe(1)
+        ->and(Page::query()
+            ->where('site_id', $site->id)
+            ->whereHas('blueprint', fn (Builder $query): Builder => $query->where('key', BlogPageTypeEnum::Author->value))
+            ->count())->toBe(1);
+});
+
+it('adds the author archive page to an already provisioned blog surface', function (): void {
+    $site = Site::factory()->withTranslations()->create();
+
+    $surface = EnsureBlogPublishingSurfaceAction::run($site);
+
+    $surface->authorPage->translations()->delete();
+    $surface->authorPage->pageUrls()->delete();
+    $surface->authorPage->forceDelete();
+
+    expect(Page::query()
+        ->where('site_id', $site->id)
+        ->whereHas('blueprint', fn (Builder $query): Builder => $query->where('key', BlogPageTypeEnum::Author->value))
+        ->count())->toBe(0);
+
+    $reprovisioned = EnsureBlogPublishingSurfaceAction::run($site);
+
+    expect($reprovisioned->authorPage->pageUrls()->pluck('url')->all())->toContain('/blog/author/*')
+        ->and(Page::query()
+            ->where('site_id', $site->id)
+            ->whereHas('blueprint', fn (Builder $query): Builder => $query->where('key', BlogPageTypeEnum::Author->value))
             ->count())->toBe(1);
 });
 

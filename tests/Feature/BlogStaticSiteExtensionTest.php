@@ -59,3 +59,33 @@ it('generates archive URLs for static site', function (): void {
         expect($visited)->toContain($expectedUrl);
     }
 });
+
+it('skips archive URLs when the archive page has no URL row', function (): void {
+    $archiveDate = CarbonImmutable::now()->subMonths(2);
+    $blogCreator = resolve(BlogCreator::class);
+
+    $language = Language::factory()->create();
+    $site = Site::factory()->recycle($language)->withTranslations()->create();
+    $domain = SiteDomain::factory()->language($language)->for($site)->create();
+
+    Article::factory()
+        ->count(2)
+        ->site($site)
+        ->withTranslations()
+        ->state(['visible_from' => $archiveDate])
+        ->create();
+
+    $blogPage = $blogCreator->createBlogPage($site);
+    $archivesPage = $blogCreator->createArchivesPage($blogPage);
+    $archivePage = $blogCreator->createArchivePage($archivesPage);
+    $archivePage->pageUrls()->delete();
+    $archivePage->unsetRelation('pageUrl');
+
+    $visited = [];
+    (new BlogStaticSiteExtension)($site, $domain, function (string $url) use (&$visited): void {
+        $visited[] = $url;
+    });
+
+    expect($archivePage->pageUrl)->toBeNull()
+        ->and($visited)->toBeEmpty();
+});

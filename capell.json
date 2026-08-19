@@ -103,11 +103,13 @@
             "class": "Capell\\Blog\\Manifest\\BlogFrontendComponentsContribution",
             "componentClasses": [
                 "Capell\\Blog\\Livewire\\Page\\Archive",
+                "Capell\\Blog\\Livewire\\Page\\Author",
                 "Capell\\Blog\\Livewire\\Page\\Blog",
                 "Capell\\Blog\\Livewire\\Page\\Tag"
             ],
             "keys": [
                 "capell-blog::page.archive",
+                "capell-blog::page.author",
                 "capell-blog::page.blog",
                 "capell-blog::page.tag",
                 "capell-blog::widget.page.archives",
@@ -229,7 +231,10 @@
             "routeNames": [
                 "capell.blog.feed.atom",
                 "capell.blog.feed.rss",
-                "capell.blog.feed.xml"
+                "capell.blog.feed.xml",
+                "capell.blog.tag.feed.atom",
+                "capell.blog.tag.feed.rss",
+                "capell.blog.tag.feed.xml"
             ],
             "auth": "public",
             "csrfExemptRoutes": [],

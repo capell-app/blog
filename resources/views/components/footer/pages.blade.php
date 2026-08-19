@@ -9,8 +9,10 @@
         @forelse ($pages as $page)
             @php
                 $publishDate = $page->getPublishDate();
-                $url = $page->pageUrl->full_url;
+                $url = $page->pageUrl?->full_url;
             @endphp
+
+            @continue(blank($url))
 
             <div @class(['grid', 'grid-cols-4 gap-x-3' => $page->image])>
                 @if ($page->image)
