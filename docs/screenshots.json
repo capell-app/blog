@@ -26,6 +26,7 @@
             "surface": "admin",
             "targetType": "admin-surface",
             "target": "ArticleResource.create",
+            "url": "/blog/article/create",
             "required": true,
             "notes": "Requires seeded sites, article type, layouts, and tags so relationship fields are populated. The batch harness could not complete extension install until required dependency extensions were marked installed.",
             "useCase": "An editor creates or updates an article with publishing windows, metadata, layout selection, media, and taxonomy.",

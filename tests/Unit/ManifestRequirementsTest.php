@@ -158,6 +158,29 @@ describe('blog capell.json manifest', function (): void {
             ->toContain('docs/screenshots/create-edit-article-form-dark.png');
     });
 
+    it('declares the real Blog create route for its article-form capture', function (): void {
+        $screenshots = json_decode(
+            File::get(__DIR__ . '/../../docs/screenshots.json'),
+            associative: true,
+            flags: JSON_THROW_ON_ERROR,
+        );
+
+        throw_unless(is_array($screenshots), RuntimeException::class, 'Expected the Blog screenshot manifest.');
+
+        $entries = $screenshots['entries'] ?? null;
+        throw_unless(is_array($entries), RuntimeException::class, 'Expected Blog screenshot entries.');
+
+        $entry = collect($entries)->firstWhere('id', 'create-edit-article-form');
+        throw_unless(is_array($entry), RuntimeException::class, 'Expected the Blog article-form screenshot entry.');
+
+        expect($entry)
+            ->toMatchArray([
+                'target' => 'ArticleResource.create',
+                'url' => '/blog/article/create',
+                'required' => true,
+            ]);
+    });
+
     it('registers the full blog demo command', function () use ($blogManifest): void {
         $manifest = $blogManifest();
 
