@@ -151,7 +151,10 @@
             "type": "migration",
             "class": "Capell\\Blog\\Manifest\\BlogMigrationsContribution",
             "tables": ["articles"],
-            "migrationFiles": ["2026_05_10_190842_01_create_articles_table"]
+            "migrationFiles": [
+                "2026_05_10_190842_01_create_articles_table",
+                "2026_08_28_000003_change_article_visibility_to_datetime"
+            ]
         },
         {
             "type": "console-command",

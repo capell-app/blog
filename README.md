@@ -56,7 +56,7 @@ Screenshot contract: `docs/screenshots.json`.
 ## Technical Shape
 
 - Service providers: `Capell\Blog\Providers\ConsoleServiceProvider`, `Capell\Blog\Providers\BlogServiceProvider`, `Capell\Blog\Providers\AdminServiceProvider`, `Capell\Blog\Providers\FrontendServiceProvider`.
-- Migrations: `packages/blog/database/migrations/2026_05_10_190842_01_create_articles_table.php`.
+- Migrations: `packages/blog/database/migrations/2026_05_10_190842_01_create_articles_table.php`, `packages/blog/database/migrations/2026_08_28_000003_change_article_visibility_to_datetime.php`.
 - Models: `Article`.
 - Filament classes: `ArticleSelect`, `SettingsTab`, `TagsInput`, `ArticlePageConfigurator`, `ArticleWidgetConfigurator`, `RelatedWidgetConfigurator`, `ArticleResource`, `CreateArticle`, `EditArticle`, `ListArticles`, `ArticleForm`, `ArticlePagesTable`, `and 4 more`.
 - Livewire components: `Archive`, `Author`, `Blog`, `Tag`.
@@ -77,7 +77,7 @@ Screenshot contract: `docs/screenshots.json`.
 - Required tables: `articles`.
 - Models: `Article`.
 - Core record references in migrations: `sites via site_id`, `layouts via layout_id`.
-- Migration files: `2026_05_10_190842_01_create_articles_table.php`.
+- Migration files: `2026_05_10_190842_01_create_articles_table.php`, `2026_08_28_000003_change_article_visibility_to_datetime.php`.
 - Migration impact: run host migrations through the package install flow before opening package surfaces.
 - Deletion/retention behaviour: migrations declare cascade-on-delete relationships; no timed pruning or retention schedule is declared in `capell.json`.
 

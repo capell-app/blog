@@ -136,6 +136,10 @@ function blogRichRouteQueryBudgetFixture(int $articleCount): array
 
 function blogMeasurePublicRouteQueries(string $url): int
 {
+    // Fixture saves queue graph/cache maintenance through Laravel's deferred
+    // callback queue. Drain that setup work before measuring the public route.
+    defer()->invoke();
+
     DB::flushQueryLog();
     DB::enableQueryLog();
 
