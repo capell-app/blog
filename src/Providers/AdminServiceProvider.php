@@ -59,10 +59,6 @@ final class AdminServiceProvider extends ServiceProvider
             name: strtolower(ResourceEnum::Article->name),
         ));
 
-        CapellAdmin::contributeToAdminSurface(AdminSurfaceContributionData::resource(
-            class: ResourceEnum::Tag->value,
-            group: ResourceEnum::Tag->name,
-        ));
     }
 
     private function registerWidgetComponents(): void
@@ -77,7 +73,7 @@ final class AdminServiceProvider extends ServiceProvider
             $widgetComponents[$widgetComponent->name] = $widgetComponent->value;
         }
 
-        app(PackageSurfaceRegistrar::class)->components(
+        resolve(PackageSurfaceRegistrar::class)->components(
             self::LAYOUT_BUILDER_COMPONENT_TYPE_ENUM::Widget->name,
             $widgetComponents,
         );

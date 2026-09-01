@@ -12,7 +12,7 @@ Run setup again after adding a site or language when its Blog publishing surface
 
 ## Create and publish articles
 
-Open **Articles** in the admin. Article permissions and assigned-site access control which records an administrator can see or change; global administrators can work across sites. Choose the Site when creating, then add translated title/content, layout, featured image, tags, URLs, and publish dates. Tags are shared through the Tags package and have their own permissions.
+Open **Articles** in the admin. Article permissions and assigned-site access control which records an administrator can see or change; global administrators can work across sites. Choose the Site when creating, then add translated title/content, layout, featured image, tags, URLs, and publish dates. Tags are shared through the Tags package, which owns the Tags admin resource and its permissions.
 
 The public article URL is generated beneath that site's Blog page for each translation. An article needs a matching translation and an enabled Page URL for the requested site/language before it can appear in listings or feeds. Use the article list's site and language filters to find incomplete coverage.
 

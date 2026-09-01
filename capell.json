@@ -47,10 +47,9 @@
             "type": "admin-resource",
             "class": "Capell\\Blog\\Manifest\\BlogAdminResourcesContribution",
             "resourceClasses": [
-                "Capell\\Blog\\Filament\\Resources\\Articles\\ArticleResource",
-                "Capell\\Tags\\Filament\\Resources\\Tags\\TagResource"
+                "Capell\\Blog\\Filament\\Resources\\Articles\\ArticleResource"
             ],
-            "groups": ["Page", "Tag"]
+            "groups": ["Page"]
         },
         {
             "type": "configurator",

@@ -28,7 +28,6 @@ use Capell\Core\Contracts\Extensions\RegistersExtensionRenderHook;
 use Capell\Core\Contracts\Extensions\RegistersExtensionRoute;
 use Capell\Core\Contracts\Extensions\RunsExtensionMigration;
 use Capell\Core\Support\Manifest\ManifestValidator;
-use Capell\Tags\Filament\Resources\Tags\TagResource;
 use Capell\Tags\Models\Tag;
 use Illuminate\Support\Facades\File;
 
@@ -217,9 +216,8 @@ describe('blog capell.json manifest', function (): void {
                 'class' => BlogAdminResourcesContribution::class,
                 'resourceClasses' => [
                     ArticleResource::class,
-                    TagResource::class,
                 ],
-                'groups' => ['Page', 'Tag'],
+                'groups' => ['Page'],
             ])
             ->toContain([
                 'type' => 'configurator',

@@ -4,15 +4,11 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Providers;
 
-use Capell\Admin\Data\AdminSurfaceContributionData;
-use Capell\Admin\Enums\ResourceEnum as AdminResourceEnum;
-use Capell\Admin\Facades\CapellAdmin;
 use Capell\Blog\Actions\ClearBlogContentCacheAction;
 use Capell\Blog\Actions\ClearBlogTagCacheAction;
 use Capell\Blog\Actions\PrepareBlogFooterRenderDataAction;
 use Capell\Blog\Actions\SanitizeBlogHtmlAction;
 use Capell\Blog\Enums\LivewirePageComponentEnum;
-use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Enums\WidgetComponentEnum;
 use Capell\Blog\Http\Controllers\BlogFeedController;
 use Capell\Blog\Http\Controllers\BlogTagFeedController;
@@ -112,6 +108,7 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
             ->name('capell.blog.tag.feed.atom');
     }
 
+    #[Override]
     public function registeringPackage(): void
     {
         parent::registeringPackage();
@@ -123,14 +120,6 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
             $this->app->tag([BlogSidebarWidgetContributor::class], self::LAYOUT_SIDEBAR_ELEMENT_CONTRIBUTOR::TAG);
         }
 
-        BlogModelRegistrar::register();
-        $this->registerTypes();
-
-        $this->app->booting(function (): void {
-            if ($this->isPackageInstalled()) {
-                $this->registerAdminResources();
-            }
-        });
     }
 
     #[Override]
@@ -147,7 +136,6 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
             ->registerModels()
             ->registerPolicies()
             ->registerModelRelations()
-            ->registerAdminResources()
             ->registerAboutCommand()
             ->registerPackageAssets()
             ->registerBlazeComponents()
@@ -187,22 +175,6 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
     private function registerPolicies(): self
     {
         Gate::policy(Article::class, ArticlePolicy::class);
-
-        return $this;
-    }
-
-    private function registerAdminResources(): self
-    {
-        CapellAdmin::contributeToAdminSurface(AdminSurfaceContributionData::resource(
-            class: ResourceEnum::Article->value,
-            group: AdminResourceEnum::Page->name,
-            name: strtolower(ResourceEnum::Article->name),
-        ));
-
-        CapellAdmin::contributeToAdminSurface(AdminSurfaceContributionData::resource(
-            class: ResourceEnum::Tag->value,
-            group: ResourceEnum::Tag->name,
-        ));
 
         return $this;
     }
