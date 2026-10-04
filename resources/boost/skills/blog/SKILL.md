@@ -1,6 +1,6 @@
 ---
 name: blog
-description: Use when editing Capell Blog articles, archives, tag pages, widgets, or sitemaps.
+description: Article publishing, archive/tag pages, LayoutBuilder article widgets, and blog sitemaps. Use when editing Capell Blog articles, archives, tag pages, widgets, or sitemaps.
 ---
 
 # Capell Blog

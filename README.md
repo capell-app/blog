@@ -10,8 +10,6 @@ Blog adds article publishing, archive and tag page types, related-article widget
 
 Editors draft, schedule, tag, and publish articles from ArticleResource. Visitors can browse published article, archive, and tag pages or subscribe to a feed.
 
-Evidence: [`capell.json`](capell.json), [`src/Manifest/BlogPageTypesContribution.php`](src/Manifest/BlogPageTypesContribution.php), [`src/Manifest/BlogRoutesContribution.php`](src/Manifest/BlogRoutesContribution.php), [`docs/overview.admin.md`](docs/overview.admin.md), [`docs/screenshots.json`](docs/screenshots.json), [`tests/Feature/Pages/ArticlePageTest.php`](tests/Feature/Pages/ArticlePageTest.php), [`tests/Feature/BlogFeedTest.php`](tests/Feature/BlogFeedTest.php).
-
 Status details:
 
 - Status: Available
@@ -26,8 +24,6 @@ Status details:
 **For developers:** Blog registers the article page type, configurators, feed routes, and render-data Actions as package extension points instead of adding article behavior to core.
 
 **For teams:** Editorial teams can keep work private as a draft, schedule publication, organize articles with tags, and reuse related content elsewhere on the site.
-
-Evidence: [`capell.json`](capell.json), [`src/Filament/Configurators/Articles/ArticlePageConfigurator.php`](src/Filament/Configurators/Articles/ArticlePageConfigurator.php), [`src/Actions/BuildBlogFeedXmlAction.php`](src/Actions/BuildBlogFeedXmlAction.php), [`src/Actions/BuildBlogResultsViewDataAction.php`](src/Actions/BuildBlogResultsViewDataAction.php), [`docs/overview.admin.md`](docs/overview.admin.md), [`docs/screenshots.json`](docs/screenshots.json), [`tests/Feature/Filament/Resources/Article/Pages/EditArticleTest.php`](tests/Feature/Filament/Resources/Article/Pages/EditArticleTest.php).
 
 ## Screens And Workflow
 
@@ -241,7 +237,7 @@ Screenshot contract: `docs/screenshots.json`.
 - Required packages: `capell-app/admin`, `capell-app/content-sections`, `capell-app/core`, `capell-app/discovery-foundation`, `capell-app/frontend`, `capell-app/html-cache`, `capell-app/layout-builder`, `capell-app/tags`.
 - Admin navigation: declares `admin-resource: BlogAdminResourcesContribution`; each Filament page or resource controls its own navigation visibility.
 - Admin/editor extensions: `configurator: BlogConfiguratorsContribution`.
-- Permissions: the manifest projects the default Shield permission keys for install-impact reporting; `Capell\Blog\Manifest\BlogPermissionsContribution` resolves the same subject and ability descriptors against the host Shield case and separator at runtime. Shield-generated widget permission names and grants also depend on host configuration; access is governed by `ArticlePolicy` and `TagPolicy`.
+- Permissions: `ViewAny:Article`, `View:Article`, `Create:Article`, `Update:Article`, `Delete:Article`, `DeleteAny:Article`, `Restore:Article`, `RestoreAny:Article`, `ForceDelete:Article`, `ForceDeleteAny:Article`, `Replicate:Article`, `Reorder:Article`, `ViewAny:Tag`, `View:Tag`, `Create:Tag`, `Update:Tag`, `Delete:Tag`, `DeleteAny:Tag`, `Restore:Tag`, `RestoreAny:Tag`, `ForceDelete:Tag`, `ForceDeleteAny:Tag`, `Replicate:Tag`, `Reorder:Tag`; permission contributions: `Capell\Blog\Manifest\BlogPermissionsContribution`; Shield-generated widget permissions for `Capell\Blog\Filament\Widgets\ListArticlesFilamentWidget` (names and grants depend on host Shield configuration); access also governed by package policies: `ArticlePolicy`.
 - Public routes: registers `BlogRoutesContribution`.
 - Database changes: package migrations are declared.
 - Config: no package config files.
@@ -270,7 +266,7 @@ Screenshot contract: `docs/screenshots.json`.
 1. Install the package: `composer require capell-app/blog`.
 2. Run the package setup: `php artisan capell:blog-install`.
 3. See it working: run `php artisan capell:blog-demo`.
-4. Open the package admin surface at `/blog/article` and confirm Blog is available.
+4. Open the package admin surface at `/admin/blog/article` and confirm Blog is available.
 
 ## Next Steps
 
@@ -285,6 +281,5 @@ Screenshot contract: `docs/screenshots.json`.
 - [Capell documentation design system](../../docs/DESIGN_SYSTEM.md)
 - [Capell and package ERD notes](../../docs/erd/capell-and-package-erds.md)
 - Related packages: [Content Sections](../content-sections/README.md), [Discovery Foundation](../discovery-foundation/README.md), [Html Cache](../html-cache/README.md), [Layout Builder](../layout-builder/README.md), [Tags](../tags/README.md), [Comments](../comments/README.md), [Navigation](../navigation/README.md), [Insights](../insights/README.md), [Publishing Studio](../publishing-studio/README.md), [Site Discovery](../site-discovery/README.md), [Url Manager](../url-manager/README.md).
-- Focused tests: `vendor/bin/pest packages/blog/tests --configuration=phpunit.xml`.
 
 <!-- prettier-ignore-end -->

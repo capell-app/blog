@@ -59,9 +59,13 @@ test('rich blog archive and tag routes stay inside the public query budget', fun
     'blog index' => ['blog_url', 115],
     // Includes the cache-safe public widget snapshot lookup, port-aware
     // domain resolution, and bounded pre-render footer hydration required by
-    // layout-native archive pages.
-    'archive month' => ['archive_url', 134],
-    'tag result' => ['tag_url', 148],
+    // layout-native archive pages. Core's required morph map also lists each
+    // model's stored class name, so resolving the public pageable morph types
+    // checks every Pageable model's table twice, on each of two lookups: four
+    // extra schema queries on these two routes (131 and 145 measured before
+    // that change). Lower the budgets again once Core checks each model once.
+    'archive month' => ['archive_url', 138],
+    'tag result' => ['tag_url', 152],
 ]);
 
 test('Foundation hands prepared values to the Blog request before runtime hydration', function (): void {
