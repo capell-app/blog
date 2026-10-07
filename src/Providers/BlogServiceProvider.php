@@ -69,6 +69,11 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
 
     public static string $packageName = 'capell-app/blog';
 
+    private bool $feedRoutesRegistered = false;
+
+    private bool $installedRuntimeBooted = false;
+
+    #[Override]
     public function configurePackage(Package $package): void
     {
         $package
@@ -77,9 +82,74 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
             ->hasTranslations();
     }
 
+    #[Override]
     public function bootingPackage(): void
     {
-        if (! $this->isPackageInstalled()) {
+        $this->registerFeedRoutes();
+    }
+
+    #[Override]
+    public function registeringPackage(): void
+    {
+        parent::registeringPackage();
+
+        $this->app->register(AdminServiceProvider::class);
+        $this->app->register(ConsoleServiceProvider::class);
+
+        if (interface_exists(self::LAYOUT_SIDEBAR_ELEMENT_CONTRIBUTOR)) {
+            $this->app->tag([BlogSidebarWidgetContributor::class], self::LAYOUT_SIDEBAR_ELEMENT_CONTRIBUTOR::TAG);
+        }
+
+    }
+
+    #[Override]
+    protected function isPackageInstalled(): bool
+    {
+        return CapellCore::getPackage(self::$packageName)->isInstalled();
+    }
+
+    #[Override]
+    protected function bootInstalledPackage(): self
+    {
+        if ($this->installedRuntimeBooted) {
+            return $this;
+        }
+
+        $this->registerFeedRoutes();
+        $this->app->getProvider(AdminServiceProvider::class)?->callBootedCallbacks();
+
+        $this
+            ->registerRelationships()
+            ->registerModels()
+            ->registerPolicies()
+            ->registerModelRelations()
+            ->registerAboutCommand()
+            ->registerPackageAssets()
+            ->registerBlazeComponents()
+            ->registerSafeHtmlDirective()
+            ->registerBladeComponents()
+            ->registerPageRenderables()
+            ->registerWidgetRenderables()
+            ->registerPackageLivewireComponents()
+            ->registerTypes()
+            ->registerPublicUrlContributors()
+            ->registerEditorialCalendarContributors()
+            ->registerFrontendRuntimeManifestContributors()
+            ->registerFrontendRenderPreparation()
+            ->registerCacheInvalidationDependencies()
+            ->registerTranslationEvents()
+            ->registerTagCacheEvents()
+            ->registerArticleMediaCacheEvents()
+            ->registerPublishingStudio();
+
+        $this->installedRuntimeBooted = true;
+
+        return $this;
+    }
+
+    private function registerFeedRoutes(): void
+    {
+        if ($this->feedRoutesRegistered || ! $this->isPackageInstalled()) {
             return;
         }
 
@@ -106,54 +176,8 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
         Route::get('/blog/tag/{slug}/feed.atom', [BlogTagFeedController::class, '__invoke'])
             ->defaults('format', 'atom')
             ->name('capell.blog.tag.feed.atom');
-    }
 
-    #[Override]
-    public function registeringPackage(): void
-    {
-        parent::registeringPackage();
-
-        $this->app->register(AdminServiceProvider::class);
-        $this->app->register(ConsoleServiceProvider::class);
-
-        if (interface_exists(self::LAYOUT_SIDEBAR_ELEMENT_CONTRIBUTOR)) {
-            $this->app->tag([BlogSidebarWidgetContributor::class], self::LAYOUT_SIDEBAR_ELEMENT_CONTRIBUTOR::TAG);
-        }
-
-    }
-
-    #[Override]
-    protected function isPackageInstalled(): bool
-    {
-        return CapellCore::getPackage(self::$packageName)->isInstalled();
-    }
-
-    #[Override]
-    protected function bootInstalledPackage(): self
-    {
-        return $this
-            ->registerRelationships()
-            ->registerModels()
-            ->registerPolicies()
-            ->registerModelRelations()
-            ->registerAboutCommand()
-            ->registerPackageAssets()
-            ->registerBlazeComponents()
-            ->registerSafeHtmlDirective()
-            ->registerBladeComponents()
-            ->registerPageRenderables()
-            ->registerWidgetRenderables()
-            ->registerPackageLivewireComponents()
-            ->registerTypes()
-            ->registerPublicUrlContributors()
-            ->registerEditorialCalendarContributors()
-            ->registerFrontendRuntimeManifestContributors()
-            ->registerFrontendRenderPreparation()
-            ->registerCacheInvalidationDependencies()
-            ->registerTranslationEvents()
-            ->registerTagCacheEvents()
-            ->registerArticleMediaCacheEvents()
-            ->registerPublishingStudio();
+        $this->feedRoutesRegistered = true;
     }
 
     private function registerPackageAssets(): self

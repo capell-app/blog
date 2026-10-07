@@ -91,7 +91,7 @@ test('the editorial queue leads with title state languages and last update', fun
     $article = Article::factory()->withTranslations()->create();
 
     $component = livewire(ListArticles::class)
-        ->assertTableColumnStateSet('name', [$article->translation->title], $article)
+        ->assertTableColumnStateSet('name', $article->translation->title, $article)
         ->assertTableColumnExists('publication_state')
         ->assertTableColumnExists('translation_coverage');
 

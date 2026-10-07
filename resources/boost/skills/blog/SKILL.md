@@ -18,4 +18,4 @@ Article publishing, archive/tag pages, LayoutBuilder article widgets, and blog s
 - Blog depends on LayoutBuilder; do not move widget logic into Core.
 - Keep article publishing actions separate from Filament pages.
 - Preserve sitemap and frontend Livewire behaviour when changing slugs.
-- Run `vendor/bin/pest packages/blog/tests`.
+- Verify customisations in the consuming application's test suite.

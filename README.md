@@ -53,8 +53,8 @@ Screenshot contract: `docs/screenshots.json`.
 
 ### Service providers
 
-- `Capell\Blog\Providers\ConsoleServiceProvider`
 - `Capell\Blog\Providers\BlogServiceProvider`
+- `Capell\Blog\Providers\ConsoleServiceProvider`
 - `Capell\Blog\Providers\AdminServiceProvider`
 - `Capell\Blog\Providers\FrontendServiceProvider`
 

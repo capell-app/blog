@@ -15,15 +15,19 @@ use Capell\LayoutBuilder\Filament\Components\Forms\Widget\Tab\WidgetAdminTab;
 use Capell\LayoutBuilder\Filament\Components\Forms\Widget\Tab\WidgetPresentationTabs;
 use Capell\LayoutBuilder\Filament\Components\Forms\Widget\TranslationsRepeater;
 use Capell\LayoutBuilder\Filament\Configurators\Widgets\DefaultWidgetConfigurator;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Contracts\Support\Htmlable;
 use Override;
 
 class RelatedWidgetConfigurator extends DefaultWidgetConfigurator
@@ -40,7 +44,7 @@ class RelatedWidgetConfigurator extends DefaultWidgetConfigurator
     }
 
     /**
-     * @return array<array-key, mixed>
+     * @return array<int, Component | Action | ActionGroup | string | Htmlable>
      */
     protected function getOptionSchema(Schema $configurator): array
     {

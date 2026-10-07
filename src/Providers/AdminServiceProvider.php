@@ -32,15 +32,20 @@ final class AdminServiceProvider extends ServiceProvider
 
     private const string LAYOUT_BUILDER_CONFIGURATOR_TYPE_ENUM = \Capell\LayoutBuilder\Enums\ConfiguratorTypeEnum::class;
 
+    private bool $installedRuntimeBooted = false;
+
     #[Override]
     public function register(): void
     {
-        //
+        // Installation refreshes callbacks on providers already loaded as metadata.
+        $this->booted(function (): void {
+            $this->boot();
+        });
     }
 
     public function boot(): void
     {
-        if (! CapellCore::getPackage('capell-app/blog')->isInstalled()) {
+        if ($this->installedRuntimeBooted || ! CapellCore::getPackage('capell-app/blog')->isInstalled()) {
             return;
         }
 
@@ -49,6 +54,7 @@ final class AdminServiceProvider extends ServiceProvider
         $this->registerConfigurators();
         $this->registerDefaultPages();
         $this->registerNavigationListener();
+        $this->installedRuntimeBooted = true;
     }
 
     private function registerResources(): void

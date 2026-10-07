@@ -36,7 +36,7 @@
         "conflicts": []
     },
     "providers": {
-        "metadata": [],
+        "metadata": ["Capell\\Blog\\Providers\\BlogServiceProvider"],
         "install": ["Capell\\Blog\\Providers\\ConsoleServiceProvider"],
         "runtime": ["Capell\\Blog\\Providers\\BlogServiceProvider"],
         "admin": ["Capell\\Blog\\Providers\\AdminServiceProvider"],

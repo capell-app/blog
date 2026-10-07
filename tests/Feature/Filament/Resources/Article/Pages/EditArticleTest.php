@@ -16,6 +16,7 @@ use Capell\Core\Models\Translation;
 use Capell\Tags\Enums\TagTypeEnum;
 use Capell\Tags\Models\Tag;
 use Capell\Tests\Support\Concerns\CreatesAdminUser;
+use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Event;
@@ -157,7 +158,14 @@ it('can delete', function (): void {
 });
 
 test('can edit article tags', function (): void {
-    $tags = Tag::factory()->count(3)->type(TagTypeEnum::Page)->create();
+    $tags = Tag::factory()
+        ->count(3)
+        ->type(TagTypeEnum::Page)
+        ->sequence(fn (Sequence $sequence): array => [
+            'name' => ['en' => 'Editable tag ' . $sequence->index],
+            'slug' => ['en' => 'editable-tag-' . $sequence->index],
+        ])
+        ->create();
     $article = Article::factory()->hasAttached($tags->first())->withTranslations()->create();
 
     livewire(EditArticle::class, [

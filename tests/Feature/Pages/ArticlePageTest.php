@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Creator\BlogCreator;
 use Capell\Core\Enums\MediaCollectionEnum;
+use Capell\Core\Models\Language;
 use Capell\Core\Models\Site;
 use Capell\Frontend\Facades\Frontend;
 use Capell\Tags\Enums\TagTypeEnum;
@@ -12,6 +13,7 @@ use Capell\Tags\Models\Tag;
 use Capell\Tests\Fixtures\Models\User;
 use Capell\Tests\Support\Concerns\TestingFrontend;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Support\Collection;
 
@@ -23,13 +25,27 @@ use Sinnbeck\DomAssertions\Asserts\BaseAssert;
 uses(TestingFrontend::class);
 
 test('article page with layout', function (): void {
-    $site = Site::factory()->withTranslations()->create();
+    $translationLanguage = Language::factory()->create(['code' => 'fr', 'locale' => 'fr']);
+    $site = Site::factory()->language($translationLanguage)->withTranslations()->create();
     $language = blogTestLanguage($site->language);
     $user = User::factory()->create();
     $blogCreator = resolve(BlogCreator::class);
     $blogCreator->createTagPage($site);
 
-    $tags = Tag::factory()->count(3)->translate($language)->type(TagTypeEnum::Page)->create();
+    $tags = Tag::factory()
+        ->count(3)
+        ->translate($language)
+        ->type(TagTypeEnum::Page)
+        ->sequence(fn (Sequence $sequence): array => [
+            'name' => ['en' => 'Article tag ' . $sequence->index, $language->code => 'Article tag ' . $language->code . ' ' . $sequence->index],
+            'slug' => ['en' => 'article-tag-' . $sequence->index, $language->code => 'article-tag-' . $language->code . '-' . $sequence->index],
+        ])
+        ->create();
+    foreach ($tags as $tag) {
+        expect($tag->getTranslation('name', $language->code))->not->toBe($tag->getTranslation('name', 'en'))
+            ->and($tag->getTranslation('slug', $language->code))->not->toBe($tag->getTranslation('slug', 'en'));
+    }
+
     $articles = Article::factory()
         ->site($site)
         ->state(['created_by' => $user->id])
@@ -185,6 +201,7 @@ test('related article cache keeps current-page and tag-set listings isolated', f
     $user = User::factory()->create();
     $blogCreator = resolve(BlogCreator::class);
     $blogCreator->createTagPage($site);
+
     $articleType = $blogCreator->createArticlePageType();
     $articleLayout = $blogCreator->createArticleLayout();
     $firstTag = Tag::factory()->translate($language)->type(TagTypeEnum::Page)->site($site)->create();

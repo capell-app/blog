@@ -161,11 +161,16 @@ function blogRichRouteQueryBudgetFixture(int $articleCount): array
     $articleType = $blogCreator->createArticlePageType();
     $articleLayout = $blogCreator->createArticleLayout();
     $author = User::factory()->create(['bio' => 'Writes useful publishing notes.']);
+    // Tag slugs are unique per site and type, so fixture values must not collide.
     $tags = Tag::factory()
         ->count(3)
         ->translate($language)
         ->type(TagTypeEnum::Page)
         ->site($site)
+        ->sequence(fn (Sequence $sequence): array => [
+            'name' => [$language->code => 'Budget tag ' . $sequence->index],
+            'slug' => [$language->code => 'budget-tag-' . $sequence->index],
+        ])
         ->create();
 
     /** @var EloquentCollection<int, Article> $articles */

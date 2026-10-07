@@ -16,6 +16,7 @@ use Capell\Tags\Enums\TagTypeEnum;
 use Capell\Tags\Models\Tag;
 use Capell\Tests\Support\Concerns\TestingFrontend;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Factories\Sequence;
 
 use function Pest\Laravel\get;
 
@@ -132,7 +133,7 @@ test('articles sitemap nests published articles below the blog page', function (
     $articleWithoutUrl->pageUrls()->delete();
     $articleWithoutUrl->unsetRelation('pageUrl');
 
-    $sitemapPages = (new ArticlesSitemap($site, $siteDomain, $siteDomain->language))->fetch();
+    $sitemapPages = new ArticlesSitemap($site, $siteDomain, $siteDomain->language)->fetch();
     $blogNode = $sitemapPages->first();
 
     expect($sitemapPages)->toHaveCount(1)
@@ -199,9 +200,22 @@ test('article page', function (): void {
 test('article page list tags', function (): void {
     $blogCreator = resolve(BlogCreator::class);
 
-    $language = Language::factory()->create();
+    $language = Language::factory()->create(['code' => 'fr', 'locale' => 'fr']);
     $site = Site::factory()->recycle($language)->withTranslations()->create();
-    $tags = Tag::factory()->count(3)->translate($language)->type(TagTypeEnum::Page)->create();
+    $tags = Tag::factory()
+        ->count(3)
+        ->translate($language)
+        ->type(TagTypeEnum::Page)
+        ->sequence(fn (Sequence $sequence): array => [
+            'name' => ['en' => 'Listing tag ' . $sequence->index, $language->code => 'Listing tag ' . $language->code . ' ' . $sequence->index],
+            'slug' => ['en' => 'listing-tag-' . $sequence->index, $language->code => 'listing-tag-' . $language->code . '-' . $sequence->index],
+        ])
+        ->create();
+
+    foreach ($tags as $tag) {
+        expect($tag->getTranslation('name', $language->code))->not->toBe($tag->getTranslation('name', 'en'))
+            ->and($tag->getTranslation('slug', $language->code))->not->toBe($tag->getTranslation('slug', 'en'));
+    }
 
     $blogPage = $blogCreator->createBlogPage($site);
 

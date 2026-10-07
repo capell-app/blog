@@ -8,20 +8,24 @@ use Capell\Admin\Filament\Components\Forms\CacheTimeSelect;
 use Capell\Blog\Enums\RobotsDirective;
 use Capell\Blog\Filament\Components\Forms\Article\ArticleSelect;
 use Capell\Core\Contracts\Pageable;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 
 class SettingsTab
 {
     /**
-     * @param  array<array-key, mixed>  $components
+     * @param  array<int, Component | Action | ActionGroup | string | Htmlable>  $components
      */
     public static function make(Schema $configurator, array $components = []): Tab
     {

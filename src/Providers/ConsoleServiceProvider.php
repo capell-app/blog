@@ -11,6 +11,8 @@ use Capell\Blog\Console\Commands\HeroDemoCommand;
 use Capell\Blog\Console\Commands\InstallCommand;
 use Capell\Blog\Console\Commands\SeedBlogScreenshotFixtureCommand;
 use Capell\Blog\Console\Commands\SetupCommand;
+use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
@@ -19,6 +21,10 @@ final class ConsoleServiceProvider extends ServiceProvider
     #[Override]
     public function register(): void
     {
+        if (! $this->app->runningInConsole()) {
+            return;
+        }
+
         $this->commands([
             CreateBlogPagesCommand::class,
             DemoCommand::class,
@@ -28,5 +34,10 @@ final class ConsoleServiceProvider extends ServiceProvider
             SeedBlogScreenshotFixtureCommand::class,
             SetupCommand::class,
         ]);
+
+        // Composer can add this provider to an already running installer.
+        if ($this->app instanceof Application && $this->app->isBooted()) {
+            Artisan::registerCommand($this->app->make(DemoCommand::class));
+        }
     }
 }
