@@ -41,6 +41,9 @@ use Capell\Core\Models\Layout;
 use Capell\Core\Models\PageUrl;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\Translation;
+use Capell\Core\Support\Activity\ActivityLogCompat;
+use Capell\Core\Support\Activity\LogOptions;
+use Capell\Core\Support\Activity\LogsActivity;
 use Capell\Tags\Models\Concerns\HasTags;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -59,8 +62,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use LogicException;
 use Override;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Staudenmeir\EloquentJsonRelations\HasJsonRelationships;
@@ -164,21 +165,16 @@ class Article extends Model implements Blueprintable, DraftableContract, HasMedi
 
     public function getActivitylogOptions(): LogOptions
     {
-        return LogOptions::defaults()
-            ->useLogName('article')
-            ->logAll()
-            ->logExcept([
-                'updated_at',
-                'created_at',
-                'deleted_at',
-                'workspace_id',
-                'shadowed_by_workspace_id',
-                'created_by',
-                'updated_by',
-                'deleted_by',
-            ])
-            ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
+        return ActivityLogCompat::options('article', [
+            'updated_at',
+            'created_at',
+            'deleted_at',
+            'workspace_id',
+            'shadowed_by_workspace_id',
+            'created_by',
+            'updated_by',
+            'deleted_by',
+        ]);
     }
 
     public function registerMediaCollections(): void
