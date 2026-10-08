@@ -12,7 +12,7 @@ use Override;
 
 class EditArticle extends EditPage
 {
-    use InteractsWithRecord { resolveRecord as baseResolveRecord; }
+    use InteractsWithRecord;
 
     #[Override]
     public static function getResource(): string
