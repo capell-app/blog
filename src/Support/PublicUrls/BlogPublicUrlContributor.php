@@ -15,6 +15,7 @@ use Capell\DiscoveryFoundation\Contracts\PublicUrlContributor;
 use Capell\DiscoveryFoundation\Data\PublicUrlData;
 use Capell\DiscoveryFoundation\Enums\PublicUrlContentType;
 use Capell\SiteDiscovery\Data\SitemapPageData;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 final class BlogPublicUrlContributor implements PublicUrlContributor
@@ -24,8 +25,13 @@ final class BlogPublicUrlContributor implements PublicUrlContributor
      */
     public function publicUrls(): Collection
     {
+        // Tag URLs are rendered against each domain, so every enabled domain is visited rather than one per site and language.
         return SiteDomain::query()
+            ->enabled()
+            ->whereHas('site', fn (Builder $query): Builder => $query->enabled())
+            ->whereHas('language', fn (Builder $query): Builder => $query->enabled())
             ->with(['site', 'language'])
+            ->orderBy('id')
             ->get()
             ->filter(fn (SiteDomain $domain): bool => $domain->site instanceof Site && $domain->language instanceof Language)
             ->flatMap(fn (SiteDomain $domain): Collection => $this->publicUrlsForDomain($domain))

@@ -63,3 +63,22 @@ it('registers the blog public URL contributor when Site Discovery is available',
 
     expect($contributors->contains(fn (mixed $contributor): bool => $contributor instanceof BlogPublicUrlContributor))->toBeTrue();
 });
+
+it('contributes no blog URLs for a disabled site, language or domain', function (string $disabled): void {
+    $siteDomain = SiteDomain::factory()->default()->create(['status' => true]);
+    $site = $siteDomain->site;
+    $site->update(['status' => true]);
+    $siteDomain->language()->update(['status' => true]);
+    resolve(BlogCreator::class)->createBlogPage($site);
+
+    expect((new BlogPublicUrlContributor)->publicUrls())->not->toBeEmpty();
+
+    match ($disabled) {
+        'site' => $site->update(['status' => false]),
+        'language' => $siteDomain->language()->update(['status' => false]),
+        'domain' => $siteDomain->update(['status' => false]),
+        default => throw new InvalidArgumentException('Unknown disabled record.'),
+    };
+
+    expect((new BlogPublicUrlContributor)->publicUrls())->toBeEmpty();
+})->with(['site', 'language', 'domain']);
