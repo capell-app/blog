@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Capell\Blog\Actions;
 
 use Capell\Blog\Models\Article;
+use Capell\Core\Models\Language;
 use Capell\Core\Models\Site;
+use Capell\Core\Models\SiteDomain;
 use Carbon\CarbonImmutable;
 use RuntimeException;
 
@@ -32,6 +34,12 @@ final class SeedBlogScreenshotFixtureAction
         $site = Site::query()->orderBy('id')->first();
 
         throw_unless($site instanceof Site, RuntimeException::class, 'Blog screenshot fixtures require an installed site.');
+
+        $language = $site->language;
+        throw_unless($language instanceof Language, RuntimeException::class, 'Blog screenshot fixtures require a site language.');
+        if (! SiteDomain::query()->where('site_id', $site->getKey())->exists()) {
+            SiteDomain::factory()->site($site)->language($language)->default()->create();
+        }
 
         SeedBlogPublishingSurfaceAction::run();
 
