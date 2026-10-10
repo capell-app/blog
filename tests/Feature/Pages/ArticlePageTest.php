@@ -51,9 +51,9 @@ test('article page with layout', function (): void {
         ->state(['created_by' => $user->id])
         ->withTranslations()
         ->forEachSequence(
-            ['visible_from' => now()->subDays(5)],
-            ['visible_from' => now()->subDays(3)],
-            ['visible_from' => now()->subDays(1)],
+            ['name' => 'Article navigation item 1', 'visible_from' => now()->subDays(5)],
+            ['name' => 'Article navigation item 2', 'visible_from' => now()->subDays(3)],
+            ['name' => 'Article navigation item 3', 'visible_from' => now()->subDays(1)],
         )
         ->create();
     /** @var Article $article */
@@ -152,9 +152,9 @@ test('article neighbor navigation skips adjacent articles without urls', functio
         ->state(['created_by' => $user->id])
         ->withTranslations()
         ->forEachSequence(
-            ['visible_from' => now()->subDays(5)],
-            ['visible_from' => now()->subDays(3)],
-            ['visible_from' => now()->subDays(1)],
+            ['name' => 'Eager article item 1', 'visible_from' => now()->subDays(5)],
+            ['name' => 'Eager article item 2', 'visible_from' => now()->subDays(3)],
+            ['name' => 'Eager article item 3', 'visible_from' => now()->subDays(1)],
         )
         ->create();
 
@@ -213,28 +213,28 @@ test('related article cache keeps current-page and tag-set listings isolated', f
         ->type($articleType)
         ->state(['created_by' => $user->id])
         ->withTranslations($language, ['title' => 'First current article'])
-        ->create(['visible_from' => now()->subDays(4)]);
+        ->create(['name' => 'First current article', 'visible_from' => now()->subDays(4)]);
     $firstRelated = Article::factory()
         ->site($site)
         ->layout($articleLayout)
         ->type($articleType)
         ->state(['created_by' => $user->id])
         ->withTranslations($language, ['title' => 'First related article'])
-        ->create(['visible_from' => now()->subDays(3)]);
+        ->create(['name' => 'First related article', 'visible_from' => now()->subDays(3)]);
     $secondCurrent = Article::factory()
         ->site($site)
         ->layout($articleLayout)
         ->type($articleType)
         ->state(['created_by' => $user->id])
         ->withTranslations($language, ['title' => 'Second current article'])
-        ->create(['visible_from' => now()->subDays(2)]);
+        ->create(['name' => 'Second current article', 'visible_from' => now()->subDays(2)]);
     $secondRelated = Article::factory()
         ->site($site)
         ->layout($articleLayout)
         ->type($articleType)
         ->state(['created_by' => $user->id])
         ->withTranslations($language, ['title' => 'Second related article'])
-        ->create(['visible_from' => now()->subDay()]);
+        ->create(['name' => 'Second related article', 'visible_from' => now()->subDay()]);
 
     $firstCurrent->tags()->attach($firstTag);
     $firstRelated->tags()->attach($firstTag);

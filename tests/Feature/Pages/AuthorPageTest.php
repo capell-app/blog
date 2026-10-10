@@ -50,7 +50,7 @@ function blogAuthorArticle(Site $site, User $author, array $attributes = []): Ar
     $article = Article::factory()
         ->site($site)
         ->withTranslations($site->languages, ['title' => $attributes['title'] ?? 'Authored Article'])
-        ->create(['visible_from' => $attributes['visible_from'] ?? '2023-01-01']);
+        ->create(['name' => $attributes['title'] ?? 'Authored Article', 'visible_from' => $attributes['visible_from'] ?? '2023-01-01']);
 
     $article->forceFill(['created_by' => $author->getKey()])->saveQuietly();
 

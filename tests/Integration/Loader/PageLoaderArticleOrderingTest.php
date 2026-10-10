@@ -28,21 +28,21 @@ beforeEach(function (): void {
         ->for($site)
         ->published(CarbonImmutable::parse('2026-02-01 00:00:00'))
         ->withTranslations($language, ['title' => 'Bravo'])
-        ->create();
+        ->create(['name' => 'Bravo']);
 
     // Alpha: newest published date (2026-03-01), first alphabetically
     $articleAlpha = Article::factory()
         ->for($site)
         ->published(CarbonImmutable::parse('2026-03-01 00:00:00'))
         ->withTranslations($language, ['title' => 'Alpha'])
-        ->create();
+        ->create(['name' => 'Alpha']);
 
     // Charlie: oldest published date (2026-01-01), last alphabetically
     $articleCharlie = Article::factory()
         ->for($site)
         ->published(CarbonImmutable::parse('2026-01-01 00:00:00'))
         ->withTranslations($language, ['title' => 'Charlie'])
-        ->create();
+        ->create(['name' => 'Charlie']);
 
     $this->language = $language;
     $this->site = $site;

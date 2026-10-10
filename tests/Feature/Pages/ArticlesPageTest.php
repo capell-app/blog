@@ -55,9 +55,9 @@ test('blog page lists articles', function (): void {
         ->withTranslations($site->languages)
         ->withExampleImages()
         ->forEachSequence(
-            ['visible_from' => '2023-01-01'],
-            ['visible_from' => '2023-02-01'],
-            ['visible_from' => '2023-03-01'],
+            ['name' => 'Listing article 1', 'visible_from' => '2023-01-01'],
+            ['name' => 'Listing article 2', 'visible_from' => '2023-02-01'],
+            ['name' => 'Listing article 3', 'visible_from' => '2023-03-01'],
         )
         ->create();
 
@@ -123,7 +123,7 @@ test('articles sitemap nests published articles below the blog page', function (
         ->layout($articleLayout)
         ->type($articleType)
         ->withTranslations($site->languages)
-        ->create();
+        ->create(['name' => 'Linked article']);
     $articleWithoutUrl = Article::factory()
         ->site($site)
         ->layout($articleLayout)
@@ -281,7 +281,7 @@ test('articles pagination', function (): void {
         ->layout($articleLayout)
         ->type($articleType)
         ->withTranslations($site->languages)
-        ->sequence(fn ($sequence): array => ['visible_from' => CarbonImmutable::now()->subDays($sequence->index)])
+        ->sequence(fn (Sequence $sequence): array => ['name' => 'Paginated article ' . $sequence->index, 'visible_from' => CarbonImmutable::now()->subDays($sequence->index)])
         ->create();
 
     $orderedArticles = Article::query()
@@ -418,9 +418,9 @@ test('articles pagination clamps invalid requested page values to the first page
         ->type($articleType)
         ->withTranslations($site->languages)
         ->forEachSequence(
-            ['visible_from' => '2023-01-01'],
-            ['visible_from' => '2023-02-01'],
-            ['visible_from' => '2023-03-01'],
+            ['name' => 'Eager listing article 1', 'visible_from' => '2023-01-01'],
+            ['name' => 'Eager listing article 2', 'visible_from' => '2023-02-01'],
+            ['name' => 'Eager listing article 3', 'visible_from' => '2023-03-01'],
         )
         ->create();
 

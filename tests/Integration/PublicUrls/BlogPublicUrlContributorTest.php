@@ -26,7 +26,7 @@ it('contributes blog article and listing URLs to the public URL registry contrac
         ->layout($articleLayout)
         ->type($articleType)
         ->withTranslations($site->languages)
-        ->create();
+        ->create(['name' => 'Linked article']);
     $blogPageUrl = $blogPage->pageUrl;
     $articlePageUrl = $article->pageUrl;
 

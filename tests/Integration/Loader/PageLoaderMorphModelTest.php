@@ -10,6 +10,7 @@ use Capell\Core\Models\Site;
 use Capell\Frontend\Data\PageListingRequestData;
 use Capell\Frontend\Support\Loader\PageLoader;
 use Capell\Tests\Support\Concerns\TestingFrontend;
+use Illuminate\Database\Eloquent\Factories\Sequence;
 
 uses(TestingFrontend::class);
 
@@ -24,6 +25,7 @@ beforeEach(function (): void {
         ->count(3)
         ->for($site)
         ->withTranslations($language)
+        ->sequence(fn (Sequence $sequence): array => ['name' => 'Morph loader article ' . $sequence->index])
         ->create();
 
     $this->language = $language;

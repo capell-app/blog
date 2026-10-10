@@ -118,9 +118,9 @@ it('loads related articles for the current tagged article without leaking the cu
     $language = blogTestLanguage($site->language);
     resolve(BlogCreator::class)->createBlogPage($site);
 
-    $currentArticle = Article::factory()->site($site)->withTranslations($language)->create(['visible_from' => now()->subDays(3)]);
-    $relatedArticle = Article::factory()->site($site)->withTranslations($language)->create(['visible_from' => now()->subDays(2)]);
-    $unrelatedArticle = Article::factory()->site($site)->withTranslations($language)->create(['visible_from' => now()->subDay()]);
+    $currentArticle = Article::factory()->site($site)->withTranslations($language)->create(['name' => 'Current tagged article', 'visible_from' => now()->subDays(3)]);
+    $relatedArticle = Article::factory()->site($site)->withTranslations($language)->create(['name' => 'Related tagged article', 'visible_from' => now()->subDays(2)]);
+    $unrelatedArticle = Article::factory()->site($site)->withTranslations($language)->create(['name' => 'Unrelated article', 'visible_from' => now()->subDay()]);
     $tag = Tag::factory()->translate($language)->type(TagTypeEnum::Page)->create();
 
     $currentArticle->tags()->attach($tag);

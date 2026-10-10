@@ -14,6 +14,7 @@ use Capell\HtmlCache\Support\StaticSite\StaticSiteGenerator;
 use Capell\HtmlCache\Support\StaticSite\StaticSiteRequestObserver;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
+use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Http\Client\Events\ResponseReceived;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
@@ -41,6 +42,7 @@ it('generates archive URLs for static site', function (): void {
         ->state([
             'visible_from' => $archiveDate,
         ])
+        ->sequence(fn (Sequence $sequence): array => ['name' => 'Static archive article ' . $sequence->index])
         ->create();
 
     $blogPage = $blogCreator->createBlogPage($site);
@@ -152,6 +154,7 @@ it('skips archive URLs when the archive page has no URL row', function (): void 
         ->site($site)
         ->withTranslations()
         ->state(['visible_from' => $archiveDate])
+        ->sequence(fn (Sequence $sequence): array => ['name' => 'Multilingual static article ' . $sequence->index])
         ->create();
 
     $blogPage = $blogCreator->createBlogPage($site);

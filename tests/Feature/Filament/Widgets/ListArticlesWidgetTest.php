@@ -8,6 +8,7 @@ use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
 use Capell\Tests\Support\Concerns\CreatesAdminUser;
+use Illuminate\Database\Eloquent\Factories\Sequence;
 
 use function Pest\Livewire\livewire;
 
@@ -22,7 +23,7 @@ it('renders the articles widget', function (): void {
 
     Page::factory()->site($site)->withTranslations()->create();
 
-    Article::factory()->count(5)->site($site)->withTranslations()->create();
+    Article::factory()->count(5)->site($site)->withTranslations()->sequence(fn (Sequence $sequence): array => ['name' => 'Widget article ' . $sequence->index])->create();
 
     livewire(ListArticlesFilamentWidget::class)
         ->assertOk()

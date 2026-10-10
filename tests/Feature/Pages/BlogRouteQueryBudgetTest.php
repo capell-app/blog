@@ -182,6 +182,7 @@ function blogRichRouteQueryBudgetFixture(int $articleCount): array
         ->withTranslations($site->languages)
         ->state(['created_by' => $author->getKey()])
         ->sequence(fn (Sequence $sequence): array => [
+            'name' => 'Budget article ' . $sequence->index,
             'visible_from' => now()->subDays($articleCount - $sequence->index),
         ])
         ->create();

@@ -12,6 +12,7 @@ use Capell\Core\Models\SiteDomain;
 use Capell\Tags\Enums\TagTypeEnum;
 use Capell\Tags\Models\Tag;
 use Capell\Tests\Support\Concerns\TestingFrontend;
+use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Support\Str;
 
 use function Pest\Laravel\get;
@@ -45,6 +46,7 @@ test('tags page list tags', function (): void {
         ->type($articleType)
         ->withTranslations()
         ->hasAttached($tags->slice(0, 2))
+        ->sequence(fn (Sequence $sequence): array => ['name' => 'Tags listing article ' . $sequence->index])
         ->create();
     $blogPage = $blogCreator->createBlogPage($site);
     $tagsPage = $blogCreator->createTagsPage($site, $blogPage, createWidgets: true);

@@ -38,11 +38,11 @@ test('tag page list articles by tag', function (): void {
         ->withTranslations()
         ->hasAttached($tag)
         ->forEachSequence(
-            ['visible_from' => '2023-01-01'],
-            ['visible_from' => '2023-02-01'],
-            ['visible_from' => '2023-03-01'],
-            ['visible_from' => '2023-04-01'],
-            ['visible_from' => '2023-05-01'],
+            ['name' => 'Tagged listing article 1', 'visible_from' => '2023-01-01'],
+            ['name' => 'Tagged listing article 2', 'visible_from' => '2023-02-01'],
+            ['name' => 'Tagged listing article 3', 'visible_from' => '2023-03-01'],
+            ['name' => 'Tagged listing article 4', 'visible_from' => '2023-04-01'],
+            ['name' => 'Tagged listing article 5', 'visible_from' => '2023-05-01'],
         )
         ->create();
 
@@ -164,13 +164,13 @@ test('tag page resolves site tag before global tag with same slug', function ():
         ->site($site)
         ->withTranslations($site->languages, ['title' => 'Global Tagged Article'])
         ->hasAttached($globalTag)
-        ->create(['visible_from' => '2023-01-01']);
+        ->create(['name' => 'Global tagged article', 'visible_from' => '2023-01-01']);
 
     $siteArticle = Article::factory()
         ->site($site)
         ->withTranslations($site->languages, ['title' => 'Site Tagged Article'])
         ->hasAttached($siteTag)
-        ->create(['visible_from' => '2023-02-01']);
+        ->create(['name' => 'Site tagged article', 'visible_from' => '2023-02-01']);
 
     get($siteTag->getUrl($tagPage, $language))
         ->assertOk()

@@ -26,6 +26,7 @@ use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Tables\Columns\Column;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
@@ -135,13 +136,13 @@ test('translation gaps are separate from publication state and scoped to site la
 })->group('blog-editorial-states');
 
 test('editorial row relationships remain eager loaded as the queue grows', function (): void {
-    $article = Article::factory()->withTranslations()->create();
+    $article = Article::factory()->withTranslations()->create(['name' => 'Initial queue article']);
     livewire(ListArticles::class);
     DB::enableQueryLog();
     DB::flushQueryLog();
     livewire(ListArticles::class);
     $small = count(DB::getQueryLog());
-    Article::factory()->recycle($article->site)->withTranslations()->count(4)->create();
+    Article::factory()->recycle($article->site)->withTranslations()->count(4)->sequence(fn (Sequence $sequence): array => ['name' => 'Queue growth article ' . $sequence->index])->create();
     DB::flushQueryLog();
 
     livewire(ListArticles::class)->assertCountTableRecords(5);

@@ -14,6 +14,7 @@ use Capell\Tags\Enums\TagTypeEnum;
 use Capell\Tags\Models\Tag;
 use Capell\Tests\Support\Concerns\TestingFrontend;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Testing\TestResponse;
 
 use function Pest\Laravel\get;
@@ -53,15 +54,16 @@ test('paginated blog listing emits rel prev and next link tags', function (): vo
     $articleType = $blogCreator->createArticlePageType();
     $articleLayout = $blogCreator->createArticleLayout();
 
+    // Article URL slugs derive from names, so batch fixture names must be distinct.
     Article::factory()
         ->site($site)
         ->layout($articleLayout)
         ->type($articleType)
         ->withTranslations($site->languages)
         ->forEachSequence(
-            ['visible_from' => '2023-01-01'],
-            ['visible_from' => '2023-02-01'],
-            ['visible_from' => '2023-03-01'],
+            ['name' => 'Pagination listing article 1', 'visible_from' => '2023-01-01'],
+            ['name' => 'Pagination listing article 2', 'visible_from' => '2023-02-01'],
+            ['name' => 'Pagination listing article 3', 'visible_from' => '2023-03-01'],
         )
         ->create();
 
@@ -139,8 +141,8 @@ test('paginated tag listing emits a rel next link tag', function (): void {
         ->withTranslations()
         ->hasAttached($tag)
         ->forEachSequence(
-            ['visible_from' => '2023-01-01'],
-            ['visible_from' => '2023-02-01'],
+            ['name' => 'Pagination tag article 1', 'visible_from' => '2023-01-01'],
+            ['name' => 'Pagination tag article 2', 'visible_from' => '2023-02-01'],
         )
         ->create();
 
@@ -180,6 +182,7 @@ test('paginated date archive listing emits a rel next link tag', function (): vo
         ->state([
             'visible_from' => fake()->dateTimeBetween($publishDate->startOfMonth(), $publishDate->endOfMonth()),
         ])
+        ->sequence(fn (Sequence $sequence): array => ['name' => 'Pagination archive article ' . $sequence->index])
         ->create();
 
     $archiveUrl = GenerateArchiveUrlAction::run($archivePageUrl, ArchiveMonthData::fromDate($publishDate));
@@ -207,9 +210,9 @@ test('pagination rel link tags leak no editor or package internals', function ()
         ->type($articleType)
         ->withTranslations($site->languages)
         ->forEachSequence(
-            ['visible_from' => '2023-01-01'],
-            ['visible_from' => '2023-02-01'],
-            ['visible_from' => '2023-03-01'],
+            ['name' => 'Pagination public article 1', 'visible_from' => '2023-01-01'],
+            ['name' => 'Pagination public article 2', 'visible_from' => '2023-02-01'],
+            ['name' => 'Pagination public article 3', 'visible_from' => '2023-03-01'],
         )
         ->create();
 

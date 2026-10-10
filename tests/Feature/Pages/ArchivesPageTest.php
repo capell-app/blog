@@ -13,6 +13,7 @@ use Capell\Core\Models\Page;
 use Capell\Core\Models\SiteDomain;
 use Capell\Tests\Support\Concerns\TestingFrontend;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 use function Pest\Laravel\get;
@@ -41,10 +42,10 @@ test('archive service groups and orders article months portably', function (): v
         ->state(['blueprint_id' => $articleType->getKey()])
         ->withTranslations($site->languages)
         ->forEachSequence(
-            ['visible_from' => '2023-01-01'],
-            ['visible_from' => '2023-03-01'],
-            ['visible_from' => '2023-02-01'],
-            ['visible_from' => '2023-03-15'],
+            ['name' => 'Archive boundary article 1', 'visible_from' => '2023-01-01'],
+            ['name' => 'Archive boundary article 2', 'visible_from' => '2023-03-01'],
+            ['name' => 'Archive boundary article 3', 'visible_from' => '2023-02-01'],
+            ['name' => 'Archive boundary article 4', 'visible_from' => '2023-03-15'],
         )
         ->create();
 
@@ -89,9 +90,9 @@ test('archives page list articles archives by month/year', function (): void {
         ->layout($articleLayout)
         ->withTranslations($site->languages)
         ->forEachSequence(
-            ['visible_from' => '2023-01-01'],
-            ['visible_from' => '2023-02-01'],
-            ['visible_from' => '2023-03-01'],
+            ['name' => 'Archive listing article 1', 'visible_from' => '2023-01-01'],
+            ['name' => 'Archive listing article 2', 'visible_from' => '2023-02-01'],
+            ['name' => 'Archive listing article 3', 'visible_from' => '2023-03-01'],
         )
         ->create();
 
@@ -155,6 +156,7 @@ test('archive page list articles by month/year', function (): void {
         ->state([
             'visible_from' => fake()->dateTimeBetween($publishDate->startOfMonth(), $publishDate->endOfMonth()),
         ])
+        ->sequence(fn (Sequence $sequence): array => ['name' => 'Archive month article ' . $sequence->index])
         ->create();
 
     expect($archivePage)->toBeInstanceOf(Page::class);
