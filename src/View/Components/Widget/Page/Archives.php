@@ -71,9 +71,10 @@ class Archives extends AbstractWidget
             return;
         }
 
+        $prepared = Frontend::getFrontendData();
         $preparedArchivePage = Frontend::getFrontendData('blog.archive_page');
-        $this->archivePage = $preparedArchivePage instanceof Page
-            ? $preparedArchivePage
+        $this->archivePage = is_array($prepared) && array_key_exists('blog.archive_page', $prepared)
+            ? ($preparedArchivePage instanceof Page ? $preparedArchivePage : null)
             : BlogLoader::getArchivePage($site, $language);
 
         if (! $this->archivePage instanceof Pageable) {

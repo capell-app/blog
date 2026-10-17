@@ -4,8 +4,19 @@ declare(strict_types=1);
 
 use Capell\Blog\Models\Article;
 use Capell\Blog\Providers\BlogServiceProvider;
+use Capell\Blog\View\Components\Widget\Page\Archives;
+use Capell\Blog\View\Components\Widget\Tag\Tags;
+use Capell\Core\Models\Language;
+use Capell\Core\Models\Page;
+use Capell\Core\Models\Site;
+use Capell\Core\Models\Theme;
+use Capell\Core\Models\Translation;
+use Capell\Frontend\Contracts\FrontendContextReader;
 use Capell\Frontend\Data\CacheInvalidationRule;
+use Capell\Frontend\Data\FrontendContext;
+use Capell\Frontend\Facades\Frontend;
 use Capell\Frontend\Support\Cache\CacheInvalidationRegistry;
+use Capell\LayoutBuilder\Models\Widget;
 use Capell\Tags\Models\Tag;
 use Composer\InstalledVersions;
 use Livewire\Blaze\Config as BlazeConfig;
@@ -17,13 +28,25 @@ test('blog widget components are registered for blaze compilation with nested co
         ->and($blazeConfig->shouldCompile(__DIR__ . '/../../../resources/views/components/page/published-date.blade.php'))->toBeTrue();
 });
 
-test('blog sidebar widgets default to section-level headings', function (): void {
-    $archives = file_get_contents(__DIR__ . '/../../../src/View/Components/Widget/Page/Archives.php');
-    $tags = file_get_contents(__DIR__ . '/../../../src/View/Components/Widget/Tag/Tags.php');
+test('blog sidebar widgets default to section-level headings', function (mixed $heading, string $expected): void {
+    $page = new Page;
+    $context = new FrontendContext(new Site, new Language, $page, null, new Theme, [], null);
+    app()->instance(FrontendContextReader::class, $context);
+    Frontend::clearResolvedInstance(FrontendContextReader::class);
+    Frontend::setFrontendData('blog.archive_page', $page);
+    Frontend::setFrontendData('blog.archives', collect());
+    Frontend::setFrontendData('blog.tag_page', $page);
+    Frontend::setFrontendData('blog.sidebar_tags', collect());
+    $widget = new Widget(['meta' => ['heading_tag' => $heading]]);
+    $widget->setRelation('translation', new Translation(['title' => 'Sidebar heading']));
+    $widget->setRelation('blueprint', null);
 
-    expect($archives)->toContain("is_string(\$configuredHeadingTag) ? \$configuredHeadingTag : 'h2'")
-        ->and($tags)->toContain("is_string(\$configuredHeadingTag) ? \$configuredHeadingTag : 'h2'");
-});
+    foreach ([Archives::class, Tags::class] as $componentClass) {
+        $component = new $componentClass([], 'sidebar', 0, (object) ['index' => 0], $widget);
+        expect($component->contentData->headingTag)->toBe($expected)
+            ->and($component->contentData->title)->toBe('Sidebar heading');
+    }
+})->with(['unset' => [null, 'h2'], 'invalid' => [42, 'h2'], 'configured' => ['h3', 'h3']]);
 
 test('blog registers frontend cache invalidation dependencies for articles and tags', function (): void {
     $registry = resolve(CacheInvalidationRegistry::class);

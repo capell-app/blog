@@ -7,14 +7,21 @@ use Capell\Blog\Filament\Resources\Articles\Tables\ArticlePagesTable;
 use Capell\Blog\Models\Article;
 use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Language;
+use Capell\Core\Models\Layout;
 use Capell\Core\Models\PageUrl;
 use Capell\Core\Models\Site;
 use Capell\Tags\Models\Tag;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
 use Illuminate\Support\HtmlString;
+use Livewire\Component;
 use Mockery\MockInterface;
 
 it('builds related article widget schemas for option and edit workflows', function (): void {
@@ -31,6 +38,8 @@ it('builds related article widget schemas for option and edit workflows', functi
     $excludeTypesSelect = collect(flattenBlogAdminComponents($editComponents))
         ->first(fn (mixed $component): bool => $component instanceof Select && $component->getName() === 'exclude_types');
 
+    throw_unless($excludeTypesSelect instanceof Select, RuntimeException::class, 'Expected an excluded article type selector.');
+
     expect($optionNames)->toContain('key', 'translations')
         ->and($editNames)->toContain(
             'exclude_parent',
@@ -40,7 +49,6 @@ it('builds related article widget schemas for option and edit workflows', functi
             'cache_frequency',
             'component',
         )
-        ->and($excludeTypesSelect)->toBeInstanceOf(Select::class)
         ->and($excludeTypesSelect->getOptions())->toHaveCount(2)
         ->and(collect(flattenBlogAdminComponents($editComponents))->contains(
             fn (mixed $component): bool => $component instanceof Tabs,
@@ -57,12 +65,18 @@ it('applies article admin table filters search indicators and URL presentation f
         ->hasSiteDomains()
         ->withTranslations($language)
         ->create(['name' => 'Primary Site']);
+    $type = Blueprint::factory()->page()->create(['key' => 'article']);
+    $layout = Layout::factory()->create();
     $canonical = Article::factory()
         ->site($site)
+        ->type($type)
+        ->layout($layout)
         ->withTranslations($language)
         ->create(['name' => 'Canonical article']);
     $article = Article::factory()
         ->site($site)
+        ->type($type)
+        ->layout($layout)
         ->withTranslations($language)
         ->create([
             'name' => 'Article search target',
@@ -78,52 +92,50 @@ it('applies article admin table filters search indicators and URL presentation f
         ->create(['url' => '/article-search-target']);
 
     $article->load(['pageUrls.siteDomain', 'translations.language', 'site']);
-    $loadedLivewire = blogAdminTableLivewire([
-        'filter' => ['language_id' => $language->getKey()],
-    ]);
-    $unloadedLivewire = blogAdminTableLivewire([], loaded: false);
+    $filterState = [
+        'filter' => ['language_id' => $language->getKey(), 'canonical_page_id' => $canonical->getKey()],
+        'tags' => ['value' => $tag->getKey()],
+    ];
+    $loadedLivewire = blogAdminTableLivewire($filterState);
+    $table = ArticlePagesTable::configure(Table::make($loadedLivewire));
+    $urlColumn = $table->getColumn('url');
+    throw_unless($urlColumn instanceof TextColumn, RuntimeException::class);
+    $urlState = $urlColumn->record($article)->getState();
+    throw_unless($urlState instanceof HtmlString, RuntimeException::class, 'Expected rendered article links.');
+    $filter = $table->getFilter('filter');
+    $tagsFilter = $table->getFilter('tags');
+    throw_unless($filter instanceof Filter && $tagsFilter instanceof SelectFilter, RuntimeException::class);
+    $languageSelect = $filter->getSchemaComponents()[0];
+    throw_unless($languageSelect instanceof Select, RuntimeException::class);
+    Schema::make($loadedLivewire)->components([$languageSelect])->getComponents();
 
-    $urlState = blogArticleTableInvoke('getUrlColumnState', $article, $loadedLivewire);
-    $languageOptions = blogArticleTableInvoke('getLanguageOptions', $loadedLivewire);
-    $languageSearchResults = blogArticleTableInvoke('getLanguageSearchResults', $loadedLivewire, 'Eng');
-    $emptyLanguageOptions = blogArticleTableInvoke('getLanguageOptions', $unloadedLivewire);
-    $filterIndicators = blogArticleTableInvoke('indicateFilter', [
-        'language_id' => $language->getKey(),
-        'canonical_page_id' => $canonical->getKey(),
-    ]);
-    $tagIndicators = blogArticleTableInvoke('indicateTagsFilter', ['value' => $tag->getKey()]);
-
-    $languageFilteredQuery = Article::query();
-    blogArticleTableInvoke('applyFilterQuery', $languageFilteredQuery, [
-        'language_id' => $language->getKey(),
-        'canonical_page_id' => $canonical->getKey(),
-    ]);
-
-    $tagFilteredQuery = Article::query();
-    blogArticleTableInvoke('applyTagsFilterQuery', $tagFilteredQuery, ['value' => $tag->getKey()]);
-
-    $emptyTagFilteredQuery = Article::query();
-    blogArticleTableInvoke('applyTagsFilterQuery', $emptyTagFilteredQuery, ['value' => null]);
-
+    $languageFilteredQuery = $filter->apply(Article::query(), $filterState['filter']);
+    $tagFilteredQuery = $tagsFilter->apply(Article::query(), $filterState['tags']);
+    $emptyTagFilteredQuery = $tagsFilter->apply(Article::query(), ['value' => null]);
     $nameSearchQuery = Article::query();
-    blogArticleTableInvoke('applyNameSearch', $nameSearchQuery, 'search target');
+    $nameColumn = $table->getColumn('name');
+    throw_unless($nameColumn instanceof TextColumn, RuntimeException::class);
+    $isFirst = true;
+    $nameColumn->applySearchConstraint($nameSearchQuery, 'search target', $isFirst);
 
-    expect(blogArticleTableInvoke('recordClasses', $article))->toBeNull()
-        ->and($urlState)->toBeInstanceOf(HtmlString::class)
+    expect($table->getRecordClasses($article))->toBe([])
         ->and($urlState->toHtml())->toContain('/article-search-target')
-        ->and($languageOptions)->toHaveKey($language->getKey())
-        ->and($languageSearchResults)->toHaveKey($language->getKey())
-        ->and($emptyLanguageOptions)->toBe([])
-        ->and($filterIndicators)->toHaveKeys(['language_id', 'canonical_page_id'])
-        ->and($tagIndicators)->toHaveKey('tags')
+        ->and($languageSelect->getOptions())->toHaveKey($language->getKey())
+        ->and($languageSelect->getSearchResults('Eng'))->toHaveKey($language->getKey())
+        ->and($filter->getIndicators())->toHaveKeys(['language_id', 'canonical_page_id'])
+        ->and($tagsFilter->getIndicators())->toHaveKey('tags')
         ->and($languageFilteredQuery->pluck('id')->all())->toBe([$article->getKey()])
         ->and($tagFilteredQuery->pluck('id')->all())->toBe([$article->getKey()])
         ->and($emptyTagFilteredQuery->whereKey($article->getKey())->exists())->toBeTrue()
-        ->and($nameSearchQuery->toSql())->toContain('pages');
+        ->and($nameSearchQuery->pluck('id')->all())->toBe([$article->getKey()]);
+
+    $unloadedLivewire = blogAdminTableLivewire([], loaded: false);
+    Schema::make($unloadedLivewire)->components([$languageSelect])->getComponents();
+    expect($languageSelect->getOptions())->toBe([]);
 
     $article->delete();
 
-    expect(blogArticleTableInvoke('recordClasses', $article))->toBe('table-row-warning');
+    expect($table->getRecordClasses($article))->toBe(['table-row-warning']);
 });
 
 /**
@@ -147,7 +159,7 @@ function flattenBlogAdminComponents(array $components): array
         $childComponents = $component->getDefaultChildComponents();
 
         if (is_array($childComponents)) {
-            array_push($flattenedComponents, ...flattenBlogAdminComponents($childComponents));
+            array_push($flattenedComponents, ...flattenBlogAdminComponents(array_values($childComponents)));
         }
     }
 
@@ -167,19 +179,13 @@ function blogAdminComponentNames(array $components): array
         ->all();
 }
 
-function blogArticleTableInvoke(string $method, mixed ...$arguments): mixed
-{
-    $reflection = new ReflectionMethod(ArticlePagesTable::class, $method);
-
-    return $reflection->invoke(null, ...$arguments);
-}
-
 /**
  * @param  array<string, mixed>  $filterState
  */
-function blogAdminTableLivewire(array $filterState, bool $loaded = true): HasTable&MockInterface
+function blogAdminTableLivewire(array $filterState, bool $loaded = true): Component&HasSchemas&HasTable&MockInterface
 {
-    $livewire = Mockery::mock(HasTable::class);
+    $livewire = Mockery::mock(Component::class, HasSchemas::class, HasTable::class);
+    $livewire->shouldIgnoreMissing();
     $livewire->shouldReceive('makeFilamentTranslatableContentDriver')->andReturn(null)->byDefault();
     $livewire->shouldReceive('getTableFilterState')
         ->withAnyArgs()

@@ -34,7 +34,8 @@
             "useCase": "An editor creates or updates an article with publishing windows, metadata, layout selection, media, and taxonomy.",
             "screenshotPath": "packages/blog/docs/screenshots/create-edit-article-form.png",
             "darkScreenshotPath": "packages/blog/docs/screenshots/create-edit-article-form-dark.png",
-            "waitFor": "form:has([id$=\"name\"]) [id$=\"tags\"]"
+            "waitFor": "text=Extra Content",
+            "user": "admin"
         },
         {
             "id": "blog-page-frontend-output",
@@ -56,11 +57,11 @@
             "package": "blog",
             "surface": "frontend",
             "targetType": "frontend-url",
-            "target": null,
-            "url": "/screenshot-fixtures/blog/archive-page-frontend-output",
-            "waitFor": ".blog-archive-list",
+            "target": "/blog/archives/2026-08",
+            "url": "/blog/archives/2026-08",
+            "waitFor": ".blog-archive-list, article",
             "required": true,
-            "notes": "Requires archive pages created by setup/demo commands and articles with visible dates across at least two months.",
+            "notes": "The real August 2026 archive page listing the published articles from that month.",
             "useCase": "A visitor opens a monthly archive and sees articles filtered to that archive period.",
             "screenshotPath": "packages/blog/docs/screenshots/archive-page-frontend-output.png"
         },
@@ -70,11 +71,11 @@
             "package": "blog",
             "surface": "frontend",
             "targetType": "frontend-url",
-            "target": null,
-            "url": "/screenshot-fixtures/blog/tag-page-frontend-output",
-            "waitFor": ".blog-tag-list",
+            "target": "/blog/tags/editorial",
+            "url": "/blog/tags/editorial",
+            "waitFor": "article, .blog-tag-list",
             "required": true,
-            "notes": "Requires seeded tags attached to published articles and tag page URLs from the blog setup flow.",
+            "notes": "The real Editorial tag page listing the published articles tagged with it.",
             "useCase": "A visitor opens a tag page and sees published articles associated with that tag.",
             "screenshotPath": "packages/blog/docs/screenshots/tag-page-frontend-output.png"
         },

@@ -6,7 +6,6 @@ namespace Capell\Blog\Providers;
 
 use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Enums\BlogTypeGroupEnum;
-use Capell\Blog\Enums\LivewirePageComponentEnum;
 use Capell\Blog\Support\Loader\BlogLoader;
 use Capell\Blog\Support\Loader\TagLoader;
 use Capell\Blog\Support\RenderHooks\AfterTitleRenderHook;
@@ -20,12 +19,10 @@ use Capell\Blog\Support\Sitemap\ArticlesSitemap;
 use Capell\Blog\Support\Sitemap\TagsSitemap;
 use Capell\Blog\Support\StaticSite\BlogStaticSiteExtension;
 use Capell\Core\Contracts\Pageable;
-use Capell\Core\Data\RenderableDefinitionData;
-use Capell\Core\Enums\RenderableTypeEnum;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Site;
-use Capell\Core\Support\Renderables\RenderableRegistry;
+use Capell\Core\Support\Packages\RegistersInstalledRuntime;
 use Capell\Frontend\Enums\RenderHookLocation;
 use Capell\Frontend\Events\FrontendContextResolved;
 use Capell\Frontend\Support\Render\FrontendHookRegistrar;
@@ -35,40 +32,25 @@ use Capell\SiteDiscovery\Support\Sitemap\SitemapPageRegistry;
 use Capell\Tags\Models\Tag;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use Override;
 
 final class FrontendServiceProvider extends ServiceProvider
 {
-    public function boot(): void
-    {
-        $this->app->booted(function (): void {
-            if (! CapellCore::getPackage('capell-app/blog')->isInstalled()) {
-                return;
-            }
+    use RegistersInstalledRuntime;
 
-            $this->registerSitemapPages();
-            $this->registerPageRenderables();
-            $this->registerRenderHooks();
-            $this->registerArchiveValidation();
-            $this->registerTagVariables();
-            $this->registerStaticSiteExtensions();
-        });
+    #[Override]
+    public function register(): void
+    {
+        $this->registerInstalledRuntime(BlogServiceProvider::$packageName, 'frontend');
     }
 
-    private function registerPageRenderables(): void
+    protected function bootInstalledRuntime(): void
     {
-        $registry = resolve(RenderableRegistry::class);
-
-        foreach (LivewirePageComponentEnum::cases() as $pageComponent) {
-            if ($pageComponent->getComponent() === null) {
-                continue;
-            }
-
-            $registry->register(new RenderableDefinitionData(
-                key: $pageComponent->value,
-                type: RenderableTypeEnum::Page,
-                livewire: $pageComponent->value,
-            ));
-        }
+        $this->registerSitemapPages();
+        $this->registerRenderHooks();
+        $this->registerArchiveValidation();
+        $this->registerTagVariables();
+        $this->registerStaticSiteExtensions();
     }
 
     private function registerTagVariables(): void

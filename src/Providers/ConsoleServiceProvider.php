@@ -11,8 +11,8 @@ use Capell\Blog\Console\Commands\HeroDemoCommand;
 use Capell\Blog\Console\Commands\InstallCommand;
 use Capell\Blog\Console\Commands\SeedBlogScreenshotFixtureCommand;
 use Capell\Blog\Console\Commands\SetupCommand;
+use Capell\Core\Actions\Install\RegisterCommandsInCurrentProcessAction;
 use Illuminate\Foundation\Application;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
@@ -37,7 +37,7 @@ final class ConsoleServiceProvider extends ServiceProvider
 
         // Composer can add this provider to an already running installer.
         if ($this->app instanceof Application && $this->app->isBooted()) {
-            Artisan::registerCommand($this->app->make(DemoCommand::class));
+            RegisterCommandsInCurrentProcessAction::run([DemoCommand::class]);
         }
     }
 }

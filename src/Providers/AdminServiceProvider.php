@@ -18,43 +18,35 @@ use Capell\Blog\Listeners\AddBlogPagesToNavigation;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Site;
 use Capell\Core\Support\Packages\PackageSurfaceRegistrar;
+use Capell\Core\Support\Packages\RegistersInstalledRuntime;
 use Capell\LayoutBuilder\Enums\ComponentTypeEnum;
 use Capell\Navigation\Events\NavigationCreating;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
 final class AdminServiceProvider extends ServiceProvider
 {
+    use RegistersInstalledRuntime;
+
     private const string LAYOUT_BUILDER_COMPONENT_TYPE_ENUM = ComponentTypeEnum::class;
 
     private const string LAYOUT_BUILDER_CONFIGURATOR_TYPE_ENUM = \Capell\LayoutBuilder\Enums\ConfiguratorTypeEnum::class;
 
-    private bool $installedRuntimeBooted = false;
-
     #[Override]
     public function register(): void
     {
-        // Installation refreshes callbacks on providers already loaded as metadata.
-        $this->booted(function (): void {
-            $this->boot();
-        });
+        $this->registerInstalledRuntime(BlogServiceProvider::$packageName, 'admin');
     }
 
-    public function boot(): void
+    protected function bootInstalledRuntime(): void
     {
-        if ($this->installedRuntimeBooted || ! CapellCore::getPackage('capell-app/blog')->isInstalled()) {
-            return;
-        }
-
         $this->registerResources();
         $this->registerWidgetComponents();
         $this->registerConfigurators();
         $this->registerDefaultPages();
         $this->registerNavigationListener();
-        $this->installedRuntimeBooted = true;
     }
 
     private function registerResources(): void
@@ -133,7 +125,6 @@ final class AdminServiceProvider extends ServiceProvider
     {
         if (
             ! CapellCore::isPackageInstalled('capell-app/navigation')
-            || ! Schema::hasTable('navigations')
             || ! class_exists(NavigationCreating::class)
         ) {
             return;

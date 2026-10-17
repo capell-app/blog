@@ -25,6 +25,7 @@ use Capell\Core\Enums\BlueprintGroupEnum;
 use Capell\Core\Enums\PageOrderEnum;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Language;
+use Capell\Core\Models\Layout;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
 use Capell\FoundationTheme\Actions\ResolveFoundationThemeTokensAction;
@@ -36,13 +37,16 @@ use Capell\Frontend\Support\Loader\PageLoader;
 use Capell\Frontend\Support\Loader\SiteLoader;
 use Capell\LayoutBuilder\Models\Widget;
 use Capell\Navigation\Models\Navigation;
+use Capell\Tags\Data\ResolvedTagSlugData;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
+use Override;
 
 final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeManifestContributor
 {
+    #[Override]
     public function contribute(FrontendContextReader $context, FrontendRuntimeManifestData $manifest): void
     {
         $page = $context->page();
@@ -51,6 +55,18 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
 
         if (! $page instanceof Pageable || ! $page instanceof Model || ! $site instanceof Site || ! $language instanceof Language) {
             return;
+        }
+
+        // Public graph builders read the page's relations. Share the scoped,
+        // hydrated context instead of loading another Site or a partial Theme.
+        if ($page->getAttribute('site_id') === $site->getKey()) {
+            $page->setRelation('site', $site);
+        }
+
+        $layout = $context->layout();
+        if ($layout instanceof Layout && $page->getAttribute('layout_id') === $layout->getKey()) {
+            $layout->loadMissing('theme');
+            $page->setRelation('layout', $layout);
         }
 
         match ($this->pageTypeKey($page)) {
@@ -67,7 +83,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
             default => null,
         };
 
-        if ($this->layoutUsesArchiveWidget($context)) {
+        if ($context->getFrontendData('blog.archives') === null && $this->layoutUsesArchiveWidget($context)) {
             $this->prepareArchiveWidget($context, $site, $language);
         }
 
@@ -151,6 +167,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
 
         $context->setFrontendData('blog.article.meta', $articleMeta);
         $context->setFrontendData('blog.article.render_data', $this->articleRenderData($page, $site, $language, $articleMeta));
+
         $latestArticles = PageLoader::list(new PageListingRequestData(
             language: $language,
             site: $site,
@@ -195,6 +212,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
 
         $context->setFrontendData('blog.results', $results);
         $context->setFrontendData('pagination_results', $results);
+
         $latestArticles = PageLoader::list(new PageListingRequestData(
             language: $language,
             site: $site,
@@ -230,7 +248,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
 
         $resolution = TagLoader::tagPageResolution($tagSlug, $site, $language);
 
-        if ($resolution === null) {
+        if (! $resolution instanceof ResolvedTagSlugData) {
             return;
         }
 
@@ -378,6 +396,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
         if (! is_array($prepared) || ! array_key_exists('foundation.footer.contact_page', $prepared)) {
             $context->setFrontendData('foundation.footer.contact_page', Page::getFirstPageByTypeForSite('contact', $site, $language));
         }
+
         $context->setFrontendData('foundation.footer.site_languages', SiteLoader::pageLanguages($site, $language, $page));
         $context->setFrontendData('foundation.footer.latest_pages', PageLoader::list(new PageListingRequestData(
             language: $language,
@@ -386,7 +405,11 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
             ordering: PageOrderEnum::Latest,
             pageGroup: BlueprintGroupEnum::Default,
         )));
-        $context->setFrontendData('foundation.footer.related_sites', SiteLoader::related($site, $language)
+        // An empty configured relation cannot yield related sites.
+        $relatedSites = $site->getMeta('related', []) === []
+            ? new EloquentCollection
+            : SiteLoader::related($site, $language);
+        $context->setFrontendData('foundation.footer.related_sites', $relatedSites
             ->map(function (Site $relatedSite): array {
                 $relations = $relatedSite->getRelations();
                 $siteDomain = $relations['siteDomain'] ?? null;
@@ -404,6 +427,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
         if (! is_array($prepared) || ! array_key_exists('foundation.page.ancestors', $prepared)) {
             $context->setFrontendData('foundation.page.ancestors', PageLoader::getPageAncestors($page, $language, $site));
         }
+
         $context->setFrontendData('foundation.page.home', $site->getHomePage($language));
     }
 

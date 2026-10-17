@@ -13,6 +13,11 @@ uses(CreatesAdminUser::class);
 
 beforeEach(function (): void {
     $this->actingAsAdmin();
+    $captureEmail = getenv('CAPELL_SCREENSHOT_ADMIN_EMAIL');
+    putenv('CAPELL_SCREENSHOT_ADMIN_EMAIL=' . $this->authenticatedUser()->email);
+    $this->beforeApplicationDestroyed(static function () use ($captureEmail): void {
+        putenv($captureEmail === false ? 'CAPELL_SCREENSHOT_ADMIN_EMAIL' : 'CAPELL_SCREENSHOT_ADMIN_EMAIL=' . $captureEmail);
+    });
     putenv('CAPELL_SCREENSHOT_FIXTURE=record-state');
     putenv('CAPELL_SCREENSHOT_APP_PATH=' . base_path());
 });

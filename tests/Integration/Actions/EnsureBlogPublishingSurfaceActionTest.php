@@ -62,7 +62,9 @@ it('creates the blog publishing surface with translations and urls', function ()
 });
 
 it('rolls back the complete surface when downstream provisioning fails', function (): void {
-    $site = Site::factory()->withTranslations()->create();
+    // Start this transaction test without the site's automatic default-page provisioning.
+    $site = Site::withoutEvents(static fn (): Site => Site::factory()->withTranslations()->create());
+    expect(Page::query()->where('site_id', $site->id)->count())->toBe(0);
 
     AttachBlogPublishingSurfaceToNavigationAction::shouldRun()
         ->once()

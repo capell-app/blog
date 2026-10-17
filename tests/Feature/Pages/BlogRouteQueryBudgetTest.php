@@ -19,6 +19,7 @@ use Capell\Frontend\Enums\CacheEnum;
 use Capell\Frontend\Enums\RenderingStrategyEnum;
 use Capell\Frontend\Events\FrontendContextResolved;
 use Capell\Frontend\Support\State\FrontendState;
+use Capell\HtmlCache\Support\Telemetry\HtmlCacheRequestObservationStore;
 use Capell\Tags\Enums\TagTypeEnum;
 use Capell\Tags\Models\Tag;
 use Capell\Tests\Fixtures\Models\User;
@@ -28,6 +29,7 @@ use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Lottery;
 
 use function Pest\Laravel\get;
 use function PHPUnit\Framework\assertInstanceOf;
@@ -39,24 +41,33 @@ beforeEach(function (): void {
     config(['capell.disable_cache_save_keys' => [CacheEnum::Pages->value . '-*']]);
 });
 
-test('rich article route stays inside the public query budget', function (): void {
+test('rich article route stays inside the public query budget', function (bool $sampleObservation, int $budget): void {
     $fixture = blogRichRouteQueryBudgetFixture(articleCount: 8);
 
-    $queryCount = blogMeasurePublicRouteQueries($fixture['article_url']);
+    $queryCount = blogMeasurePublicRouteQueries($fixture['article_url'], $sampleObservation);
 
     // Localized public media metadata and port-aware site-domain resolution
     // add bounded hydration to the page, site logo, and article image paths.
-    expect($queryCount)->toBeLessThanOrEqual(148);
-});
+    expect($queryCount)->toBeLessThanOrEqual($budget);
+    expect(DB::table(HtmlCacheRequestObservationStore::TABLE)->count())
+        ->toBe($sampleObservation ? 1 : 0);
+})->with([
+    'without request observation' => [false, 148],
+    'with request observation' => [true, 154],
+]);
 
-test('rich blog archive and tag routes stay inside the public query budget', function (string $routeKey, int $budget): void {
+test('rich blog archive and tag routes stay inside the public query budget', function (string $routeKey, int $budget, bool $sampleObservation, int $observationCount): void {
     $fixture = blogRichRouteQueryBudgetFixture(articleCount: 8);
 
-    $queryCount = blogMeasurePublicRouteQueries($fixture[$routeKey]);
+    $queryCount = blogMeasurePublicRouteQueries($fixture[$routeKey], $sampleObservation);
 
     expect($queryCount)->toBeLessThanOrEqual($budget);
+    expect(DB::table(HtmlCacheRequestObservationStore::TABLE)->count())->toBe($observationCount);
 })->with([
-    'blog index' => ['blog_url', 115],
+    // A sampled index observation adds six deferred queries for URL resolution
+    // and request counters. Keep the unsampled budget and cover both outcomes.
+    'blog index' => ['blog_url', 115, false, 0],
+    'blog index with request observation' => ['blog_url', 121, true, 1],
     // Includes the cache-safe public widget snapshot lookup, port-aware
     // domain resolution, and bounded pre-render footer hydration required by
     // layout-native archive pages. Core's required morph map also lists each
@@ -64,8 +75,12 @@ test('rich blog archive and tag routes stay inside the public query budget', fun
     // checks every Pageable model's table twice, on each of two lookups: four
     // extra schema queries on these two routes (131 and 145 measured before
     // that change). Lower the budgets again once Core checks each model once.
-    'archive month' => ['archive_url', 138],
-    'tag result' => ['tag_url', 152],
+    // These virtual routes have no persisted URL row for the observation
+    // lookup, so sampling adds three reads but does not write an observation.
+    'archive month' => ['archive_url', 138, false, 0],
+    'archive month with observation sampling' => ['archive_url', 138, true, 0],
+    'tag result' => ['tag_url', 152, false, 0],
+    'tag result with observation sampling' => ['tag_url', 152, true, 0],
 ]);
 
 test('Foundation hands prepared values to the Blog request before runtime hydration', function (): void {
@@ -215,7 +230,7 @@ function blogRichRouteQueryBudgetFixture(int $articleCount): array
     ];
 }
 
-function blogMeasurePublicRouteQueries(string $url): int
+function blogMeasurePublicRouteQueries(string $url, bool $sampleObservation = false): int
 {
     // Fixture saves queue graph/cache maintenance through Laravel's deferred
     // callback queue. Drain that setup work before measuring the public route.
@@ -224,15 +239,23 @@ function blogMeasurePublicRouteQueries(string $url): int
     DB::flushQueryLog();
     DB::enableQueryLog();
 
-    get($url)
-        ->assertOk()
-        ->assertDontSee('frontend-authoring', false)
-        ->assertDontSee('data-authoring', false)
-        ->assertDontSee('data-editable', false)
-        ->assertDontSee('signed-editor-url', false);
+    // The production sampler uses a lottery; force each outcome only for this
+    // request and restore it even when a response assertion fails.
+    Lottery::setResultFactory(static fn (): bool => $sampleObservation);
 
-    $queryCount = count(DB::getQueryLog());
-    DB::disableQueryLog();
+    try {
+        get($url)
+            ->assertOk()
+            ->assertDontSee('frontend-authoring', false)
+            ->assertDontSee('data-authoring', false)
+            ->assertDontSee('data-editable', false)
+            ->assertDontSee('signed-editor-url', false);
+
+        $queryCount = count(DB::getQueryLog());
+    } finally {
+        DB::disableQueryLog();
+        Lottery::determineResultsNormally();
+    }
 
     return $queryCount;
 }

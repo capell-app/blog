@@ -16,15 +16,18 @@ use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Gate;
+use Override;
 
 final class BlogEditorialCalendarEventContributor implements EditorialCalendarEventContributor
 {
     /**
      * @return Collection<int, EditorialCalendarEventData>
      */
+    #[Override]
     public function editorialCalendarEvents(EditorialCalendarQueryData $query): Collection
     {
-        if (! $this->shouldContribute($query)) {
+        if (Gate::denies('viewAny', Article::class) || ! $this->shouldContribute($query)) {
             return collect();
         }
 

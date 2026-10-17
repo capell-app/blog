@@ -7,6 +7,7 @@ namespace Capell\Blog\Tests;
 use Capell\Admin\Facades\CapellAdmin;
 use Capell\Admin\Providers\AdminServiceProvider;
 use Capell\Admin\Providers\Filament\AdminPanelProvider;
+use Capell\BlockLibrary\Providers\BlockLibraryServiceProvider;
 use Capell\Blog\Providers\AdminServiceProvider as BlogAdminServiceProvider;
 use Capell\Blog\Providers\BlogServiceProvider;
 use Capell\Blog\Providers\ConsoleServiceProvider as BlogConsoleServiceProvider;
@@ -14,12 +15,16 @@ use Capell\Blog\Providers\FrontendServiceProvider as BlogFrontendServiceProvider
 use Capell\ContentSections\Providers\ContentSectionsServiceProvider;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Media;
+use Capell\DiscoveryFoundation\Providers\DiscoveryFoundationServiceProvider;
 use Capell\FoundationTheme\Providers\FoundationThemeServiceProvider;
 use Capell\Frontend\Contracts\SettingsMigrationProviderInterface;
 use Capell\Frontend\Providers\FrontendServiceProvider;
+use Capell\HtmlCache\Providers\HtmlCacheServiceProvider;
 use Capell\Insights\Providers\InsightsServiceProvider;
 use Capell\LayoutBuilder\LayoutBuilderServiceProvider;
+use Capell\Navigation\Providers\NavigationServiceProvider;
 use Capell\Tags\Models\Tag;
+use Capell\Tags\Providers\AdminServiceProvider as TagsAdminServiceProvider;
 use Capell\Tags\Providers\TagsServiceProvider;
 use Capell\Tests\AbstractTestCase;
 use Illuminate\Contracts\Config\Repository;
@@ -34,25 +39,22 @@ class BlogTestCase extends AbstractTestCase
     protected function setUp(): void
     {
         parent::setUp();
-
         Blade::anonymousComponentPath(__DIR__ . '/../../theme-foundation/resources/views/components', 'capell');
-
         $this->registerAndMigrateSettings(
             CapellCore::getSettingMigrations(),
             __DIR__ . '/../../../vendor/capell-app/core/database/settings',
         );
-
         $this->registerAndMigrateSettings(
             CapellAdmin::getSettingMigrations(),
             __DIR__ . '/../../../vendor/capell-app/admin/database/settings',
         );
-
         $this->registerAndMigrateSettings(
             resolve(SettingsMigrationProviderInterface::class)->getSettingMigrations(),
             __DIR__ . '/../../../vendor/capell-app/frontend/database/settings',
         );
     }
 
+    #[Override]
     protected function setUpDatabase(): void
     {
         parent::setUpDatabase();
@@ -80,8 +82,13 @@ class BlogTestCase extends AbstractTestCase
             ContentSectionsServiceProvider::class,
             AdminServiceProvider::class,
             InsightsServiceProvider::class,
+            BlockLibraryServiceProvider::class,
             LayoutBuilderServiceProvider::class,
             FrontendServiceProvider::class,
+            DiscoveryFoundationServiceProvider::class,
+            HtmlCacheServiceProvider::class,
+            NavigationServiceProvider::class,
+            TagsAdminServiceProvider::class,
             BlogServiceProvider::class,
             BlogAdminServiceProvider::class,
             BlogConsoleServiceProvider::class,
@@ -107,6 +114,9 @@ class BlogTestCase extends AbstractTestCase
             path: realpath(__DIR__ . '/../../insights') ?: null,
         );
         CapellCore::forcePackageInstalled(InsightsServiceProvider::$packageName);
+        CapellCore::forcePackageInstalled(DiscoveryFoundationServiceProvider::$packageName);
+        CapellCore::forcePackageInstalled(HtmlCacheServiceProvider::$packageName);
+        CapellCore::forcePackageInstalled(BlockLibraryServiceProvider::$packageName);
         CapellCore::forcePackageInstalled(LayoutBuilderServiceProvider::$packageName);
         CapellCore::forcePackageInstalled(BlogServiceProvider::$packageName);
         CapellCore::forcePackageInstalled('capell-app/theme-foundation');

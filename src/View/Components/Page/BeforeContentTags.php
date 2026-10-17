@@ -37,9 +37,10 @@ class BeforeContentTags extends Component
             return;
         }
 
+        $prepared = Frontend::getFrontendData();
         $preparedTagPage = Frontend::getFrontendData('blog.tag_page');
-        $tagPage = $preparedTagPage instanceof Page
-            ? $preparedTagPage
+        $tagPage = is_array($prepared) && array_key_exists('blog.tag_page', $prepared)
+            ? ($preparedTagPage instanceof Page ? $preparedTagPage : null)
             : TagLoader::getTagResultsPage($site, $language);
 
         if (! $tagPage instanceof Pageable) {

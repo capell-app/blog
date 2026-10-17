@@ -20,6 +20,7 @@ use Capell\Blog\Filament\Configurators\Articles\ArticlePageConfigurator;
 use Capell\Blog\Filament\Configurators\Widgets\ArticleWidgetConfigurator;
 use Capell\Blog\Models\Article;
 use Capell\Core\Actions\SetupPageUrlsAction;
+use Capell\Core\Actions\UpdatePageUrlAction;
 use Capell\Core\Enums\BlueprintGroupEnum;
 use Capell\Core\Enums\BlueprintSubjectEnum;
 use Capell\Core\Enums\LayoutEnum;
@@ -31,7 +32,9 @@ use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\Page;
+use Capell\Core\Models\PageUrl;
 use Capell\Core\Models\Site;
+use Capell\Core\Models\Translation;
 use Capell\Core\Support\Creator\BlueprintCreator;
 use Capell\Core\Support\Creator\LayoutCreator;
 use Capell\Frontend\Enums\RenderingStrategyEnum;
@@ -1170,26 +1173,59 @@ class BlogCreator
         ]);
 
         $page->save();
-
-        $languages->each(function (Language $language) use ($page): void {
+        $languages->each(function (Language $language) use ($page, $site): void {
             $translation = $page->translations()->firstOrNew([
                 'language_id' => $language->id,
             ]);
 
-            $translation->forceFill([
-                'title' => __('capell-blog::generic.blog'),
-                'content' => null,
-                'meta' => [
-                    ...($translation->meta ?? []),
-                    'hero_title' => __('capell-blog::generic.blog'),
-                    'label' => __('capell-blog::generic.blog'),
-                    'no_results' => __('capell-blog::messages.no_articles_found'),
-                    'slug' => 'blog',
-                ],
-            ])->save();
-        });
+            if (! $translation instanceof Translation) {
+                throw new LogicException('Blog page translations must use the Core Translation model.');
+            }
 
-        SetupPageUrlsAction::run($page);
+            // Reruns only fill missing defaults: the site owns an existing
+            // translation's title, content and slug, and may have retired or
+            // redirected its URL deliberately.
+            $defaults = [
+                'hero_title' => __('capell-blog::generic.blog'),
+                'label' => __('capell-blog::generic.blog'),
+                'no_results' => __('capell-blog::messages.no_articles_found'),
+                'slug' => 'blog',
+            ];
+
+            if (! $translation->exists) {
+                $translation->forceFill(['title' => __('capell-blog::generic.blog'), 'content' => null]);
+            }
+
+            $translation->forceFill(['meta' => [...$defaults, ...($translation->meta ?? [])]]);
+
+            if (! $translation->exists || $translation->isDirty()) {
+                // The saved listener rewrites every language's URL. Installation
+                // must instead repair each translation without reclaiming paths.
+                $translation->saveQuietly();
+            }
+
+            $parentUrl = $page->getParentUrl($language);
+            $url = $translation->slug === '/'
+                ? $parentUrl
+                : rtrim($parentUrl, '/') . '/' . $translation->slug;
+
+            $claimed = PageUrl::query()
+                ->where('site_id', $site->id)
+                ->where('language_id', $language->id)
+                ->where('url', $url)
+                ->enabled()
+                ->where(function (Builder $query) use ($page): void {
+                    $query->whereNull('pageable_id')
+                        ->orWhereNull('pageable_type')
+                        ->orWhere('pageable_id', '!=', $page->id)
+                        ->orWhere('pageable_type', '!=', $page->getMorphClass());
+                })
+                ->exists();
+
+            if (! $claimed) {
+                UpdatePageUrlAction::run($site, $translation, $parentUrl);
+            }
+        });
 
         return $page;
     }

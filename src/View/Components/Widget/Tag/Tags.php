@@ -85,10 +85,12 @@ class Tags extends AbstractWidget
 
         $preparedTags = Frontend::getFrontendData('blog.sidebar_tags');
         $preparedTagPage = Frontend::getFrontendData('blog.tag_page');
-        $tagListing = $preparedTags instanceof Collection && $preparedTagPage instanceof Page
+        // A missing translated results page is a prepared outcome, not a cache
+        // miss. Do not re-query the tags while Blade is rendering that outcome.
+        $tagListing = $preparedTags instanceof Collection
             ? new TagListingData(
                 tags: $limit !== null ? $preparedTags->take($limit)->values() : $preparedTags,
-                tagPage: $preparedTagPage,
+                tagPage: $preparedTagPage instanceof Page ? $preparedTagPage : null,
             )
             : BuildTagListingDataAction::run(
                 site: $site,

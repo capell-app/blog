@@ -12,7 +12,16 @@ use Capell\PublishingStudio\Data\EditorialCalendarEventData;
 use Capell\PublishingStudio\Data\EditorialCalendarQueryData;
 use Capell\PublishingStudio\Enums\SchedulerEventStateEnum;
 use Capell\PublishingStudio\Enums\SchedulerEventTypeEnum;
+use Capell\Tests\Support\Concerns\CreatesAdminUser;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Gate;
+use Spatie\Permission\Models\Permission;
+
+uses(CreatesAdminUser::class);
+
+beforeEach(function (): void {
+    $this->actingAsAdmin();
+});
 
 afterEach(function (): void {
     CarbonImmutable::setTestNow();
@@ -98,3 +107,35 @@ it('registers the blog editorial calendar contributor when publishing studio is 
 
     expect($contributors->contains(fn (mixed $contributor): bool => $contributor instanceof BlogEditorialCalendarEventContributor))->toBeTrue();
 });
+
+it('requires source read permission before contributing calendar records', function (?string $grant): void {
+    CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-05-01 09:00:00', 'UTC'));
+    Article::factory()->create(['visible_from' => CarbonImmutable::now()->addDay(), 'visible_until' => null]);
+
+    if ($grant === 'guest') {
+        auth()->forgetGuards();
+    } elseif ($grant !== 'super_admin') {
+        $actor = $this->createUser();
+        if ($grant !== null) {
+            Permission::findOrCreate($grant, 'web');
+            $actor->givePermissionTo($grant);
+        }
+        $this->actingAs($actor);
+    }
+
+    $allowed = $grant !== null && $grant !== 'guest';
+    expect(Gate::allows('viewAny', Article::class))->toBe($allowed);
+    $events = (new BlogEditorialCalendarEventContributor)->editorialCalendarEvents(new EditorialCalendarQueryData(
+        startsAt: CarbonImmutable::now(),
+        endsAt: CarbonImmutable::now()->addWeek(),
+        sourceTypes: ['article'],
+    ));
+
+    expect($events)->toHaveCount($allowed ? 1 : 0);
+})->with([
+    'no read permission' => null,
+    'guest' => 'guest',
+    'view grant' => 'View:Article',
+    'view any grant' => 'ViewAny:Article',
+    'global administrator' => 'super_admin',
+]);

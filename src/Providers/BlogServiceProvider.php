@@ -69,10 +69,6 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
 
     public static string $packageName = 'capell-app/blog';
 
-    private bool $feedRoutesRegistered = false;
-
-    private bool $installedRuntimeBooted = false;
-
     #[Override]
     public function configurePackage(Package $package): void
     {
@@ -83,17 +79,11 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
     }
 
     #[Override]
-    public function bootingPackage(): void
-    {
-        $this->registerFeedRoutes();
-    }
-
-    #[Override]
     public function registeringPackage(): void
     {
-        parent::registeringPackage();
-
         $this->app->register(AdminServiceProvider::class);
+
+        parent::registeringPackage();
         $this->app->register(ConsoleServiceProvider::class);
 
         if (interface_exists(self::LAYOUT_SIDEBAR_ELEMENT_CONTRIBUTOR)) {
@@ -109,14 +99,9 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
     }
 
     #[Override]
-    protected function bootInstalledPackage(): self
+    protected function bootInstalledRuntime(): void
     {
-        if ($this->installedRuntimeBooted) {
-            return $this;
-        }
-
         $this->registerFeedRoutes();
-        $this->app->getProvider(AdminServiceProvider::class)?->callBootedCallbacks();
 
         $this
             ->registerRelationships()
@@ -142,17 +127,10 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
             ->registerArticleMediaCacheEvents()
             ->registerPublishingStudio();
 
-        $this->installedRuntimeBooted = true;
-
-        return $this;
     }
 
     private function registerFeedRoutes(): void
     {
-        if ($this->feedRoutesRegistered || ! $this->isPackageInstalled()) {
-            return;
-        }
-
         Route::get('/blog/feed.xml', [BlogFeedController::class, '__invoke'])
             ->defaults('format', 'xml')
             ->name('capell.blog.feed.xml');
@@ -177,7 +155,6 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
             ->defaults('format', 'atom')
             ->name('capell.blog.tag.feed.atom');
 
-        $this->feedRoutesRegistered = true;
     }
 
     private function registerPackageAssets(): self
@@ -191,6 +168,10 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
 
     private function registerModels(): self
     {
+        if (in_array(Article::class, CapellCore::getModels(), true)) {
+            return $this;
+        }
+
         BlogModelRegistrar::register();
 
         return $this;

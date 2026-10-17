@@ -42,8 +42,12 @@ test('can render article', function (): void {
 test('can not render article', function (): void {
     test()->withoutExceptionHandling();
 
+    // Required companions can provision real pages while the article's site is created.
+    $article = Article::factory()->create(['id' => 999]);
+    expect(Page::query()->whereKey($article->getKey())->exists())->toBeFalse();
+
     get(PageResource::getUrl('edit', [
-        'record' => Article::factory()->create(),
+        'record' => $article,
     ]));
 })->throws(ModelNotFoundException::class);
 

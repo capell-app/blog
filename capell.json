@@ -296,8 +296,33 @@
             "clients": []
         },
         "adminSurface": {
-            "authorization": "policies",
-            "permissions": []
+            "authorization": "permissions",
+            "permissions": [
+                "ViewAny:Article",
+                "View:Article",
+                "Create:Article",
+                "Update:Article",
+                "Delete:Article",
+                "DeleteAny:Article",
+                "Restore:Article",
+                "RestoreAny:Article",
+                "ForceDelete:Article",
+                "ForceDeleteAny:Article",
+                "Replicate:Article",
+                "Reorder:Article",
+                "ViewAny:Tag",
+                "View:Tag",
+                "Create:Tag",
+                "Update:Tag",
+                "Delete:Tag",
+                "DeleteAny:Tag",
+                "Restore:Tag",
+                "RestoreAny:Tag",
+                "ForceDelete:Tag",
+                "ForceDeleteAny:Tag",
+                "Replicate:Tag",
+                "Reorder:Tag"
+            ]
         }
     },
     "performance": {
