@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Actions;
 
-use Capell\Blog\Data\BlogPublishingSurfaceRequestData;
+use Capell\Blog\Enums\BlogLayoutEnum;
+use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Models\Article;
+use Capell\Core\Enums\BlueprintSubjectEnum;
+use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Language;
-use Capell\Core\Models\Site;
+use Capell\Core\Models\Layout;
 use Capell\Core\Models\SiteDomain;
-use Capell\Core\Support\Permissions\SiteAccess;
+use Capell\ScreenshotFixtures\FixtureState;
 use Capell\Tags\Models\Tag;
 use Carbon\CarbonImmutable;
-use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
 /**
@@ -38,25 +39,10 @@ final class SeedBlogScreenshotFixtureAction
     {
         self::assertDisposableScreenshotEnvironment();
 
-        $actor = auth()->user();
-        if ($actor === null) {
-            $model = config('auth.providers.users.model');
-            throw_unless(is_string($model) && is_subclass_of($model, Model::class), RuntimeException::class, 'Screenshot fixtures require the selected capture actor.');
-            $email = getenv('CAPELL_SCREENSHOT_ADMIN_EMAIL') ?: (getenv('CAPELL_ADMIN_EMAIL') ?: 'admin@example.com');
-            $actor = $model::query()->where('email', $email)->first();
-        }
+        require_once dirname(__DIR__, 4) . '/scripts/screenshots/FixtureState.php';
+        FixtureState::boot();
 
-        throw_unless($actor instanceof Authenticatable, RuntimeException::class, 'Screenshot fixtures require the selected capture actor.');
-        $access = SiteAccess::forActor($actor);
-        $selectedSiteId = getenv('CAPELL_SCREENSHOT_SITE_ID');
-        if ($selectedSiteId !== false && $selectedSiteId !== '') {
-            throw_unless(ctype_digit($selectedSiteId) && (int) $selectedSiteId > 0, RuntimeException::class, 'Blog screenshot fixtures require a valid selected site.');
-            $site = Site::query()->find((int) $selectedSiteId);
-        } else {
-            $site = $access->query(Site::class)->orderBy('id')->first();
-        }
-
-        throw_unless($site instanceof Site && $access->can($site), RuntimeException::class, 'Blog screenshot fixtures refuse a foreign site.');
+        $site = FixtureState::selectedSite();
 
         return (new Article)->getConnection()->transaction(static function () use ($site): int {
             $language = $site->language;
@@ -75,13 +61,12 @@ final class SeedBlogScreenshotFixtureAction
                 SiteDomain::factory()->site($site)->language($language)->default()->create();
             }
 
-            // This capture belongs to the selected site. Provisioning every site can
-            // touch unrelated tenants and is unnecessary for this fixture.
-            $site->loadMissing(['language', 'siteDomains.language']);
-            EnsureBlogPublishingSurfaceAction::run(new BlogPublishingSurfaceRequestData(
-                site: $site,
-                languages: $site->getAllLanguages(),
-            ));
+            // Installation owns shared publishing defaults. Capture must only read them;
+            // the generic article factory otherwise repairs widgets and layouts.
+            $layout = Layout::query()->where('key', BlogLayoutEnum::Article->value)->first();
+            $type = Blueprint::query()->where('key', BlogPageTypeEnum::Article->value)
+                ->where('type', BlueprintSubjectEnum::Page->value)->first();
+            throw_unless($layout instanceof Layout && $type instanceof Blueprint, RuntimeException::class, 'Install Blog publishing defaults before seeding screenshot articles.');
 
             foreach (self::Articles as $row) {
                 $article = Article::query()
@@ -93,6 +78,8 @@ final class SeedBlogScreenshotFixtureAction
                 if (! $article instanceof Article) {
                     $article = Article::factory()
                         ->site($site)
+                        ->layout($layout)
+                        ->type($type)
                         ->withTranslations(data: ['title' => $row['name']])
                         ->withExampleImages()
                         ->create(['name' => $row['name'], 'meta' => ['screenshot_fixture' => self::FixtureMarker]]);
@@ -137,7 +124,9 @@ final class SeedBlogScreenshotFixtureAction
                 && in_array(getenv('CAPELL_SCREENSHOT_FIXTURE'), ['1', 'true', 'record-state'], true)
                 && is_string($basePath)
                 && is_string($appPath)
-                && $basePath === $appPath,
+                && $basePath === $appPath
+                && ($basePath === realpath(dirname(__DIR__, 4) . '/vendor/orchestra/testbench-core/laravel')
+                    || str_starts_with($basePath, dirname(__DIR__, 4) . '/tmp/testbench-skeletons/')),
             RuntimeException::class,
             'Blog screenshot fixtures require the explicit disposable local screenshot environment.',
         );

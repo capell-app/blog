@@ -2,22 +2,67 @@
 
 declare(strict_types=1);
 
+use Capell\AccessGate\Actions\SeedAccessGateScreenshotFixtureAction;
+use Capell\Address\Actions\SeedAddressScreenshotFixtureAction;
+use Capell\AgentBridge\Actions\Fixtures\PrepareAgentBridgeScreenshotAction;
+use Capell\AiCreator\Actions\SeedAiCreatorScreenshotFixtureAction;
+use Capell\AutomationStudio\Actions\SeedAutomationStudioScreenshotFixtureAction;
+use Capell\Blog\Actions\EnsureArticlePublishingDefaultsAction;
 use Capell\Blog\Actions\SeedBlogScreenshotFixtureAction;
 use Capell\Blog\Models\Article;
+use Capell\Bookings\Actions\SeedBookingsScreenshotFixtureAction;
+use Capell\CampaignStudio\Actions\SeedCampaignStudioScreenshotFixtureAction;
+use Capell\Contacts\Actions\SeedContactsScreenshotFixtureAction;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\SiteDomain;
+use Capell\CustomerPortal\Actions\SeedCustomerPortalScreenshotFixtureAction;
+use Capell\Deployments\Actions\SeedDeploymentsScreenshotFixtureAction;
+use Capell\EmailStudio\Actions\SeedEmailStudioScreenshotFixtureAction;
+use Capell\Experiments\Actions\SeedExperimentsScreenshotFixtureAction;
+use Capell\FormBuilder\Actions\SeedFormBuilderScreenshotFixtureAction;
+use Capell\KnowledgeBase\Actions\SeedKnowledgeBaseScreenshotFixtureAction;
 use Capell\LayoutBuilder\Actions\InstallPackageAction as LayoutBuilderInstallPackageAction;
+use Capell\LayoutBuilder\Actions\SeedLayoutBuilderScreenshotFixtureAction;
+use Capell\LayoutBuilder\Actions\SeedWidgetIntegrityScreenshotFixturesAction;
+use Capell\LiveChat\Actions\SeedLiveChatScreenshotFixtureAction;
+use Capell\Navigation\Actions\SeedNavigationScreenshotFixtureAction;
+use Capell\Navigation\Models\Navigation;
+use Capell\Newsletter\Actions\SeedNewsletterScreenshotFixtureAction;
+use Capell\Notes\Actions\PrepareEmptyNotesScreenshotInboxAction;
+use Capell\PrivacyCenter\Actions\SeedPrivacyCenterScreenshotFixtureAction;
+use Capell\PublishingStudio\Actions\PreparePublishingWorkflowScreenshotAction;
+use Capell\RecordSwitcher\Actions\Fixtures\PrepareRecordSwitcherScreenshotAction;
+use Capell\Referer\Actions\SeedRefererScreenshotFixtureAction;
+use Capell\Search\Actions\SeedSearchScreenshotFixtureAction;
+use Capell\Search\Actions\SeedSearchScreenshotWidgetAction;
+use Capell\ShopifyCommerce\Actions\PrepareShopifyScreenshotStateAction;
+use Capell\SiteMonitor\Actions\Fixtures\PrepareSiteMonitorScreenshotAction;
+use Capell\SocialFeeds\Actions\SeedSocialFeedsScreenshotFixtureAction;
+use Capell\Socials\Actions\SeedSocialsScreenshotFixtureAction;
+use Capell\StructuredContentLibrary\Actions\SeedStructuredContentScreenshotFixtureAction;
 use Capell\Tags\Models\Tag;
 use Capell\Tests\Fixtures\Models\User as CaptureUser;
 use Capell\Tests\Support\Concerns\CreatesAdminUser;
+use Capell\Tests\Support\OwnedTestbenchSkeleton;
+use Capell\UrlManager\Actions\PrepareSavedRuleScreenshotAction;
+use Capell\WelcomeTour\Actions\PrepareWelcomeTourScreenshotAction;
 use Illuminate\Foundation\Auth\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Workbench\App\Actions\AssertScreenshotFixtureEnvironmentAction;
+use Workbench\App\Actions\PrepareEventsScreenshotsAction;
+use Workbench\App\Actions\PreparePublishingScreenshotAction;
+use Workbench\App\Actions\PrepareWidgetScreenshotsAction;
 
 uses(CreatesAdminUser::class);
 
 beforeEach(function (): void {
     $this->createUserWithRole('super_admin', ['email' => 'admin@example.com']);
+    LayoutBuilderInstallPackageAction::run();
+    EnsureArticlePublishingDefaultsAction::run();
 });
 
 function withBlogScreenshotFixtureEnvironment(Closure $callback): void
@@ -202,3 +247,167 @@ it('uses the explicitly selected site on the unauthenticated CLI path', function
         putenv($previous === false ? 'CAPELL_SCREENSHOT_SITE_ID' : 'CAPELL_SCREENSHOT_SITE_ID=' . $previous);
     }
 });
+
+it('refuses a real local application even when its physical path and fixture flags match', function (string $class, string $method): void {
+    $basePath = app()->basePath();
+    $environment = config('app.env');
+    $root = sys_get_temp_dir() . '/capell-real-local-app-' . bin2hex(random_bytes(8));
+    mkdir($root);
+    config()->set('app.env', 'local');
+    app()->setBasePath($root);
+    try {
+        withBlogScreenshotFixtureEnvironment(function () use ($class, $method): void {
+            expect(fn (): mixed => new ReflectionMethod($class, $method)->invoke(null))
+                ->toThrow(RuntimeException::class, 'explicit disposable local screenshot environment');
+        });
+    } finally {
+        app()->setBasePath($basePath);
+        config()->set('app.env', $environment);
+        rmdir($root);
+    }
+})->with('screenshot fixture guards');
+
+dataset('screenshot fixture guards', [
+    'automation-studio' => [SeedAutomationStudioScreenshotFixtureAction::class, 'assertDisposableScreenshotEnvironment'],
+    'email-studio' => [SeedEmailStudioScreenshotFixtureAction::class, 'assertDisposableScreenshotEnvironment'],
+    'bookings' => [SeedBookingsScreenshotFixtureAction::class, 'assertDisposableScreenshotEnvironment'],
+    'layout-builder' => [SeedLayoutBuilderScreenshotFixtureAction::class, 'assertDisposableScreenshotEnvironment'],
+    'structured-content-library' => [SeedStructuredContentScreenshotFixtureAction::class, 'assertDisposableScreenshotEnvironment'],
+    'experiments' => [SeedExperimentsScreenshotFixtureAction::class, 'assertDisposableScreenshotEnvironment'],
+    'contacts' => [SeedContactsScreenshotFixtureAction::class, 'assertDisposableScreenshotEnvironment'],
+    'social-feeds' => [SeedSocialFeedsScreenshotFixtureAction::class, 'assertDisposableScreenshotEnvironment'],
+    'blog' => [SeedBlogScreenshotFixtureAction::class, 'assertDisposableScreenshotEnvironment'],
+    'campaign-studio' => [SeedCampaignStudioScreenshotFixtureAction::class, 'assertDisposableScreenshotEnvironment'],
+    'access-gate' => [SeedAccessGateScreenshotFixtureAction::class, 'assertDisposableScreenshotEnvironment'],
+    'knowledge-base' => [SeedKnowledgeBaseScreenshotFixtureAction::class, 'assertDisposableScreenshotEnvironment'],
+    'form-builder' => [SeedFormBuilderScreenshotFixtureAction::class, 'assertDisposableScreenshotEnvironment'],
+    'address' => [SeedAddressScreenshotFixtureAction::class, 'assertDisposableScreenshotEnvironment'],
+    'ai-creator' => [SeedAiCreatorScreenshotFixtureAction::class, 'assertDisposableScreenshotEnvironment'],
+    'socials' => [SeedSocialsScreenshotFixtureAction::class, 'assertDisposableScreenshotEnvironment'],
+    'newsletter' => [SeedNewsletterScreenshotFixtureAction::class, 'assertDisposableScreenshotEnvironment'],
+    'customer-portal' => [SeedCustomerPortalScreenshotFixtureAction::class, 'assertDisposableScreenshotEnvironment'],
+    'privacy-center' => [SeedPrivacyCenterScreenshotFixtureAction::class, 'assertDisposableScreenshotEnvironment'],
+    'deployments' => [SeedDeploymentsScreenshotFixtureAction::class, 'assertDisposableScreenshotEnvironment'],
+    'live-chat' => [SeedLiveChatScreenshotFixtureAction::class, 'assertDisposableScreenshotEnvironment'],
+]);
+
+it('leaves shared widgets layouts pages and navigation byte-for-byte unchanged', function (): void {
+    LayoutBuilderInstallPackageAction::run();
+    SiteDomain::factory()->default()->create();
+    $site = Site::query()->orderBy('id')->firstOrFail();
+    $language = $site->language;
+    throw_unless($language instanceof Language, RuntimeException::class, 'Expected the capture site language.');
+    Navigation::factory()->site($site)->language($language)->create(['key' => 'main']);
+    $tables = ['widgets', 'layouts', 'pages', 'navigations'];
+    $snapshot = [];
+    foreach ($tables as $table) {
+        $snapshot[$table] = DB::table($table)->orderBy('id')->get()->toJson();
+    }
+
+    withBlogScreenshotFixtureEnvironment(function () use ($tables, $snapshot): void {
+        expect(SeedBlogScreenshotFixtureAction::run())->toBe(4);
+        expect(SeedBlogScreenshotFixtureAction::run())->toBe(4);
+        foreach ($tables as $table) {
+            expect(DB::table($table)->orderBy('id')->get()->toJson())->toBe($snapshot[$table], $table);
+        }
+    });
+});
+
+it('rejects real local apps through the remaining fixture entry points', function (Closure $fixture, bool $http, string $message = 'disposable'): void {
+    $basePath = app()->basePath();
+    $environment = config('app.env');
+    $runtimeEnvironment = app()->environment();
+    $root = sys_get_temp_dir() . '/capell-real-app-entry-' . bin2hex(random_bytes(8));
+    mkdir($root);
+    $this->actingAs(CaptureUser::query()->where('email', 'admin@example.com')->sole());
+    config()->set('app.env', 'local');
+    app()->instance('env', 'local');
+    app()->setBasePath($root);
+    try {
+        withBlogScreenshotFixtureEnvironment(function () use ($fixture, $http, $message): void {
+            if ($http) {
+                expect($fixture)->toThrow(HttpException::class);
+            } else {
+                expect($fixture)->toThrow(RuntimeException::class, $message);
+            }
+        });
+    } finally {
+        app()->setBasePath($basePath);
+        config()->set('app.env', $environment);
+        app()->instance('env', $runtimeEnvironment);
+        rmdir($root);
+    }
+})->with([
+    'search-widgets' => [fn () => resolve(SeedSearchScreenshotWidgetAction::class)->handle(), false],
+    'widget-integrity' => [fn () => SeedWidgetIntegrityScreenshotFixturesAction::run(), false],
+    'search' => [fn () => resolve(SeedSearchScreenshotFixtureAction::class)->handle(), false],
+    'navigation' => [fn () => resolve(SeedNavigationScreenshotFixtureAction::class)->handle(), false],
+    'agent-bridge' => [fn () => resolve(PrepareAgentBridgeScreenshotAction::class)->handle(auth()->user() ?? throw new RuntimeException('Expected the capture actor.')), false],
+    'site-monitor' => [fn () => resolve(PrepareSiteMonitorScreenshotAction::class)->handle(), false],
+    'record-switcher' => [fn () => resolve(PrepareRecordSwitcherScreenshotAction::class)->seedForCapture(), true],
+    'notes' => [fn () => resolve(PrepareEmptyNotesScreenshotInboxAction::class)->handle(), false],
+    'publishing' => [fn () => resolve(PreparePublishingWorkflowScreenshotAction::class)->handle('dashboard'), true],
+    'referer' => [fn () => SeedRefererScreenshotFixtureAction::run(), false, 'Referer screenshot fixtures require the explicit disposable local screenshot environment.'],
+    'shopify' => [fn () => resolve(PrepareShopifyScreenshotStateAction::class)->handle('products'), false],
+    'url-manager' => [fn () => resolve(PrepareSavedRuleScreenshotAction::class)->handle(), true],
+    'welcome-tour' => [fn () => resolve(PrepareWelcomeTourScreenshotAction::class)->handle('dashboard'), true],
+    'workbench-widgets' => [fn () => resolve(PrepareWidgetScreenshotsAction::class)->handle(), false],
+    'workbench-publishing' => [fn () => resolve(PreparePublishingScreenshotAction::class)->handle(), false],
+    'workbench-events' => [fn () => resolve(PrepareEventsScreenshotsAction::class)->handle(), false],
+    'admin' => [fn () => resolve(AssertScreenshotFixtureEnvironmentAction::class)->handle(), false],
+]);
+
+it('accepts the process-owned disposable Testbench copy', function (string $class, string $method): void {
+    $basePath = app()->basePath();
+    app()->setBasePath(OwnedTestbenchSkeleton::path());
+    try {
+        withBlogScreenshotFixtureEnvironment(function () use ($class, $method): void {
+            expect(new ReflectionMethod($class, $method)->invoke(null))->toBeNull();
+        });
+    } finally {
+        app()->setBasePath($basePath);
+    }
+})->with('screenshot fixture guards');
+
+it('refuses an ambiguous default Blog site instead of choosing the first accessible row', function (): void {
+    Site::factory()->withTranslations()->count(2)->create(['default' => true]);
+    Site::query()->update(['default' => true]);
+    expect(Site::query()->where('default', true)->count())->toBe(2);
+    withBlogScreenshotFixtureEnvironment(function (): void {
+        expect(fn (): int => SeedBlogScreenshotFixtureAction::run())->toThrow(RuntimeException::class)
+            ->and(Article::query()->count())->toBe(0);
+    });
+});
+
+it('records creation receipts for fixture articles without adopting a foreign article', function (): void {
+    $foreign = Article::factory()->create(['name' => 'An author article']);
+    withBlogScreenshotFixtureEnvironment(function () use ($foreign): void {
+        SeedBlogScreenshotFixtureAction::run();
+        expect(Schema::hasTable('screenshot_fixture_receipts'))->toBeTrue();
+        $receipts = DB::table('screenshot_fixture_receipts')->where('table_name', $foreign->getTable())->get();
+        expect($receipts)->toHaveCount(4);
+        foreach ($receipts as $receipt) {
+            $identity = json_decode($receipt->identity_json, true, flags: JSON_THROW_ON_ERROR);
+            throw_unless(is_array($identity) && is_int($identity['id'] ?? null), RuntimeException::class, 'Expected an integer receipt key.');
+            expect($identity['id'])->not->toBe($foreign->getKey())
+                ->and($receipt->owner)->toBe('packages/blog/src/Actions/SeedBlogScreenshotFixtureAction.php');
+        }
+    });
+});
+
+it('rejects an invalid explicit site selector before preparing a theme page', function (string $helper): void {
+    require dirname(__DIR__, 5) . '/workbench/routes/screenshot-fixtures.php';
+    throw_unless(is_callable($helper), RuntimeException::class, 'Expected a theme fixture helper.');
+    Site::factory()->withTranslations()->create(['default' => true]);
+    $previous = getenv('CAPELL_SCREENSHOT_SITE_ID');
+    putenv('CAPELL_SCREENSHOT_SITE_ID=invalid');
+    $before = Page::query()->count();
+    try {
+        withBlogScreenshotFixtureEnvironment(function () use ($helper, $before): void {
+            expect(fn () => $helper('editorial', 'empty'))->toThrow(RuntimeException::class, 'valid selected site')
+                ->and(Page::query()->count())->toBe($before);
+        });
+    } finally {
+        putenv($previous === false ? 'CAPELL_SCREENSHOT_SITE_ID' : 'CAPELL_SCREENSHOT_SITE_ID=' . $previous);
+    }
+})->with(['screenshotFixtureBlogPageWithLock', 'screenshotFixtureSearchPageWithLock']);

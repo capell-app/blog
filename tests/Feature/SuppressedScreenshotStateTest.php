@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Capell\Blog\Actions\SeedBlogScreenshotFixtureAction;
 use Capell\Blog\Models\Article;
+use Capell\Blog\Support\Creator\BlogCreator;
 use Capell\Core\Models\SiteDomain;
 use Capell\LayoutBuilder\Actions\InstallPackageAction;
 use Capell\Tests\Support\Concerns\CreatesAdminUser;
@@ -30,6 +31,7 @@ afterEach(function (): void {
 it('opens the populated article index, actual article form and public blog', function (): void {
     InstallPackageAction::run();
     $domain = SiteDomain::factory()->default()->create();
+    resolve(BlogCreator::class)->setup($domain->site);
     SeedBlogScreenshotFixtureAction::run();
     $article = Article::query()->where('name', 'Planning a content calendar that survives launch week')->sole();
     $article->update(['visible_from' => now()->addYear(), 'visible_until' => now()->subDay()]);
