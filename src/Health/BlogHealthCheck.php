@@ -69,12 +69,13 @@ final class BlogHealthCheck implements ChecksExtensionHealth
         }
 
         return new DoctorCheckResultData(
-            label: 'Blog publishing surface',
+            label: 'Blog: article publishing available',
             passed: $missing === [],
             message: $missing === []
                 ? 'Articles table and blog, archive, tag, and article page types are available.'
                 : 'Missing: ' . implode(', ', $missing) . '.',
             remediation: $missing === [] ? null : 'Run capell:blog-setup after installing Blog migrations.',
+            id: 'legacy.blog.publishing.surface',
         );
     }
 
@@ -92,12 +93,13 @@ final class BlogHealthCheck implements ChecksExtensionHealth
             && $hasTagInvalidation;
 
         return new DoctorCheckResultData(
-            label: 'Blog cache invalidation',
+            label: 'Blog: cache refresh tools available',
             passed: $passed,
             message: $passed
                 ? 'Article and tag cache invalidation actions and manifest dependencies are declared.'
                 : 'Article or tag cache invalidation actions, cache keys, or manifest dependencies are missing.',
             remediation: $passed ? null : 'Check Blog cache actions and capell.json performance.cacheSafety.invalidationSources.',
+            id: 'legacy.blog.cache.invalidation',
         );
     }
 
@@ -109,12 +111,13 @@ final class BlogHealthCheck implements ChecksExtensionHealth
             && WidgetComponentEnum::Article->value !== '';
 
         return new DoctorCheckResultData(
-            label: 'Blog author and related rendering',
+            label: 'Blog: author details and related articles available',
             passed: $passed,
             message: $passed
                 ? 'Article metadata and related/article widget render definitions are available.'
                 : 'Article metadata or related/article widget render definitions are missing.',
             remediation: $passed ? null : 'Check BuildArticleMetaDataAction, ArticleMetaData, and WidgetComponentEnum.',
+            id: 'legacy.blog.author.and.related.rendering',
         );
     }
 
@@ -131,7 +134,7 @@ final class BlogHealthCheck implements ChecksExtensionHealth
         }
 
         return new DoctorCheckResultData(
-            label: 'Blog sitemap and static export',
+            label: 'Blog: sitemap and static export tools available',
             passed: $passed,
             message: match (true) {
                 $passed && $siteDiscoveryAvailable => 'Static export and optional Site Discovery sitemap bridge classes are available.',
@@ -139,6 +142,7 @@ final class BlogHealthCheck implements ChecksExtensionHealth
                 default => 'Static export or Site Discovery sitemap bridge classes are missing.',
             },
             remediation: $passed ? null : 'Check BlogStaticSiteExtension and optional Site Discovery sitemap classes.',
+            id: 'legacy.blog.sitemap.and.static.export',
         );
     }
 

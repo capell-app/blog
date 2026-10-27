@@ -15,6 +15,7 @@ use Capell\PublishingStudio\Enums\SchedulerEventTypeEnum;
 use Capell\Tests\Support\Concerns\CreatesAdminUser;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Translation\Translator;
 use Spatie\Permission\Models\Permission;
 
 uses(CreatesAdminUser::class);
@@ -28,6 +29,12 @@ afterEach(function (): void {
 });
 
 it('contributes scheduled article publish and unpublish events to the editorial calendar', function (): void {
+    __('capell-blog::generic.editorial_calendar.status_scheduled');
+    resolve(Translator::class)->addLines([
+        'generic.editorial_calendar.descriptions.publish' => 'The scheduled article becomes visible.',
+        'generic.editorial_calendar.descriptions.unpublish' => 'The scheduled article becomes hidden.',
+    ], app()->getLocale(), 'capell-blog');
+
     CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-05-01 09:00:00', 'UTC'));
 
     $site = Site::factory()->withTranslations()->create(['name' => 'Primary site']);
@@ -67,6 +74,10 @@ it('contributes scheduled article publish and unpublish events to the editorial 
             SchedulerEventTypeEnum::Publish->value,
             SchedulerEventTypeEnum::Unpublish->value,
         ])
+        ->and($firstEvent->description)->toBe(__('capell-blog::generic.editorial_calendar.descriptions.publish'))
+        ->not->toBe('capell-blog::generic.editorial_calendar.descriptions.publish')
+        ->and($events->last()?->description)->toBe(__('capell-blog::generic.editorial_calendar.descriptions.unpublish'))
+        ->not->toBe('capell-blog::generic.editorial_calendar.descriptions.unpublish')
         ->and($firstEvent->title)->toBe('Product release notes')
         ->and($firstEvent->siteId)->toBe((int) $site->id)
         ->and($firstEvent->siteName)->toBe('Primary site')
@@ -120,6 +131,7 @@ it('requires source read permission before contributing calendar records', funct
             Permission::findOrCreate($grant, 'web');
             $actor->givePermissionTo($grant);
         }
+
         $this->actingAs($actor);
     }
 

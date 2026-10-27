@@ -10,6 +10,7 @@ use Capell\Blog\Actions\ClearBlogContentCacheAction;
 use Capell\Blog\Database\Factories\ArticleFactory;
 use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Observers\ArticleObserver;
+use Capell\Blog\Policies\ArticlePolicy;
 use Capell\Blog\Support\Loader\BlogLoader;
 use Capell\Blog\Support\PublishingStudio\Concerns\BelongsToOptionalWorkspace;
 use Capell\Core\Concerns\HasCapellMedia;
@@ -47,6 +48,7 @@ use Capell\Core\Support\Activity\LogsActivity;
 use Capell\Tags\Models\Concerns\HasTags;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -71,6 +73,7 @@ use Staudenmeir\EloquentJsonRelations\Relations\BelongsToJson;
  * @method HasOne<Translation, $this>|MorphOne<Translation, $this> translation()
  */
 #[ObservedBy(ArticleObserver::class)]
+#[UsePolicy(ArticlePolicy::class)]
 class Article extends Model implements Blueprintable, DraftableContract, HasMedia, Pageable, Publishable, Translatable, Userstampable
 {
     use BelongsToOptionalWorkspace;

@@ -83,16 +83,22 @@ class ArticlePagesTable implements TableConfigurator
                 ActionGroup::make([
                     ReplicatePageAction::make(),
                     DeleteAction::make()
+                        ->modalHeading(__('capell-blog::article.delete_modal.heading'))
+                        ->modalDescription(__('capell-blog::article.delete_modal.description'))
                         ->after(self::afterRecordDeleted(...)),
                 ])
                     ->color('gray'),
             ])
             ->toolbarActions([
                 DeleteBulkAction::make()
+                    ->modalHeading(__('capell-blog::article.delete_bulk_modal.heading'))
+                    ->modalDescription(__('capell-blog::article.delete_bulk_modal.description'))
                     ->before(self::beforeBulkDelete(...))
                     ->after(self::afterBulkDelete(...)),
                 RestoreBulkAction::make(),
                 ForceDeleteBulkAction::make()
+                    ->modalHeading(__('capell-blog::article.force_delete_bulk_modal.heading'))
+                    ->modalDescription(__('capell-blog::article.force_delete_bulk_modal.description'))
                     ->after(self::afterRecordDeleted(...)),
             ])
             ->recordUrl(self::getRecordUrl(...));

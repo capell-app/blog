@@ -161,9 +161,12 @@ Screenshot contract: `docs/screenshots.json`.
 
 ### Command signatures
 
+- `capell:blog-create-pages`
 - `capell:blog-demo`
+- `capell:blog-faker`
 - `capell:blog-install`
 - `capell:blog-setup`
+- `capell:hero-demo`
 
 ### Manifest action API
 
@@ -244,7 +247,7 @@ Screenshot contract: `docs/screenshots.json`.
 - Settings: no package settings declared.
 - Queues or schedules: none declared.
 - Cache tags: `blog`.
-- Commands: `capell:blog-demo`, `capell:blog-install`, `capell:blog-setup`.
+- Commands: `capell:blog-create-pages`, `capell:blog-demo`, `capell:blog-faker`, `capell:blog-install`, `capell:blog-setup`, `capell:hero-demo`.
 
 ## Common Pitfalls
 
@@ -267,6 +270,12 @@ Screenshot contract: `docs/screenshots.json`.
 2. Run the package setup: `php artisan capell:blog-install`.
 3. See it working: run `php artisan capell:blog-demo`.
 4. Open the package admin surface at `/admin/blog/article` and confirm Blog is available.
+
+## Upgrading
+
+No manual steps between minor versions.
+
+Read [CHANGELOG.md](CHANGELOG.md) before upgrading.
 
 ## Next Steps
 

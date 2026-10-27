@@ -17,11 +17,11 @@ it('runs the declared blog diagnostics', function (): void {
 
     expect($checks)->toHaveCount(4)
         ->and($checks->every(fn (DoctorCheckResultData $check): bool => $check->passed))->toBeTrue()
-        ->and($checks->pluck('label')->all())->toBe([
-            'Blog publishing surface',
-            'Blog cache invalidation',
-            'Blog author and related rendering',
-            'Blog sitemap and static export',
+        ->and($checks->pluck('id')->all())->toBe([
+            'legacy.blog.publishing.surface',
+            'legacy.blog.cache.invalidation',
+            'legacy.blog.author.and.related.rendering',
+            'legacy.blog.sitemap.and.static.export',
         ])
         ->and(BlogHealthCheck::passed())->toBeTrue();
 });

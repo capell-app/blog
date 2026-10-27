@@ -12,7 +12,7 @@ return [
         'no_traffic_data' => 'No traffic data yet.',
         'published' => 'Published',
         'recent_7_days' => 'Recent (7 days)',
-        'scheduled_future' => 'Scheduled (Future)',
+        'scheduled_future' => 'Scheduled',
         'site_traffic_heading' => 'Site traffic - views & visitors',
         'status_breakdown' => 'Status Breakdown',
         'top_pages_heading' => 'Top pages',
@@ -50,8 +50,8 @@ return [
     'blog_page' => 'Blog Posts',
     'editorial_calendar' => [
         'descriptions' => [
-            'publish' => 'Article becomes visible.',
-            'unpublish' => 'Article public visibility expires automatically.',
+            'publish' => 'Goes live on the blog, in feeds and on tag pages.',
+            'unpublish' => 'Comes off the blog at this time; the article is kept.',
         ],
         'status_scheduled' => 'Scheduled',
     ],

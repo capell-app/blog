@@ -6,7 +6,7 @@
     "kind": "package",
     "capellApiVersion": "^1.0",
     "version": "1.0.0",
-    "description": "Blog adds article publishing, archive pages, optional tag pages, article widgets, discovery and analytics bridges, and frontend Livewire page components to Capell.",
+    "description": "Publish articles, archives and tag pages with related-article widgets and RSS, Atom and XML feeds. Draft, schedule and organise articles from the admin.",
     "product": {
         "group": "Capell Publishing",
         "tier": "free",
