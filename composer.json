@@ -26,7 +26,8 @@
         "capell-app/frontend": "^1.0.72",
         "capell-app/html-cache": "^1.0",
         "capell-app/layout-builder": "^1.0",
-        "capell-app/tags": "^1.0"
+        "capell-app/tags": "^1.0",
+        "capell-app/theme-foundation": "^1.0"
     },
     "suggest": {
         "capell-app/comments": "Adds comment threads to published articles.",

@@ -23,7 +23,8 @@
             "capell-app/frontend",
             "capell-app/html-cache",
             "capell-app/layout-builder",
-            "capell-app/tags"
+            "capell-app/tags",
+            "capell-app/theme-foundation"
         ],
         "supports": [
             "capell-app/comments",
