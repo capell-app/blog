@@ -9,6 +9,7 @@ use Capell\Blog\Models\Article;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Site;
+use Capell\Core\Support\TableName;
 use Capell\Tags\Models\Tag;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -66,11 +67,11 @@ final class ClearBlogTagCacheAction
         ]));
 
         $articleSiteIds = DB::table('taggables')
-            ->join('articles', 'articles.id', '=', 'taggables.taggable_id')
+            ->join(TableName::resolve('articles'), TableName::resolve('articles') . '.id', '=', 'taggables.taggable_id')
             ->where('taggables.tag_id', $tag->getKey())
             ->whereIn('taggables.taggable_type', $articleMorphTypes)
-            ->whereNotNull('articles.site_id')
-            ->pluck('articles.site_id')
+            ->whereNotNull(TableName::resolve('articles') . '.site_id')
+            ->pluck(TableName::resolve('articles') . '.site_id')
             ->map(fn (mixed $siteId): int => (int) $siteId);
 
         return $siteIds

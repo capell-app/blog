@@ -18,7 +18,7 @@
                         <span
                             class="ml-4 shrink-0 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400"
                         >
-                            {{ number_format($page->views) }}
+                            {{ \Illuminate\Support\Number::format($page->views, precision: 0, locale: app()->getLocale()) }}
                         </span>
                     </div>
                 @endforeach

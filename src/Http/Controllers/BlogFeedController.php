@@ -8,6 +8,7 @@ use Capell\Blog\Actions\BuildBlogFeedXmlAction;
 use Capell\Blog\Http\Controllers\Concerns\ResolvesFeedSiteDomain;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\SiteDomain;
+use Capell\Core\Support\PublicRead\PublicReadProjectionHeaders;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -23,13 +24,9 @@ final class BlogFeedController
 
         abort_unless($domain instanceof SiteDomain && $domain->site instanceof Site && $domain->language !== null, 404);
 
-        return new Response(
-            content: BuildBlogFeedXmlAction::run($domain, $feedFormat),
-            status: 200,
-            headers: [
-                'Content-Type' => $contentType,
-                'Cache-Control' => 'public, max-age=300',
-            ],
-        );
+        $content = BuildBlogFeedXmlAction::run($domain, $feedFormat);
+
+        // Revalidate on every request: an entry gated after publication must not outlive its cached copy.
+        return PublicReadProjectionHeaders::apply(new Response($content, 200, ['Content-Type' => $contentType]), $request, $content);
     }
 }

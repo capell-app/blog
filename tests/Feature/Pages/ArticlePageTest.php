@@ -135,7 +135,7 @@ test('article page with layout', function (): void {
                 ->containsText((string) blogTestTranslation($nextArticle->translation)->title),
         )
         ->assertElementExists(
-            '#layout-container-latest.blog-latest-articles .widget-pages',
+            '.layout-container.blog-latest-articles .widget-pages',
             fn (AssertElement $elm): BaseAssert => $elm->contains('.latest-articles-page-item', count: 2),
         )
         ->assertElementExists(fn (AssertElement $body): BaseAssert => $body->doesntContain('.capell-neighbor-links-mobile'));

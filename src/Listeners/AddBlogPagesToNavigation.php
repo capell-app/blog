@@ -8,6 +8,7 @@ use Capell\Blog\Support\Loader\BlogLoader;
 use Capell\Core\Contracts\Pageable;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Site;
+use Capell\Core\Support\TableName;
 use Capell\Navigation\Actions\AddPageToNavigationAction;
 use Capell\Navigation\Events\NavigationCreating;
 use Illuminate\Support\Facades\Schema;
@@ -21,7 +22,7 @@ class AddBlogPagesToNavigation
     {
         if (
             ! CapellCore::isPackageInstalled('capell-app/navigation')
-            || ! Schema::hasTable('navigations')
+            || ! Schema::hasTable(TableName::resolve('navigations'))
             || ! class_exists(AddPageToNavigationAction::class)
         ) {
             return;

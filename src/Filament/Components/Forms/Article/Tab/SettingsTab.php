@@ -21,6 +21,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Number;
 
 class SettingsTab
 {
@@ -67,16 +68,19 @@ class SettingsTab
                             ->map(fn (int $i): float => round(1.0 - $i * 0.1, 1))
                             ->filter(fn (float $value): bool => $value >= 0.1)
                             ->mapWithKeys(function (float $value): array {
-                                $formatted = number_format($value, 1);
-                                if ($formatted === '1.0') {
+                                // The option key is the stored priority, so it stays a locale-independent
+                                // decimal; only the label follows the admin locale.
+                                $key = number_format($value, 1, '.', '');
+                                $formatted = (string) Number::format($value, precision: 1, locale: app()->getLocale());
+                                if ($key === '1.0') {
                                     $label = $formatted . ' ' . __('capell-admin::generic.highest');
-                                } elseif ($formatted === '0.1') {
+                                } elseif ($key === '0.1') {
                                     $label = $formatted . ' ' . __('capell-admin::generic.lowest');
                                 } else {
                                     $label = $formatted;
                                 }
 
-                                return [$formatted => $label];
+                                return [$key => $label];
                             }),
                     ),
                 CheckboxList::make('robots')

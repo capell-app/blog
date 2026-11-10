@@ -28,6 +28,7 @@ use Capell\Core\Models\Language;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
+use Capell\Core\Support\TableName;
 use Capell\FoundationTheme\Actions\ResolveFoundationThemeTokensAction;
 use Capell\Frontend\Contracts\FrontendContextReader;
 use Capell\Frontend\Contracts\FrontendRuntimeManifestContributor;
@@ -533,7 +534,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
         if (
             $site->relationLoaded('navigations')
             || ! CapellCore::isPackageInstalled('capell-app/navigation')
-            || ! Schema::hasTable('navigations')
+            || ! Schema::hasTable(TableName::resolve('navigations'))
             || ! class_exists(Navigation::class)
         ) {
             return;

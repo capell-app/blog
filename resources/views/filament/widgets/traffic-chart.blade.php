@@ -7,10 +7,10 @@
         <div class="space-y-4">
             <div class="flex gap-6 text-sm">
                 <span class="font-medium text-gray-700 dark:text-gray-300">
-                    {{ __('capell-blog::generic.admin_widgets.views_count', ['count' => number_format($data->totalViews)]) }}
+                    {{ __('capell-blog::generic.admin_widgets.views_count', ['count' => \Illuminate\Support\Number::format($data->totalViews, precision: 0, locale: app()->getLocale())]) }}
                 </span>
                 <span class="font-medium text-gray-500 dark:text-gray-400">
-                    {{ __('capell-blog::generic.admin_widgets.visitors_count', ['count' => number_format($data->totalVisitors)]) }}
+                    {{ __('capell-blog::generic.admin_widgets.visitors_count', ['count' => \Illuminate\Support\Number::format($data->totalVisitors, precision: 0, locale: app()->getLocale())]) }}
                 </span>
             </div>
 

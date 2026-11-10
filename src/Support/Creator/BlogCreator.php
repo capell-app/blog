@@ -37,6 +37,7 @@ use Capell\Core\Models\Site;
 use Capell\Core\Models\Translation;
 use Capell\Core\Support\Creator\BlueprintCreator;
 use Capell\Core\Support\Creator\LayoutCreator;
+use Capell\Core\Support\TableName;
 use Capell\Frontend\Enums\RenderingStrategyEnum;
 use Capell\LayoutBuilder\Enums\LayoutTypeEnum;
 use Capell\LayoutBuilder\Enums\WidgetComponentEnum as LayoutWidgetComponentEnum;
@@ -387,7 +388,7 @@ class BlogCreator
     {
         if (
             ! CapellCore::isPackageInstalled('capell-app/navigation')
-            || ! Schema::hasTable('navigations')
+            || ! Schema::hasTable(TableName::resolve('navigations'))
             || ! class_exists(Navigation::class)
             || ! class_exists(AddPageToNavigationAction::class)
         ) {
@@ -904,7 +905,7 @@ class BlogCreator
                 'language_id' => $language->id,
             ], [
                 'title' => __('capell-blog::generic.archives'),
-                'content' => sprintf('<p>%s</p>', __('capell-blog::generic.blog_archives_description')),
+                'content' => sprintf('<p>%s</p>', __('capell-blog::public.blog_archives_description')),
                 'meta' => [
                     'title' => __('capell-blog::generic.blog_archives_title'),
                     'description' => __('capell-blog::generic.archives'),
@@ -1173,6 +1174,7 @@ class BlogCreator
         ]);
 
         $page->save();
+
         $languages->each(function (Language $language) use ($page, $site): void {
             $translation = $page->translations()->firstOrNew([
                 'language_id' => $language->id,

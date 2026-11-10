@@ -158,3 +158,15 @@ it('keeps fresh blog installation defaults and canonical URL unchanged', functio
         ->url->toBe('/blog')
         ->type->toBeNull();
 });
+
+it('seeds the published archives page with its public description', function (): void {
+    $site = SiteDomain::factory()->default()->create()->site;
+    $creator = resolve(BlogCreator::class);
+
+    $archivesPage = $creator->createArchivesPage($creator->createBlogPage($site));
+
+    expect($archivesPage->translations()->count())->toBe(1)
+        ->and($archivesPage->translations()
+            ->where('content', '<p>Explore our collection of past articles organized by month and year.</p>')
+            ->exists())->toBeTrue();
+});

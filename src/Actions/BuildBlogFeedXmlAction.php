@@ -8,6 +8,7 @@ use Capell\Blog\Data\BlogTagLinkData;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Loader\BlogLoader;
 use Capell\Blog\Support\Loader\TagLoader;
+use Capell\Core\Actions\PublicRead\PageUrlsArePubliclyReadableAction;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\PageUrl;
@@ -20,6 +21,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection as SupportCollection;
+use Illuminate\Support\LazyCollection;
+use LogicException;
 use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
@@ -64,16 +67,24 @@ final class BuildBlogFeedXmlAction
             )
             ->publishedDate()
             ->publishedLatest()
-            ->limit(max(1, min(100, $limit)))
-            ->get();
+            ->lazy(100)
+            ->filter(static fn (Article $article): bool => $article->pageUrl instanceof PageUrl)
+            ->chunk(100)
+            // A feed is a public listing: leave out articles an anonymous visitor may not read.
+            ->flatMap(static function (LazyCollection $chunk) use ($domain): array {
+                $articles = array_values($chunk->all());
+                $decisions = PageUrlsArePubliclyReadableAction::run(array_map(static function (Article $article) use ($domain): PageUrl {
+                    $pageUrl = $article->pageUrl;
+                    throw_unless($pageUrl instanceof PageUrl, LogicException::class, 'A feed article keeps only entries that have a page URL.');
+                    $pageUrl->setRelation('siteDomain', $domain);
 
-        $articles->each(function (Article $article) use ($domain): void {
-            $pageUrl = $article->pageUrl;
+                    return $pageUrl;
+                }, $articles));
 
-            if ($pageUrl instanceof PageUrl) {
-                $pageUrl->setRelation('siteDomain', $domain);
-            }
-        });
+                return array_values(array_filter($articles, static fn (int $position): bool => $decisions[$position], ARRAY_FILTER_USE_KEY));
+            })
+            ->take(max(1, min(100, $limit)))
+            ->pipe(static fn (LazyCollection $readable): EloquentCollection => new EloquentCollection($readable->all()));
 
         return $format === 'atom'
             ? $this->atom($domain, $articles, $tag)

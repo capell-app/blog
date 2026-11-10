@@ -18,7 +18,7 @@
     },
     "whyItMatters": {
         "developers": {
-            "text": "Blog registers the article page type, configurators, feed routes, and render-data Actions as package extension points instead of adding article behavior to core.",
+            "text": "Blog registers the article page type, configurators, feed routes, and render-data Actions as package extension points instead of adding article behaviour to core.",
             "evidence": [
                 "capell.json",
                 "src/Filament/Configurators/Articles/ArticlePageConfigurator.php",
@@ -27,7 +27,7 @@
             ]
         },
         "teams": {
-            "text": "Editorial teams can keep work private as a draft, schedule publication, organize articles with tags, and reuse related content elsewhere on the site.",
+            "text": "Editorial teams can keep work private as a draft, schedule publication, organise articles with tags, and reuse related content elsewhere on the site.",
             "evidence": [
                 "docs/overview.admin.md",
                 "docs/screenshots.json",

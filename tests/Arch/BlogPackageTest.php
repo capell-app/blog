@@ -76,6 +76,7 @@ it('keeps blog package references inside the blog source package except intentio
         'packages/theme-liquid-glass/src/LiquidGlassThemeServiceProvider.php',
         'packages/voyager-importer/src/Actions/ImportVoyagerPostsAction.php',
         'packages/voyager-importer/src/Actions/ImportVoyagerTranslationsAction.php',
+        'packages/voyager-importer/src/Actions/RunDedicatedVoyagerImportAction.php',
     ];
     $violations = [];
 

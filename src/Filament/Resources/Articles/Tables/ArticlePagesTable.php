@@ -31,6 +31,7 @@ use Capell\Core\Contracts\Pageable;
 use Capell\Core\Data\Database\SqlFragment;
 use Capell\Core\Facades\CapellDatabase;
 use Capell\Core\Models\Language;
+use Capell\Core\Support\TableName;
 use Capell\Tags\Models\Tag;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
@@ -300,7 +301,7 @@ class ArticlePagesTable implements TableConfigurator
      */
     protected static function applyNameSearch(Builder $query, string $search): Builder
     {
-        $name = SqlFragment::raw($query->getQuery()->getGrammar()->wrap('pages.name'));
+        $name = SqlFragment::raw($query->getQuery()->getGrammar()->wrap(TableName::resolve('pages') . '.name'));
         $relevance = CapellDatabase::for($query->getModel())
             ->queryDialect()
             ->textRelevance($name, $search);
@@ -341,14 +342,14 @@ class ArticlePagesTable implements TableConfigurator
 
     protected static function applyFullUrlSearch(BuilderContract $query, string $search): BuilderContract
     {
-        $query->whereColumn('site_domains.language_id', 'page_urls.language_id');
+        $query->whereColumn(TableName::resolve('site_domains') . '.language_id', TableName::resolve('page_urls') . '.language_id');
         $grammar = $query->getQuery()->getGrammar();
         $url = CapellDatabase::for($query->getModel())->queryDialect()->concatenate(
-            SqlFragment::raw($grammar->wrap('site_domains.scheme')),
+            SqlFragment::raw($grammar->wrap(TableName::resolve('site_domains') . '.scheme')),
             SqlFragment::raw("'://'"),
-            SqlFragment::raw($grammar->wrap('site_domains.domain')),
-            SqlFragment::raw('COALESCE(' . $grammar->wrap('site_domains.path') . ", '')"),
-            SqlFragment::raw($grammar->wrap('page_urls.url')),
+            SqlFragment::raw($grammar->wrap(TableName::resolve('site_domains') . '.domain')),
+            SqlFragment::raw('COALESCE(' . $grammar->wrap(TableName::resolve('site_domains') . '.path') . ", '')"),
+            SqlFragment::raw($grammar->wrap(TableName::resolve('page_urls') . '.url')),
         );
         new SqlFragment(
             $url->sql . ' like ?',
@@ -529,7 +530,7 @@ class ArticlePagesTable implements TableConfigurator
         if ($activeTabSiteId !== null) {
             $query->whereHas(
                 'sites',
-                fn (BuilderContract $query): BuilderContract => $query->where('sites.id', $activeTabSiteId),
+                fn (BuilderContract $query): BuilderContract => $query->where(TableName::resolve('sites') . '.id', $activeTabSiteId),
             );
         }
 

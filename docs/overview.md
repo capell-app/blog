@@ -56,7 +56,7 @@ Feed responses are publicly cacheable for five minutes. A recently published or 
 
 ## Operational boundaries
 
-Blog stores editorial content, URLs, tag relationships, user stamps, featured media relationships, and activity-log entries in plaintext application storage. It does not register a Privacy Center exporter or eraser. If an article contains personal data, handle export, correction, retention, and erasure through the owning editorial/privacy process, including media and backups.
+Blog stores editorial content, URLs, tag relationships, user stamps, featured media relationships, and activity-log entries in plaintext application storage. It does not register a Privacy Centre exporter or eraser. If an article contains personal data, handle export, correction, retention, and erasure through the owning editorial/privacy process, including media and backups.
 
 There are no Blog-specific notification or retry queues. A missing public page, translation, URL, layout, or Site Domain is a configuration/data issue rather than a failed publishing job; use the article screen and Diagnostics to repair the surface, then recheck the exact site/language URL.
 

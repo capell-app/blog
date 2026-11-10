@@ -14,6 +14,7 @@ use Capell\Blog\Policies\ArticlePolicy;
 use Capell\Blog\Support\Loader\BlogLoader;
 use Capell\Blog\Support\PublishingStudio\Concerns\BelongsToOptionalWorkspace;
 use Capell\Core\Concerns\HasCapellMedia;
+use Capell\Core\Concerns\HasCapellTable;
 use Capell\Core\Contracts\DraftableContract;
 use Capell\Core\Contracts\Pageable;
 use Capell\Core\Data\Database\SqlFragment;
@@ -83,6 +84,7 @@ class Article extends Model implements Blueprintable, DraftableContract, HasMedi
     use HasBlueprint;
     use HasBlueprints;
     use HasCapellMedia;
+    use HasCapellTable;
 
     /** @use HasFactory<ArticleFactory> */
     use HasFactory;
@@ -127,6 +129,7 @@ class Article extends Model implements Blueprintable, DraftableContract, HasMedi
 
     protected static string $factory = ArticleFactory::class;
 
+    #[Override]
     public static function getDefaultType(?string $group): ?Blueprint
     {
         return Blueprint::query()
@@ -151,16 +154,19 @@ class Article extends Model implements Blueprintable, DraftableContract, HasMedi
             ->first();
     }
 
+    #[Override]
     public static function hasPageHierarchy(): bool
     {
         return false;
     }
 
+    #[Override]
     public static function defaultOrdering(): PageOrderEnum
     {
         return PageOrderEnum::Latest;
     }
 
+    #[Override]
     public function shouldLogVisit(): bool
     {
         return ! (bool) ($this->blueprint?->meta['disable_visit_logs'] ?? false);
@@ -180,11 +186,13 @@ class Article extends Model implements Blueprintable, DraftableContract, HasMedi
         ]);
     }
 
+    #[Override]
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection(MediaCollectionEnum::Image->value)->singleFile();
     }
 
+    #[Override]
     public function getParentUrl(Language $language, bool $fullUrl = false): string
     {
         $site = $this->site;
@@ -203,6 +211,7 @@ class Article extends Model implements Blueprintable, DraftableContract, HasMedi
         return $date !== null ? CarbonImmutable::make($date) : null;
     }
 
+    #[Override]
     public function getDraftKey(): string
     {
         $key = $this->getKey();
@@ -221,6 +230,7 @@ class Article extends Model implements Blueprintable, DraftableContract, HasMedi
     }
 
     /** @return HasOne<Translation, $this>|MorphOne<Translation, $this> */
+    #[Override]
     public function translation(): HasOne|MorphOne
     {
         $relation = $this->morphOne(Translation::class, 'translatable');
@@ -233,12 +243,14 @@ class Article extends Model implements Blueprintable, DraftableContract, HasMedi
     }
 
     /** @return BelongsTo<Site, Model> */
+    #[Override]
     public function site(): BelongsTo
     {
         return $this->belongsTo(Site::class);
     }
 
     /** @return MorphOne<PageUrl, Model> */
+    #[Override]
     public function pageUrl(): MorphOne
     {
         /** @var MorphOne<PageUrl, Model> $relation */
@@ -248,6 +260,7 @@ class Article extends Model implements Blueprintable, DraftableContract, HasMedi
     }
 
     /** @return MorphMany<PageUrl, Model> */
+    #[Override]
     public function pageUrls(): MorphMany
     {
         $model = $this->morphMany(PageUrl::class, 'pageable');
@@ -260,6 +273,7 @@ class Article extends Model implements Blueprintable, DraftableContract, HasMedi
     }
 
     /** @return MorphMany<Article, $this> */
+    #[Override]
     public function canonicalPages(): MorphMany
     {
         return $this->morphMany(
@@ -333,6 +347,7 @@ class Article extends Model implements Blueprintable, DraftableContract, HasMedi
         return $this->belongsToJson(self::class, 'meta->related');
     }
 
+    #[Override]
     public function canonicalPage(): MorphTo
     {
         return $this->morphTo(type: 'meta->canonical_pageable_type', id: 'meta->canonical_pageable_id');

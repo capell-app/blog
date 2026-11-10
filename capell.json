@@ -37,7 +37,10 @@
         "conflicts": []
     },
     "providers": {
-        "metadata": ["Capell\\Blog\\Providers\\BlogServiceProvider"],
+        "metadata": [
+            "Capell\\Blog\\Providers\\BlogServiceProvider",
+            "Capell\\Blog\\Providers\\MigrationMetadataServiceProvider"
+        ],
         "install": ["Capell\\Blog\\Providers\\ConsoleServiceProvider"],
         "runtime": ["Capell\\Blog\\Providers\\BlogServiceProvider"],
         "admin": ["Capell\\Blog\\Providers\\AdminServiceProvider"],
@@ -265,12 +268,12 @@
         "riskTier": "standard",
         "publicSurface": {
             "routeNames": [
-                "capell.blog.feed.atom",
-                "capell.blog.feed.rss",
-                "capell.blog.feed.xml",
-                "capell.blog.tag.feed.atom",
-                "capell.blog.tag.feed.rss",
-                "capell.blog.tag.feed.xml"
+                "GET /blog/feed.atom (capell.blog.feed.atom)",
+                "GET /blog/feed.rss (capell.blog.feed.rss)",
+                "GET /blog/feed.xml (capell.blog.feed.xml)",
+                "GET /blog/tag/{slug}/feed.atom (capell.blog.tag.feed.atom)",
+                "GET /blog/tag/{slug}/feed.rss (capell.blog.tag.feed.rss)",
+                "GET /blog/tag/{slug}/feed.xml (capell.blog.tag.feed.xml)"
             ],
             "auth": "public",
             "csrfExemptRoutes": [],
@@ -370,6 +373,22 @@
     },
     "marketplace": {
         "summary": "Publish articles, archives, tag pages, and related-article widgets with multilingual, multi-site output and optional growth bridges.",
+        "problem": "Our editorial team must manage article archives by hand.",
+        "outcome": "Our site has published articles that visitors can browse by archive or tag and follow by feed.",
+        "faq": [
+            {
+                "question": "Can editors keep articles private before publication?",
+                "answer": "Editors can save articles as drafts and schedule publication."
+            },
+            {
+                "question": "How can visitors find published articles?",
+                "answer": "Visitors can browse article, archive and tag pages or subscribe to a feed."
+            },
+            {
+                "question": "Where can related articles appear?",
+                "answer": "Related-article widgets let teams reuse related content elsewhere on the site."
+            }
+        ],
         "screenshots": [
             {
                 "path": "docs/assets/marketplace/extension-card.jpg",

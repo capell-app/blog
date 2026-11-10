@@ -8,6 +8,7 @@ use Capell\Blog\Data\BlogPublishingSurfaceRequestData;
 use Capell\Blog\Data\BlogPublishingSurfaceResultData;
 use Capell\Blog\Support\Creator\BlogCreator;
 use Capell\Core\Facades\CapellCore;
+use Capell\Core\Support\TableName;
 use Capell\Navigation\Enums\NavigationHandle;
 use Illuminate\Support\Facades\Schema;
 use Lorisleiva\Actions\Concerns\AsFake;
@@ -31,7 +32,7 @@ class AttachBlogPublishingSurfaceToNavigationAction
             return;
         }
 
-        if (! Schema::hasTable('navigations')) {
+        if (! Schema::hasTable(TableName::resolve('navigations'))) {
             return;
         }
 

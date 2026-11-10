@@ -9,6 +9,7 @@ use Capell\Core\Contracts\Pageable;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
+use Capell\Core\Support\TableName;
 use Capell\FoundationTheme\View\Components\Widget\Page\AbstractPagesWidget;
 use Capell\Frontend\Data\PageListingRequestData;
 use Capell\Frontend\Facades\Frontend;
@@ -98,7 +99,7 @@ class Related extends AbstractPagesWidget
                             ->when(
                                 $this->widget->meta['exclude_types'] ?? false,
                                 fn (BuilderContract $query): BuilderContract => $query->whereNotIn(
-                                    'blueprints.key',
+                                    TableName::resolve('blueprints') . '.key',
                                     $this->widget->meta['exclude_types'] ?? [],
                                 ),
                             ),

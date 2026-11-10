@@ -7,6 +7,7 @@ use Capell\Blog\Support\Creator\BlogCreator;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Site;
 use Capell\Tags\Actions\MergeTagsAction;
+use Capell\Tags\Actions\PreviewTagMergeAction;
 use Capell\Tags\Enums\TagTypeEnum;
 use Capell\Tags\Models\Tag;
 use Capell\Tests\Fixtures\Models\User;
@@ -223,7 +224,8 @@ test('redirects a merged tag slug to the canonical tag url', function (): void {
     $actor = User::factory()->create();
     Gate::before(static fn (): bool => true);
 
-    MergeTagsAction::run($target, collect([$source]), $actor);
+    $fingerprint = (new PreviewTagMergeAction)->handle($target, [$source], $actor)->fingerprint;
+    MergeTagsAction::run($target, collect([$source]), $actor, $fingerprint);
 
     get($oldUrl)
         ->assertStatus(301)

@@ -6,8 +6,13 @@ use Capell\Blog\Actions\EnsureBlogPublishingSurfaceAction;
 use Capell\Blog\Data\BlogPublishingSurfaceRequestData;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Creator\BlogCreator;
+use Capell\Core\Contracts\PublicRead\EvaluatesPublicPageReadCandidatesIndividually;
+use Capell\Core\Contracts\PublicRead\PublicPageReadEligibility;
+use Capell\Core\Contracts\PublicRead\SchedulesPublicReadTransitions;
+use Capell\Core\Data\PublicRead\PublicPageReadCandidateData;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\SiteDomain;
+use Capell\Core\Support\PublicRead\PublicPageReadEligibilityRegistry;
 use Carbon\CarbonImmutable;
 
 use function Pest\Laravel\get;
@@ -147,4 +152,58 @@ function blogFeedFixture(): array
         ]);
 
     return ['site' => $site];
+}
+
+it('makes every cache revalidate the feed while public-read rules exist', function (): void {
+    blogFeedFixture();
+    blogFeedScheduledRules(120);
+
+    $response = get('https://example.com/blog/feed.xml')->assertOk();
+    $directives = blogFeedScheduledRulesDirectives($response->headers->get('Cache-Control'));
+
+    // A page gated after publication must vanish from the next request, so no
+    // cache may serve a copy it has not revalidated, whatever the schedule says.
+    expect($directives['public'] ?? null)->toBeTrue()
+        ->and($directives['no-cache'] ?? null)->toBeTrue()
+        ->and($directives)->not->toHaveKeys(['max-age', 's-maxage', 'stale-while-revalidate', 'stale-if-error'])
+        ->and($response->headers->get('ETag'))->not->toBeNull();
+});
+
+/** Rules whose next public-read transition is $seconds from now. */
+function blogFeedScheduledRules(int $seconds): void
+{
+    resolve(PublicPageReadEligibilityRegistry::class)->register(new readonly class($seconds) implements PublicPageReadEligibility, SchedulesPublicReadTransitions
+    {
+        use EvaluatesPublicPageReadCandidatesIndividually;
+
+        public function __construct(private int $seconds) {}
+
+        public function key(): string
+        {
+            return 'scheduled-feed-test';
+        }
+
+        public function isPubliclyReadable(PublicPageReadCandidateData $candidate): bool
+        {
+            return true;
+        }
+
+        public function nextPublicReadTransitionAfter(CarbonImmutable $now, ?int $siteId = null): CarbonImmutable
+        {
+            return $now->addSeconds($this->seconds);
+        }
+    });
+}
+
+/** @return array<string, int|true> */
+function blogFeedScheduledRulesDirectives(?string $header): array
+{
+    $directives = [];
+
+    foreach (array_filter(array_map(trim(...), explode(',', (string) $header))) as $directive) {
+        [$name, $value] = array_pad(explode('=', $directive, 2), 2, null);
+        $directives[mb_strtolower((string) $name)] = $value === null ? true : (int) $value;
+    }
+
+    return $directives;
 }

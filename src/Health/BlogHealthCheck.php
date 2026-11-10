@@ -19,6 +19,7 @@ use Capell\Core\Contracts\Extensions\ChecksExtensionHealth;
 use Capell\Core\Data\Diagnostics\DoctorCheckResultData;
 use Capell\Core\Enums\BlueprintSubjectEnum;
 use Capell\Core\Models\Blueprint;
+use Capell\Core\Support\TableName;
 use Capell\DiscoveryFoundation\Contracts\PublicUrlContributor;
 use Capell\Tags\Models\Tag;
 use Illuminate\Support\Collection;
@@ -58,7 +59,7 @@ final class BlogHealthCheck implements ChecksExtensionHealth
     {
         $missing = [];
 
-        if (! Schema::hasTable('articles')) {
+        if (! Schema::hasTable(TableName::resolve('articles'))) {
             $missing[] = 'articles table';
         }
 
