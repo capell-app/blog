@@ -77,6 +77,7 @@ class FakerCommand extends Command
                 ->create();
 
             $this->backfillExampleImages($site);
+            $this->removeLocaleSuffixFromTitles($site);
 
             $totalArticles += $count;
             $this->info(sprintf('Seeded %d articles in site "%s".', $count, $site->name));
@@ -103,6 +104,8 @@ class FakerCommand extends Command
             return;
         }
 
+        $this->callSilently('vendor:publish', ['--tag' => AssignExampleArticleImageAction::PUBLISH_TAG]);
+
         $this->line(sprintf('Backfilling example images for %d article%s.', $articleCount, $articleCount === 1 ? '' : 's'));
 
         $bar = $this->output->createProgressBar($articleCount);
@@ -119,6 +122,27 @@ class FakerCommand extends Command
 
         $bar->finish();
         $this->newLine(2);
+    }
+
+    /**
+     * The shared translation factory appends the locale to every title, which
+     * reads as a defect on a public blog. Seeded articles keep the plain title.
+     */
+    private function removeLocaleSuffixFromTitles(Site $site): void
+    {
+        Article::query()
+            ->where('site_id', $site->id)
+            ->with('translations.language')
+            ->each(function (Article $article): void {
+                foreach ($article->translations as $translation) {
+                    $locale = (string) $translation->language?->locale;
+                    $title = (string) $translation->title;
+
+                    if ($locale !== '' && str_ends_with($title, ' ' . $locale)) {
+                        $translation->update(['title' => substr($title, 0, -strlen(' ' . $locale))]);
+                    }
+                }
+            });
     }
 
     /**

@@ -81,3 +81,55 @@ it('breaks a slug collision deterministically on the lowest user id', function (
 
     expect($resolved?->userId)->toBe((int) $first->getKey());
 });
+
+it('keeps a stable author slug resolving after the author is renamed', function (): void {
+    $language = Language::factory()->create();
+    $site = Site::factory()->recycle($language)->withTranslations()->create();
+    $author = User::factory()->create(['name' => 'Ada Lovelace']);
+
+    blogAuthorResolutionArticle($site, $author);
+
+    $published = BlogAuthorData::stableSlugFor((int) $author->getKey(), 'Ada Lovelace');
+    $author->forceFill(['name' => 'Ada King'])->saveQuietly();
+
+    $resolved = ResolveBlogAuthorBySlugAction::run($published, $site, $language);
+
+    expect($resolved?->userId)->toBe((int) $author->getKey())
+        ->and($resolved?->name)->toBe('Ada King')
+        ->and($resolved?->stableSlug)->toStartWith('ada-king-')
+        ->and($published)->not->toContain((string) $author->getKey() . '-');
+});
+
+it('gives two authors with the same name distinct stable slugs that each resolve to their own author', function (): void {
+    $language = Language::factory()->create();
+    $site = Site::factory()->recycle($language)->withTranslations()->create();
+    $first = User::factory()->create(['name' => 'Sam Taylor']);
+    $second = User::factory()->create(['name' => 'Sam Taylor']);
+
+    blogAuthorResolutionArticle($site, $first);
+    blogAuthorResolutionArticle($site, $second);
+
+    $firstSlug = BlogAuthorData::stableSlugFor((int) $first->getKey(), 'Sam Taylor');
+    $secondSlug = BlogAuthorData::stableSlugFor((int) $second->getKey(), 'Sam Taylor');
+
+    expect($firstSlug)->not->toBe($secondSlug)
+        ->and(ResolveBlogAuthorBySlugAction::run($firstSlug, $site, $language))->toBeInstanceOf(BlogAuthorData::class)
+        ->and(ResolveBlogAuthorBySlugAction::run($secondSlug, $site, $language))->toBeInstanceOf(BlogAuthorData::class);
+
+    $firstResolved = ResolveBlogAuthorBySlugAction::run($firstSlug, $site, $language);
+    $secondResolved = ResolveBlogAuthorBySlugAction::run($secondSlug, $site, $language);
+
+    expect($firstResolved?->userId)->toBe((int) $first->getKey())
+        ->and($secondResolved?->userId)->toBe((int) $second->getKey());
+});
+
+it('does not resolve a stable slug whose token belongs to an author without published articles', function (): void {
+    $language = Language::factory()->create();
+    $site = Site::factory()->recycle($language)->withTranslations()->create();
+    $author = User::factory()->create(['name' => 'Ada Lovelace']);
+    $silent = User::factory()->create(['name' => 'Silent Writer']);
+
+    blogAuthorResolutionArticle($site, $author);
+
+    expect(ResolveBlogAuthorBySlugAction::run(BlogAuthorData::stableSlugFor((int) $silent->getKey(), 'Silent Writer'), $site, $language))->toBeNull();
+});

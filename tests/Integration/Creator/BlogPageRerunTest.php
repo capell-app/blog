@@ -167,6 +167,6 @@ it('seeds the published archives page with its public description', function ():
 
     expect($archivesPage->translations()->count())->toBe(1)
         ->and($archivesPage->translations()
-            ->where('content', '<p>Explore our collection of past articles organized by month and year.</p>')
+            ->where('content', '<p>Explore our collection of past articles organised by month and year.</p>')
             ->exists())->toBeTrue();
 });

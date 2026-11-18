@@ -6,7 +6,7 @@ Developer reference for `capell-app/blog`. Start with the [README](../README.md)
 
 ## Package Details
 
-Blog is an **Available**, **Schema-owning** Capell package in the **Capell Publishing** product group. It ships as `capell-app/blog` and extends these surfaces: admin, frontend, console.
+Blog is an **Available** Capell package in the **Capell Publishing** product group. It ships as `capell-app/blog` and extends these surfaces: admin, frontend, console.
 
 - Status: Available
 - Tier: free
@@ -73,6 +73,7 @@ Blog is an **Available**, **Schema-owning** Capell package in the **Capell Publi
 
 - `ApplyArchiveDateFilterAction`
 - `ApplyPreferredLanguageOrderAction`
+- `ApplyRelatedArticleRankingAction`
 - `AssignExampleArticleImageAction`
 - `AttachBlogPublishingSurfaceToNavigationAction`
 - `BuildArticleMetaDataAction`
@@ -89,6 +90,8 @@ Blog is an **Available**, **Schema-owning** Capell package in the **Capell Publi
 - `GenerateBlogAuthorUrlAction`
 - `GetArticleLayoutAction`
 - `InstallBlogPackageAction`
+- `InvalidateDueScheduledArticleCachesAction`
+- `PrepareBlogFeedLinksAction`
 - `PrepareBlogFooterRenderDataAction`
 - `ProvisionBlogPublishingPagesAction`
 - `ProvisionBlogPublishingWidgetsAction`
@@ -110,6 +113,7 @@ Blog is an **Available**, **Schema-owning** Capell package in the **Capell Publi
 - `ArticleTranslationCoverageData`
 - `ArticleWidgetRenderData`
 - `BlogAuthorData`
+- `BlogFeedLinkData`
 - `BlogPublishingSurfaceData`
 - `BlogPublishingSurfaceRequestData`
 - `BlogPublishingSurfaceResultData`
@@ -140,6 +144,10 @@ Blog is an **Available**, **Schema-owning** Capell package in the **Capell Publi
 - `install: Capell\Blog\Actions\InstallBlogPackageAction`
 - `sanitizeBlogHtml: Capell\Blog\Actions\SanitizeBlogHtmlAction`
 
+### Scheduled commands
+
+- `Capell\Blog\Manifest\BlogScheduleContribution (everyMinute; manifest declared)`
+
 ### Console command classes
 
 - `CreateBlogPagesCommand`
@@ -164,6 +172,7 @@ Blog is an **Available**, **Schema-owning** Capell package in the **Capell Publi
 - `permission: Capell\Blog\Manifest\BlogPermissionsContribution`
 - `render-hook: Capell\Blog\Manifest\BlogRenderHooksContribution`
 - `route: Capell\Blog\Manifest\BlogRoutesContribution`
+- `scheduled-job: Capell\Blog\Manifest\BlogScheduleContribution`
 
 ### Health checks
 

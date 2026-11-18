@@ -19,6 +19,7 @@ use Capell\Frontend\Livewire\Page\AbstractPage;
 use Capell\Frontend\Support\Loader\PageLoader;
 use Capell\Frontend\Support\State\FrontendState;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Date;
@@ -79,6 +80,12 @@ class Archive extends AbstractPage
         $typeKey = is_string($blueprint->meta['page_group'] ?? null)
             ? $blueprint->meta['page_group']
             : strtolower(ResourceEnum::Article->name);
+
+        // Answer an empty archive before the loader caches a result for this year and month, so crawlers
+        // requesting arbitrary dates cannot fill the cache with distinct keys.
+        /** @var Builder<Model> $archiveQuery */
+        $archiveQuery = Article::query()->where('site_id', $site->getKey())->publishedDate();
+        abort_unless(ApplyArchiveDateFilterAction::run($archiveQuery, $this->year, $this->month)->exists(), 404);
 
         $this->results = PageLoader::list(new PageListingRequestData(
             language: $language,

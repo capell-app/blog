@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Capell\Blog\Support;
 
 use Capell\Blog\Actions\ApplyArchiveDateFilterAction;
+use Capell\Blog\Actions\ApplyRelatedArticleRankingAction;
 use Capell\Blog\Actions\BuildArticleMetaDataAction;
 use Capell\Blog\Actions\BuildBlogResultsViewDataAction;
+use Capell\Blog\Actions\PrepareBlogFeedLinksAction;
 use Capell\Blog\Actions\PrepareBlogFooterRenderDataAction;
 use Capell\Blog\Actions\RedirectMergedTagSlugAction;
 use Capell\Blog\Data\ArticleMetaData;
@@ -89,6 +91,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
         }
 
         $this->prepareFooterWidgetData($context, $site, $language);
+        PrepareBlogFeedLinksAction::run($context, $site, $language, request());
     }
 
     /**
@@ -460,16 +463,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
             cacheKeySuffix: $cacheKeySuffix,
             morphModel: Article::class,
             modifyQuery: function (Builder $query) use ($page, $tagIds): void {
-                $idColumn = $query->getModel()->qualifyColumn('id');
-
-                $query->where($idColumn, '!=', $page->getKey())
-                    ->when(
-                        $tagIds !== [],
-                        fn (Builder $query): Builder => $query->whereHas(
-                            'tags',
-                            fn (Builder $query): Builder => $query->whereIn('taggables.tag_id', $tagIds),
-                        ),
-                    );
+                ApplyRelatedArticleRankingAction::run($query, $page->getKey(), $tagIds);
             },
         ));
         $this->loadPageMediaTranslations($relatedArticles);

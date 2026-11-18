@@ -1,0 +1,84 @@
+{
+    "assets": [
+        {
+            "id": "blog-examples/1",
+            "file": "publishes/demo-media/blog-examples-1.webp",
+            "role": "section",
+            "width": 1600,
+            "height": 900,
+            "sha256": "23d919d9f7acb578f2e6dda3a2740b50d99ce201cef3455b436122c2fd757752",
+            "licence": "Capell-owned original artwork",
+            "rights": "Generated for Capell demo content. Capell holds all rights; no third-party licence applies.",
+            "provenance": {
+                "provider": "codex",
+                "model": "codex image_generation",
+                "prompt": "a calm editorial still life suitable for an article header; variation 1 of 5. Original editorial photograph-style image. Natural light, considered composition, a quiet area for overlaid copy. No text, lettering, logos, watermarks, signage, readable screens, brand marks or recognisable real people.",
+                "generatedAt": "2026-11-15"
+            }
+        },
+        {
+            "id": "blog-examples/2",
+            "file": "publishes/demo-media/blog-examples-2.webp",
+            "role": "section",
+            "width": 1600,
+            "height": 900,
+            "sha256": "975f7e8d0dc5d58e23667b38a3b8a4aad2ca651095b3829019c4c8a113458089",
+            "licence": "Capell-owned original artwork",
+            "rights": "Generated for Capell demo content. Capell holds all rights; no third-party licence applies.",
+            "provenance": {
+                "provider": "codex",
+                "model": "codex image_generation",
+                "prompt": "a calm editorial still life suitable for an article header; variation 2 of 5. Original editorial photograph-style image. Natural light, considered composition, a quiet area for overlaid copy. No text, lettering, logos, watermarks, signage, readable screens, brand marks or recognisable real people.",
+                "generatedAt": "2026-11-15"
+            }
+        },
+        {
+            "id": "blog-examples/3",
+            "file": "publishes/demo-media/blog-examples-3.webp",
+            "role": "section",
+            "width": 1600,
+            "height": 900,
+            "sha256": "36da29c4296ccba25def42495ea37a2b8d1f485ffca97979a60503d59a5b2243",
+            "licence": "Capell-owned original artwork",
+            "rights": "Generated for Capell demo content. Capell holds all rights; no third-party licence applies.",
+            "provenance": {
+                "provider": "codex",
+                "model": "codex image_generation",
+                "prompt": "a calm editorial still life suitable for an article header; variation 3 of 5. Original editorial photograph-style image. Natural light, considered composition, a quiet area for overlaid copy. No text, lettering, logos, watermarks, signage, readable screens, brand marks or recognisable real people.",
+                "generatedAt": "2026-11-15"
+            }
+        },
+        {
+            "id": "blog-examples/4",
+            "file": "publishes/demo-media/blog-examples-4.webp",
+            "role": "section",
+            "width": 1600,
+            "height": 900,
+            "sha256": "781158b131d57470fadfc7a6e50bcdf23460e1fa2a9fb82faaf5696a106b5ca1",
+            "licence": "Capell-owned original artwork",
+            "rights": "Generated for Capell demo content. Capell holds all rights; no third-party licence applies.",
+            "provenance": {
+                "provider": "codex",
+                "model": "codex image_generation",
+                "prompt": "a calm editorial still life suitable for an article header; variation 4 of 5. Original editorial photograph-style image. Natural light, considered composition, a quiet area for overlaid copy. No text, lettering, logos, watermarks, signage, readable screens, brand marks or recognisable real people.",
+                "generatedAt": "2026-11-15"
+            }
+        },
+        {
+            "id": "blog-examples/5",
+            "file": "publishes/demo-media/blog-examples-5.webp",
+            "role": "section",
+            "width": 1600,
+            "height": 900,
+            "sha256": "f134be2a01fc53f8f548345c9b28910a74f8528a442437b9cf06484d2c427374",
+            "licence": "Capell-owned original artwork",
+            "rights": "Generated for Capell demo content. Capell holds all rights; no third-party licence applies.",
+            "provenance": {
+                "provider": "codex",
+                "model": "codex image_generation",
+                "prompt": "a calm editorial still life suitable for an article header; variation 5 of 5. Original editorial photograph-style image. Natural light, considered composition, a quiet area for overlaid copy. No text, lettering, logos, watermarks, signage, readable screens, brand marks or recognisable real people.",
+                "generatedAt": "2026-11-15"
+            }
+        }
+    ]
+}

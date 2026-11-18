@@ -52,7 +52,7 @@ class Author extends AbstractPage
 
         abort_unless($author instanceof BlogAuthorData, 404);
 
-        $this->authorSlug = $author->slug;
+        $this->authorSlug = $author->stableSlug;
         $this->authorName = $author->name;
 
         $configuredPaginationKey = config('capell-admin.page_query', 'pageQuery');

@@ -81,7 +81,7 @@ test('blog page lists articles', function (): void {
                 ->containsText((string) blogTestTranslation($blogPage->translation)->title)
                 ->doesntContain('Article Archives'),
         )
-        ->assertElementExists('img[src^="https://images.unsplash.com"]')
+        ->assertElementExists('img[src*="vendor/capell-blog/demo-media/blog-examples-"]')
         ->assertElementExists(
             'h1',
             fn (AssertElement $elm): BaseAssert => $elm->containsText((string) blogTestTranslation($blogPage->translation)->title),

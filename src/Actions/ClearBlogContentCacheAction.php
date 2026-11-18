@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Actions;
 
+use Capell\Blog\Bridges\BlogSearchBridge;
 use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Enums\CacheEnum;
 use Capell\Blog\Models\Article;
@@ -24,6 +25,8 @@ final class ClearBlogContentCacheAction
 
     public function handle(Article $article): void
     {
+        BlogSearchBridge::flushRegistry();
+
         if (is_numeric($article->getKey())) {
             CapellCore::removeCacheKey(CacheEnum::pageTags((int) $article->getKey()));
         }

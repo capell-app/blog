@@ -7,5 +7,5 @@ declare(strict_types=1);
  * language changes never alter public output.
  */
 return [
-    'blog_archives_description' => 'Explore our collection of past articles organized by month and year.',
+    'blog_archives_description' => 'Explore our collection of past articles organised by month and year.',
 ];

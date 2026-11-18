@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\Blog\View\Components\Widget\Page;
 
+use Capell\Blog\Actions\ApplyRelatedArticleRankingAction;
 use Capell\Blog\Support\Loader\TagLoader;
 use Capell\Core\Contracts\Pageable;
 use Capell\Core\Models\Language;
@@ -53,6 +54,13 @@ class Related extends AbstractPagesWidget
 
         $tags = TagLoader::getPageTags($page);
 
+        if ($tags->isEmpty()) {
+            // Without tags there is nothing to relate by; do not fall back to every listable page.
+            $this->skipRender = true;
+
+            return;
+        }
+
         $tagIds = $tags->pluck('id')->toArray();
 
         $excludeParent = $page->hasPageHierarchy() && (bool) ($this->widget->meta['exclude_parent'] ?? false);
@@ -79,14 +87,16 @@ class Related extends AbstractPagesWidget
             withParent: (bool) ($this->widget->meta['with_parent'] ?? false),
             withDate: (bool) ($this->widget->meta['with_date'] ?? false),
             morphModel: $modelClass,
-            useCache: false,
+            cacheKeySuffix: sprintf('related-widget-%s-%s-page-%s-tags-%s', $this->widget->id, hash('xxh128', (string) json_encode($this->widget->meta)), $page->id, implode('-', $tagIds)),
             /**
              * @param  Builder<Page>  $query
              */
-            modifyQuery: function (Builder $query) use ($excludeParent, $page, $tagIds, $tags): void {
+            modifyQuery: function (Builder $query) use ($excludeParent, $page, $tagIds): void {
                 $idColumn = $query->getModel()->qualifyColumn('id');
 
-                $query->where($idColumn, '!=', $page->id)
+                ApplyRelatedArticleRankingAction::run($query, $page->id, $tagIds);
+
+                $query
                     ->when(
                         $excludeParent && $page->parent_id !== null,
                         fn (BuilderContract $query): BuilderContract => $query->where($idColumn, '!=', $page->parent_id),
@@ -103,13 +113,6 @@ class Related extends AbstractPagesWidget
                                     $this->widget->meta['exclude_types'] ?? [],
                                 ),
                             ),
-                    )
-                    ->when(
-                        $tags->isNotEmpty(),
-                        fn (Builder $query): Builder => $query->whereHas(
-                            'tags',
-                            fn (BuilderContract $query): BuilderContract => $query->whereIn('taggables.tag_id', $tagIds),
-                        ),
                     );
             },
         ));

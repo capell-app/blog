@@ -6,7 +6,7 @@
     "kind": "package",
     "capellApiVersion": "^1.0",
     "version": "1.0.0",
-    "description": "Publish articles, archives and tag pages with related-article widgets and RSS, Atom and XML feeds. Draft, schedule and organise articles from the admin.",
+    "description": "Dated news posts that publish themselves on the day, with pages by month, tag and author so readers can find older news.",
     "product": {
         "group": "Capell Publishing",
         "tier": "free",
@@ -31,6 +31,7 @@
             "capell-app/navigation",
             "capell-app/insights",
             "capell-app/publishing-studio",
+            "capell-app/search",
             "capell-app/site-discovery",
             "capell-app/url-manager"
         ],
@@ -127,16 +128,6 @@
                 "Capell\\Blog\\Livewire\\Page\\Author",
                 "Capell\\Blog\\Livewire\\Page\\Blog",
                 "Capell\\Blog\\Livewire\\Page\\Tag"
-            ],
-            "keys": [
-                "capell-blog::page.archive",
-                "capell-blog::page.author",
-                "capell-blog::page.blog",
-                "capell-blog::page.tag",
-                "capell-blog::widget.page.archives",
-                "capell-blog::widget.page.article",
-                "capell-blog::widget.page.related",
-                "capell-blog::widget.tag.tags"
             ]
         },
         {
@@ -201,6 +192,13 @@
             ]
         },
         {
+            "type": "scheduled-job",
+            "class": "Capell\\Blog\\Manifest\\BlogScheduleContribution",
+            "name": "capell-blog-invalidate-due-scheduled-articles",
+            "actionClass": "Capell\\Blog\\Actions\\InvalidateDueScheduledArticleCachesAction",
+            "frequency": "everyMinute"
+        },
+        {
             "type": "health-check",
             "class": "Capell\\Blog\\Health\\BlogHealthCheck"
         }
@@ -250,19 +248,9 @@
     ],
     "capabilities": [
         "blog",
-        "blog-admin",
-        "blog-frontend",
-        "blog-articles",
-        "blog-archives",
-        "blog-tags",
-        "blog-related-widgets",
-        "blog-rich-text-render-sanitization",
-        "blog-syndication-feeds",
-        "blog-url-manager-redirect-bridge",
+        "block-rich-text-render-sanitization",
         "requires-livewire",
-        "blog-cache-invalidation",
-        "blog-publishing-studio-bridge",
-        "blog-comments-bridge"
+        "cache-invalidation"
     ],
     "security": {
         "riskTier": "standard",
@@ -285,7 +273,9 @@
         "sensitiveData": {
             "encryptedFields": [],
             "hashedTokenFields": [],
-            "redactedOutputClasses": [],
+            "redactedOutputClasses": [
+                "Capell\\Blog\\Actions\\BuildBlogFeedXmlAction"
+            ],
             "plaintextJustifications": []
         },
         "publicOutput": {
@@ -372,59 +362,144 @@
         "privateDocsRequested": true
     },
     "marketplace": {
-        "summary": "Publish articles, archives, tag pages, and related-article widgets with multilingual, multi-site output and optional growth bridges.",
-        "problem": "Our editorial team must manage article archives by hand.",
-        "outcome": "Our site has published articles that visitors can browse by archive or tag and follow by feed.",
+        "summary": "Write a post ahead, date it and leave it to appear, then let readers browse past news by month, by tag or by author.",
+        "description": "Write a news post now, give it next week's date and it stays off your blog until then. On a site with page caching it shows within a minute of that date. Readers browse older posts by month, by tag or by author, and each author page lists their posts without an email address. Posts are grouped with tags, as there are no separate categories. Setting up creates the blog, month and tag pages for every site and language you run. Readers who follow blogs through an app that gathers new posts get your latest 20 as short summaries with a link back.",
+        "problem": "Our news has to go out on the right day, even when nobody's in, and readers can't find last year's posts.",
+        "outcome": "Posts appear on their date without anyone pressing publish, and readers find older news by month, tag or author.",
         "faq": [
             {
-                "question": "Can editors keep articles private before publication?",
-                "answer": "Editors can save articles as drafts and schedule publication."
+                "question": "Do I need to be there on the day a scheduled post goes out?",
+                "answer": "No. The post stays out of your blog until its date and then appears by itself. With page caching on, it shows within a minute of that date, as long as your site's scheduler is running."
             },
             {
-                "question": "How can visitors find published articles?",
-                "answer": "Visitors can browse article, archive and tag pages or subscribe to a feed."
+                "question": "What happens if I leave the publish date empty?",
+                "answer": "The article publishes straight away. To keep one back while you write, save it as a draft or give it a later date."
             },
             {
-                "question": "Where can related articles appear?",
-                "answer": "Related-article widgets let teams reuse related content elsewhere on the site."
+                "question": "Can I sort posts into categories?",
+                "answer": "No. Posts are grouped with tags, and each tag gets its own page. Each month also gets a page, so readers can open April for everything published then."
+            },
+            {
+                "question": "Does an author's page show their email address?",
+                "answer": "No. Each author gets a page listing the posts they wrote, and their email address never appears on it."
             }
         ],
         "screenshots": [
             {
                 "path": "docs/assets/marketplace/extension-card.jpg",
-                "alt": "Blog extension preview image",
-                "caption": "Blog extension preview"
+                "alt": "Blog card with two empty Articles lists, one light and one dark, above steps labelled Draft, Schedule and Publish.",
+                "caption": "The card sums the package up as three steps, draft, schedule and publish."
             },
             {
                 "path": "docs/screenshots/blog-page-frontend-output.png",
-                "alt": "Published blog landing page rendered on the public frontend",
-                "caption": "Route-backed public blog output",
+                "alt": "Public blog page with four article cards, each with a photo and date, beside a Popular Articles column.",
+                "caption": "Readers see each article as a card with a date, a short summary and a Read article link.",
                 "required": true
             },
             {
                 "path": "docs/screenshots/articles-admin-index.png",
-                "alt": "Articles admin index showing article publishing status and editorial controls",
-                "caption": "Review the article queue, publish windows, language coverage, and status from the admin index."
+                "alt": "Articles list with an SEO Overview strip above four published articles, their languages and last updated times.",
+                "caption": "Check which articles are published and in which languages, then add a new one or import."
             },
             {
                 "path": "docs/screenshots/articles-admin-index-dark.png",
-                "alt": "Articles admin index in dark mode",
-                "caption": "Manage the article queue in dark mode."
+                "alt": "Dark theme Articles list with the SEO Overview strip, four published articles and New article and Import buttons.",
+                "caption": "The same article list in the dark admin theme."
             },
             {
                 "path": "docs/screenshots/create-edit-article-form.png",
-                "alt": "Create and edit article form with publishing, metadata, layout, media, and taxonomy fields",
-                "caption": "Create or update an article with publishing windows, metadata, layout selection, media, and tags."
+                "alt": "Create Article form with a title, a text editor, collapsed Extra Content and SEO Settings sections and a Publish area.",
+                "caption": "Write the article in the editor, then choose its layout and publish date further down."
             },
             {
                 "path": "docs/screenshots/create-edit-article-form-dark.png",
-                "alt": "Create and edit article form in dark mode",
-                "caption": "Edit article publishing details in dark mode."
+                "alt": "Dark theme Create Article form with the title field, text editor, and Extra Content and SEO Settings sections.",
+                "caption": "The article form in the dark admin theme, with the same fields and actions."
             }
         ],
         "categories": ["admin", "console", "frontend", "publishing"]
     },
     "contributionTraceability": {
-        "deferredContributions": []
+        "deferredContributions": [],
+        "contributions": [
+            {
+                "type": "content-widget",
+                "key": "component:Widget:Archives",
+                "providerBucket": "admin"
+            },
+            {
+                "type": "content-widget",
+                "key": "component:Widget:Article",
+                "providerBucket": "admin"
+            },
+            {
+                "type": "content-widget",
+                "key": "component:Widget:PageRelated",
+                "providerBucket": "admin"
+            },
+            {
+                "type": "content-widget",
+                "key": "component:Widget:Tags",
+                "providerBucket": "admin"
+            },
+            {
+                "type": "content-widget",
+                "key": "renderable:layout-widget:capell-blog::widget.page.archives",
+                "providerBucket": "runtime"
+            },
+            {
+                "type": "content-widget",
+                "key": "renderable:layout-widget:capell-blog::widget.page.article",
+                "providerBucket": "runtime"
+            },
+            {
+                "type": "content-widget",
+                "key": "renderable:layout-widget:capell-blog::widget.page.related",
+                "providerBucket": "runtime"
+            },
+            {
+                "type": "content-widget",
+                "key": "renderable:layout-widget:capell-blog::widget.tag.tags",
+                "providerBucket": "runtime"
+            },
+            {
+                "type": "content-widget",
+                "key": "renderable:page:capell-blog::page.archive",
+                "providerBucket": "runtime"
+            },
+            {
+                "type": "content-widget",
+                "key": "renderable:page:capell-blog::page.author",
+                "providerBucket": "runtime"
+            },
+            {
+                "type": "content-widget",
+                "key": "renderable:page:capell-blog::page.blog",
+                "providerBucket": "runtime"
+            },
+            {
+                "type": "content-widget",
+                "key": "renderable:page:capell-blog::page.tag",
+                "providerBucket": "runtime"
+            },
+            {
+                "type": "render-hook",
+                "key": "feed-autodiscovery",
+                "providerBucket": "frontend"
+            },
+            {
+                "type": "render-hook",
+                "key": "pagination-rel-links",
+                "providerBucket": "frontend"
+            }
+        ]
+    },
+    "install": {
+        "tips": [
+            {
+                "variant": "package_blog",
+                "priority": 10
+            }
+        ]
     }
 }

@@ -11,6 +11,7 @@ use Capell\Blog\Support\Loader\TagLoader;
 use Capell\Blog\Support\RenderHooks\AfterTitleRenderHook;
 use Capell\Blog\Support\RenderHooks\ArticleMetaRenderHook;
 use Capell\Blog\Support\RenderHooks\BeforeContentTagsRenderHook;
+use Capell\Blog\Support\RenderHooks\FeedAutodiscoveryRenderHook;
 use Capell\Blog\Support\RenderHooks\FooterPagesRenderHook;
 use Capell\Blog\Support\RenderHooks\FooterTagsRenderHook;
 use Capell\Blog\Support\RenderHooks\PaginationRelLinksRenderHook;
@@ -187,6 +188,15 @@ final class FrontendServiceProvider extends ServiceProvider
             extension: new PaginationRelLinksRenderHook,
             owner: 'capell-app/blog',
             key: 'pagination-rel-links',
+            cacheSafe: true,
+        );
+
+        // The feed link depends on the requested domain only, which is part of the cache key.
+        $registrar->contribute(
+            location: RenderHookLocation::HeadClose,
+            extension: new FeedAutodiscoveryRenderHook,
+            owner: 'capell-app/blog',
+            key: 'feed-autodiscovery',
             cacheSafe: true,
         );
 

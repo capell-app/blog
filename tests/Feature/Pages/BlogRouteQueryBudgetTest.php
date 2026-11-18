@@ -48,12 +48,14 @@ test('rich article route stays inside the public query budget', function (bool $
 
     // Localized public media metadata and port-aware site-domain resolution
     // add bounded hydration to the page, site logo, and article image paths.
+    // Each cold page model takes its URL and translation languages from the
+    // request language, so the languages table is read once, by site resolution.
     expect($queryCount)->toBeLessThanOrEqual($budget);
     expect(DB::table(HtmlCacheRequestObservationStore::TABLE)->count())
         ->toBe($sampleObservation ? 1 : 0);
 })->with([
-    'without request observation' => [false, 148],
-    'with request observation' => [true, 154],
+    'without request observation' => [false, 142],
+    'with request observation' => [true, 148],
 ]);
 
 test('rich blog archive and tag routes stay inside the public query budget', function (string $routeKey, int $budget, bool $sampleObservation, int $observationCount): void {
@@ -66,21 +68,21 @@ test('rich blog archive and tag routes stay inside the public query budget', fun
 })->with([
     // A sampled index observation adds six deferred queries for URL resolution
     // and request counters. Keep the unsampled budget and cover both outcomes.
-    'blog index' => ['blog_url', 115, false, 0],
-    'blog index with request observation' => ['blog_url', 121, true, 1],
+    'blog index' => ['blog_url', 110, false, 0],
+    'blog index with request observation' => ['blog_url', 116, true, 1],
     // Includes the cache-safe public widget snapshot lookup, port-aware
     // domain resolution, and bounded pre-render footer hydration required by
     // layout-native archive pages. Core's required morph map also lists each
     // model's stored class name, so resolving the public pageable morph types
     // checks every Pageable model's table twice, on each of two lookups: four
-    // extra schema queries on these two routes (131 and 145 measured before
-    // that change). Lower the budgets again once Core checks each model once.
+    // extra schema queries on these two routes. Lower the budgets again once
+    // Core checks each model once.
     // These virtual routes have no persisted URL row for the observation
     // lookup, so sampling adds three reads but does not write an observation.
-    'archive month' => ['archive_url', 138, false, 0],
-    'archive month with observation sampling' => ['archive_url', 138, true, 0],
-    'tag result' => ['tag_url', 152, false, 0],
-    'tag result with observation sampling' => ['tag_url', 152, true, 0],
+    'archive month' => ['archive_url', 129, false, 0],
+    'archive month with observation sampling' => ['archive_url', 132, true, 0],
+    'tag result' => ['tag_url', 141, false, 0],
+    'tag result with observation sampling' => ['tag_url', 144, true, 0],
 ]);
 
 test('Foundation hands prepared values to the Blog request before runtime hydration', function (): void {

@@ -13,16 +13,27 @@ final class AssignExampleArticleImageAction
     use AsFake;
     use AsObject;
 
+    public const string PUBLISH_TAG = 'capell-blog-example-images';
+
+    public const string PUBLIC_PATH = 'vendor/capell-blog/demo-media';
+
     /**
-     * @var list<string>
+     * Capell-owned example images shipped in publishes/demo-media and recorded
+     * in the package's demo-assets.json.
      */
-    private const array ExampleImageUrls = [
-        'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=80',
-        'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80',
-        'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80',
-        'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
-        'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
-    ];
+    private const int EXAMPLE_IMAGE_COUNT = 5;
+
+    /**
+     * Root-relative, so the image loads from whichever domain serves the page.
+     */
+    public static function exampleImageUrl(int $number): string
+    {
+        $assetUrl = config('app.asset_url');
+        $prefix = is_string($assetUrl) ? parse_url($assetUrl, PHP_URL_PATH) : null;
+        $prefix = is_string($prefix) ? trim($prefix, '/') : '';
+
+        return ($prefix === '' ? '' : '/' . $prefix) . '/' . self::PUBLIC_PATH . '/blog-examples-' . $number . '.webp';
+    }
 
     public function handle(Article $article): Article
     {
@@ -31,14 +42,14 @@ final class AssignExampleArticleImageAction
         }
 
         $meta = $article->meta ?? [];
-        $index = max(0, ((int) $article->getKey()) - 1) % count(self::ExampleImageUrls);
+        $index = max(0, ((int) $article->getKey()) - 1) % self::EXAMPLE_IMAGE_COUNT;
 
         $article->forceFill([
             'meta' => [
                 ...$meta,
                 'image_source' => [
                     'type' => 'url',
-                    'url' => self::ExampleImageUrls[$index],
+                    'url' => self::exampleImageUrl($index + 1),
                 ],
             ],
         ])->save();

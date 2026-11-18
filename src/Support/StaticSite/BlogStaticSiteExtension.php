@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Support\StaticSite;
 
+use Capell\Blog\Actions\GenerateArchiveUrlAction;
 use Capell\Blog\Data\ArchiveMonthData;
 use Capell\Blog\Enums\BlogTypeGroupEnum;
 use Capell\Blog\Support\Loader\BlogLoader;
@@ -46,13 +47,12 @@ class BlogStaticSiteExtension
             return;
         }
 
-        $base = rtrim($tagPageUrl->url, '/*');
+        $tagPageUrl->setRelation('siteDomain', $domain);
         $tagsQuery = TagLoader::getTagsQuery($site, $language);
-        $tagsQuery->chunk(100, function (Collection $tags) use ($base, $language, $visit): void {
-            $tags->each(function (Tag $tag) use ($base, $language, $visit): void {
-                $slug = $tag->getTranslation('slug', $language->code);
-                $url = $base . '/' . $slug;
-                $visit($url);
+        $tagsQuery->chunk(100, function (Collection $tags) use ($tagPage, $language, $visit): void {
+            $tags->each(function (Tag $tag) use ($tagPage, $language, $visit): void {
+                // The tag model builds the same URL the public route and sitemap use.
+                $visit($tag->getUrl($tagPage, $language));
             });
         });
     }
@@ -67,26 +67,23 @@ class BlogStaticSiteExtension
             return;
         }
 
+        $archivePage = $pageModel::getFirstPageByTypeForSite('archive', $site, $language);
+        $archivePageUrl = $archivePage?->pageUrl;
+        if ($archivePageUrl === null || ! is_string($archivePageUrl->url) || $archivePageUrl->url === '') {
+            return;
+        }
+
+        $archivePageUrl->setRelation('siteDomain', $domain);
+
         $archives = BlogLoader::getArchives(
             $site,
             $language,
             BlogTypeGroupEnum::Article->value,
         );
 
-        $archives->each(function (ArchiveMonthData $archive) use ($pageModel, $site, $language, $visit): void {
-            $archivePage = $pageModel::getFirstPageByTypeForSite('archive', $site, $language);
-            if ($archivePage === null) {
-                return;
-            }
-
-            $archivePageUrl = $archivePage->pageUrl;
-            if ($archivePageUrl === null || ! is_string($archivePageUrl->url) || $archivePageUrl->url === '') {
-                return;
-            }
-
-            $base = rtrim($archivePageUrl->url, '/*');
-            $url = $base . '/' . $archive->year . '/' . str_pad((string) $archive->month, 2, '0', STR_PAD_LEFT);
-            $visit($url);
+        // The sitemap uses this action too, so generated URLs follow the archive route's YYYY-MM format.
+        $archives->each(function (ArchiveMonthData $archive) use ($archivePageUrl, $visit): void {
+            $visit(GenerateArchiveUrlAction::run($archivePageUrl, $archive));
         });
     }
 }

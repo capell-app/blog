@@ -2,6 +2,12 @@
 
 <!-- prettier-ignore-start -->
 
+Someone at a small firm or charity, writing the news on top of everything else, can write next Thursday's post today, date it for Thursday and go on leave. The post stays out of your blog until that date and then shows up by itself, with no button to press on the day. With page caching it still appears within a minute of that date.
+
+Setting it up is a short job for whoever looks after your website. It creates the blog page, a page for each month's posts and a page for each tag, for every site and language you run. Tags are how posts are grouped, since there are no separate categories. Each author gets a page listing the posts they wrote, and their email address never appears on it. Readers who follow blogs through an app that gathers new posts receive your latest 20 as short summaries with a link back. The app picks up a new post the next time it checks.
+
+Months later, a reader after your spring news can open April's page for every post from that month, or click a tag to see everything on one subject.
+
 ## What it does
 
 Blog adds site-scoped, multilingual Articles plus the public blog index, monthly archives, tag listings, related-article widgets, and RSS/Atom feeds. Article visibility is controlled by publish and unpublish dates rather than by a background publishing job.
@@ -52,7 +58,7 @@ Soft-deleting an article removes it from normal public queries and keeps it avai
 
 Blog exposes `/blog/feed.xml` and `/blog/feed.rss` as RSS 2.0, and `/blog/feed.atom` as Atom. Each request resolves the current Site Domain and language and returns up to the 20 latest published articles that have an enabled URL and translation for that site/language. Future, expired, other-site, and untranslated articles are excluded.
 
-Feed responses are publicly cacheable for five minutes. A recently published or corrected article can therefore remain absent or stale in a browser, proxy, or CDN until that cache lifetime expires. Feeds contain the article title, URL, publication date, and summary; they do not publish the complete article body.
+Feed responses ask browsers and caches to check for changes on every request. A scheduled article can still appear late on pages served from the HTML cache, which refreshes on its own cache lifetime. Feeds contain the article title, URL, publication date, and summary; they do not publish the complete article body.
 
 ## Operational boundaries
 

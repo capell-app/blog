@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Providers;
 
+use Capell\Blog\Actions\AssignExampleArticleImageAction;
 use Capell\Blog\Actions\ClearBlogContentCacheAction;
 use Capell\Blog\Actions\ClearBlogTagCacheAction;
+use Capell\Blog\Actions\InvalidateDueScheduledArticleCachesAction;
 use Capell\Blog\Actions\PrepareBlogFooterRenderDataAction;
 use Capell\Blog\Actions\SanitizeBlogHtmlAction;
 use Capell\Blog\Enums\LivewirePageComponentEnum;
@@ -43,6 +45,7 @@ use Capell\PublishingStudio\WorkspaceRegistry;
 use Capell\Tags\Models\Tag;
 use Capell\Tags\Support\TagModelRegistrar;
 use Composer\InstalledVersions;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Foundation\Console\AboutCommand;
@@ -125,6 +128,7 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
             ->registerTranslationEvents()
             ->registerTagCacheEvents()
             ->registerArticleMediaCacheEvents()
+            ->registerScheduledArticleSweep()
             ->registerPublishingStudio();
 
     }
@@ -162,6 +166,10 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
         CapellCore::registerVendorAsset(
             VendorAssetData::tailwindSource('resources/views/**/*.blade.php', self::$packageName),
         );
+
+        $this->publishes([
+            dirname(__DIR__, 2) . '/publishes/demo-media' => public_path(AssignExampleArticleImageAction::PUBLIC_PATH),
+        ], AssignExampleArticleImageAction::PUBLISH_TAG);
 
         return $this;
     }
@@ -435,6 +443,20 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
                 label: fn (): string => __('capell-blog::generic.article'),
             ),
         );
+
+        return $this;
+    }
+
+    private function registerScheduledArticleSweep(): self
+    {
+        // Core's scheduled-publication sweep only covers pages, so articles need their own.
+        $this->callAfterResolving(Schedule::class, static function (Schedule $schedule): void {
+            $schedule->call(static fn (): int => InvalidateDueScheduledArticleCachesAction::run())
+                ->name('capell-blog-invalidate-due-scheduled-articles')
+                ->everyMinute()
+                ->withoutOverlapping()
+                ->onOneServer();
+        });
 
         return $this;
     }

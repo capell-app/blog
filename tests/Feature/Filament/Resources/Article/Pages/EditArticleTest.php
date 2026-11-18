@@ -7,6 +7,9 @@ use Capell\Blog\Filament\Resources\Articles\ArticleResource;
 use Capell\Blog\Filament\Resources\Articles\Pages\EditArticle;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Creator\BlogCreator;
+use Capell\Core\Actions\Ai\RecordAiProvenanceAction;
+use Capell\Core\Data\Ai\AiProvenanceRecordData;
+use Capell\Core\Enums\AiDisclosure;
 use Capell\Core\Events\PageUrlChanged;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\PageUrl;
@@ -37,6 +40,22 @@ test('can render article', function (): void {
     get(ArticleResource::getUrl('edit', [
         'record' => Article::factory()->create(),
     ]))->assertSuccessful();
+});
+
+test('offers the AI review on an article only while it has unreviewed AI-written fields', function (): void {
+    $article = Article::factory()->create();
+
+    livewire(EditArticle::class, ['record' => $article->getRouteKey()])
+        ->assertActionHidden('review-ai-content');
+
+    RecordAiProvenanceAction::run(new AiProvenanceRecordData($article, 'meta_description', AiDisclosure::Generated, capability: 'seo.meta-description'));
+
+    livewire(EditArticle::class, ['record' => $article->getRouteKey()])
+        ->assertActionVisible('review-ai-content')
+        ->callAction('review-ai-content');
+
+    livewire(EditArticle::class, ['record' => $article->getRouteKey()])
+        ->assertActionHidden('review-ai-content');
 });
 
 test('can not render article', function (): void {

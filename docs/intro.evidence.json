@@ -1,0 +1,50 @@
+[
+    {
+        "claim": "A post dated in the future stays out of the blog until that date and then appears without a button or background job",
+        "evidence": ["src/Models/Article.php", "tests/Feature/BlogFeedTest.php"]
+    },
+    {
+        "claim": "On a site with page caching the post appears within a minute of its date, because a scheduled check runs every minute and clears the cached pages of posts whose date has passed",
+        "evidence": [
+            "src/Actions/InvalidateDueScheduledArticleCachesAction.php",
+            "src/Providers/BlogServiceProvider.php",
+            "tests/Feature/BlogScheduledPublishingAndFeedTest.php"
+        ]
+    },
+    {
+        "claim": "Setting up is a one-off command that creates the blog page, a page per month and a page per tag for every site and language",
+        "evidence": [
+            "src/Console/Commands/SetupCommand.php",
+            "src/Actions/SeedBlogPublishingSurfaceAction.php"
+        ]
+    },
+    {
+        "claim": "Posts are grouped by tags with no separate categories",
+        "evidence": ["capell.json", "tests/Feature/Pages/TagPageTest.php"]
+    },
+    {
+        "claim": "Each author gets a page listing their posts, with no email address shown",
+        "evidence": ["tests/Feature/Pages/AuthorPageTest.php"]
+    },
+    {
+        "claim": "Reader apps receive the latest 20 posts as short summaries with a link back",
+        "evidence": [
+            "src/Actions/BuildBlogFeedXmlAction.php",
+            "tests/Feature/BlogFeedTest.php"
+        ]
+    },
+    {
+        "claim": "A reader app picks up a new post the next time it checks, because the feed is served with no max-age",
+        "evidence": [
+            "src/Http/Controllers/BlogFeedController.php",
+            "tests/Feature/BlogFeedTest.php"
+        ]
+    },
+    {
+        "claim": "Readers can open a month's page or click a tag",
+        "evidence": [
+            "tests/Feature/Pages/ArchivesPageTest.php",
+            "tests/Feature/Pages/TagPageTest.php"
+        ]
+    }
+]

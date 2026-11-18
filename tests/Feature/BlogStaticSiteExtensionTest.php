@@ -49,14 +49,10 @@ it('generates archive URLs for static site', function (): void {
 
     $archivesPage = $blogCreator->createArchivesPage($blogPage);
     $archivePage = $blogCreator->createArchivePage($archivesPage);
-    $archiveUrl = rtrim(blogTestPageUrl($archivePage->pageUrl)->url, '/*') . '/';
-
-    // Fake HTTP responses for all expected URLs
-    $httpFakes = [];
+    $archiveUrl = blogTestPageUrl($archivePage->pageUrl)->full_url;
+    $archiveUrl = rtrim($archiveUrl, '/*') . '/';
 
     $archiveMonth = ArchiveMonthData::fromDate($archiveDate);
-    $httpFakes[$archiveUrl . $archiveMonth->year . '/' . str_pad((string) $archiveMonth->month, 2, '0', STR_PAD_LEFT)] = Http::response('ok', 200);
-    Http::fake($httpFakes);
 
     $visited = [];
     $extension = new BlogStaticSiteExtension;
@@ -65,7 +61,7 @@ it('generates archive URLs for static site', function (): void {
     });
 
     $expectedUrls = [
-        $archiveUrl . $archiveMonth->year . '/' . str_pad((string) $archiveMonth->month, 2, '0', STR_PAD_LEFT),
+        $archiveUrl . sprintf('%d-%02d', $archiveMonth->year, $archiveMonth->month),
     ];
 
     expect($visited)->not()->toBeEmpty();
@@ -97,8 +93,7 @@ it('resolves relative blog extension URLs for both static generation request mod
     $archivePage = $blogCreator->createArchivePage($archivesPage);
     $archiveMonth = ArchiveMonthData::fromDate($archiveDate);
     $relativeUrl = rtrim(blogTestPageUrl($archivePage->pageUrl)->url, '/*')
-        . '/' . $archiveMonth->year
-        . '/' . str_pad((string) $archiveMonth->month, 2, '0', STR_PAD_LEFT);
+        . '/' . sprintf('%d-%02d', $archiveMonth->year, $archiveMonth->month);
     $expectedUrl = 'https://8.8.8.8/en' . $relativeUrl;
     $visited = [];
     $registry = new StaticSiteExtensionRegistry;

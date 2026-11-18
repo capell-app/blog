@@ -4,13 +4,13 @@
     "scenarios": {
         "default": {
             "source": {
-                "ref": "2b9cbe91221b7dbb95e7a8f31d95ccb5ef3097c6",
-                "commit": "2b9cbe91221b7dbb95e7a8f31d95ccb5ef3097c6",
+                "ref": "HEAD",
+                "commit": "98d7cb453195fd5356437be0e7290bf8ccdb46e4",
                 "providers": {
                     "Providers/AdminServiceProvider.php": "21dfa953994b0e97a61a92b422a495a44eec388a3fa9827db2350411d2e96150",
-                    "Providers/BlogServiceProvider.php": "cc262b4b1486c4771d5f922cdcfbc143631d9f1f3f30c104386898e5f8d97ee9",
+                    "Providers/BlogServiceProvider.php": "fef2df402406f450329c19e84055ffcb2c3c0ced15ebc89a098e59511d0a8be6",
                     "Providers/ConsoleServiceProvider.php": "ee006678505b69ba986c4d857b5505afddf00a3bb7b7e7c67838032193658bf1",
-                    "Providers/FrontendServiceProvider.php": "cc367106ceb08ab63a46dc1f7f138a8717ac462082421df73aba6791b567b363",
+                    "Providers/FrontendServiceProvider.php": "cc1cea9f76c61bf0c22409994983603cfaaf75953a085302c495d1f6a2955b5c",
                     "Providers/MigrationMetadataServiceProvider.php": "80614d1c282cf90d25e3d281f61bcf370929a3796b6359992758481d022dee04"
                 },
                 "configure": null
@@ -231,6 +231,26 @@
                             "source": "Capell\\Frontend\\Support\\Render\\FrontendHookRegistrar",
                             "target": null
                         }
+                    ],
+                    [
+                        "Capell\\Frontend\\Data\\RenderHookEntryData",
+                        {
+                            "cacheSafe": true,
+                            "extension": [
+                                "Capell\\Blog\\Support\\RenderHooks\\FeedAutodiscoveryRenderHook",
+                                []
+                            ],
+                            "fragment": false,
+                            "key": "feed-autodiscovery",
+                            "location": "headClose",
+                            "owner": "capell-app/blog",
+                            "position": null,
+                            "priority": 10,
+                            "registrationType": "class",
+                            "scenario": null,
+                            "source": "Capell\\Frontend\\Support\\Render\\FrontendHookRegistrar",
+                            "target": null
+                        }
                     ]
                 ],
                 "listeners": {
@@ -339,7 +359,8 @@
                             "<package:core>/src/Models/Concerns/HasUserstamps.php",
                             "Capell\\Blog\\Models\\Article(Illuminate\\Database\\Eloquent\\Model&Capell\\Core\\Models\\Contracts\\Userstampable $model):void",
                             []
-                        ]
+                        ],
+                        "Capell\\Frontend\\Support\\Cache\\PreChangeInvalidationObserver@deleting"
                     ],
                     "eloquent.deleting: Capell\\Tags\\Models\\Tag": [
                         [
@@ -399,7 +420,8 @@
                             "<vendor>/spatie/laravel-activitylog/src/Traits/LogsActivity.php",
                             "Capell\\Blog\\Models\\Article(Illuminate\\Database\\Eloquent\\Model $model):",
                             []
-                        ]
+                        ],
+                        "Capell\\Frontend\\Support\\Cache\\PreChangeInvalidationObserver@updating"
                     ],
                     "eloquent.updating: Capell\\Tags\\Models\\Tag": [
                         [
@@ -783,6 +805,22 @@
                     ],
                     [
                         "render-hook",
+                        "feed-autodiscovery",
+                        "Capell\\Blog\\Support\\RenderHooks\\FeedAutodiscoveryRenderHook",
+                        "Capell\\Frontend\\Support\\Render\\RenderHookRegistry",
+                        "frontend",
+                        "context"
+                    ],
+                    [
+                        "render-hook",
+                        "feed-autodiscovery",
+                        "Capell\\Blog\\Support\\RenderHooks\\FeedAutodiscoveryRenderHook",
+                        "Capell\\Frontend\\Support\\Render\\FrontendHookRegistrar",
+                        null,
+                        "context"
+                    ],
+                    [
+                        "render-hook",
                         "after-title",
                         "Capell\\Blog\\Support\\RenderHooks\\AfterTitleRenderHook",
                         "Capell\\Frontend\\Support\\Render\\RenderHookRegistry",
@@ -961,6 +999,16 @@
                             "render-hook",
                             "pagination-rel-links",
                             "Capell\\Blog\\Support\\RenderHooks\\PaginationRelLinksRenderHook"
+                        ],
+                        [
+                            "render-hook",
+                            "feed-autodiscovery",
+                            "Capell\\Blog\\Support\\RenderHooks\\FeedAutodiscoveryRenderHook"
+                        ],
+                        [
+                            "render-hook",
+                            "feed-autodiscovery",
+                            "Capell\\Blog\\Support\\RenderHooks\\FeedAutodiscoveryRenderHook"
                         ],
                         [
                             "render-hook",
@@ -1232,6 +1280,7 @@
                             "beforeContent:capell-app/blog:before-content-tags": true,
                             "footer:capell-app/blog:footer-pages": true,
                             "footer:capell-app/blog:footer-tags": true,
+                            "headClose:capell-app/blog:feed-autodiscovery": true,
                             "headClose:capell-app/blog:pagination-rel-links": true
                         },
                         "extensions": {
@@ -1354,6 +1403,26 @@
                                         ],
                                         "fragment": false,
                                         "key": "pagination-rel-links",
+                                        "location": "headClose",
+                                        "owner": "capell-app/blog",
+                                        "position": null,
+                                        "priority": 10,
+                                        "registrationType": "class",
+                                        "scenario": null,
+                                        "source": "Capell\\Frontend\\Support\\Render\\FrontendHookRegistrar",
+                                        "target": null
+                                    }
+                                ],
+                                [
+                                    "Capell\\Frontend\\Data\\RenderHookEntryData",
+                                    {
+                                        "cacheSafe": true,
+                                        "extension": [
+                                            "Capell\\Blog\\Support\\RenderHooks\\FeedAutodiscoveryRenderHook",
+                                            []
+                                        ],
+                                        "fragment": false,
+                                        "key": "feed-autodiscovery",
                                         "location": "headClose",
                                         "owner": "capell-app/blog",
                                         "position": null,
@@ -1560,6 +1629,19 @@
                             "prefix": null,
                             "where": []
                         }
+                    ]
+                ],
+                "schedule": [
+                    [
+                        null,
+                        "* * * * *",
+                        "capell-blog-invalidate-due-scheduled-articles",
+                        true,
+                        [
+                            "<package>/src/Providers/BlogServiceProvider.php",
+                            "static Capell\\Blog\\Providers\\BlogServiceProvider():int source=bbe27727f0a65aafb7ce5f2ca7dd5e0b",
+                            []
+                        ]
                     ]
                 ],
                 "tagged-consumers": {
@@ -1890,6 +1972,22 @@
                     "render-hook",
                     "pagination-rel-links",
                     "Capell\\Blog\\Support\\RenderHooks\\PaginationRelLinksRenderHook",
+                    "Capell\\Frontend\\Support\\Render\\FrontendHookRegistrar",
+                    null,
+                    "context"
+                ],
+                [
+                    "render-hook",
+                    "feed-autodiscovery",
+                    "Capell\\Blog\\Support\\RenderHooks\\FeedAutodiscoveryRenderHook",
+                    "Capell\\Frontend\\Support\\Render\\RenderHookRegistry",
+                    "frontend",
+                    "context"
+                ],
+                [
+                    "render-hook",
+                    "feed-autodiscovery",
+                    "Capell\\Blog\\Support\\RenderHooks\\FeedAutodiscoveryRenderHook",
                     "Capell\\Frontend\\Support\\Render\\FrontendHookRegistrar",
                     null,
                     "context"

@@ -1,0 +1,5 @@
+Someone at a small firm or charity, writing the news on top of everything else, can write next Thursday's post today, date it for Thursday and go on leave. The post stays out of your blog until that date and then shows up by itself, with no button to press on the day. With page caching it still appears within a minute of that date.
+
+Setting it up is a short job for whoever looks after your website. It creates the blog page, a page for each month's posts and a page for each tag, for every site and language you run. Tags are how posts are grouped, since there are no separate categories. Each author gets a page listing the posts they wrote, and their email address never appears on it. Readers who follow blogs through an app that gathers new posts receive your latest 20 as short summaries with a link back. The app picks up a new post the next time it checks.
+
+Months later, a reader after your spring news can open April's page for every post from that month, or click a tag to see everything on one subject.

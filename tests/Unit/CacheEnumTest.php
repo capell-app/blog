@@ -14,6 +14,7 @@ use Capell\Tags\Enums\TagTypeEnum;
 use Capell\Tags\Models\Tag;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -213,3 +214,21 @@ it('resets cached paginated tag listing paths to the current request url', funct
     expect($firstPageUrl)->toContain('/first-tags-page?tags-main=2')
         ->and($cachedPage->url(2))->toContain('/second-tags-page?tags-main=2');
 });
+
+it('normalises the configured page size when paginating tags', function (mixed $configuredLimit, int $expectedLimit): void {
+    $site = Site::factory()->withTranslations()->create();
+    config()->set('capell-frontend.pagination_limit', $configuredLimit);
+
+    $tags = TagLoader::getTags($site, $site->language, withPagination: true);
+
+    if (! $tags instanceof LengthAwarePaginator) {
+        throw new RuntimeException('Expected the paginated tag listing.');
+    }
+
+    expect($tags->perPage())->toBe($expectedLimit);
+})->with([
+    'integer' => [2, 2],
+    'numeric string' => ['2', 2],
+    'invalid string' => ['invalid', 10],
+    'invalid array' => [[], 10],
+]);

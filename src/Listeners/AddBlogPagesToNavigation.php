@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Listeners;
 
+use Capell\Blog\Providers\BlogServiceProvider;
 use Capell\Blog\Support\Loader\BlogLoader;
 use Capell\Core\Contracts\Pageable;
 use Capell\Core\Facades\CapellCore;
@@ -20,6 +21,10 @@ class AddBlogPagesToNavigation
 
     public function handle(NavigationCreating $event): void
     {
+        if (! CapellCore::isPackageEnabled(BlogServiceProvider::$packageName)) {
+            return;
+        }
+
         if (
             ! CapellCore::isPackageInstalled('capell-app/navigation')
             || ! Schema::hasTable(TableName::resolve('navigations'))

@@ -19,6 +19,7 @@ use Capell\Tags\Models\Tag;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\LazyCollection;
@@ -31,8 +32,9 @@ final class BuildBlogFeedXmlAction
     use AsFake;
     use AsObject;
 
-    public function handle(SiteDomain $domain, string $format = 'rss', int $limit = 20, ?Tag $tag = null): string
+    public function handle(SiteDomain $domain, string $format = 'rss', ?int $limit = null, ?Tag $tag = null): string
     {
+        $limit ??= $this->defaultLimit();
         $site = $domain->site;
         $language = $domain->language;
 
@@ -43,6 +45,7 @@ final class BuildBlogFeedXmlAction
         /** @var EloquentCollection<int, Article> $articles */
         $articles = Article::query()
             ->with([
+                'creator',
                 'translation' => static function (Relation $query) use ($language): void {
                     $query->where('language_id', $language->id);
                 },
@@ -89,6 +92,43 @@ final class BuildBlogFeedXmlAction
         return $format === 'atom'
             ? $this->atom($domain, $articles, $tag)
             : $this->rss($domain, $articles, $tag);
+    }
+
+    public function feedTitle(SiteDomain $domain, ?Tag $tag = null): string
+    {
+        $site = $domain->site;
+        $title = ($site instanceof Site ? $site->title : config('app.name', 'Capell')) . ' Blog';
+
+        if (! $tag instanceof Tag) {
+            return $title;
+        }
+
+        $tagName = $this->tagName($domain, $tag);
+
+        if ($tagName === '') {
+            return $title;
+        }
+
+        return (string) trans('capell-blog::generic.tag_feed_title', [
+            'feed_title' => $title,
+            'tag_name' => $tagName,
+        ]);
+    }
+
+    public function feedUrl(SiteDomain $domain, string $extension, ?Tag $tag = null): string
+    {
+        $base = rtrim($domain->full_url, '/');
+
+        return $tag instanceof Tag
+            ? $base . '/blog/tag/' . $this->tagSlug($domain, $tag) . '/feed.' . $extension
+            : $base . '/blog/feed.' . $extension;
+    }
+
+    private function defaultLimit(): int
+    {
+        $configured = config('capell-blog.feed_limit', 20);
+
+        return is_numeric($configured) ? (int) $configured : 20;
     }
 
     private function emptyFeed(SiteDomain $domain, string $format, ?Tag $tag = null): string
@@ -178,13 +218,19 @@ XML;
         $url = $pageUrl instanceof PageUrl ? $pageUrl->full_url : '';
         $publishedAt = $this->date($article->getPublishDate() ?? $article->created_at);
         $summary = ResolveArticleExcerptAction::run($translation instanceof Translation ? $translation : null);
+        $updatedAt = $this->date($article->updated_at ?? $article->getPublishDate() ?? $article->created_at);
+        $creator = $article->creator;
+        $author = $creator instanceof Model && is_string($creator->getAttribute('name')) && $creator->getAttribute('name') !== ''
+            ? "\n    <author><name>{$this->escape((string) $creator->getAttribute('name'))}</name></author>"
+            : '';
 
         return <<<XML
   <entry>
     <title>{$this->escape($translation instanceof Translation ? (string) $translation->title : $article->name)}</title>
     <link href="{$this->escape($url)}" />
     <id>{$this->escape($url)}</id>
-    <updated>{$this->escape($publishedAt->toAtomString())}</updated>
+    <published>{$this->escape($publishedAt->toAtomString())}</published>
+    <updated>{$this->escape($updatedAt->toAtomString())}</updated>{$author}
     <summary>{$this->escape($summary)}</summary>
   </entry>
 XML;
@@ -195,11 +241,12 @@ XML;
      */
     private function updatedAt(EloquentCollection $articles): CarbonInterface
     {
-        $article = $articles->first();
+        $latest = $articles
+            ->map(fn (Article $article): CarbonInterface => $this->date($article->updated_at ?? $article->getPublishDate() ?? $article->created_at))
+            ->sortByDesc(static fn (CarbonInterface $date): int => $date->getTimestamp())
+            ->first();
 
-        return $article instanceof Article
-            ? $this->date($article->getPublishDate() ?? $article->updated_at ?? $article->created_at)
-            : now();
+        return $latest instanceof CarbonInterface ? $latest : now();
     }
 
     private function date(mixed $date): CarbonInterface
@@ -209,27 +256,6 @@ XML;
         }
 
         return now();
-    }
-
-    private function feedTitle(SiteDomain $domain, ?Tag $tag = null): string
-    {
-        $site = $domain->site;
-        $title = ($site instanceof Site ? $site->title : config('app.name', 'Capell')) . ' Blog';
-
-        if (! $tag instanceof Tag) {
-            return $title;
-        }
-
-        $tagName = $this->tagName($domain, $tag);
-
-        if ($tagName === '') {
-            return $title;
-        }
-
-        return (string) trans('capell-blog::generic.tag_feed_title', [
-            'feed_title' => $title,
-            'tag_name' => $tagName,
-        ]);
     }
 
     private function tagName(SiteDomain $domain, Tag $tag): string
@@ -324,17 +350,11 @@ XML;
         return rtrim($domain->full_url, '/');
     }
 
-    private function feedUrl(SiteDomain $domain, string $extension, ?Tag $tag = null): string
-    {
-        $base = rtrim($domain->full_url, '/');
-
-        return $tag instanceof Tag
-            ? $base . '/blog/tag/' . $this->tagSlug($domain, $tag) . '/feed.' . $extension
-            : $base . '/blog/feed.' . $extension;
-    }
-
     private function escape(string $value): string
     {
-        return htmlspecialchars($value, ENT_XML1 | ENT_COMPAT, 'UTF-8');
+        // Control characters are illegal in XML 1.0 and one of them makes the whole feed unparseable.
+        $clean = preg_replace('/[^\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]/u', '', mb_scrub($value)) ?? '';
+
+        return htmlspecialchars($clean, ENT_XML1 | ENT_COMPAT | ENT_SUBSTITUTE, 'UTF-8');
     }
 }

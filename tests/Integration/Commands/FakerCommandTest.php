@@ -41,6 +41,19 @@ describe('capell:blog-faker command', function (): void {
 
         expect(Article::query()->count())->toBe(3)
             ->and(Article::query()->get()->map(fn (Article $article): mixed => $article->getMeta('image_source.url')))
-            ->each->toStartWith('https://images.unsplash.com/');
+            ->each->toStartWith('/vendor/capell-blog/demo-media/blog-examples-');
+    });
+
+    it('seeds article titles without the locale suffix', function (): void {
+        SiteDomain::factory()->default()->create();
+
+        $this->artisan('capell:blog-faker', ['--count' => 2])->assertExitCode(Command::SUCCESS);
+
+        $titles = Article::query()->with('translations.language')->get()
+            ->flatMap(fn (Article $article) => $article->translations)
+            ->filter(fn ($translation): bool => $translation->language?->locale !== null);
+
+        expect($titles)->not->toBeEmpty()
+            ->and($titles->filter(fn ($translation): bool => str_ends_with((string) $translation->title, ' ' . $translation->language?->locale)))->toBeEmpty();
     });
 });

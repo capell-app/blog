@@ -68,7 +68,6 @@ use Override;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Staudenmeir\EloquentJsonRelations\HasJsonRelationships;
-use Staudenmeir\EloquentJsonRelations\Relations\BelongsToJson;
 
 /**
  * @method HasOne<Translation, $this>|MorphOne<Translation, $this> translation()
@@ -337,14 +336,6 @@ class Article extends Model implements Blueprintable, DraftableContract, HasMedi
         $this->clearBlogContentCache();
 
         return $this;
-    }
-
-    /**
-     * @return BelongsToJson<Article, $this>
-     */
-    public function related(): BelongsToJson
-    {
-        return $this->belongsToJson(self::class, 'meta->related');
     }
 
     #[Override]

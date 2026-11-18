@@ -112,7 +112,8 @@ class TagLoader
         string $paginationKey = 'page',
     ): Collection|LengthAwarePaginator {
         if ($withPagination && ($limit === null || $limit === 0)) {
-            $limit = config('capell-frontend.pagination_limit', 10);
+            $configuredLimit = config('capell-frontend.pagination_limit', 10);
+            $limit = is_numeric($configuredLimit) ? (int) $configuredLimit : 10;
         }
 
         $paginationPage = $withPagination ? max(1, $paginationPage ?? 1) : $paginationPage;

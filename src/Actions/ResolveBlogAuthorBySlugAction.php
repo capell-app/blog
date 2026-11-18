@@ -19,9 +19,11 @@ use Lorisleiva\Actions\Concerns\AsObject;
  * neither the primary key (enumerable) nor the email address (PII) may appear
  * in a public URL. The public slug is therefore derived from the author display
  * name at request time and matched only against users who actually have
- * published articles on the requested site and language. When two such authors
- * slugify to the same value the lowest user id wins, so the mapping stays
- * deterministic.
+ * published articles on the requested site and language. Stable slugs carry a
+ * keyed token of the user id and match on it, so they survive a rename and
+ * never collide. A plain name slug still resolves for addresses published
+ * earlier; when two authors slugify to the same value the lowest user id wins,
+ * so that mapping stays deterministic.
  *
  * @method static BlogAuthorData|null run(string $slug, Site $site, Language $language)
  */
@@ -66,20 +68,22 @@ class ResolveBlogAuthorBySlugAction
             ->orderBy((new $userClass)->getKeyName())
             ->get();
 
+        // A stable slug is matched on its keyed token alone, so it keeps resolving after the author is renamed.
+        $token = BlogAuthorData::tokenFromSlug($normalizedSlug);
+
         foreach ($candidates as $candidate) {
             $name = $candidate->getAttribute('name');
-
-            if (! is_string($name)) {
-                continue;
-            }
-
-            if (BlogAuthorData::slugForName($name) !== $normalizedSlug) {
-                continue;
-            }
-
             $userId = $candidate->getKey();
 
-            if (! is_numeric($userId)) {
+            if (! is_string($name) || ! is_numeric($userId)) {
+                continue;
+            }
+
+            $matches = $token !== null
+                ? hash_equals(BlogAuthorData::tokenFor((int) $userId), $token)
+                : BlogAuthorData::slugForName($name) === $normalizedSlug;
+
+            if (! $matches) {
                 continue;
             }
 
@@ -87,6 +91,7 @@ class ResolveBlogAuthorBySlugAction
                 userId: (int) $userId,
                 slug: $normalizedSlug,
                 name: trim($name),
+                stableSlug: BlogAuthorData::stableSlugFor((int) $userId, $name),
             );
         }
 

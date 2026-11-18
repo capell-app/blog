@@ -48,7 +48,7 @@ Soft-deleting an article removes it from normal public queries and keeps it avai
 
 Blog exposes `/blog/feed.xml` and `/blog/feed.rss` as RSS 2.0, and `/blog/feed.atom` as Atom. Each request resolves the current Site Domain and language and returns up to the 20 latest published articles that have an enabled URL and translation for that site/language. Future, expired, other-site, and untranslated articles are excluded.
 
-Feed responses are publicly cacheable for five minutes. A recently published or corrected article can therefore remain absent or stale in a browser, proxy, or CDN until that cache lifetime expires. Feeds contain the article title, URL, publication date, and summary; they do not publish the complete article body.
+Feed responses ask browsers and caches to check for changes on every request. A scheduled article can still appear late on pages served from the HTML cache, which refreshes on its own cache lifetime. Feeds contain the article title, URL, publication date, and summary; they do not publish the complete article body.
 
 ## Operational boundaries
 

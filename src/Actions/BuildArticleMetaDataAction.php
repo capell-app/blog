@@ -93,12 +93,17 @@ final class BuildArticleMetaDataAction
             return null;
         }
 
-        $wordCount = str_word_count(strip_tags($content));
+        $text = html_entity_decode(strip_tags($content), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $unspacedScripts = '\p{Han}\p{Hiragana}\p{Katakana}\p{Thai}';
+        // Scripts written without spaces are counted by character, the rest by word.
+        $characters = (int) preg_match_all('/[' . $unspacedScripts . ']/u', $text);
+        $spaced = (string) preg_replace('/[' . $unspacedScripts . ']+/u', ' ', $text);
+        $words = (int) preg_match_all('/\S*[\p{L}\p{N}]\S*/u', $spaced);
 
-        if ($wordCount === 0) {
+        if ($words === 0 && $characters === 0) {
             return null;
         }
 
-        return max(1, (int) ceil($wordCount / 200));
+        return max(1, (int) ceil($words / 200 + $characters / 400));
     }
 }
