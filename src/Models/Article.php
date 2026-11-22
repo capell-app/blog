@@ -17,6 +17,7 @@ use Capell\Core\Concerns\HasCapellMedia;
 use Capell\Core\Concerns\HasCapellTable;
 use Capell\Core\Contracts\DraftableContract;
 use Capell\Core\Contracts\Pageable;
+use Capell\Core\Contracts\Publishing\SchedulesPublication;
 use Capell\Core\Data\Database\SqlFragment;
 use Capell\Core\Enums\BlueprintGroupEnum;
 use Capell\Core\Enums\BlueprintSubjectEnum;
@@ -74,7 +75,7 @@ use Staudenmeir\EloquentJsonRelations\HasJsonRelationships;
  */
 #[ObservedBy(ArticleObserver::class)]
 #[UsePolicy(ArticlePolicy::class)]
-class Article extends Model implements Blueprintable, DraftableContract, HasMedia, Pageable, Publishable, Translatable, Userstampable
+class Article extends Model implements Blueprintable, DraftableContract, HasMedia, Pageable, Publishable, SchedulesPublication, Translatable, Userstampable
 {
     use BelongsToOptionalWorkspace;
     use Cloneable;
@@ -208,6 +209,20 @@ class Article extends Model implements Blueprintable, DraftableContract, HasMedi
         $date = $this->visible_from ?? $this->created_at;
 
         return $date !== null ? CarbonImmutable::make($date) : null;
+    }
+
+    /** @return list<string> */
+    #[Override]
+    public function scheduledPublicationSurrogateKeys(): array
+    {
+        // The shared sweep calls this before dispatching HTML invalidation.
+        // A synchronous purge must not let requests rebuild HTML from stale Blog data.
+        ClearBlogContentCacheAction::run($this);
+
+        return [
+            sprintf('page-%d', $this->id),
+            sprintf('site-%d', $this->site_id),
+        ];
     }
 
     #[Override]

@@ -1,14 +1,14 @@
 [
     {
-        "claim": "A post dated in the future stays out of the blog until that date and then appears without a button or background job",
+        "claim": "Without page caching, a post dated in the future stays out of the blog until that date and then appears automatically",
         "evidence": ["src/Models/Article.php", "tests/Feature/BlogFeedTest.php"]
     },
     {
-        "claim": "On a site with page caching the post appears within a minute of its date, because a scheduled check runs every minute and clears the cached pages of posts whose date has passed",
+        "claim": "The scheduler checks for due posts every minute, and the queue worker clears cached pages when it processes the invalidation job",
         "evidence": [
-            "src/Actions/InvalidateDueScheduledArticleCachesAction.php",
+            "src/Models/Article.php",
             "src/Providers/BlogServiceProvider.php",
-            "tests/Feature/BlogScheduledPublishingAndFeedTest.php"
+            "tests/Feature/BlogScheduledArticleHtmlCacheTest.php"
         ]
     },
     {

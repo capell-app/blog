@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-use Capell\Blog\Listeners\AddBlogPagesToNavigation;
+use Capell\Blog\Bridges\Navigation\AddBlogPagesToNavigation;
 use Capell\Blog\Providers\AdminServiceProvider;
 use Capell\Blog\Support\BlogFrontendRuntimeManifestContributor;
 use Capell\Blog\Support\Creator\BlogCreator;
 use Capell\Blog\Support\Loader\BlogLoader;
+use Capell\Core\Data\Rendering\FrontendRuntimeManifestData;
+use Capell\Core\Enums\Rendering\RenderingStrategyEnum;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\Theme;
 use Capell\Frontend\Data\FrontendContext;
-use Capell\Frontend\Data\FrontendRuntimeManifestData;
-use Capell\Frontend\Enums\RenderingStrategyEnum;
 use Capell\Navigation\Events\NavigationCreating;
 use Capell\Navigation\Models\Navigation;
 use Illuminate\Contracts\Events\Dispatcher;

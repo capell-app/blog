@@ -2,12 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Capell\Blog\Support\PublicUrls;
+namespace Capell\Blog\Bridges\SiteDiscovery;
 
 use Capell\Blog\Providers\BlogServiceProvider;
-use Capell\Blog\Support\Sitemap\ArchivesSitemap;
-use Capell\Blog\Support\Sitemap\ArticlesSitemap;
-use Capell\Blog\Support\Sitemap\TagsSitemap;
+use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\SiteDomain;
@@ -44,6 +42,10 @@ final class BlogPublicUrlContributor implements PublicUrlContributor
      */
     private function publicUrlsForDomain(SiteDomain $domain): Collection
     {
+        if (! CapellCore::isPackageAvailable('capell-app/site-discovery')) {
+            return collect();
+        }
+
         $site = $domain->site;
         $language = $domain->language;
 

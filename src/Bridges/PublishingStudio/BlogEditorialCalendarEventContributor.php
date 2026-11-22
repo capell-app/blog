@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Capell\Blog\Support\EditorialCalendar;
+namespace Capell\Blog\Bridges\PublishingStudio;
 
 use Capell\Blog\Models\Article;
 use Capell\Blog\Providers\BlogServiceProvider;

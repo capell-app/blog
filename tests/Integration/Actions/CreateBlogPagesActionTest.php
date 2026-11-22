@@ -17,18 +17,23 @@ beforeEach(function (): void {
     SeedBlogPublishingSurfaceAction::run();
 });
 
-it('creates the blog, archives, archive, tags, and tag pages for the site', function (): void {
+it('creates the blog page hierarchy for the site', function (): void {
     $site = Site::factory()->withTranslations()->create();
 
-    CreateBlogPagesAction::run($site);
+    $surface = CreateBlogPagesAction::run($site);
 
-    $pages = Page::query()->where('site_id', $site->id)->with('blueprint')->get();
+    expect(Page::query()->where('site_id', $site->id)->whereKey(
+        array_map(static fn (Page $page): int => $page->id, $surface->pages()),
+    )->count())->toBe(6);
 
-    expect($pages)->not()->toBeEmpty();
-
-    $pageTypeKeys = $pages->pluck('blueprint.key')->filter()->unique()->values()->all();
-
-    expect($pageTypeKeys)->toContain(BlogPageTypeEnum::Blog->value);
+    expect($surface->blogPage->blueprint?->key)->toBe(BlogPageTypeEnum::Blog->value)
+        ->and($surface->archivesPage->refresh()->parent_id)->toBe($surface->blogPage->getKey())
+        ->and($surface->archivePage->refresh()->parent_id)->toBe($surface->archivesPage->getKey())
+        ->and($surface->archivePage->blueprint?->key)->toBe(BlogPageTypeEnum::Archive->value)
+        ->and($surface->tagsPage->refresh()->parent_id)->toBe($surface->blogPage->getKey())
+        ->and($surface->tagPage->refresh()->parent_id)->toBe($surface->tagsPage->getKey())
+        ->and($surface->tagPage->blueprint?->key)->toBe(BlogPageTypeEnum::Tag->value)
+        ->and($surface->authorPage->refresh()->parent_id)->toBe($surface->blogPage->getKey());
 });
 
 it('adds the archives widget to the results layout sidebar during install', function (): void {
@@ -40,32 +45,6 @@ it('adds the archives widget to the results layout sidebar during install', func
     $sidebarWidgetKeys = array_column(blogTestContainerWidgets($containers, 'sidebar'), 'widget_key');
 
     expect($sidebarWidgetKeys)->toContain('archives');
-});
-
-it('creates an archive placeholder page under the archives parent', function (): void {
-    $site = Site::factory()->withTranslations()->create();
-
-    CreateBlogPagesAction::run($site);
-
-    $archivePage = Page::query()
-        ->where('site_id', $site->id)
-        ->whereHas('blueprint', fn (Builder $query): Builder => $query->where('key', BlogPageTypeEnum::Archive->value))
-        ->first();
-
-    expect($archivePage)->not()->toBeNull();
-});
-
-it('creates a tags page under the blog parent', function (): void {
-    $site = Site::factory()->withTranslations()->create();
-
-    CreateBlogPagesAction::run($site);
-
-    $tagPage = Page::query()
-        ->where('site_id', $site->id)
-        ->whereHas('blueprint', fn (Builder $query): Builder => $query->where('key', BlogPageTypeEnum::Tag->value))
-        ->first();
-
-    expect($tagPage)->not()->toBeNull();
 });
 
 it('is safe to run twice for the same site without duplicating the blog root page', function (): void {

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Capell\Blog\Support\RenderHooks;
 
 use Capell\Blog\View\Components\Page\BeforeContentTags;
-use Capell\Frontend\Contracts\RenderHookExtensionInterface;
-use Capell\Frontend\Data\RenderHookContext;
+use Capell\Core\Contracts\Rendering\RenderHookExtensionInterface;
+use Capell\Core\Data\Rendering\RenderHookContext;
 use Illuminate\Contracts\View\View;
 
 final class BeforeContentTagsRenderHook implements RenderHookExtensionInterface

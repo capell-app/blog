@@ -17,7 +17,6 @@ use Capell\Blog\Manifest\BlogPageTypesContribution;
 use Capell\Blog\Manifest\BlogPermissionsContribution;
 use Capell\Blog\Manifest\BlogRenderHooksContribution;
 use Capell\Blog\Manifest\BlogRoutesContribution;
-use Capell\Blog\Manifest\BlogScheduleContribution;
 use Capell\Blog\Models\Article;
 use Capell\Core\Contracts\Extensions\ChecksExtensionHealth;
 use Capell\Core\Contracts\Extensions\ExtensionContribution;
@@ -28,7 +27,6 @@ use Capell\Core\Contracts\Extensions\RegistersExtensionPermission;
 use Capell\Core\Contracts\Extensions\RegistersExtensionRenderHook;
 use Capell\Core\Contracts\Extensions\RegistersExtensionRoute;
 use Capell\Core\Contracts\Extensions\RunsExtensionMigration;
-use Capell\Core\Contracts\Extensions\RunsScheduledExtensionJob;
 use Capell\Core\Support\Manifest\ManifestValidator;
 use Capell\Tags\Models\Tag;
 use Illuminate\Support\Facades\File;
@@ -277,7 +275,6 @@ describe('blog capell.json manifest', function (): void {
                 'route',
                 'migration',
                 'console-command',
-                'scheduled-job',
                 'health-check',
             ])
             ->and(data_get(collect($contributions)->firstWhere('type', 'permission'), 'permissions'))->toBe([])
@@ -294,7 +291,6 @@ describe('blog capell.json manifest', function (): void {
             ->and(class_implements(BlogRoutesContribution::class))->toContain(RegistersExtensionRoute::class)
             ->and(class_implements(BlogMigrationsContribution::class))->toContain(RunsExtensionMigration::class)
             ->and(class_implements(BlogConsoleCommandsContribution::class))->toContain(ExtensionContribution::class)
-            ->and(class_implements(BlogScheduleContribution::class))->toContain(RunsScheduledExtensionJob::class)
             ->and(class_implements(BlogHealthCheck::class))->toContain(ChecksExtensionHealth::class);
     });
 });

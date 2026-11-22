@@ -5,12 +5,12 @@
         "default": {
             "source": {
                 "ref": "HEAD",
-                "commit": "98d7cb453195fd5356437be0e7290bf8ccdb46e4",
+                "commit": "441f2208301346ab8e90b8e06ecb9533195853b1",
                 "providers": {
-                    "Providers/AdminServiceProvider.php": "21dfa953994b0e97a61a92b422a495a44eec388a3fa9827db2350411d2e96150",
-                    "Providers/BlogServiceProvider.php": "fef2df402406f450329c19e84055ffcb2c3c0ced15ebc89a098e59511d0a8be6",
+                    "Providers/AdminServiceProvider.php": "4384b6064413de322cba0870e7074f5eee94e7fe11b8f71dec15282a2875293f",
+                    "Providers/BlogServiceProvider.php": "e8a2454712e1bc53190f2e4aba341ccd8d6bf5d0822a66904e3a70a7af5fd428",
                     "Providers/ConsoleServiceProvider.php": "ee006678505b69ba986c4d857b5505afddf00a3bb7b7e7c67838032193658bf1",
-                    "Providers/FrontendServiceProvider.php": "cc1cea9f76c61bf0c22409994983603cfaaf75953a085302c495d1f6a2955b5c",
+                    "Providers/FrontendServiceProvider.php": "8164ab8be28e0e9ad68e0ee3887179cb05b68f0458b78632944a79a476a860c1",
                     "Providers/MigrationMetadataServiceProvider.php": "80614d1c282cf90d25e3d281f61bcf370929a3796b6359992758481d022dee04"
                 },
                 "configure": null
@@ -68,24 +68,13 @@
                     ]
                 ],
                 "bindings": {
-                    "Capell\\Blog\\Support\\EditorialCalendar\\BlogEditorialCalendarEventContributor": {
+                    "Capell\\Blog\\Bridges\\SiteDiscovery\\BlogPublicUrlContributor": {
                         "concrete": [
                             "<vendor>/laravel/framework/src/Illuminate/Container/Container.php",
                             "Illuminate\\Container\\Container( $container,  $parameters): bound=Illuminate\\Foundation\\Application",
                             {
-                                "abstract": "Capell\\Blog\\Support\\EditorialCalendar\\BlogEditorialCalendarEventContributor",
-                                "concrete": "Capell\\Blog\\Support\\EditorialCalendar\\BlogEditorialCalendarEventContributor"
-                            }
-                        ],
-                        "shared": true
-                    },
-                    "Capell\\Blog\\Support\\PublicUrls\\BlogPublicUrlContributor": {
-                        "concrete": [
-                            "<vendor>/laravel/framework/src/Illuminate/Container/Container.php",
-                            "Illuminate\\Container\\Container( $container,  $parameters): bound=Illuminate\\Foundation\\Application",
-                            {
-                                "abstract": "Capell\\Blog\\Support\\PublicUrls\\BlogPublicUrlContributor",
-                                "concrete": "Capell\\Blog\\Support\\PublicUrls\\BlogPublicUrlContributor"
+                                "abstract": "Capell\\Blog\\Bridges\\SiteDiscovery\\BlogPublicUrlContributor",
+                                "concrete": "Capell\\Blog\\Bridges\\SiteDiscovery\\BlogPublicUrlContributor"
                             }
                         ],
                         "shared": true
@@ -281,7 +270,21 @@
                         ]
                     ],
                     "Capell\\Navigation\\Events\\NavigationCreating": [
-                        "Capell\\Blog\\Listeners\\AddBlogPagesToNavigation"
+                        "Capell\\Blog\\Bridges\\Navigation\\AddBlogPagesToNavigation"
+                    ],
+                    "Illuminate\\Console\\Events\\CommandFinished": [
+                        [
+                            "<package>/src/Support/Publishing/ScheduledArticlePublicationSweep.php",
+                            "Capell\\Blog\\Support\\Publishing\\ScheduledArticlePublicationSweep::finished(Illuminate\\Console\\Events\\CommandFinished $event):void bound=Capell\\Blog\\Support\\Publishing\\ScheduledArticlePublicationSweep source=e8e5a47f8cf0649a5de16d400cd97b9a",
+                            []
+                        ]
+                    ],
+                    "Illuminate\\Console\\Events\\CommandStarting": [
+                        [
+                            "<package>/src/Support/Publishing/ScheduledArticlePublicationSweep.php",
+                            "Capell\\Blog\\Support\\Publishing\\ScheduledArticlePublicationSweep::starting(Illuminate\\Console\\Events\\CommandStarting $event):void bound=Capell\\Blog\\Support\\Publishing\\ScheduledArticlePublicationSweep source=fe2b8f054ef945498489deef582b20b6",
+                            []
+                        ]
                     ],
                     "Spatie\\MediaLibrary\\MediaCollections\\Events\\MediaHasBeenAddedEvent": [
                         [
@@ -313,11 +316,6 @@
                     ],
                     "eloquent.creating: Capell\\Blog\\Models\\Article": [
                         [
-                            "<package>/src/Support/PublishingStudio/Concerns/BelongsToOptionalWorkspace.php",
-                            "static Capell\\Blog\\Models\\Article(Illuminate\\Database\\Eloquent\\Model $record):void source=4800d5c348ad6c4d03a96548560b8cfa",
-                            []
-                        ],
-                        [
                             "<package:core>/src/Models/Concerns/HasUserstamps.php",
                             "Capell\\Blog\\Models\\Article(Illuminate\\Database\\Eloquent\\Model&Capell\\Core\\Models\\Contracts\\Userstampable $model):void",
                             []
@@ -345,11 +343,6 @@
                         "Capell\\Frontend\\Support\\Cache\\FrontendCacheInvalidationObserver@deleted"
                     ],
                     "eloquent.deleting: Capell\\Blog\\Models\\Article": [
-                        [
-                            "<package>/src/Support/PublishingStudio/Concerns/BelongsToOptionalWorkspace.php",
-                            "static Capell\\Blog\\Models\\Article(Illuminate\\Database\\Eloquent\\Model $record):?bool source=d78bf7efb23d48462ee3a79e37644520",
-                            []
-                        ],
                         [
                             "<vendor>/spatie/laravel-medialibrary/src/InteractsWithMedia.php",
                             "Capell\\Blog\\Models\\Article(Spatie\\MediaLibrary\\HasMedia $model):",
@@ -393,13 +386,6 @@
                     ],
                     "eloquent.saved: Capell\\Core\\Models\\Translation": [
                         "Capell\\Blog\\Listeners\\ArticleTranslationSavedListener"
-                    ],
-                    "eloquent.saving: Capell\\Blog\\Models\\Article": [
-                        [
-                            "<package>/src/Support/PublishingStudio/Concerns/BelongsToOptionalWorkspace.php",
-                            "static Capell\\Blog\\Models\\Article(Illuminate\\Database\\Eloquent\\Model $record):?bool source=7c9ace48537ec1a236ce71b06951b29b",
-                            []
-                        ]
                     ],
                     "eloquent.updated: Capell\\Blog\\Models\\Article": [
                         [
@@ -477,6 +463,40 @@
                             "entry": [
                                 "<package>/src/Providers/BlogServiceProvider.php",
                                 "static Capell\\Blog\\Providers\\BlogServiceProvider(Capell\\Frontend\\Events\\FrontendRenderPreparing $event):void source=f6d4da3708b83b0f42edadf4fdd783a0",
+                                []
+                            ]
+                        }
+                    ],
+                    "Illuminate\\Console\\Events\\CommandFinished": [
+                        {
+                            "after": [
+                                "<package:core>/src/Providers/CapellServiceProvider.php",
+                                "static Capell\\Core\\Providers\\CapellServiceProvider(Illuminate\\Console\\Events\\CommandFinished $event):void",
+                                []
+                            ],
+                            "before": [
+                                "<vendor>/livewire/livewire/src/Mechanisms/ClearCachedFiles.php",
+                                "Livewire\\Mechanisms\\ClearCachedFiles( $event): bound=Livewire\\Mechanisms\\ClearCachedFiles",
+                                []
+                            ],
+                            "entry": [
+                                "<package>/src/Support/Publishing/ScheduledArticlePublicationSweep.php",
+                                "Capell\\Blog\\Support\\Publishing\\ScheduledArticlePublicationSweep::finished(Illuminate\\Console\\Events\\CommandFinished $event):void bound=Capell\\Blog\\Support\\Publishing\\ScheduledArticlePublicationSweep source=e8e5a47f8cf0649a5de16d400cd97b9a",
+                                []
+                            ]
+                        }
+                    ],
+                    "Illuminate\\Console\\Events\\CommandStarting": [
+                        {
+                            "after": [
+                                "<package:core>/src/Providers/CapellServiceProvider.php",
+                                "static Capell\\Core\\Providers\\CapellServiceProvider(Illuminate\\Console\\Events\\CommandStarting $event):void",
+                                []
+                            ],
+                            "before": null,
+                            "entry": [
+                                "<package>/src/Support/Publishing/ScheduledArticlePublicationSweep.php",
+                                "Capell\\Blog\\Support\\Publishing\\ScheduledArticlePublicationSweep::starting(Illuminate\\Console\\Events\\CommandStarting $event):void bound=Capell\\Blog\\Support\\Publishing\\ScheduledArticlePublicationSweep source=fe2b8f054ef945498489deef582b20b6",
                                 []
                             ]
                         }
@@ -711,7 +731,7 @@
                         "cache-dependency",
                         "cache-dependency:Capell\\Blog\\Models\\Article",
                         "Capell\\Blog\\Models\\Article",
-                        "Capell\\Frontend\\Support\\Cache\\CacheInvalidationRegistry",
+                        "Capell\\Core\\Support\\Cache\\CacheDependencyRegistry",
                         "frontend",
                         "context"
                     ],
@@ -719,7 +739,7 @@
                         "cache-dependency",
                         "cache-dependency:Capell\\Tags\\Models\\Tag",
                         "Capell\\Tags\\Models\\Tag",
-                        "Capell\\Frontend\\Support\\Cache\\CacheInvalidationRegistry",
+                        "Capell\\Core\\Support\\Cache\\CacheDependencyRegistry",
                         "frontend",
                         "context"
                     ],
@@ -1079,6 +1099,22 @@
                             }
                         }
                     },
+                    "Capell\\Core\\Support\\Cache\\CacheDependencyRegistry": {
+                        "items": {
+                            "Capell\\Blog\\Models\\Article": [
+                                "page-tags-*",
+                                "site-*-blog-page",
+                                "site-*-archive-page",
+                                "site-*-tag-page",
+                                "site-tags-*"
+                            ],
+                            "Capell\\Tags\\Models\\Tag": [
+                                "page-tags-*",
+                                "site-*-tag-page",
+                                "site-tags-*"
+                            ]
+                        }
+                    },
                     "Capell\\Core\\Support\\CapellCoreManager": {
                         "models": {
                             "Article": "Capell\\Blog\\Models\\Article"
@@ -1143,6 +1179,11 @@
                                     }
                                 }
                             ]
+                        }
+                    },
+                    "Capell\\Core\\Support\\Publishing\\ScheduledPublicationRegistry": {
+                        "items": {
+                            "Capell\\Blog\\Models\\Article": "Capell\\Blog\\Models\\Article"
                         }
                     },
                     "Capell\\Core\\Support\\Renderables\\RenderableRegistry": {
@@ -1255,22 +1296,6 @@
                                     }
                                 ]
                             }
-                        }
-                    },
-                    "Capell\\Frontend\\Support\\Cache\\CacheInvalidationDependencyRegistry": {
-                        "modelDependencies": {
-                            "Capell\\Blog\\Models\\Article": [
-                                "page-tags-*",
-                                "site-*-blog-page",
-                                "site-*-archive-page",
-                                "site-*-tag-page",
-                                "site-tags-*"
-                            ],
-                            "Capell\\Tags\\Models\\Tag": [
-                                "page-tags-*",
-                                "site-*-tag-page",
-                                "site-tags-*"
-                            ]
                         }
                     },
                     "Capell\\Frontend\\Support\\Render\\RenderHookRegistry": {
@@ -1631,45 +1656,26 @@
                         }
                     ]
                 ],
-                "schedule": [
-                    [
-                        null,
-                        "* * * * *",
-                        "capell-blog-invalidate-due-scheduled-articles",
-                        true,
-                        [
-                            "<package>/src/Providers/BlogServiceProvider.php",
-                            "static Capell\\Blog\\Providers\\BlogServiceProvider():int source=bbe27727f0a65aafb7ce5f2ca7dd5e0b",
-                            []
-                        ]
-                    ]
-                ],
                 "tagged-consumers": {
                     "capell-discovery-foundation:public-url-contributors": [
-                        "Capell\\Blog\\Support\\PublicUrls\\BlogPublicUrlContributor"
+                        "Capell\\Blog\\Bridges\\SiteDiscovery\\BlogPublicUrlContributor"
                     ],
                     "capell.frontend.runtime-manifest-contributor": [
                         "Capell\\Blog\\Support\\BlogFrontendRuntimeManifestContributor"
                     ],
                     "capell.layout-builder.sidebar-widget-contributor": [
                         "Capell\\Blog\\Support\\BlogSidebarWidgetContributor"
-                    ],
-                    "capell.publishing-studio.editorial-calendar-event-contributor": [
-                        "Capell\\Blog\\Support\\EditorialCalendar\\BlogEditorialCalendarEventContributor"
                     ]
                 },
                 "tags": {
                     "capell-discovery-foundation:public-url-contributors": [
-                        "Capell\\Blog\\Support\\PublicUrls\\BlogPublicUrlContributor"
+                        "Capell\\Blog\\Bridges\\SiteDiscovery\\BlogPublicUrlContributor"
                     ],
                     "capell.frontend.runtime-manifest-contributor": [
                         "Capell\\Blog\\Support\\BlogFrontendRuntimeManifestContributor"
                     ],
                     "capell.layout-builder.sidebar-widget-contributor": [
                         "Capell\\Blog\\Support\\BlogSidebarWidgetContributor"
-                    ],
-                    "capell.publishing-studio.editorial-calendar-event-contributor": [
-                        "Capell\\Blog\\Support\\EditorialCalendar\\BlogEditorialCalendarEventContributor"
                     ]
                 },
                 "vendor-assets": [
@@ -1884,7 +1890,7 @@
                     "cache-dependency",
                     "cache-dependency:Capell\\Blog\\Models\\Article",
                     "Capell\\Blog\\Models\\Article",
-                    "Capell\\Frontend\\Support\\Cache\\CacheInvalidationRegistry",
+                    "Capell\\Core\\Support\\Cache\\CacheDependencyRegistry",
                     "frontend",
                     "context"
                 ],
@@ -1892,7 +1898,7 @@
                     "cache-dependency",
                     "cache-dependency:Capell\\Tags\\Models\\Tag",
                     "Capell\\Tags\\Models\\Tag",
-                    "Capell\\Frontend\\Support\\Cache\\CacheInvalidationRegistry",
+                    "Capell\\Core\\Support\\Cache\\CacheDependencyRegistry",
                     "frontend",
                     "context"
                 ],

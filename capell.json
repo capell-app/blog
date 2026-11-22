@@ -98,12 +98,7 @@
                     "update",
                     "delete",
                     "delete_any",
-                    "restore",
-                    "restore_any",
-                    "force_delete",
-                    "force_delete_any",
-                    "replicate",
-                    "reorder"
+                    "replicate"
                 ]
             }
         },
@@ -192,13 +187,6 @@
             ]
         },
         {
-            "type": "scheduled-job",
-            "class": "Capell\\Blog\\Manifest\\BlogScheduleContribution",
-            "name": "capell-blog-invalidate-due-scheduled-articles",
-            "actionClass": "Capell\\Blog\\Actions\\InvalidateDueScheduledArticleCachesAction",
-            "frequency": "everyMinute"
-        },
-        {
             "type": "health-check",
             "class": "Capell\\Blog\\Health\\BlogHealthCheck"
         }
@@ -239,12 +227,7 @@
         "Update:Tag",
         "Delete:Tag",
         "DeleteAny:Tag",
-        "Restore:Tag",
-        "RestoreAny:Tag",
-        "ForceDelete:Tag",
-        "ForceDeleteAny:Tag",
-        "Replicate:Tag",
-        "Reorder:Tag"
+        "Replicate:Tag"
     ],
     "capabilities": [
         "blog",
@@ -310,12 +293,7 @@
                 "Update:Tag",
                 "Delete:Tag",
                 "DeleteAny:Tag",
-                "Restore:Tag",
-                "RestoreAny:Tag",
-                "ForceDelete:Tag",
-                "ForceDeleteAny:Tag",
-                "Replicate:Tag",
-                "Reorder:Tag"
+                "Replicate:Tag"
             ]
         }
     },
@@ -363,13 +341,13 @@
     },
     "marketplace": {
         "summary": "Write a post ahead, date it and leave it to appear, then let readers browse past news by month, by tag or by author.",
-        "description": "Write a news post now, give it next week's date and it stays off your blog until then. On a site with page caching it shows within a minute of that date. Readers browse older posts by month, by tag or by author, and each author page lists their posts without an email address. Posts are grouped with tags, as there are no separate categories. Setting up creates the blog, month and tag pages for every site and language you run. Readers who follow blogs through an app that gathers new posts get your latest 20 as short summaries with a link back.",
+        "description": "Write a news post now, give it next week's date and it stays off your blog until then. If you use page caching, the scheduler checks for due posts every minute and a queue worker clears cached pages. Readers browse older posts by month, by tag or by author, and each author page lists their posts without an email address. Posts are grouped with tags, as there are no separate categories. Setting up creates the blog, month and tag pages for every site and language you run. Readers who follow blogs through an app that gathers new posts get your latest 20 as short summaries with a link back.",
         "problem": "Our news has to go out on the right day, even when nobody's in, and readers can't find last year's posts.",
         "outcome": "Posts appear on their date without anyone pressing publish, and readers find older news by month, tag or author.",
         "faq": [
             {
                 "question": "Do I need to be there on the day a scheduled post goes out?",
-                "answer": "No. The post stays out of your blog until its date and then appears by itself. With page caching on, it shows within a minute of that date, as long as your site's scheduler is running."
+                "answer": "No. The post stays out of your blog until its date and then appears by itself. If you use page caching, keep the scheduler and a queue worker running. The scheduler checks for due posts every minute, and cached pages update after the worker processes the invalidation job."
             },
             {
                 "question": "What happens if I leave the publish date empty?",

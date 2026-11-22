@@ -1,6 +1,6 @@
 ## What it does
 
-Blog adds site-scoped, multilingual Articles plus the public blog index, monthly archives, tag listings, related-article widgets, and RSS/Atom feeds. Article visibility is controlled by publish and unpublish dates rather than by a background publishing job.
+Blog adds site-scoped, multilingual Articles plus the public blog index, monthly archives, tag listings, related-article widgets, and RSS/Atom feeds. The publish and unpublish dates control article visibility.
 
 ## Install and create the publishing surface
 
@@ -22,7 +22,9 @@ The publish panel has three practical behaviours:
 - a future Visible from time makes it Scheduled; and
 - Unpublish/Visible until hides it once that time has passed.
 
-These transitions are evaluated from the database dates on each public query. No queue worker, scheduler, or cron publishing command is required, but the application clock and timezone must be correct. A scheduled article does not appear early in the blog index, archive/tag results, or feed. An expired article stops matching public queries without deleting its content. Publishing Studio can add workspace review and editorial-calendar integration when installed; it is not required for date-based visibility.
+Public queries use the stored publication dates and the application clock. A scheduled article stays out of the blog index, archive and tag results, and feed until its start time. An expired article stops matching public queries and remains available in the editor. Publishing Studio can add workspace review and editorial-calendar integration.
+
+If the site uses HTML caching, keep Laravel's scheduler and a queue worker running. The scheduler checks every minute for articles going live or expiring. Cached pages can show the previous content until the worker processes the invalidation job. A queue backlog delays that update, and a stopped worker leaves old pages in the cache until invalidation resumes.
 
 Saving an article, its translation, tags, or featured media clears the package's affected article/listing caches. Existing full-page HTML and external caches still follow the host cache regeneration policy. Verify the public URL after urgent changes rather than assuming every edge cache refreshed immediately.
 
@@ -48,7 +50,7 @@ Soft-deleting an article removes it from normal public queries and keeps it avai
 
 Blog exposes `/blog/feed.xml` and `/blog/feed.rss` as RSS 2.0, and `/blog/feed.atom` as Atom. Each request resolves the current Site Domain and language and returns up to the 20 latest published articles that have an enabled URL and translation for that site/language. Future, expired, other-site, and untranslated articles are excluded.
 
-Feed responses ask browsers and caches to check for changes on every request. A scheduled article can still appear late on pages served from the HTML cache, which refreshes on its own cache lifetime. Feeds contain the article title, URL, publication date, and summary; they do not publish the complete article body.
+RSS and Atom use HTTP revalidation. Feed responses ask browsers and caches to check with the server on every request before reusing a copy. The HTML cache handles web pages, while the feeds reflect the articles visible when the server checks. Feeds contain the article title, URL, publication date, and summary.
 
 ## Operational boundaries
 

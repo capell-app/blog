@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
+use Capell\Blog\Bridges\PublishingStudio\BlogEditorialCalendarEventContributor;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Providers\BlogServiceProvider;
-use Capell\Blog\Support\EditorialCalendar\BlogEditorialCalendarEventContributor;
 use Capell\Core\Models\Site;
 use Capell\PublishingStudio\Actions\BuildEditorialCalendarEventsAction;
 use Capell\PublishingStudio\Contracts\EditorialCalendarEventContributor;

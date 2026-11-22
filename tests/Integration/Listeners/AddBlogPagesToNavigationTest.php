@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Capell\Blog\Actions\EnsureBlogPublishingSurfaceAction;
-use Capell\Blog\Listeners\AddBlogPagesToNavigation;
+use Capell\Blog\Bridges\Navigation\AddBlogPagesToNavigation;
 use Capell\Blog\Providers\BlogServiceProvider;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Site;

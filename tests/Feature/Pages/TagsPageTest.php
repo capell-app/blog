@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
+use Capell\Blog\Bridges\SiteDiscovery\TagsSitemap;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Creator\BlogCreator;
-use Capell\Blog\Support\Sitemap\TagsSitemap;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;

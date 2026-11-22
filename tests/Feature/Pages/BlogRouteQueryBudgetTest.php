@@ -9,14 +9,14 @@ use Capell\Blog\Data\BlogPublishingSurfaceRequestData;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\BlogFrontendRuntimeManifestContributor;
 use Capell\Blog\Support\Creator\BlogCreator;
+use Capell\Core\Data\Rendering\FrontendRuntimeManifestData;
 use Capell\Core\Enums\MediaCollectionEnum;
+use Capell\Core\Enums\Rendering\RenderingStrategyEnum;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\SiteDomain;
 use Capell\Frontend\Data\FrontendContext;
-use Capell\Frontend\Data\FrontendRuntimeManifestData;
 use Capell\Frontend\Enums\CacheEnum;
-use Capell\Frontend\Enums\RenderingStrategyEnum;
 use Capell\Frontend\Events\FrontendContextResolved;
 use Capell\Frontend\Support\State\FrontendState;
 use Capell\HtmlCache\Support\Telemetry\HtmlCacheRequestObservationStore;
@@ -126,6 +126,8 @@ test('Blog preserves prepared null and empty values and hydrates absent values',
         $context->setFrontendData('foundation.page.ancestors', $ancestors);
     }
 
+    // The direct contributor call represents a fresh render after the fixture request.
+    app()->forgetScopedInstances();
     DB::flushQueryLog();
     DB::enableQueryLog();
 

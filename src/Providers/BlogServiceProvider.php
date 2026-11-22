@@ -7,9 +7,10 @@ namespace Capell\Blog\Providers;
 use Capell\Blog\Actions\AssignExampleArticleImageAction;
 use Capell\Blog\Actions\ClearBlogContentCacheAction;
 use Capell\Blog\Actions\ClearBlogTagCacheAction;
-use Capell\Blog\Actions\InvalidateDueScheduledArticleCachesAction;
 use Capell\Blog\Actions\PrepareBlogFooterRenderDataAction;
 use Capell\Blog\Actions\SanitizeBlogHtmlAction;
+use Capell\Blog\Bridges\PublishingStudio\BlogEditorialCalendarEventContributor;
+use Capell\Blog\Bridges\SiteDiscovery\BlogPublicUrlContributor;
 use Capell\Blog\Enums\LivewirePageComponentEnum;
 use Capell\Blog\Enums\WidgetComponentEnum;
 use Capell\Blog\Http\Controllers\BlogFeedController;
@@ -20,8 +21,7 @@ use Capell\Blog\Policies\ArticlePolicy;
 use Capell\Blog\Support\BlogFrontendRuntimeManifestContributor;
 use Capell\Blog\Support\BlogModelRegistrar;
 use Capell\Blog\Support\BlogSidebarWidgetContributor;
-use Capell\Blog\Support\EditorialCalendar\BlogEditorialCalendarEventContributor;
-use Capell\Blog\Support\PublicUrls\BlogPublicUrlContributor;
+use Capell\Blog\Support\Publishing\ScheduledArticlePublicationSweep;
 use Capell\ContentSections\Models\Section;
 use Capell\Core\Actions\RegisterBlazeOptimizedViewsAction;
 use Capell\Core\Data\PageTypeData;
@@ -33,19 +33,21 @@ use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
 use Capell\Core\Models\Translation;
+use Capell\Core\Support\Cache\CacheDependencyRegistry;
 use Capell\Core\Support\Packages\AbstractPackageServiceProvider;
+use Capell\Core\Support\Publishing\ScheduledPublicationRegistry;
 use Capell\Core\Support\Renderables\RenderableRegistry;
 use Capell\DiscoveryFoundation\Contracts\PublicUrlContributor;
 use Capell\Frontend\Contracts\FrontendRuntimeManifestContributor;
 use Capell\Frontend\Events\FrontendRenderPreparing;
-use Capell\Frontend\Support\Cache\CacheInvalidationRegistry;
 use Capell\LayoutBuilder\Contracts\LayoutSidebarWidgetContributor;
 use Capell\PublishingStudio\Contracts\EditorialCalendarEventContributor;
 use Capell\PublishingStudio\WorkspaceRegistry;
 use Capell\Tags\Models\Tag;
 use Capell\Tags\Support\TagModelRegistrar;
 use Composer\InstalledVersions;
-use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Console\Events\CommandFinished;
+use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Foundation\Console\AboutCommand;
@@ -62,11 +64,7 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
 {
     private const string LAYOUT_SIDEBAR_ELEMENT_CONTRIBUTOR = LayoutSidebarWidgetContributor::class;
 
-    private const string EDITORIAL_CALENDAR_EVENT_CONTRIBUTOR = EditorialCalendarEventContributor::class;
-
     private const string PUBLIC_URL_CONTRIBUTOR = PublicUrlContributor::class;
-
-    private const string WORKSPACE_REGISTRY = WorkspaceRegistry::class;
 
     public static string $name = 'capell-blog';
 
@@ -128,7 +126,7 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
             ->registerTranslationEvents()
             ->registerTagCacheEvents()
             ->registerArticleMediaCacheEvents()
-            ->registerScheduledArticleSweep()
+            ->registerScheduledArticlePublication()
             ->registerPublishingStudio();
 
     }
@@ -354,7 +352,11 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
 
     private function registerEditorialCalendarContributors(): self
     {
-        $editorialCalendarContributorContract = self::EDITORIAL_CALENDAR_EVENT_CONTRIBUTOR;
+        if (! CapellCore::isPackageAvailable('capell-app/publishing-studio')) {
+            return $this;
+        }
+
+        $editorialCalendarContributorContract = EditorialCalendarEventContributor::class;
 
         if (interface_exists($editorialCalendarContributorContract)) {
             $contributorClass = BlogEditorialCalendarEventContributor::class;
@@ -375,19 +377,8 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
 
     private function registerCacheInvalidationDependencies(): self
     {
-        $cacheInvalidationRegistryClass = CacheInvalidationRegistry::class;
-
-        if (! class_exists($cacheInvalidationRegistryClass) || ! $this->app->bound($cacheInvalidationRegistryClass)) {
-            return $this;
-        }
-
-        $registry = resolve($cacheInvalidationRegistryClass);
-
-        if (! is_object($registry) || ! method_exists($registry, 'registerDependency')) {
-            return $this;
-        }
-
-        $registry->registerDependency(Article::class, [
+        $registry = $this->app->make(CacheDependencyRegistry::class);
+        $registry->declare(Article::class, [
             'page-tags-*',
             'site-*-blog-page',
             'site-*-archive-page',
@@ -395,7 +386,7 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
             'site-tags-*',
         ]);
 
-        $registry->registerDependency(Tag::class, [
+        $registry->declare(Tag::class, [
             'page-tags-*',
             'site-*-tag-page',
             'site-tags-*',
@@ -447,23 +438,25 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
         return $this;
     }
 
-    private function registerScheduledArticleSweep(): self
+    private function registerScheduledArticlePublication(): self
     {
-        // Core's scheduled-publication sweep only covers pages, so articles need their own.
-        $this->callAfterResolving(Schedule::class, static function (Schedule $schedule): void {
-            $schedule->call(static fn (): int => InvalidateDueScheduledArticleCachesAction::run())
-                ->name('capell-blog-invalidate-due-scheduled-articles')
-                ->everyMinute()
-                ->withoutOverlapping()
-                ->onOneServer();
-        });
+        $this->app->make(ScheduledPublicationRegistry::class)->register(Article::class);
+        if ($this->app->runningInConsole()) {
+            $sweep = new ScheduledArticlePublicationSweep;
+            Event::listen(CommandStarting::class, $sweep->starting(...));
+            Event::listen(CommandFinished::class, $sweep->finished(...));
+        }
 
         return $this;
     }
 
     private function registerPublishingStudio(): self
     {
-        $workspaceRegistryClass = self::WORKSPACE_REGISTRY;
+        if (! CapellCore::isPackageAvailable('capell-app/publishing-studio')) {
+            return $this;
+        }
+
+        $workspaceRegistryClass = WorkspaceRegistry::class;
 
         if (class_exists($workspaceRegistryClass)) {
             $workspaceRegistryClass::register(Article::class);

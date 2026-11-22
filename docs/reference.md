@@ -66,7 +66,6 @@ Blog is an **Available** Capell package in the **Capell Publishing** product gro
 
 ### Listeners
 
-- `AddBlogPagesToNavigation`
 - `ArticleTranslationSavedListener`
 
 ### Actions
@@ -90,7 +89,6 @@ Blog is an **Available** Capell package in the **Capell Publishing** product gro
 - `GenerateBlogAuthorUrlAction`
 - `GetArticleLayoutAction`
 - `InstallBlogPackageAction`
-- `InvalidateDueScheduledArticleCachesAction`
 - `PrepareBlogFeedLinksAction`
 - `PrepareBlogFooterRenderDataAction`
 - `ProvisionBlogPublishingPagesAction`
@@ -144,10 +142,6 @@ Blog is an **Available** Capell package in the **Capell Publishing** product gro
 - `install: Capell\Blog\Actions\InstallBlogPackageAction`
 - `sanitizeBlogHtml: Capell\Blog\Actions\SanitizeBlogHtmlAction`
 
-### Scheduled commands
-
-- `Capell\Blog\Manifest\BlogScheduleContribution (everyMinute; manifest declared)`
-
 ### Console command classes
 
 - `CreateBlogPagesCommand`
@@ -172,7 +166,6 @@ Blog is an **Available** Capell package in the **Capell Publishing** product gro
 - `permission: Capell\Blog\Manifest\BlogPermissionsContribution`
 - `render-hook: Capell\Blog\Manifest\BlogRenderHooksContribution`
 - `route: Capell\Blog\Manifest\BlogRoutesContribution`
-- `scheduled-job: Capell\Blog\Manifest\BlogScheduleContribution`
 
 ### Health checks
 

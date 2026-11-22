@@ -3,12 +3,14 @@
 declare(strict_types=1);
 
 use Capell\Blog\Actions\GenerateArchiveUrlAction;
+use Capell\Blog\Bridges\SiteDiscovery\ArchivesSitemap;
+use Capell\Blog\Data\ArchiveLinkData;
 use Capell\Blog\Data\ArchiveMonthData;
 use Capell\Blog\Enums\BlogTypeGroupEnum;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Creator\BlogCreator;
 use Capell\Blog\Support\PageArchiveService;
-use Capell\Blog\Support\Sitemap\ArchivesSitemap;
+use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\SiteDomain;
 use Capell\Tests\Support\Concerns\TestingFrontend;
@@ -252,6 +254,56 @@ test('archives sitemap rejects an archive page without a persisted url', functio
         ->toThrow(LogicException::class);
 });
 
+test('shows the archive link month in the active locale', function (string $locale, string $label): void {
+    $blogCreator = resolve(BlogCreator::class);
+    $siteDomain = SiteDomain::factory()->default()->create();
+    $site = $siteDomain->site;
+    $blogPage = $blogCreator->createBlogPage($site);
+    $archivesPage = $blogCreator->createArchivesPage($blogPage);
+    $archivePage = $blogCreator->createArchivePage($archivesPage);
+    $archivePageUrl = blogTestPageUrl($archivePage->pageUrl);
+    $archiveMonth = new ArchiveMonthData(year: 2026, month: 3, total: 2);
+
+    $originalLocale = app()->getLocale();
+    app()->setLocale($locale);
+
+    try {
+        $link = ArchiveLinkData::fromArchive($archivePageUrl, $archiveMonth, null);
+
+        expect($link->label)->toBe($label)
+            ->and($link->url)->toEndWith('/2026-03');
+    } finally {
+        app()->setLocale($originalLocale);
+    }
+})->with([
+    'German' => ['de', 'März 2026'],
+    'English' => ['en', 'March 2026'],
+]);
+
+test('archives sitemap labels follow the target language, not the application locale', function (string $locale, string $label): void {
+    $blogCreator = resolve(BlogCreator::class);
+    $language = Language::factory()->forCountry('Target', $locale, $locale, $locale, 1, true)->create();
+    $siteDomain = SiteDomain::factory()->default()->language($language)->create();
+    $site = $siteDomain->site;
+    $blogPage = $blogCreator->createBlogPage($site);
+    $archivePage = $blogCreator->createArchivePage($blogCreator->createArchivesPage($blogPage));
+    $archiveMonth = new ArchiveMonthData(year: 2026, month: 3, total: 2);
+
+    $originalLocale = app()->getLocale();
+    app()->setLocale('en');
+
+    try {
+        $sitemapPage = (new ArchivesSitemap($site, $siteDomain, $language))->format($archiveMonth, $archivePage);
+
+        expect($sitemapPage->label)->toBe($label . ' (2)');
+    } finally {
+        app()->setLocale($originalLocale);
+    }
+})->with([
+    'German target' => ['de', 'März 2026'],
+    'English target' => ['en', 'March 2026'],
+]);
+
 test('error page when no articles found for given month/year', function (string $slug): void {
     $blogCreator = resolve(BlogCreator::class);
 
@@ -268,3 +320,40 @@ test('error page when no articles found for given month/year', function (string 
     get($archiveUrl)
         ->assertNotFound();
 })->with(['/2000-01', '/text-06']);
+
+test('german archives page and archive page render month names in German', function (): void {
+    $blogCreator = resolve(BlogCreator::class);
+
+    $german = Language::factory()->forCountry('German', 'de', 'de', 'de', 1, true)->create();
+    $site = SiteDomain::factory()->default()->language($german)->create()->site;
+
+    $blogCreator->createArticlePageType();
+    $blogPage = $blogCreator->createBlogPage($site);
+    $archivesPage = $blogCreator->createArchivesPage($blogPage);
+    $archivePage = $blogCreator->createArchivePage($archivesPage);
+    $articleLayout = $blogCreator->createArticleLayout();
+    $archivesPageUrl = blogTestPageUrl($archivesPage->pageUrl);
+    $archivePageUrl = blogTestPageUrl($archivePage->pageUrl);
+
+    Article::factory()
+        ->site($site)
+        ->layout($articleLayout)
+        ->withTranslations($site->languages)
+        ->create(['name' => 'German month article', 'visible_from' => '2023-03-01']);
+
+    $originalLocale = app()->getLocale();
+
+    try {
+        get($archivesPageUrl->full_url)
+            ->assertOk()
+            ->assertSee('März 2023')
+            ->assertDontSee('March 2023');
+
+        get(GenerateArchiveUrlAction::run($archivePageUrl, new ArchiveMonthData(year: 2023, month: 3)))
+            ->assertOk()
+            ->assertSee('März')
+            ->assertDontSee('Articles from March');
+    } finally {
+        app()->setLocale($originalLocale);
+    }
+});

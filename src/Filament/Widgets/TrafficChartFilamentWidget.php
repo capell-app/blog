@@ -9,6 +9,7 @@ use Capell\Admin\Filament\Concerns\GatedByRoleAndSettings;
 use Capell\Admin\Filament\Concerns\HasDashboardDateRange;
 use Capell\Blog\Data\Dashboard\TrafficChartData;
 use Capell\Blog\Data\Dashboard\TrafficPointData;
+use Capell\Core\Facades\CapellCore;
 use Capell\Insights\Enums\InsightsEventType;
 use Capell\Insights\Models\InsightsEvent;
 use Filament\Widgets\Widget;
@@ -20,10 +21,6 @@ final class TrafficChartFilamentWidget extends Widget implements CapellFilamentW
 {
     use GatedByRoleAndSettings;
     use HasDashboardDateRange;
-
-    private const string INSIGHTS_EVENT = InsightsEvent::class;
-
-    private const string INSIGHTS_EVENT_TYPE = InsightsEventType::class;
 
     protected static string $settingsKey = 'traffic_chart';
 
@@ -46,8 +43,16 @@ final class TrafficChartFilamentWidget extends Widget implements CapellFilamentW
 
     private function getData(): TrafficChartData
     {
-        $insightsEventClass = self::INSIGHTS_EVENT;
-        $insightsEventTypeClass = self::INSIGHTS_EVENT_TYPE;
+        if (! CapellCore::isPackageAvailable('capell-app/insights')) {
+            return new TrafficChartData(
+                totalViews: 0,
+                totalVisitors: 0,
+                points: TrafficPointData::collect([], Collection::class),
+            );
+        }
+
+        $insightsEventClass = InsightsEvent::class;
+        $insightsEventTypeClass = InsightsEventType::class;
 
         if (! class_exists($insightsEventClass) || ! enum_exists($insightsEventTypeClass)) {
             return new TrafficChartData(

@@ -5,19 +5,18 @@ declare(strict_types=1);
 use Capell\Blog\Actions\ApplyRelatedArticleRankingAction;
 use Capell\Blog\Actions\BuildArticleMetaDataAction;
 use Capell\Blog\Actions\EnsureBlogPublishingSurfaceAction;
-use Capell\Blog\Actions\InvalidateDueScheduledArticleCachesAction;
 use Capell\Blog\Data\BlogPublishingSurfaceRequestData;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Creator\BlogCreator;
 use Capell\Core\Events\FrontendSurrogateKeysInvalidated;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\SiteDomain;
+use Capell\Frontend\Actions\InvalidateDueScheduledPublicationCachesAction;
 use Capell\Search\Actions\FlushSiteDiscoverySearchRegistryAction;
 use Capell\Tags\Enums\TagTypeEnum;
 use Capell\Tags\Models\Tag;
 use Capell\Tests\Fixtures\Models\User;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\get;
@@ -38,10 +37,6 @@ function scheduledBlogFixture(string $host = 'example.com'): array
     ];
 }
 
-beforeEach(function (): void {
-    Cache::forget(InvalidateDueScheduledArticleCachesAction::CHECKPOINT_CACHE_KEY);
-});
-
 it('sweeps caches when an article becomes visible, and withdraws it when it expires', function (): void {
     Event::fake([FrontendSurrogateKeysInvalidated::class]);
     $fixture = scheduledBlogFixture();
@@ -51,12 +46,12 @@ it('sweeps caches when an article becomes visible, and withdraws it when it expi
     $fixture['make'](['name' => 'Long ago', 'visible_from' => $now->subDays(9)]);
     $fixture['make'](['name' => 'Later', 'visible_from' => $now->addDay()]);
 
-    expect(InvalidateDueScheduledArticleCachesAction::run($now))->toBe(2);
+    expect(InvalidateDueScheduledPublicationCachesAction::run($now))->toBe(2);
 
     Event::assertDispatched(FrontendSurrogateKeysInvalidated::class, static fn (FrontendSurrogateKeysInvalidated $event): bool => in_array(sprintf('page-%d', $going->id), $event->surrogateKeys, true) && $event->withdrawal === null);
     Event::assertDispatched(FrontendSurrogateKeysInvalidated::class, static fn (FrontendSurrogateKeysInvalidated $event): bool => in_array(sprintf('page-%d', $expiring->id), $event->surrogateKeys, true) && $event->withdrawal?->modelKey === $expiring->id);
     // The checkpoint advances, so the same transitions are not swept again a minute later.
-    expect(InvalidateDueScheduledArticleCachesAction::run($now->addMinute()))->toBe(0);
+    expect(InvalidateDueScheduledPublicationCachesAction::run($now->addMinute()))->toBe(0);
 });
 
 it('clears only the cached pages of the site whose article became visible', function (): void {
@@ -68,21 +63,22 @@ it('clears only the cached pages of the site whose article became visible', func
 
     Event::fake([FrontendSurrogateKeysInvalidated::class]);
 
-    expect(InvalidateDueScheduledArticleCachesAction::run($now))->toBe(1);
+    expect(InvalidateDueScheduledPublicationCachesAction::run($now))->toBe(1);
 
     Event::assertDispatchedTimes(FrontendSurrogateKeysInvalidated::class, 1);
-    Event::assertDispatched(FrontendSurrogateKeysInvalidated::class, static fn (FrontendSurrogateKeysInvalidated $event): bool => $event->surrogateKeys === [sprintf('page-%d', $going->id), sprintf('site-%d', $going->site_id)]);
+    Event::assertDispatched(FrontendSurrogateKeysInvalidated::class, static fn (FrontendSurrogateKeysInvalidated $event): bool => in_array(sprintf('page-%d', $going->id), $event->surrogateKeys, true) && in_array(sprintf('site-%d', $going->site_id), $event->surrogateKeys, true));
     expect($second['domain']->site_id)->not->toBe($going->site_id);
-    expect(InvalidateDueScheduledArticleCachesAction::run($now->addSeconds(30)))->toBe(0);
+    expect(InvalidateDueScheduledPublicationCachesAction::run($now->addSeconds(30)))->toBe(0);
 });
 
-it('sweeps transitions missed while no checkpoint existed', function (): void {
+it('sweeps transitions missed during a scheduler outage using the persisted checkpoint', function (): void {
     Event::fake([FrontendSurrogateKeysInvalidated::class]);
     $fixture = scheduledBlogFixture();
     $now = CarbonImmutable::parse('2026-06-01 12:00:00');
     $fixture['make'](['name' => 'Went live during an outage', 'visible_from' => $now->subHours(5)]);
 
-    expect(InvalidateDueScheduledArticleCachesAction::run($now))->toBe(1);
+    expect(InvalidateDueScheduledPublicationCachesAction::run($now->subHours(6)))->toBe(0)
+        ->and(InvalidateDueScheduledPublicationCachesAction::run($now))->toBe(1);
 });
 
 it('leaves scheduled and expired articles out of the feed', function (): void {
@@ -187,7 +183,7 @@ it('moves the search registry version on when the sweep passes a scheduled publi
     $fixture['make'](['name' => 'Going live', 'visible_from' => $now->subSeconds(30)]);
     $before = FlushSiteDiscoverySearchRegistryAction::version();
 
-    InvalidateDueScheduledArticleCachesAction::run($now);
+    InvalidateDueScheduledPublicationCachesAction::run($now);
 
     expect(FlushSiteDiscoverySearchRegistryAction::version())->toBeGreaterThan($before);
 });

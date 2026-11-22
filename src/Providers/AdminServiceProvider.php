@@ -9,12 +9,12 @@ use Capell\Admin\Enums\ConfiguratorTypeEnum;
 use Capell\Admin\Enums\ResourceEnum as AdminResourceEnum;
 use Capell\Admin\Facades\CapellAdmin;
 use Capell\Blog\Actions\EnsureBlogPublishingSurfaceAction;
+use Capell\Blog\Bridges\Navigation\AddBlogPagesToNavigation;
 use Capell\Blog\Data\BlogPublishingSurfaceRequestData;
 use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Enums\WidgetComponentEnum;
 use Capell\Blog\Enums\WidgetConfiguratorEnum;
 use Capell\Blog\Filament\Configurators\Articles\ArticlePageConfigurator;
-use Capell\Blog\Listeners\AddBlogPagesToNavigation;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Site;
 use Capell\Core\Support\Packages\PackageSurfaceRegistrar;
@@ -123,6 +123,10 @@ final class AdminServiceProvider extends ServiceProvider
 
     private function registerNavigationListener(): void
     {
+        if (! CapellCore::isPackageAvailable('capell-app/navigation')) {
+            return;
+        }
+
         if (
             ! CapellCore::isPackageInstalled('capell-app/navigation')
             || ! class_exists(NavigationCreating::class)

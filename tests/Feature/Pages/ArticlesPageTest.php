@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 use Capell\Blog\Actions\GenerateArchiveUrlAction;
+use Capell\Blog\Bridges\SiteDiscovery\ArticlesSitemap;
 use Capell\Blog\Data\ArchiveMonthData;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Support\Creator\BlogCreator;
-use Capell\Blog\Support\Sitemap\ArticlesSitemap;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;

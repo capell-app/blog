@@ -20,9 +20,12 @@ final class ArchiveLinkData extends Data
 
     public static function fromArchive(PageUrl $pageUrl, ArchiveMonthData $archive, mixed $activeArchive): self
     {
+        $month = Date::parse(sprintf('%d-%02d-01', $archive->year, $archive->month));
+        $month->locale(app()->getLocale());
+
         return new self(
             url: GenerateArchiveUrlAction::run($pageUrl, $archive),
-            label: Date::parse(sprintf('%d-%02d-01', $archive->year, $archive->month))->format('F Y'),
+            label: $month->translatedFormat('F Y'),
             count: $archive->total,
             active: is_object($activeArchive)
                 && isset($activeArchive->month, $activeArchive->year)

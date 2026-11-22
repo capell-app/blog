@@ -27,9 +27,9 @@ Your article is now live on the blog page.
 
 ### How to schedule an article for later
 
-1. Open or create the article.
-2. Set **Publish on** to the future date and time you want.
-3. Save the article.
+1. Create the article and save it as a draft. The create form and the quick editor have a **Publish on** field, but it only takes a blank or past date, so it cannot schedule a future article.
+2. Open the saved article and use its publishing controls: **Publish on** to choose a future date and time, or **Reschedule** to move a date that is already set.
+3. Confirm the article's status now reads **Scheduled**. If it still reads **Draft**, the date was not applied; set it again.
 4. It stays hidden until that moment, then goes live on its own. You do not need to come back and publish it.
 
 ### How to set a featured image and tags
@@ -79,10 +79,10 @@ Your article is now live on the blog page.
 
 ## Troubleshooting for editors
 
-| What you see                                            | What it means                                                                                                | What to do                                                                                                                                                                  |
-| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| My article isn't on the site                            | It is still a **Draft**, or its **Publish on** is in the future                                              | Open it, click **Publish now**, and check **Publish on** is not later than now                                                                                              |
-| A scheduled article didn't appear                       | The publish time hasn't been reached, the application clock is wrong, or the public response is still cached | Re-check the **Publish on** and timezone, then clear the relevant page/feed cache. Visibility is evaluated when public content is queried; no publishing worker is required |
-| My change isn't showing on the live page                | The public page is still serving a cached copy                                                               | Wait a moment, or ask whoever manages caching to clear it for that page                                                                                                     |
-| The **Article health** widget shows an unexpected total | It summarises article statuses, top tags, and language coverage across the blog                              | Review the article list or translation coverage to find the records behind the total                                                                                        |
-| A tag or archive page is empty                          | No published articles use that tag or fall in that month yet                                                 | Publish articles with that tag, or hide the empty page                                                                                                                      |
+| What you see                                            | What it means                                                                                                | What to do                                                                                                                                                           |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| My article isn't on the site                            | It is still a **Draft**, or its **Publish on** is in the future                                              | Open it, click **Publish now**, and check **Publish on** is not later than now                                                                                       |
+| A scheduled article didn't appear                       | The publish time is still ahead, the application clock is wrong, or the page cache still has the old content | Check **Publish on** and the timezone. If HTML caching is enabled, ask the site administrator to check the scheduler, queue worker, and pending cache invalidations. |
+| My change isn't showing on the live page                | The public page is still serving a cached copy                                                               | Wait a moment, or ask whoever manages caching to clear it for that page                                                                                              |
+| The **Article health** widget shows an unexpected total | It summarises article statuses, top tags, and language coverage across the blog                              | Review the article list or translation coverage to find the records behind the total                                                                                 |
+| A tag or archive page is empty                          | No published articles use that tag or fall in that month yet                                                 | Publish articles with that tag, or hide the empty page                                                                                                               |

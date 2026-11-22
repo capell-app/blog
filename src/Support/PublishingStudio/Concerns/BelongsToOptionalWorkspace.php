@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Support\PublishingStudio\Concerns;
 
+use Capell\Core\Facades\CapellCore;
 use Capell\PublishingStudio\Actions\CopyOnWriteAction;
 use Capell\PublishingStudio\Models\Workspace;
 use Capell\PublishingStudio\WorkspaceContext;
@@ -11,6 +12,7 @@ use Capell\PublishingStudio\WorkspaceContextScope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use LogicException;
 
 /**
  * Keeps articles workspace-aware when Publishing Studio is installed without
@@ -20,30 +22,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 trait BelongsToOptionalWorkspace
 {
-    private const string COPY_ON_WRITE_ACTION = CopyOnWriteAction::class;
-
-    private const string WORKSPACE_CONTEXT = WorkspaceContext::class;
-
-    private const string WORKSPACE_CONTEXT_SCOPE = WorkspaceContextScope::class;
-
-    private const string WORKSPACE_MODEL = Workspace::class;
-
     public static function bootBelongsToOptionalWorkspace(): void
     {
-        if (class_exists(self::WORKSPACE_CONTEXT_SCOPE)) {
-            $workspaceContextScopeClass = self::WORKSPACE_CONTEXT_SCOPE;
-
-            static::addGlobalScope(new $workspaceContextScopeClass);
+        if (! CapellCore::isPackageAvailable('capell-app/publishing-studio')) {
+            return;
         }
 
+        static::addGlobalScope(new WorkspaceContextScope);
+
         static::creating(static function (Model $record): void {
-            $workspaceContextClass = self::WORKSPACE_CONTEXT;
-
-            if (! class_exists($workspaceContextClass)) {
-                return;
-            }
-
-            $activeWorkspaceId = $workspaceContextClass::currentId();
+            $activeWorkspaceId = WorkspaceContext::currentId();
 
             if ($activeWorkspaceId === null) {
                 return;
@@ -57,14 +45,7 @@ trait BelongsToOptionalWorkspace
         });
 
         static::saving(static function (Model $record): ?bool {
-            $workspaceContextClass = self::WORKSPACE_CONTEXT;
-            $copyOnWriteActionClass = self::COPY_ON_WRITE_ACTION;
-
-            if (! class_exists($workspaceContextClass) || ! class_exists($copyOnWriteActionClass)) {
-                return null;
-            }
-
-            $activeWorkspace = $workspaceContextClass::current();
+            $activeWorkspace = WorkspaceContext::current();
 
             if (! self::isPublishingStudioWorkspace($activeWorkspace)) {
                 return null;
@@ -86,20 +67,13 @@ trait BelongsToOptionalWorkspace
                 return null;
             }
 
-            (new $copyOnWriteActionClass)->cloneForEdit($record, $activeWorkspace);
+            (new CopyOnWriteAction)->cloneForEdit($record, $activeWorkspace);
 
             return false;
         });
 
         static::deleting(static function (Model $record): ?bool {
-            $workspaceContextClass = self::WORKSPACE_CONTEXT;
-            $copyOnWriteActionClass = self::COPY_ON_WRITE_ACTION;
-
-            if (! class_exists($workspaceContextClass) || ! class_exists($copyOnWriteActionClass)) {
-                return null;
-            }
-
-            $activeWorkspace = $workspaceContextClass::current();
+            $activeWorkspace = WorkspaceContext::current();
 
             if (! self::isPublishingStudioWorkspace($activeWorkspace)) {
                 return null;
@@ -117,7 +91,7 @@ trait BelongsToOptionalWorkspace
                 return null;
             }
 
-            (new $copyOnWriteActionClass)->cloneForDelete($record, $activeWorkspace);
+            (new CopyOnWriteAction)->cloneForDelete($record, $activeWorkspace);
 
             return false;
         });
@@ -126,8 +100,12 @@ trait BelongsToOptionalWorkspace
     /** @return BelongsTo<Model, $this> */
     public function workspace(): BelongsTo
     {
+        if (! CapellCore::isPackageAvailable('capell-app/publishing-studio')) {
+            throw new LogicException('Publishing Studio must be installed before reading a record\'s workspace.');
+        }
+
         /** @var class-string<Model> $workspaceModelClass */
-        $workspaceModelClass = self::WORKSPACE_MODEL;
+        $workspaceModelClass = Workspace::class;
 
         return $this->belongsTo($workspaceModelClass);
     }
@@ -196,17 +174,19 @@ trait BelongsToOptionalWorkspace
      */
     protected function scopeWithoutWorkspaceScope(Builder $query): Builder
     {
-        if (! class_exists(self::WORKSPACE_CONTEXT_SCOPE)) {
+        if (! CapellCore::isPackageAvailable('capell-app/publishing-studio')) {
             return $query;
         }
 
-        return $query->withoutGlobalScope(self::WORKSPACE_CONTEXT_SCOPE);
+        return $query->withoutGlobalScope(WorkspaceContextScope::class);
     }
 
     private static function isPublishingStudioWorkspace(mixed $workspace): bool
     {
-        $workspaceModelClass = self::WORKSPACE_MODEL;
+        if (! CapellCore::isPackageAvailable('capell-app/publishing-studio')) {
+            return false;
+        }
 
-        return class_exists($workspaceModelClass) && $workspace instanceof $workspaceModelClass;
+        return $workspace instanceof Workspace;
     }
 }

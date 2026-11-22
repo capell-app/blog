@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Capell\Blog\Support\Sitemap;
+namespace Capell\Blog\Bridges\SiteDiscovery;
 
 use Capell\Blog\Actions\GenerateArchiveUrlAction;
 use Capell\Blog\Data\ArchiveMonthData;
@@ -49,8 +49,11 @@ class ArchivesSitemap extends AbstractSitemapPages
 
         throw_unless($pageUrl !== null, LogicException::class, 'Archive page requires a URL for sitemap generation.');
 
+        $month = $monthData->getDate();
+        $month->locale(filled($this->language->locale) ? (string) $this->language->locale : (string) $this->language->code);
+
         return new SitemapPageData(
-            label: $monthData->getDate()->format('F Y') . ' (' . $monthData->total . ')',
+            label: $month->translatedFormat('F Y') . ' (' . $monthData->total . ')',
             url: GenerateArchiveUrlAction::run($pageUrl, $monthData),
         );
     }

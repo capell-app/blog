@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Capell\Blog\Support\RenderHooks;
 
 use Capell\Blog\Data\BlogFeedLinkData;
-use Capell\Frontend\Contracts\RenderHookExtensionInterface;
-use Capell\Frontend\Data\RenderHookContext;
+use Capell\Core\Contracts\Rendering\RenderHookExtensionInterface;
+use Capell\Core\Data\Rendering\RenderHookContext;
 use Capell\Frontend\Facades\Frontend;
 
 /**

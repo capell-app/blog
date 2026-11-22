@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Capell\Blog\Support\Sitemap;
+namespace Capell\Blog\Bridges\SiteDiscovery;
 
 use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Support\Loader\TagLoader;

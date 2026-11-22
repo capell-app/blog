@@ -151,10 +151,11 @@ class Archive extends AbstractPage
         abort_if($year === null, 404);
 
         $date = Date::create()->day(1)->month($this->month ?? 1)->year($year);
+        $date->locale(app()->getLocale());
 
         return [
             'archive_date' => $date,
-            'archive_month' => $date->format('F'),
+            'archive_month' => $date->translatedFormat('F'),
             'archive_year' => $year,
             'blogResultsViewData' => $this->blogResultsViewData ?? BuildBlogResultsViewDataAction::run($this->results),
         ];
@@ -170,10 +171,11 @@ class Archive extends AbstractPage
         abort_if($year === null, 404);
 
         $date = Date::create()->day(1)->month($this->month ?? 1)->year($year);
+        $date->locale(app()->getLocale());
 
         return [
             'archive_date' => $date,
-            'archive_month' => $date->format('F'),
+            'archive_month' => $date->translatedFormat('F'),
             'archive_year' => $year,
         ];
     }

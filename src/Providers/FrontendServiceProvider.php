@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Providers;
 
+use Capell\Blog\Bridges\SiteDiscovery\ArchivesSitemap;
+use Capell\Blog\Bridges\SiteDiscovery\ArticlesSitemap;
+use Capell\Blog\Bridges\SiteDiscovery\TagsSitemap;
 use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Enums\BlogTypeGroupEnum;
 use Capell\Blog\Support\Loader\BlogLoader;
@@ -15,9 +18,6 @@ use Capell\Blog\Support\RenderHooks\FeedAutodiscoveryRenderHook;
 use Capell\Blog\Support\RenderHooks\FooterPagesRenderHook;
 use Capell\Blog\Support\RenderHooks\FooterTagsRenderHook;
 use Capell\Blog\Support\RenderHooks\PaginationRelLinksRenderHook;
-use Capell\Blog\Support\Sitemap\ArchivesSitemap;
-use Capell\Blog\Support\Sitemap\ArticlesSitemap;
-use Capell\Blog\Support\Sitemap\TagsSitemap;
 use Capell\Blog\Support\StaticSite\BlogStaticSiteExtension;
 use Capell\Core\Contracts\Pageable;
 use Capell\Core\Facades\CapellCore;
@@ -133,6 +133,10 @@ final class FrontendServiceProvider extends ServiceProvider
 
     private function registerSitemapPages(): void
     {
+        if (! CapellCore::isPackageAvailable('capell-app/site-discovery')) {
+            return;
+        }
+
         if (! class_exists(SitemapPageRegistry::class)) {
             return;
         }

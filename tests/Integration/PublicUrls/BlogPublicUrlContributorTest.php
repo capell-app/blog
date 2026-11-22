@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
+use Capell\Blog\Bridges\SiteDiscovery\BlogPublicUrlContributor;
 use Capell\Blog\Models\Article;
 use Capell\Blog\Providers\BlogServiceProvider;
 use Capell\Blog\Support\Creator\BlogCreator;
-use Capell\Blog\Support\PublicUrls\BlogPublicUrlContributor;
 use Capell\Core\Models\SiteDomain;
 use Capell\DiscoveryFoundation\Contracts\PublicUrlContributor;
 use Capell\DiscoveryFoundation\Data\PublicUrlData;
