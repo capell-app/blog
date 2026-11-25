@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
+use Capell\Blog\Bridges\PublishingStudio\BelongsToOptionalWorkspace;
 use Capell\Blog\Models\Article;
-use Capell\Blog\Support\PublishingStudio\Concerns\BelongsToOptionalWorkspace;
 use Capell\PublishingStudio\BelongsToWorkspace;
 use Symfony\Component\Finder\Finder;
 
@@ -70,13 +70,11 @@ it('declares site discovery as an optional package bridge', function (): void {
 it('keeps blog package references inside the blog source package except intentional bridges', function (): void {
     $rootPath = dirname(__DIR__, 4);
     $intentionalBridgePaths = [
-        'packages/comments/src/Actions/RegisterDefaultCommentablesAction.php',
+        'packages/comments/src/Bridges/Blog/CommentsBlogBridge.php',
         'packages/seo-suite/src/Bridges/Blog/BlogSeoAuditResourceHeaderActionExtender.php',
         'packages/theme-liquid-glass/src/Enums/WidgetComponentEnum.php',
         'packages/theme-liquid-glass/src/LiquidGlassThemeServiceProvider.php',
-        'packages/voyager-importer/src/Actions/ImportVoyagerPostsAction.php',
-        'packages/voyager-importer/src/Actions/ImportVoyagerTranslationsAction.php',
-        'packages/voyager-importer/src/Actions/RunDedicatedVoyagerImportAction.php',
+        'packages/voyager-importer/src/Bridges/VoyagerBlogBridge.php',
     ];
     $violations = [];
 

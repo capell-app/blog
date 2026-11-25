@@ -7,14 +7,12 @@ namespace Capell\Blog\Filament\Widgets;
 use Capell\Admin\Contracts\CapellFilamentWidgetContract;
 use Capell\Admin\Filament\Concerns\GatedByRoleAndSettings;
 use Capell\Admin\Filament\Concerns\HasDashboardDateRange;
+use Capell\Blog\Bridges\Insights\BlogInsightsBridge;
 use Capell\Blog\Data\Dashboard\TopPageData;
 use Capell\Blog\Data\Dashboard\TopPagesData;
-use Capell\Core\Facades\CapellCore;
-use Capell\Insights\Enums\InsightsEventType;
-use Capell\Insights\Models\InsightsEvent;
 use Filament\Widgets\Widget;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Override;
 
 final class TopPagesFilamentWidget extends Widget implements CapellFilamentWidgetContract
@@ -43,35 +41,16 @@ final class TopPagesFilamentWidget extends Widget implements CapellFilamentWidge
 
     private function getData(): TopPagesData
     {
-        if (! CapellCore::isPackageAvailable('capell-app/insights')) {
-            return new TopPagesData(
-                pages: TopPageData::collect([], Collection::class),
-            );
-        }
-
-        $insightsEventClass = InsightsEvent::class;
-        $insightsEventTypeClass = InsightsEventType::class;
-
-        if (! class_exists($insightsEventClass) || ! enum_exists($insightsEventTypeClass)) {
-            return new TopPagesData(
-                pages: TopPageData::collect([], Collection::class),
-            );
-        }
-
         [$rangeStart, $rangeEnd] = $this->getDashboardDateRange();
-        $pageViewEventType = constant($insightsEventTypeClass . '::PageView');
+        $rows = BlogInsightsBridge::topPages($rangeStart, $rangeEnd);
 
-        $rows = $insightsEventClass::query()
-            ->select('path', DB::raw('COUNT(*) as views'))
-            ->where('type', $pageViewEventType)
-            ->where('occurred_at', '>=', $rangeStart)
-            ->where('occurred_at', '<=', $rangeEnd)
-            ->groupBy('path')
-            ->orderByDesc('views')
-            ->limit(5)
-            ->get();
+        if (! $rows instanceof Collection) {
+            return new TopPagesData(
+                pages: TopPageData::collect([], Collection::class),
+            );
+        }
 
-        $pages = $rows->map(fn (object $row): TopPageData => new TopPageData(
+        $pages = $rows->map(fn (Model $row): TopPageData => new TopPageData(
             path: (string) $row->path,
             views: (int) $row->views,
         ));

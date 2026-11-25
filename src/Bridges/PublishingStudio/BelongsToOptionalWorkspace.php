@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Capell\Blog\Support\PublishingStudio\Concerns;
+namespace Capell\Blog\Bridges\PublishingStudio;
 
 use Capell\Core\Facades\CapellCore;
 use Capell\PublishingStudio\Actions\CopyOnWriteAction;

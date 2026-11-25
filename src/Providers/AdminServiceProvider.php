@@ -9,7 +9,7 @@ use Capell\Admin\Enums\ConfiguratorTypeEnum;
 use Capell\Admin\Enums\ResourceEnum as AdminResourceEnum;
 use Capell\Admin\Facades\CapellAdmin;
 use Capell\Blog\Actions\EnsureBlogPublishingSurfaceAction;
-use Capell\Blog\Bridges\Navigation\AddBlogPagesToNavigation;
+use Capell\Blog\Bridges\Navigation\BlogNavigationBridge;
 use Capell\Blog\Data\BlogPublishingSurfaceRequestData;
 use Capell\Blog\Enums\ResourceEnum;
 use Capell\Blog\Enums\WidgetComponentEnum;
@@ -20,9 +20,7 @@ use Capell\Core\Models\Site;
 use Capell\Core\Support\Packages\PackageSurfaceRegistrar;
 use Capell\Core\Support\Packages\RegistersInstalledRuntime;
 use Capell\LayoutBuilder\Enums\ComponentTypeEnum;
-use Capell\Navigation\Events\NavigationCreating;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
@@ -46,7 +44,7 @@ final class AdminServiceProvider extends ServiceProvider
         $this->registerWidgetComponents();
         $this->registerConfigurators();
         $this->registerDefaultPages();
-        $this->registerNavigationListener();
+        BlogNavigationBridge::registerListener();
     }
 
     private function registerResources(): void
@@ -119,21 +117,5 @@ final class AdminServiceProvider extends ServiceProvider
                 );
             });
         });
-    }
-
-    private function registerNavigationListener(): void
-    {
-        if (! CapellCore::isPackageAvailable('capell-app/navigation')) {
-            return;
-        }
-
-        if (
-            ! CapellCore::isPackageInstalled('capell-app/navigation')
-            || ! class_exists(NavigationCreating::class)
-        ) {
-            return;
-        }
-
-        Event::listen(NavigationCreating::class, AddBlogPagesToNavigation::class);
     }
 }

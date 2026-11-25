@@ -8,6 +8,7 @@ use Capell\Admin\Filament\Configurators\Blueprints\PageBlueprintConfigurator;
 use Capell\Admin\Filament\Configurators\Pages\ResultsPageConfigurator;
 use Capell\Blog\Actions\EnsureArticlePublishingDefaultsAction;
 use Capell\Blog\Actions\EnsureBlogPublishingSurfaceAction;
+use Capell\Blog\Bridges\Navigation\BlogNavigationBridge;
 use Capell\Blog\Data\BlogPublishingSurfaceRequestData;
 use Capell\Blog\Enums\BlogLayoutEnum;
 use Capell\Blog\Enums\BlogPageTypeEnum;
@@ -28,7 +29,6 @@ use Capell\Core\Enums\LayoutGroupEnum;
 use Capell\Core\Enums\PageTypeEnum;
 use Capell\Core\Enums\Rendering\RenderingStrategyEnum;
 use Capell\Core\Enums\UrlParamTypeEnum;
-use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Blueprint;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Layout;
@@ -38,20 +38,16 @@ use Capell\Core\Models\Site;
 use Capell\Core\Models\Translation;
 use Capell\Core\Support\Creator\BlueprintCreator;
 use Capell\Core\Support\Creator\LayoutCreator;
-use Capell\Core\Support\TableName;
 use Capell\LayoutBuilder\Enums\LayoutTypeEnum;
 use Capell\LayoutBuilder\Enums\WidgetComponentEnum as LayoutWidgetComponentEnum;
 use Capell\LayoutBuilder\Filament\Configurators\Types\WidgetTypeConfigurator;
 use Capell\LayoutBuilder\Models\Widget;
 use Capell\LayoutBuilder\Support\Creator\TypeCreator as LayoutTypeCreator;
 use Capell\LayoutBuilder\Support\Creator\WidgetCreator;
-use Capell\Navigation\Actions\AddPageToNavigationAction;
-use Capell\Navigation\Models\Navigation;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Schema;
 use LogicException;
 
 class BlogCreator
@@ -381,36 +377,12 @@ class BlogCreator
 
     /**
      * @param  array<array-key, mixed>  $keys
-     * @param  Collection<int, Page>|array<array-key, mixed>  $pages
+     * @param  Collection<int, Page>|array<array-key, Page>  $pages
      * @param  Collection<int, Language>  $languages
      */
     public function addPagesToNavigations(array $keys, Site $site, Collection|array $pages, Collection $languages): void
     {
-        if (
-            ! CapellCore::isPackageInstalled('capell-app/navigation')
-            || ! Schema::hasTable(TableName::resolve('navigations'))
-            || ! class_exists(Navigation::class)
-            || ! class_exists(AddPageToNavigationAction::class)
-        ) {
-            return;
-        }
-
-        Navigation::query()
-            ->whereIn('key', $keys)
-            ->where(
-                fn (Builder $query) => $query->whereNull('site_id')
-                    ->orWhere('site_id', $site->id),
-            )
-            ->where(
-                fn (Builder $query) => $query->whereNull('language_id')
-                    ->orWhereIn('language_id', $languages->pluck('id')),
-            )
-            ->get()
-            ->each(function (Navigation $navigation) use ($pages): void {
-                foreach ($pages as $page) {
-                    AddPageToNavigationAction::run($page, $navigation);
-                }
-            });
+        BlogNavigationBridge::addPages($keys, $site, $pages, $languages);
     }
 
     /**

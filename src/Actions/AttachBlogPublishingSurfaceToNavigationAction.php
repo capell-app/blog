@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Actions;
 
+use Capell\Blog\Bridges\Navigation\BlogNavigationBridge;
 use Capell\Blog\Data\BlogPublishingSurfaceRequestData;
 use Capell\Blog\Data\BlogPublishingSurfaceResultData;
 use Capell\Blog\Support\Creator\BlogCreator;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Support\TableName;
-use Capell\Navigation\Enums\NavigationHandle;
 use Illuminate\Support\Facades\Schema;
 use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
@@ -37,7 +37,7 @@ class AttachBlogPublishingSurfaceToNavigationAction
         }
 
         resolve(BlogCreator::class)->addPagesToNavigations(
-            [NavigationHandle::Main->value, NavigationHandle::Footer->value],
+            BlogNavigationBridge::blogMenuHandles(),
             site: $request->site,
             pages: [$surface->blogPage],
             languages: $request->languages,

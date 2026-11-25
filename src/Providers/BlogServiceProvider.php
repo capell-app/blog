@@ -9,7 +9,7 @@ use Capell\Blog\Actions\ClearBlogContentCacheAction;
 use Capell\Blog\Actions\ClearBlogTagCacheAction;
 use Capell\Blog\Actions\PrepareBlogFooterRenderDataAction;
 use Capell\Blog\Actions\SanitizeBlogHtmlAction;
-use Capell\Blog\Bridges\PublishingStudio\BlogEditorialCalendarEventContributor;
+use Capell\Blog\Bridges\PublishingStudio\BlogPublishingStudioBridge;
 use Capell\Blog\Bridges\SiteDiscovery\BlogPublicUrlContributor;
 use Capell\Blog\Enums\LivewirePageComponentEnum;
 use Capell\Blog\Enums\WidgetComponentEnum;
@@ -41,8 +41,6 @@ use Capell\DiscoveryFoundation\Contracts\PublicUrlContributor;
 use Capell\Frontend\Contracts\FrontendRuntimeManifestContributor;
 use Capell\Frontend\Events\FrontendRenderPreparing;
 use Capell\LayoutBuilder\Contracts\LayoutSidebarWidgetContributor;
-use Capell\PublishingStudio\Contracts\EditorialCalendarEventContributor;
-use Capell\PublishingStudio\WorkspaceRegistry;
 use Capell\Tags\Models\Tag;
 use Capell\Tags\Support\TagModelRegistrar;
 use Composer\InstalledVersions;
@@ -352,18 +350,7 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
 
     private function registerEditorialCalendarContributors(): self
     {
-        if (! CapellCore::isPackageAvailable('capell-app/publishing-studio')) {
-            return $this;
-        }
-
-        $editorialCalendarContributorContract = EditorialCalendarEventContributor::class;
-
-        if (interface_exists($editorialCalendarContributorContract)) {
-            $contributorClass = BlogEditorialCalendarEventContributor::class;
-
-            $this->app->singleton($contributorClass);
-            $this->app->tag([$contributorClass], $editorialCalendarContributorContract::TAG);
-        }
+        BlogPublishingStudioBridge::registerEditorialCalendar($this->app);
 
         return $this;
     }
@@ -452,15 +439,7 @@ final class BlogServiceProvider extends AbstractPackageServiceProvider
 
     private function registerPublishingStudio(): self
     {
-        if (! CapellCore::isPackageAvailable('capell-app/publishing-studio')) {
-            return $this;
-        }
-
-        $workspaceRegistryClass = WorkspaceRegistry::class;
-
-        if (class_exists($workspaceRegistryClass)) {
-            $workspaceRegistryClass::register(Article::class);
-        }
+        BlogPublishingStudioBridge::registerWorkspaceModel();
 
         return $this;
     }

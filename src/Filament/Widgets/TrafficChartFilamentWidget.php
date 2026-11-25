@@ -7,14 +7,12 @@ namespace Capell\Blog\Filament\Widgets;
 use Capell\Admin\Contracts\CapellFilamentWidgetContract;
 use Capell\Admin\Filament\Concerns\GatedByRoleAndSettings;
 use Capell\Admin\Filament\Concerns\HasDashboardDateRange;
+use Capell\Blog\Bridges\Insights\BlogInsightsBridge;
 use Capell\Blog\Data\Dashboard\TrafficChartData;
 use Capell\Blog\Data\Dashboard\TrafficPointData;
-use Capell\Core\Facades\CapellCore;
-use Capell\Insights\Enums\InsightsEventType;
-use Capell\Insights\Models\InsightsEvent;
 use Filament\Widgets\Widget;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Override;
 
 final class TrafficChartFilamentWidget extends Widget implements CapellFilamentWidgetContract
@@ -43,42 +41,18 @@ final class TrafficChartFilamentWidget extends Widget implements CapellFilamentW
 
     private function getData(): TrafficChartData
     {
-        if (! CapellCore::isPackageAvailable('capell-app/insights')) {
-            return new TrafficChartData(
-                totalViews: 0,
-                totalVisitors: 0,
-                points: TrafficPointData::collect([], Collection::class),
-            );
-        }
-
-        $insightsEventClass = InsightsEvent::class;
-        $insightsEventTypeClass = InsightsEventType::class;
-
-        if (! class_exists($insightsEventClass) || ! enum_exists($insightsEventTypeClass)) {
-            return new TrafficChartData(
-                totalViews: 0,
-                totalVisitors: 0,
-                points: TrafficPointData::collect([], Collection::class),
-            );
-        }
-
         [$rangeStart, $rangeEnd] = $this->getDashboardDateRange();
-        $pageViewEventType = constant($insightsEventTypeClass . '::PageView');
+        $rows = BlogInsightsBridge::dailyTraffic($rangeStart, $rangeEnd);
 
-        $rows = $insightsEventClass::query()
-            ->select(
-                DB::raw('DATE(occurred_at) as date'),
-                DB::raw('COUNT(*) as views'),
-                DB::raw('COUNT(DISTINCT visit_id) as visitors'),
-            )
-            ->where('type', $pageViewEventType)
-            ->where('occurred_at', '>=', $rangeStart)
-            ->where('occurred_at', '<=', $rangeEnd)
-            ->groupBy(DB::raw('DATE(occurred_at)'))
-            ->orderBy('date')
-            ->get();
+        if (! $rows instanceof Collection) {
+            return new TrafficChartData(
+                totalViews: 0,
+                totalVisitors: 0,
+                points: TrafficPointData::collect([], Collection::class),
+            );
+        }
 
-        $points = $rows->map(fn (object $row): TrafficPointData => new TrafficPointData(
+        $points = $rows->map(fn (Model $row): TrafficPointData => new TrafficPointData(
             date: (string) $row->date,
             views: (int) $row->views,
             visitors: (int) $row->visitors,

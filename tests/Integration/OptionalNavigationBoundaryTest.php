@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Capell\Blog\Bridges\Navigation\AddBlogPagesToNavigation;
-use Capell\Blog\Providers\AdminServiceProvider;
+use Capell\Blog\Bridges\Navigation\BlogNavigationBridge;
 use Capell\Blog\Support\BlogFrontendRuntimeManifestContributor;
 use Capell\Blog\Support\Creator\BlogCreator;
 use Capell\Blog\Support\Loader\BlogLoader;
@@ -30,8 +30,7 @@ it('does not register the navigation listener when navigation is disabled despit
     $events->shouldNotReceive('listen');
     Event::swap($events);
 
-    $method = new ReflectionMethod(AdminServiceProvider::class, 'registerNavigationListener');
-    $method->invoke(new AdminServiceProvider(app()));
+    BlogNavigationBridge::registerListener();
 });
 
 it('does not hydrate navigation relations for the frontend runtime when navigation is disabled despite its model and table being available', function (): void {

@@ -11,6 +11,7 @@ use Capell\Blog\Actions\BuildBlogResultsViewDataAction;
 use Capell\Blog\Actions\PrepareBlogFeedLinksAction;
 use Capell\Blog\Actions\PrepareBlogFooterRenderDataAction;
 use Capell\Blog\Actions\RedirectMergedTagSlugAction;
+use Capell\Blog\Bridges\Navigation\BlogNavigationBridge;
 use Capell\Blog\Data\ArticleMetaData;
 use Capell\Blog\Data\ArticleNeighborLinkData;
 use Capell\Blog\Data\ArticleWidgetRenderData;
@@ -26,12 +27,10 @@ use Capell\Core\Contracts\Pageable;
 use Capell\Core\Data\Rendering\FrontendRuntimeManifestData;
 use Capell\Core\Enums\BlueprintGroupEnum;
 use Capell\Core\Enums\PageOrderEnum;
-use Capell\Core\Facades\CapellCore;
 use Capell\Core\Models\Language;
 use Capell\Core\Models\Layout;
 use Capell\Core\Models\Page;
 use Capell\Core\Models\Site;
-use Capell\Core\Support\TableName;
 use Capell\FoundationTheme\Actions\ResolveFoundationThemeTokensAction;
 use Capell\Frontend\Contracts\FrontendContextReader;
 use Capell\Frontend\Contracts\FrontendRuntimeManifestContributor;
@@ -39,12 +38,10 @@ use Capell\Frontend\Data\PageListingRequestData;
 use Capell\Frontend\Support\Loader\PageLoader;
 use Capell\Frontend\Support\Loader\SiteLoader;
 use Capell\LayoutBuilder\Models\Widget;
-use Capell\Navigation\Models\Navigation;
 use Capell\Tags\Data\ResolvedTagSlugData;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Schema;
 use Override;
 
 final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeManifestContributor
@@ -152,7 +149,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
     private function prepareArticlePage(FrontendContextReader $context, Pageable&Model $page, Site $site, Language $language): void
     {
         $site->loadMissing('siteDomain');
-        $this->hydrateSiteNavigations($site);
+        BlogNavigationBridge::hydrateSiteNavigations($site);
         $page->loadMissing(['creator', 'image.translations.language', 'pageUrl', 'tags', 'translation', 'blueprint']);
         $creator = $page->getRelation('creator');
 
@@ -294,7 +291,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
     private function prepareTagsIndexPage(FrontendContextReader $context, Pageable&Model $page, Site $site, Language $language): void
     {
         $site->loadMissing('siteDomain');
-        $this->hydrateSiteNavigations($site);
+        BlogNavigationBridge::hydrateSiteNavigations($site);
         $page->loadMissing(['translation', 'pageUrl', 'blueprint']);
 
         $this->prepareFoundationThemeRuntimeData($context, $page, $site, $language);
@@ -316,7 +313,7 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
     private function prepareArchivesIndexPage(FrontendContextReader $context, Pageable&Model $page, Site $site, Language $language): void
     {
         $site->loadMissing('siteDomain');
-        $this->hydrateSiteNavigations($site);
+        BlogNavigationBridge::hydrateSiteNavigations($site);
         $page->loadMissing(['translation', 'pageUrl', 'blueprint']);
 
         $this->prepareFoundationThemeRuntimeData($context, $page, $site, $language);
@@ -521,28 +518,6 @@ final class BlogFrontendRuntimeManifestContributor implements FrontendRuntimeMan
     private function filterArchiveQuery(Builder $query, int $year, ?int $month): Builder
     {
         return ApplyArchiveDateFilterAction::run($query, $year, $month);
-    }
-
-    private function hydrateSiteNavigations(Site $site): void
-    {
-        if (
-            $site->relationLoaded('navigations')
-            || ! CapellCore::isPackageInstalled('capell-app/navigation')
-            || ! Schema::hasTable(TableName::resolve('navigations'))
-            || ! class_exists(Navigation::class)
-        ) {
-            return;
-        }
-
-        $site->setRelation(
-            'navigations',
-            Navigation::query()
-                ->where(fn (Builder $query): Builder => $query
-                    ->where('site_id', $site->getKey())
-                    ->orWhereNull('site_id'))
-                ->publishedDate()
-                ->get(),
-        );
     }
 
     private function articleRenderData(Pageable&Model $page, Site $site, Language $language, ArticleMetaData $articleMeta): ArticleWidgetRenderData

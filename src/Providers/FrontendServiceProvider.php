@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\Blog\Providers;
 
-use Capell\Blog\Bridges\SiteDiscovery\ArchivesSitemap;
-use Capell\Blog\Bridges\SiteDiscovery\ArticlesSitemap;
-use Capell\Blog\Bridges\SiteDiscovery\TagsSitemap;
+use Capell\Blog\Bridges\SiteDiscovery\BlogSiteDiscoverySitemapBridge;
 use Capell\Blog\Enums\BlogPageTypeEnum;
 use Capell\Blog\Enums\BlogTypeGroupEnum;
 use Capell\Blog\Support\Loader\BlogLoader;
@@ -29,7 +27,6 @@ use Capell\Frontend\Events\FrontendContextResolved;
 use Capell\Frontend\Support\Render\FrontendHookRegistrar;
 use Capell\Frontend\Support\State\FrontendState;
 use Capell\HtmlCache\Support\StaticSite\StaticSiteExtensionRegistry;
-use Capell\SiteDiscovery\Support\Sitemap\SitemapPageRegistry;
 use Capell\Tags\Models\Tag;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
@@ -133,18 +130,7 @@ final class FrontendServiceProvider extends ServiceProvider
 
     private function registerSitemapPages(): void
     {
-        if (! CapellCore::isPackageAvailable('capell-app/site-discovery')) {
-            return;
-        }
-
-        if (! class_exists(SitemapPageRegistry::class)) {
-            return;
-        }
-
-        $registry = resolve(SitemapPageRegistry::class);
-        $registry->register('archives', ArchivesSitemap::class);
-        $registry->register('articles', ArticlesSitemap::class);
-        $registry->register('tags', TagsSitemap::class);
+        BlogSiteDiscoverySitemapBridge::registerSitemapPages($this->app);
     }
 
     private function registerRenderHooks(): void
