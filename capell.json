@@ -6,6 +6,7 @@
     "kind": "package",
     "capellApiVersion": "^1.0",
     "version": "1.0.0",
+    "launchStatus": "shipped",
     "description": "Dated news posts that publish themselves on the day, with pages by month, tag and author so readers can find older news.",
     "product": {
         "group": "Capell Publishing",
